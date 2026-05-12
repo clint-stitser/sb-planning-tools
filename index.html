@@ -1042,45 +1042,45 @@ function initApp(data) {
 }
 
 async function loadData(force) {
-  const overlay = document.getElementById('load-overlay');
-  const loadMsg = document.getElementById('load-msg');
-  const loadErr = document.getElementById('load-err');
   const btn = document.getElementById('refresh-btn');
-
-  // If forcing a refresh, show a non-blocking toast instead of full overlay
-  if (force) {
-    if (btn) { btn.disabled = true; btn.textContent = '…'; }
-    try {
-      const res  = await fetch('/api/data?force=true');
-      if (!res.ok) throw new Error('Server error ' + res.status);
-      const data = await res.json();
-      if (data.error) throw new Error(data.error);
-      initApp(data);
-      showToast('Data refreshed');
-    } catch (err) {
-      showToast('Refresh failed: ' + err.message, true);
-    } finally {
-      if (btn) { btn.disabled = false; btn.textContent = '↻ Refresh'; }
-    }
-    return;
-  }
-
-  // Initial load — show overlay only if we have no data yet
-  overlay.style.display = 'flex';
-  loadErr.style.display = 'none';
-  loadMsg.textContent = 'Loading project data…';
+  const url = force ? '/api/data?force=true' : '/api/data';
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  setProgressBar(true);
   try {
-    const res  = await fetch('/api/data');
+    const res  = await fetch(url);
     if (!res.ok) throw new Error('Server error ' + res.status);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     initApp(data);
-    overlay.style.display = 'none';
-    if (data.stale) showToast('Showing cached data — refreshing in background…');
+    if (force) showToast('Data refreshed — ' + (data.projects||[]).length + ' projects');
+    else if (data.stale) showToast('Showing cached data — refreshing in background…');
   } catch (err) {
-    loadMsg.textContent = 'Failed to load data';
-    loadErr.textContent = err.message;
-    loadErr.style.display = 'block';
+    showToast('Failed to load: ' + err.message, true);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '↻ Refresh'; }
+    setProgressBar(false);
+  }
+}
+
+function setProgressBar(on) {
+  let bar = document.getElementById('progress-bar');
+  if (!bar) {
+    bar = document.createElement('div');
+    bar.id = 'progress-bar';
+    bar.style.cssText = 'position:fixed;top:0;left:0;height:2px;background:var(--gold);z-index:700;transition:width .3s ease,opacity .4s ease;width:0;opacity:0';
+    document.body.appendChild(bar);
+  }
+  if (on) {
+    bar.style.opacity = '1'; bar.style.width = '0';
+    requestAnimationFrame(() => { bar.style.width = '70%'; });
+    bar._interval = setInterval(() => {
+      const w = parseFloat(bar.style.width);
+      if (w < 90) bar.style.width = (w + (90 - w) * 0.1) + '%';
+    }, 400);
+  } else {
+    clearInterval(bar._interval);
+    bar.style.width = '100%';
+    setTimeout(() => { bar.style.opacity = '0'; setTimeout(() => { bar.style.width = '0'; }, 400); }, 200);
   }
 }
 
@@ -1102,16 +1102,6 @@ loadData(false);
 
 </script>
 
-<!-- ══════════════════════════════════════════
-     LOADING OVERLAY
-═══════════════════════════════════════════ -->
-<div id="load-overlay" style="display:flex;position:fixed;inset:0;background:rgba(14,13,11,.85);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:14px;">
-  <div style="width:32px;height:32px;border:3px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite"></div>
-  <div id="load-msg" style="font-family:'DM Mono',monospace;font-size:12px;color:rgba(255,255,255,.8)">Loading project data…</div>
-  <div id="load-err" style="display:none;font-size:11px;color:#F9A8A8;max-width:340px;text-align:center;line-height:1.5"></div>
-  <button onclick="loadData(false)" style="display:none" id="load-retry" style="padding:6px 16px;border:1px solid rgba(255,255,255,.3);border-radius:4px;background:transparent;color:#fff;font-family:var(--body);font-size:12px;cursor:pointer">Retry</button>
-</div>
-<style>@keyframes spin{to{transform:rotate(360deg)}}</style>
 
 </body>
 </html>
