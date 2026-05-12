@@ -121,6 +121,10 @@ tr:hover td{background:#FAFAF8;}
 .bclo{background:var(--green-l);color:var(--green);}
 .bpip{background:var(--amber-l);color:var(--amber);}
 .bbiz{background:var(--gold-l);color:var(--gold);}
+.bnewopp{background:#EEF6EE;color:#1E5C36;}
+.bnurture{background:#FFF2DC;color:#7A5800;}
+.bwarm{background:#FFD5B3;color:#7A3200;}
+.bhot{background:#FF702E;color:#fff;}
 .bcls{background:var(--rule2);color:var(--ink3);}
 .both{background:#F0EBFB;color:#4A2A8C;}
 
@@ -316,7 +320,10 @@ thead .sticky-col{background:var(--canvas);z-index:6;}
       <div class="pill" data-f="sg" data-v="WIP" onclick="togglePill(this)">WIP</div>
       <div class="pill" data-f="sg" data-v="Closeout" onclick="togglePill(this)">Closeout</div>
       <div class="pill" data-f="sg" data-v="Pipeline" onclick="togglePill(this)">Pipeline</div>
-      <div class="pill" data-f="sg" data-v="Biz Dev" onclick="togglePill(this)">Biz Dev</div>
+      <div class="pill" data-f="sg" data-v="Hot" onclick="togglePill(this)">Hot</div>
+      <div class="pill" data-f="sg" data-v="Warm" onclick="togglePill(this)">Warm</div>
+      <div class="pill" data-f="sg" data-v="Nurture" onclick="togglePill(this)">Nurture</div>
+      <div class="pill" data-f="sg" data-v="New Opportunity" onclick="togglePill(this)">New Opp</div>
       <div class="pill" data-f="sg" data-v="Closed" onclick="togglePill(this)">Closed</div>
     </div>
     <div class="sep"></div>
@@ -366,7 +373,10 @@ thead .sticky-col{background:var(--canvas);z-index:6;}
           <div class="pill on" data-f="ppsg" data-v="WIP" onclick="togglePill(this)">WIP</div>
           <div class="pill on" data-f="ppsg" data-v="Closeout" onclick="togglePill(this)">Close</div>
           <div class="pill" data-f="ppsg" data-v="Pipeline" onclick="togglePill(this)">Pipeline</div>
-          <div class="pill" data-f="ppsg" data-v="Biz Dev" onclick="togglePill(this)">Biz Dev</div>
+          <div class="pill" data-f="ppsg" data-v="Hot" onclick="togglePill(this)">Hot</div>
+          <div class="pill" data-f="ppsg" data-v="Warm" onclick="togglePill(this)">Warm</div>
+          <div class="pill" data-f="ppsg" data-v="Nurture" onclick="togglePill(this)">Nurture</div>
+          <div class="pill" data-f="ppsg" data-v="New Opportunity" onclick="togglePill(this)">New Opp</div>
           <div class="pill" data-f="ppsg" data-v="Closed" onclick="togglePill(this)">Closed</div>
         </div>
       </div>
@@ -410,9 +420,9 @@ const ALL_MONTHS = (() => {
 })();
 const CUR = new Date().toISOString().slice(0,7);
 
-const SG_ORDER = ['WIP','Closeout','Pipeline','Biz Dev','Closed','Other'];
-const SG_LABEL = {WIP:'WIP',Closeout:'Closeout',Pipeline:'Pipeline','Biz Dev':'Biz Dev',Closed:'Closed',Other:'Other'};
-const SG_CLS   = {WIP:'bwip',Closeout:'bclo',Pipeline:'bpip','Biz Dev':'bbiz',Closed:'bcls',Other:'both'};
+const SG_ORDER = ['WIP','Closeout','Pipeline','Hot','Warm','Nurture','New Opportunity','Closed','Other'];
+const SG_LABEL = {WIP:'WIP',Closeout:'Closeout',Pipeline:'Pipeline','Hot':'Hot (0-6 mo)','Warm':'Warm (6-12 mo)','Nurture':'Nurture (12+ mo)','New Opportunity':'New Opportunity',Closed:'Closed',Other:'Other'};
+const SG_CLS   = {WIP:'bwip',Closeout:'bclo',Pipeline:'bpip','Hot':'bhot','Warm':'bwarm','Nurture':'bnurture','New Opportunity':'bnewopp',Closed:'bcls',Other:'both'};
 const SEC_LABEL = {inv:'Investing',op:'Operating',fin:'Financing'};
 const SEC_CLS   = {inv:'sb-inv',op:'sb-op',fin:'sb-fin'};
 const SEC_COL   = {inv:'val-inv',op:'val-op',fin:'val-fin'};

@@ -27,17 +27,17 @@ const APPS = {
 
 // ── Lookup tables ──────────────────────────────────────────────────────────
 const STATUS_STAGE = {
-  'ready_for_review':                          'Biz Dev',
-  'complete':                                  'Biz Dev',
-  '21c0705b-0c3b-45cd-9e93-07672fac949d':     'Biz Dev',
-  'fb5677b7-3e68-4705-86af-abb8745a43f7':     'Biz Dev',
+  'ready_for_review':                          'New Opportunity',
+  'complete':                                  'Nurture',
+  '21c0705b-0c3b-45cd-9e93-07672fac949d':     'Warm',
+  'fb5677b7-3e68-4705-86af-abb8745a43f7':     'Hot',
   'backlog':                                   'Pipeline',
   'zOlNR':                                     'WIP',
   'Swowl':                                     'Closeout',
   'Dio3d':                                     'Closed',
 };
 
-const ACTIVE_STAGES = new Set(['WIP', 'Closeout', 'Pipeline', 'Biz Dev']);
+const ACTIVE_STAGES = new Set(['WIP', 'Closeout', 'Pipeline', 'New Opportunity', 'Nurture', 'Warm', 'Hot']);
 
 const SECTION_MAP = {
   'ozQle': 'inv',
