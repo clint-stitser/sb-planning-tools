@@ -252,8 +252,27 @@ async function fetchSmartSuiteData(apiKey) {
       if (s === 'fin') { fin_b += b; fin_c += co; fin_x += adj; }
     }
 
+    // ── Pillar tool indicators ─────────────────────────────────────────────
+    const hasBudget   = rows.length > 0;
+    const hasSchedule = !!(proj.s4ec74af74 && String(proj.s4ec74af74).trim());
+    const hasChecklist= (proj.synemrwc  || []).length > 0;
+    const hasGYR      = (proj.s0dm3fca  || []).length > 0;
+
+    // ── Project type ───────────────────────────────────────────────────────
+    const PT_MAP = {
+      jPLRC:'Turnkey (CM+Brokerage)', vS35P:'Turnkey (Brokerage)',
+      SAwXv:'Retail (Value Add)',      '4xiIg':'Retail (Ground Up)',
+      OjC5r:'Housing (Value Add)',     Fwb1s:'Housing (Ground Up)',
+      uosa8:'Midsize MF (Value Add)',  '1N650':'Midsize MF (Ground Up)',
+      X3qNS:'2nd Home (Fractional)',   moy1G:'2nd Home (Whole)',
+      bby4W:'3rd Party GC',            JsTY8:'Cool Shit',
+    };
+    const ptRaw = proj.sefedb2ee0?.value || proj.sefedb2ee0 || '';
+    const pt    = PT_MAP[ptRaw] || ptRaw || '—';
+
     result.push({ id, n, sg: stage, co, url, nkd, dates: datePairs, mp, rows,
-      inv_b, inv_c, inv_x, op_b, op_c, op_x, fin_b, fin_c, fin_x });
+      inv_b, inv_c, inv_x, op_b, op_c, op_x, fin_b, fin_c, fin_x,
+      hasBudget, hasSchedule, hasChecklist, hasGYR, pt });
   }
 
   console.log(`Transformed ${result.length} active projects`);

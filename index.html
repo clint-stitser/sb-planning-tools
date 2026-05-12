@@ -39,7 +39,7 @@ body{font-family:var(--body);background:var(--canvas);color:var(--ink);min-heigh
 .home-headline{text-align:center;}
 .home-headline h1{font-family:var(--display);font-size:clamp(32px,5vw,56px);font-weight:800;line-height:1;letter-spacing:-.02em;color:#fff;}
 .home-headline p{font-size:13px;color:rgba(255,255,255,.5);margin-top:10px;font-weight:300;}
-.home-cards{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;width:100%;max-width:1050px;}
+.home-cards{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;width:100%;max-width:1400px;}
 .home-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:28px;cursor:pointer;transition:all .2s var(--ease);position:relative;overflow:hidden;}
 .home-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.06),transparent);opacity:0;transition:opacity .2s;}
 .home-card:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.25);transform:translateY(-2px);}
@@ -53,6 +53,7 @@ body{font-family:var(--body);background:var(--canvas);color:var(--ink);min-heigh
 .card-accent.gold{background:linear-gradient(90deg,var(--gold),transparent);}
 .card-accent.blue{background:linear-gradient(90deg,#4A8FE8,transparent);}
 .card-accent.green{background:linear-gradient(90deg,#2D7D4F,transparent);}
+.card-accent.amber{background:linear-gradient(90deg,#9C5A00,transparent);}
 .home-stats{display:flex;gap:32px;justify-content:center;}
 .home-stat{text-align:center;}
 .home-stat-val{font-family:var(--display);font-size:28px;font-weight:800;color:#fff;}
@@ -306,6 +307,13 @@ thead .sticky-col{background:var(--canvas);z-index:6;}
         <div class="card-icon">◈</div>
         <div class="card-title">Manpower Planner</div>
         <div class="card-desc">Team assignments across all active projects. Gantt view by person and role, plus a monthly load heatmap to spot capacity gaps.</div>
+      </div>
+      <div class="home-card" onclick="window.location.href='/pillar-matrix.html'">
+        <div class="card-accent amber"></div>
+        <div class="card-arrow">↗</div>
+        <div class="card-icon">⊟</div>
+        <div class="card-title">Pillar Matrix</div>
+        <div class="card-desc">One row per project. Confirms whether each of the four pillars — Alignment, Budget, Schedule, QC &amp; Safety — has its required tool in place.</div>
       </div>
     </div>
   </div>

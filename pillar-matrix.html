@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stitser BUILT — Pillar Matrix</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap">
+<style>
+:root{
+  --ink:#0E0D0B; --ink2:#4A4640; --ink3:#8A847C;
+  --canvas:#F7F4EF; --paper:#FFFFFF; --rule:#E2DDD6; --rule2:#EDE9E2;
+  --gold:#C8961A; --gold-l:#FBF3DE;
+  --blue:#1A3F72; --blue-l:#EAF0F9;
+  --green:#1E5C36; --green-l:#E4F2E9;
+  --red:#8C1F1F; --red-l:#F9E8E8;
+  --amber:#9C5A00; --amber-l:#FEF3E2;
+  --mono:'DM Mono',monospace; --display:'Syne',sans-serif; --body:'DM Sans',sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:13px;}
+body{font-family:var(--body);background:var(--canvas);color:var(--ink);min-height:100vh;}
+
+/* ── APP BAR ── */
+.app-bar{background:var(--ink);color:#fff;padding:0 20px;display:flex;align-items:center;gap:0;height:44px;flex-shrink:0;}
+.app-bar-back{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.5);text-decoration:none;padding:0 14px 0 0;border-right:1px solid rgba(255,255,255,.1);margin-right:14px;height:100%;transition:color .15s;white-space:nowrap;}
+.app-bar-back:hover{color:#fff;}
+.app-bar-title{font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.01em;flex:1;color:#fff;}
+.app-bar-actions{display:flex;gap:8px;align-items:center;}
+#last-updated{font-family:var(--mono);font-size:9px;color:rgba(255,255,255,.4);}
+.refresh-btn{padding:3px 10px;border:1px solid rgba(255,255,255,.2);border-radius:4px;font-size:11px;font-family:var(--body);background:transparent;color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s;}
+.refresh-btn:hover{background:rgba(255,255,255,.1);color:#fff;}
+
+/* ── TOOLBAR ── */
+.toolbar{background:var(--paper);border-bottom:1px solid var(--rule);padding:7px 16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:42px;}
+.tl{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;font-weight:500;}
+.pills{display:flex;gap:3px;flex-wrap:wrap;}
+.pill{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--rule);background:var(--canvas);color:var(--ink2);transition:all .12s;user-select:none;white-space:nowrap;}
+.pill.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+.pill:hover:not(.on){background:var(--rule2);}
+.sep{width:1px;height:18px;background:var(--rule);margin:0 4px;flex-shrink:0;}
+select{padding:3px 8px;border:1px solid var(--rule);border-radius:4px;font-size:11px;font-family:var(--body);background:var(--paper);color:var(--ink);}
+
+/* ── SUMMARY BAR ── */
+.sumbar{background:var(--rule2);border-bottom:1px solid var(--rule);padding:6px 16px;display:flex;gap:20px;flex-wrap:wrap;align-items:center;}
+.si{display:flex;flex-direction:column;}
+.si-l{font-size:8px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;font-weight:500;}
+.si-v{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);}
+.si-v.warn{color:var(--red);}
+.si-v.ok{color:var(--green);}
+
+/* ── GRID ── */
+.scroll-area{overflow:auto;flex:1;}
+.matrix-wrap{padding:14px 16px;}
+
+table{width:100%;border-collapse:collapse;background:var(--paper);border:1px solid var(--rule);border-radius:6px;overflow:hidden;}
+thead{background:var(--canvas);position:sticky;top:0;z-index:10;}
+th{padding:7px 10px;text-align:left;font-size:9px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid var(--rule);white-space:nowrap;}
+th.pillar{text-align:center;min-width:90px;}
+th.pillar span{display:block;font-size:8px;color:var(--ink3);font-weight:400;margin-top:1px;text-transform:none;letter-spacing:0;}
+
+td{padding:6px 10px;border-bottom:1px solid var(--rule2);font-size:11px;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#FAFAF8;}
+
+.proj-name{font-weight:500;color:var(--ink);line-height:1.3;}
+.proj-link{color:var(--blue);text-decoration:none;font-weight:500;}
+.proj-link:hover{text-decoration:underline;}
+.proj-co{font-size:9px;color:var(--ink3);margin-top:1px;}
+.proj-type{font-size:9px;color:var(--ink2);margin-top:1px;}
+
+/* ── STAGE BADGES ── */
+.bdg{display:inline-block;padding:2px 6px;border-radius:10px;font-size:9px;font-weight:600;white-space:nowrap;}
+.bwip{background:var(--blue-l);color:var(--blue);}
+.bclo{background:var(--green-l);color:var(--green);}
+.bpip{background:var(--amber-l);color:var(--amber);}
+.bhot{background:#FF702E;color:#fff;}
+.bwarm{background:#FFD5B3;color:#7A3200;}
+.bnurture{background:#FFF2DC;color:#7A5800;}
+.bnewopp{background:#EEF6EE;color:#1E5C36;}
+.bcls{background:var(--rule2);color:var(--ink3);}
+
+/* ── PILLAR CELLS ── */
+.pillar-cell{text-align:center;padding:6px 8px;}
+.p-yes{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--green-l);color:var(--green);font-size:14px;font-weight:700;}
+.p-no{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--red-l);color:var(--red);font-size:14px;font-weight:700;}
+.p-na{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--rule2);color:var(--ink3);font-size:11px;}
+
+/* ── EMPTY ── */
+.empty{padding:48px;text-align:center;color:var(--ink3);font-size:12px;}
+
+/* ── LOADING BAR ── */
+#progress-bar{position:fixed;top:0;left:0;height:2px;background:var(--gold);z-index:700;transition:width .3s ease,opacity .4s ease;width:0;opacity:0;}
+
+/* ── TOAST ── */
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<div class="app-bar">
+  <a href="/" class="app-bar-back">← Home</a>
+  <div class="app-bar-title">Project Pillar Matrix</div>
+  <div class="app-bar-actions">
+    <span id="last-updated"></span>
+    <button class="refresh-btn" onclick="refreshData()">↻ Refresh</button>
+  </div>
+</div>
+
+<div class="toolbar">
+  <span class="tl">Stage</span>
+  <div class="pills" id="sg-pills">
+    <div class="pill on" data-v="WIP"             onclick="togglePill(this,'sg')">WIP</div>
+    <div class="pill on" data-v="Closeout"        onclick="togglePill(this,'sg')">Closeout</div>
+    <div class="pill"    data-v="Pipeline"        onclick="togglePill(this,'sg')">Pipeline</div>
+    <div class="pill"    data-v="Hot"             onclick="togglePill(this,'sg')">Hot</div>
+    <div class="pill"    data-v="Warm"            onclick="togglePill(this,'sg')">Warm</div>
+    <div class="pill"    data-v="Nurture"         onclick="togglePill(this,'sg')">Nurture</div>
+    <div class="pill"    data-v="New Opportunity" onclick="togglePill(this,'sg')">New Opp</div>
+  </div>
+  <div class="sep"></div>
+  <span class="tl">Company</span>
+  <div class="pills" id="co-pills">
+    <div class="pill" data-v="BUILT."  onclick="togglePill(this,'co')">BUILT.</div>
+    <div class="pill" data-v="PC-1"    onclick="togglePill(this,'co')">PC-1</div>
+    <div class="pill" data-v="SSJ"     onclick="togglePill(this,'co')">SSJ</div>
+    <div class="pill" data-v="SPI"     onclick="togglePill(this,'co')">SPI</div>
+  </div>
+  <div class="sep"></div>
+  <span class="tl">Type</span>
+  <select id="type-filter" onchange="render()"><option value="">All Types</option></select>
+</div>
+
+<div class="sumbar" id="sumbar"></div>
+
+<div class="scroll-area">
+  <div class="matrix-wrap">
+    <table id="matrix-table">
+      <thead>
+        <tr>
+          <th style="min-width:260px">Project</th>
+          <th style="min-width:90px">Stage</th>
+          <th style="min-width:80px">Company</th>
+          <th class="pillar">Alignment<span>GYR Report</span></th>
+          <th class="pillar">Budget<span>702 Budget</span></th>
+          <th class="pillar">Schedule<span>Smartsheet</span></th>
+          <th class="pillar">QC &amp; Safety<span>Checklist</span></th>
+          <th class="pillar" style="min-width:60px">Score</th>
+        </tr>
+      </thead>
+      <tbody id="matrix-body">
+        <tr><td colspan="8" class="empty">Loading data…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+// ── State ─────────────────────────────────────────────────────────────────
+let PROJECTS = [];
+const F = { sg: new Set(['WIP','Closeout']), co: new Set() };
+
+const SG_CLS = {
+  WIP:'bwip', Closeout:'bclo', Pipeline:'bpip',
+  Hot:'bhot', Warm:'bwarm', Nurture:'bnurture',
+  'New Opportunity':'bnewopp', Closed:'bcls'
+};
+const SG_LABEL = {
+  WIP:'WIP', Closeout:'Closeout', Pipeline:'Pipeline',
+  Hot:'Hot (0-6 mo)', Warm:'Warm (6-12 mo)', Nurture:'Nurture (12+ mo)',
+  'New Opportunity':'New Opp', Closed:'Closed'
+};
+
+// ── Filters ───────────────────────────────────────────────────────────────
+function togglePill(el, group) {
+  const v = el.dataset.v;
+  const set = F[group];
+  if (set.has(v)) { set.delete(v); el.classList.remove('on'); }
+  else            { set.add(v);    el.classList.add('on'); }
+  render();
+}
+
+function filtered() {
+  const type = document.getElementById('type-filter').value;
+  return PROJECTS.filter(p => {
+    if (F.sg.size && !F.sg.has(p.sg)) return false;
+    if (F.co.size && !F.co.has(p.co)) return false;
+    if (type && p.pt !== type) return false;
+    return true;
+  });
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
+function pillarCell(yes) {
+  if (yes === null) return `<td class="pillar-cell"><span class="p-na">—</span></td>`;
+  return yes
+    ? `<td class="pillar-cell"><span class="p-yes">✓</span></td>`
+    : `<td class="pillar-cell"><span class="p-no">✗</span></td>`;
+}
+
+function render() {
+  const data = filtered();
+
+  // Populate type dropdown dynamically
+  const typeSelect = document.getElementById('type-filter');
+  const currentType = typeSelect.value;
+  const types = [...new Set(PROJECTS.map(p => p.pt).filter(t => t && t !== '—'))].sort();
+  typeSelect.innerHTML = '<option value="">All Types</option>' +
+    types.map(t => `<option value="${t}"${t===currentType?' selected':''}>${t}</option>`).join('');
+
+  // Summary bar
+  const nBudget    = data.filter(p => !p.hasBudget).length;
+  const nSchedule  = data.filter(p => !p.hasSchedule).length;
+  const nChecklist = data.filter(p => !p.hasChecklist).length;
+  const nGYR       = data.filter(p => !p.hasGYR).length;
+  const nFull      = data.filter(p => p.hasBudget && p.hasSchedule && p.hasChecklist && p.hasGYR).length;
+  document.getElementById('sumbar').innerHTML = `
+    <div class="si"><div class="si-l">Projects</div><div class="si-v">${data.length}</div></div>
+    <div class="si"><div class="si-l">All Pillars Set</div><div class="si-v ${nFull===data.length?'ok':'warn'}">${nFull} / ${data.length}</div></div>
+    <div class="si"><div class="si-l">Missing GYR</div><div class="si-v ${nGYR?'warn':'ok'}">${nGYR}</div></div>
+    <div class="si"><div class="si-l">Missing Budget</div><div class="si-v ${nBudget?'warn':'ok'}">${nBudget}</div></div>
+    <div class="si"><div class="si-l">Missing Schedule</div><div class="si-v ${nSchedule?'warn':'ok'}">${nSchedule}</div></div>
+    <div class="si"><div class="si-l">Missing Checklist</div><div class="si-v ${nChecklist?'warn':'ok'}">${nChecklist}</div></div>`;
+
+  if (!data.length) {
+    document.getElementById('matrix-body').innerHTML =
+      `<tr><td colspan="8" class="empty">No projects match the current filters.</td></tr>`;
+    return;
+  }
+
+  // Sort: missing pillars first, then by stage order, then name
+  const SG_ORD = ['WIP','Closeout','Pipeline','Hot','Warm','Nurture','New Opportunity','Closed'];
+  data.sort((a,b) => {
+    const scoreDiff = score(a) - score(b);
+    if (scoreDiff !== 0) return scoreDiff;
+    const stDiff = SG_ORD.indexOf(a.sg) - SG_ORD.indexOf(b.sg);
+    if (stDiff !== 0) return stDiff;
+    return a.n.localeCompare(b.n);
+  });
+
+  const rows = data.map(p => {
+    const s = score(p);
+    const scoreColor = s === 4 ? 'var(--green)' : s >= 2 ? 'var(--amber)' : 'var(--red)';
+    return `<tr>
+      <td>
+        <div><a class="proj-link" href="${p.url}" target="_blank">${p.n}</a></div>
+        <div class="proj-type">${p.pt !== '—' ? p.pt : ''}</div>
+      </td>
+      <td><span class="bdg ${SG_CLS[p.sg]||'bcls'}">${SG_LABEL[p.sg]||p.sg}</span></td>
+      <td style="font-size:11px;color:var(--ink2)">${p.co}</td>
+      ${pillarCell(p.hasGYR)}
+      ${pillarCell(p.hasBudget)}
+      ${pillarCell(p.hasSchedule)}
+      ${pillarCell(p.hasChecklist)}
+      <td class="pillar-cell">
+        <span style="font-family:var(--mono);font-size:11px;font-weight:600;color:${scoreColor}">${s}/4</span>
+      </td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('matrix-body').innerHTML = rows;
+}
+
+function score(p) {
+  return [p.hasGYR, p.hasBudget, p.hasSchedule, p.hasChecklist].filter(Boolean).length;
+}
+
+// ── Data loading ──────────────────────────────────────────────────────────
+function initApp(data) {
+  PROJECTS = data.projects || [];
+  if (data.lastUpdated) {
+    const d = new Date(data.lastUpdated);
+    document.getElementById('last-updated').textContent =
+      'Updated ' + d.toLocaleString('en',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  }
+  render();
+}
+
+async function loadData(force) {
+  const btn = document.querySelector('.refresh-btn');
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  setProgressBar(true);
+  try {
+    const res  = await fetch(force ? '/api/data?force=true' : '/api/data');
+    if (!res.ok) throw new Error('Server error ' + res.status);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    initApp(data);
+    if (force) showToast('Data refreshed — ' + (data.projects||[]).length + ' projects');
+  } catch (err) {
+    showToast('Failed to load: ' + err.message, true);
+    document.getElementById('matrix-body').innerHTML =
+      `<tr><td colspan="8" class="empty">Failed to load data: ${err.message}</td></tr>`;
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '↻ Refresh'; }
+    setProgressBar(false);
+  }
+}
+
+function refreshData() { loadData(true); }
+
+function setProgressBar(on) {
+  const bar = document.getElementById('progress-bar');
+  if (on) {
+    bar.style.opacity='1'; bar.style.width='0';
+    requestAnimationFrame(()=>{ bar.style.width='70%'; });
+    bar._iv = setInterval(()=>{ const w=parseFloat(bar.style.width); if(w<90) bar.style.width=(w+(90-w)*.1)+'%'; },400);
+  } else {
+    clearInterval(bar._iv);
+    bar.style.width='100%';
+    setTimeout(()=>{ bar.style.opacity='0'; setTimeout(()=>{ bar.style.width='0'; },400); },200);
+  }
+}
+
+function showToast(msg, isErr) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = `position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:${isErr?'#8C1F1F':'#1E5C36'};color:#fff;padding:8px 18px;border-radius:6px;
+    font-size:11px;font-family:var(--mono);z-index:600;opacity:0;transition:opacity .2s;
+    white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)`;
+  document.body.appendChild(t);
+  requestAnimationFrame(()=>{ t.style.opacity='1'; });
+  setTimeout(()=>{ t.style.opacity='0'; setTimeout(()=>t.remove(),300); },3000);
+}
+
+loadData(false);
+</script>
+</body>
+</html>
