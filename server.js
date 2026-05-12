@@ -80,6 +80,7 @@ app.get('/', (req, res) => {
 // ── Start ──────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`Stitser BUILT Planning Tools → http://localhost:${PORT}`);
-  // Warm the cache on startup
-  getData(false).catch(err => console.error('Startup cache warm failed:', err.message));
+  // Warm cache on startup, then refresh every 25 minutes so it's never cold
+  startBackgroundRefresh();
+  setInterval(startBackgroundRefresh, 25 * 60 * 1000);
 });
