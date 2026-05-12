@@ -107,6 +107,8 @@ const HEADERS = {
   'Content-Type': 'application/json',
 };
 
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
 async function listRecords(appId, body = {}, fields = null) {
   const records = [];
   let offset = 0;
@@ -114,11 +116,21 @@ async function listRecords(appId, body = {}, fields = null) {
   while (true) {
     const payload = { limit, offset, ...body };
     if (fields) payload.fields = fields;
-    const res = await fetch(`${BASE_URL}/applications/${appId}/records/list/`, {
-      method: 'POST',
-      headers: HEADERS,
-      body: JSON.stringify(payload),
-    });
+    let res, retries = 0;
+    while (true) {
+      res = await fetch(`${BASE_URL}/applications/${appId}/records/list/`, {
+        method: 'POST',
+        headers: HEADERS,
+        body: JSON.stringify(payload),
+      });
+      if (res.status === 429) {
+        const wait = (2 ** retries) * 2000;
+        console.log(`  Rate limited — retrying in ${wait / 1000}s…`);
+        await sleep(wait);
+        retries++;
+        if (retries > 5) throw new Error(`Max retries exceeded for app ${appId}`);
+      } else break;
+    }
     if (!res.ok) {
       const text = await res.text();
       throw new Error(`API ${res.status} for app ${appId}: ${text.slice(0, 200)}`);
@@ -128,6 +140,7 @@ async function listRecords(appId, body = {}, fields = null) {
     const total = data.total ?? data.count ?? 0;
     offset += limit;
     if (offset >= total) break;
+    await sleep(500); // small delay between paginated requests
   }
   return records;
 }
@@ -163,14 +176,13 @@ function computeNkd(datePairs) {
 async function main() {
   console.log('Fetching SmartSuite data…');
 
-  const [projects, people, companies, stakeholders, dateRecs, budgetRecs] = await Promise.all([
-    listRecords(APPS.projects),
-    listRecords(APPS.people),
-    listRecords(APPS.companies),
-    listRecords(APPS.stakeholders),
-    listRecords(APPS.dates),
-    listRecords(APPS.budget),
-  ]);
+  // Sequential fetches to avoid rate limits (each waits for the previous)
+  const projects     = await listRecords(APPS.projects);    await sleep(1000);
+  const people       = await listRecords(APPS.people);       await sleep(1000);
+  const companies    = await listRecords(APPS.companies);    await sleep(1000);
+  const stakeholders = await listRecords(APPS.stakeholders); await sleep(1000);
+  const dateRecs     = await listRecords(APPS.dates);        await sleep(1000);
+  const budgetRecs   = await listRecords(APPS.budget);
 
   console.log(`Fetched: ${projects.length} projects, ${people.length} people, ${companies.length} companies`);
   console.log(`         ${stakeholders.length} stakeholders, ${dateRecs.length} date records, ${budgetRecs.length} budget items`);
@@ -219,14 +231,17 @@ async function main() {
     const coIds = proj.s828d7f9ef || [];
     const co    = coIds.length ? (companyById[coIds[0]] || '—') : '—';
 
-    // Dates
+    // Dates — include est/base/act for each event so the UI can show variance
     const projDateRecs = datesByProject[id] || [];
     const datePairs = [];
     for (const dr of projDateRecs) {
       const eventLabel = EVENT_MAP[dr.sc632a4d66] || dr.sc632a4d66 || '';
       if (!eventLabel) continue;
-      const d = bestDate(dr.s147d5462c, dr.s8ca756976, dr.s7c51ac6b5);
-      if (d) datePairs.push({ e: eventLabel, d });
+      const est  = dateVal(dr.s147d5462c);
+      const base = dateVal(dr.s8ca756976);
+      const act  = dateVal(dr.s7c51ac6b5);
+      const d    = act || base || est;
+      if (d) datePairs.push({ e: eventLabel, d, est, base, act });
     }
     datePairs.sort((a, b) => a.d.localeCompare(b.d));
     const nkd = computeNkd(datePairs);
