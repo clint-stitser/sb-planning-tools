@@ -527,7 +527,7 @@ function computeProjectCF(p){
     const cl=classifyRow(r,dm);
     const budMo=spreadMo((r.adj||r.b||0)*cl.sign,cl.sYM,cl.eYM,cl.type);
     const actMo=spreadMo((r.act||0)*cl.sign,cl.sYM,cl.eYM,cl.type);
-    if(!cl.sYM) warns.push(`"${r.a}": no spread date`);
+    if(!cl.sYM && cl.gl!=='gp_budget') warns.push(`"${r.a}": no spread date`);
     Object.keys(budMo).forEach(m=>mos.add(m));
     return{...r,cl,budMo,actMo};
   });
@@ -855,9 +855,12 @@ function renderIS(p){
   // COGS totals
   const totCOGSE=sE(byGL.cogs), totCOGSB=sB(byGL.cogs), totCOGSAdj=sAdj(byGL.cogs);
 
-  // Gross profit per column
-  const gpE=totRevE-totCOGSE, gpB=totRevB-totCOGSB, gpAdj=totRevAdj-totCOGSAdj;
+  // Gross profit — when no explicit COGS items, use the GP budget line item directly
+  const hasExplicitCOGS=byGL.cogs.length>0;
   const gpBudgetRef=byGL.gp_budget.length?sB(byGL.gp_budget):null;
+  const gpE   =hasExplicitCOGS?(totRevE-totCOGSE||null):null;
+  const gpB   =hasExplicitCOGS?(totRevB-totCOGSB):(gpBudgetRef??totRevB-totCOGSB);
+  const gpAdj =hasExplicitCOGS?(totRevAdj-totCOGSAdj||null):null;
 
   // OpEx / financing
   const totOpExB=sB(byGL.opex), totOpExAdj=sAdj(byGL.opex);
@@ -928,7 +931,7 @@ function renderIS(p){
 
   // Gross Profit — show budgeted GP as reference annotation if available
   const gpMargin=totRevB>0?(gpB/totRevB*100).toFixed(1):null;
-  const gpNote=gpBudgetRef?` · Budgeted GP: ${fmt(gpBudgetRef)}`:'';
+  const gpNote=hasExplicitCOGS&&gpBudgetRef?` · Budgeted GP: ${fmt(gpBudgetRef)}`:'';
   html+=gpLine('GROSS PROFIT',gpE||null,gpB||null,gpAdj||null,
     (gpMargin?`${gpMargin}% margin`:'')+gpNote,
     gpB>=0?'var(--green)':'var(--red)');

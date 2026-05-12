@@ -38,11 +38,19 @@ async function apiRequest(method, path, body) {
   };
   let retries = 0;
   while (true) {
-    const res = await fetch(`${BASE_URL}${path}`, {
-      method,
-      headers,
-      body: body ? JSON.stringify(body) : undefined,
-    });
+    const ac = new AbortController();
+    const timer = setTimeout(() => ac.abort(), 15000);
+    let res;
+    try {
+      res = await fetch(`${BASE_URL}${path}`, {
+        method, headers, signal: ac.signal,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+    } catch (e) {
+      clearTimeout(timer);
+      throw new Error(`Fetch failed (${e.name}): ${e.message}`);
+    }
+    clearTimeout(timer);
     if (res.status === 429) {
       const wait = (2 ** retries) * 2000;
       console.log(`  Rate limited — retrying in ${wait / 1000}s…`);
@@ -61,14 +69,17 @@ async function apiRequest(method, path, body) {
 async function listAll(appId) {
   const records = [];
   let offset = 0;
+  const limit = 100;
   while (true) {
     const data = await apiRequest('POST', `/applications/${appId}/records/list/`, {
-      limit: 100, offset,
+      limit, offset,
     });
-    records.push(...(data.items || []));
-    offset += data.count;
-    if (offset >= data.total) break;
-    await sleep(400);
+    const items = data.items || [];
+    records.push(...items);
+    const total = data.total ?? data.count ?? 0;
+    offset += limit;
+    if (offset >= total || items.length === 0) break;
+    await sleep(600);
   }
   return records;
 }
