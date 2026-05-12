@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stitser BUILT — Manpower Planner</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.31.0/dist/tabler-icons.min.css">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=DM+Sans:wght@400;500&display=swap');
+:root{
+  --bg:#F5F3EE;--srf:#FFF;--srf2:#F0EDE6;--bdr:#DDD9CF;--bdr2:#E8E4DB;
+  --tx:#1A1814;--tx2:#6B6560;--tx3:#9E9A94;
+  --blue:#1E4D8C;--blue-l:#EBF1FB;
+  --green:#2D6A3F;--green-l:#E6F4EA;
+  --orange:#B85C1A;--orange-l:#FDF0E6;
+  --yellow:#8A6B00;--yellow-l:#FDF8E6;
+  --red:#A81C1C;--red-l:#FDEBEB;
+  --purple:#5B3E8C;--purple-l:#F0EBFB;
+  --mono:'IBM Plex Mono',monospace;--sans:'DM Sans',sans-serif;
+  --row:36px;--name-w:160px;--mo-w:28px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:var(--sans);background:var(--bg);color:var(--tx);font-size:13px;}
+.hdr{background:var(--tx);color:#fff;padding:11px 18px;display:flex;align-items:center;justify-content:space-between;}
+.hdr-t{font-size:11px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;}
+.hdr-s{font-family:var(--mono);font-size:10px;color:#888;}
+/* toolbar */
+.toolbar{background:var(--srf);border-bottom:1px solid var(--bdr);padding:7px 14px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+.tl{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
+.pills{display:flex;gap:3px;flex-wrap:wrap;}
+.pill{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--bdr);background:var(--srf2);color:var(--tx2);transition:all .12s;white-space:nowrap;}
+.pill.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+.sep{width:1px;height:20px;background:var(--bdr);margin:0 2px;flex-shrink:0;}
+.toggle{display:flex;border:1px solid var(--bdr);border-radius:4px;overflow:hidden;}
+.tbtn{padding:3px 10px;font-size:11px;cursor:pointer;background:var(--srf2);color:var(--tx2);border:none;font-family:var(--sans);transition:all .12s;}
+.tbtn.on{background:var(--tx);color:#fff;}
+/* view toggle */
+#gantt-view, #heat-view{transition:opacity .15s;}
+/* main layout */
+.main{overflow-x:auto;padding:12px 14px;}
+/* GANTT */
+.gantt-wrap{min-width:900px;}
+.gantt-head{display:flex;border-bottom:2px solid var(--bdr);margin-bottom:0;position:sticky;top:0;background:var(--srf2);z-index:10;}
+.gantt-name-col{width:var(--name-w);min-width:var(--name-w);flex-shrink:0;padding:5px 8px;font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px;}
+.gantt-months{display:flex;flex:1;overflow:hidden;}
+.gantt-mo-hdr{flex:1;min-width:var(--mo-w);text-align:center;font-size:9px;font-weight:600;color:var(--tx3);padding:5px 0;white-space:nowrap;overflow:hidden;text-overflow:clip;}
+.gantt-mo-hdr.cur{color:var(--blue);font-weight:700;}
+.gantt-mo-hdr.yr-start{border-left:1px solid var(--bdr);}
+/* Person row group */
+.person-group{border-bottom:1px solid var(--bdr2);margin-bottom:2px;}
+.person-label{display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--srf2);cursor:pointer;border-top:1px solid var(--bdr);}
+.person-label:hover{background:var(--bdr2);}
+.person-name{font-size:12px;font-weight:500;width:var(--name-w);min-width:var(--name-w);flex-shrink:0;}
+.person-meta{font-size:10px;color:var(--tx2);display:flex;gap:8px;}
+.p-chev{font-size:10px;color:var(--tx3);transition:transform .12s;margin-left:auto;}
+.p-chev.open{transform:rotate(180deg);}
+.person-rows{display:none;}
+.person-rows.open{display:block;}
+/* Assignment row */
+.asgn-row{display:flex;align-items:center;height:var(--row);border-bottom:1px solid #F0EDE6;}
+.asgn-row:last-child{border-bottom:none;}
+.asgn-row:hover{background:#FAFAF7;}
+.asgn-name{width:var(--name-w);min-width:var(--name-w);flex-shrink:0;padding:0 8px;font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.asgn-name a{color:var(--blue);text-decoration:none;}
+.asgn-name a:hover{text-decoration:underline;}
+.asgn-timeline{flex:1;position:relative;height:var(--row);overflow:hidden;}
+.gantt-bar{position:absolute;top:8px;height:20px;border-radius:3px;opacity:.9;display:flex;align-items:center;padding:0 6px;font-size:9px;font-weight:500;color:#fff;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;transition:opacity .12s;}
+.gantt-bar:hover{opacity:1;}
+.gantt-cur-line{position:absolute;top:0;bottom:0;width:1px;background:var(--red);opacity:.5;pointer-events:none;z-index:5;}
+/* role colors */
+.r-pm{background:#1E4D8C;}
+.r-super{background:#2D6A3F;}
+.r-est{background:#8A6B00;}
+.r-pe{background:#5B3E8C;}
+.r-bdl{background:#B85C1A;}
+.r-other{background:#6B6560;}
+/* HEATMAP */
+.heat-wrap{min-width:700px;}
+.heat-head{display:flex;border-bottom:2px solid var(--bdr);background:var(--srf2);position:sticky;top:0;z-index:10;}
+.heat-name-col{width:var(--name-w);min-width:var(--name-w);flex-shrink:0;padding:5px 8px;font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;}
+.heat-months{display:flex;flex:1;}
+.heat-mo-hdr{flex:1;min-width:var(--mo-w);text-align:center;font-size:9px;font-weight:600;color:var(--tx3);padding:5px 0;}
+.heat-mo-hdr.cur{color:var(--blue);}
+.heat-mo-hdr.yr-start{border-left:1px solid var(--bdr);}
+.heat-person-row{display:flex;align-items:center;border-bottom:1px solid var(--bdr2);height:32px;}
+.heat-pname{width:var(--name-w);min-width:var(--name-w);flex-shrink:0;padding:0 8px;font-size:11px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.heat-cells{display:flex;flex:1;height:100%;}
+.heat-cell{flex:1;min-width:var(--mo-w);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:500;cursor:default;transition:opacity .1s;}
+.heat-cell:hover{opacity:.75;}
+.heat-cell.cur{outline:1px solid var(--red);outline-offset:-1px;}
+/* Load colors 0→max */
+.lc0{background:transparent;color:var(--tx3);}
+.lc1{background:#E6F1FB;color:#0C447C;}
+.lc2{background:#B5D4F4;color:#0C447C;}
+.lc3{background:#378ADD;color:#fff;}
+.lc4{background:#185FA5;color:#fff;}
+.lc5{background:#0C447C;color:#fff;}
+.lc6{background:#042C53;color:#fff;}
+/* tooltip */
+.tip{position:fixed;background:var(--tx);color:#fff;border-radius:4px;padding:6px 10px;font-size:11px;pointer-events:none;z-index:100;max-width:260px;display:none;line-height:1.5;}
+/* legend */
+.legend{display:flex;gap:12px;padding:6px 14px;background:var(--srf2);border-bottom:1px solid var(--bdr);flex-wrap:wrap;}
+.leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--tx2);}
+.leg-dot{width:10px;height:10px;border-radius:2px;}
+.hidden{display:none;}
+</style>
+</head>
+<body>
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Manpower planner showing project assignments per team member as a Gantt chart and monthly load heatmap</h2>
+<div class="hdr">
+  <a href="/" style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.55);font-size:11px;text-decoration:none;margin-right:16px;padding-right:16px;border-right:1px solid rgba(255,255,255,.15);white-space:nowrap;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.55)'">← Home</a>
+  <div class="hdr-t">Stitser BUILT · Manpower Planner</div>
+  <div class="hdr-s" id="mp-subtitle">May 2026 · role-scoped dates</div>
+</div>
+<div class="toolbar">
+  <span class="tl">Role</span>
+  <div class="pills" id="role-pills">
+    <div class="pill on" onclick="setRole(this,'ALL')">All</div>
+    <div class="pill" onclick="setRole(this,'Project Manager')">PM</div>
+    <div class="pill" onclick="setRole(this,'Superintendent')">Super</div>
+    <div class="pill" onclick="setRole(this,'Project Estimator')">Estimator</div>
+    <div class="pill" onclick="setRole(this,'Project Engineer')">Engineer</div>
+    <div class="pill" onclick="setRole(this,'Biz Dev Lead')">Biz Dev Lead</div>
+  </div>
+  <div class="sep"></div>
+  <span class="tl">Status</span>
+  <div class="pills" id="sg-pills">
+    <div class="pill on" onclick="setSg(this,'ALL')">All</div>
+    <div class="pill" onclick="setSg(this,'WIP')">WIP</div>
+    <div class="pill" onclick="setSg(this,'Active in Closeout & Warranty')">Closeout</div>
+    <div class="pill" onclick="setSg(this,'Pipeline')">Pipeline</div>
+    <div class="pill" onclick="setSg(this,'Hot')">Hot</div>
+    <div class="pill" onclick="setSg(this,'Warm')">Warm</div>
+    <div class="pill" onclick="setSg(this,'Nurture')">Nurture</div>
+    <div class="pill" onclick="setSg(this,'New Opportunity')">New Opp</div>
+  </div>
+  <div class="sep"></div>
+  <span class="tl">View</span>
+  <div class="toggle">
+    <button class="tbtn on" id="gantt-btn" onclick="setView('gantt')">Gantt</button>
+    <button class="tbtn" id="heat-btn" onclick="setView('heat')">Heatmap</button>
+  </div>
+  <div class="sep"></div>
+  <span class="tl">Year</span>
+  <div class="pills" id="yr-pills">
+    <div class="pill on" onclick="setYr(this,'ALL')">All</div>
+    <div class="pill" onclick="setYr(this,'2025')">2025</div>
+    <div class="pill" onclick="setYr(this,'2026')">2026</div>
+    <div class="pill" onclick="setYr(this,'2027')">2027</div>
+  </div>
+</div>
+<div class="legend">
+  <div class="leg-item"><div class="leg-dot" style="background:#1E4D8C"></div>Project Manager</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#2D6A3F"></div>Superintendent</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#8A6B00"></div>Estimator</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#5B3E8C"></div>Project Engineer</div>
+  <div class="leg-item"><div class="leg-dot" style="background:#B85C1A"></div>Biz Dev Lead</div>
+  <div class="leg-item" id="heat-legend" style="display:none;border-left:1px solid #ccc;padding-left:12px">
+    Load: <span style="padding:1px 6px;background:#E6F1FB;border-radius:2px;font-size:9px;color:#0C447C">1</span>
+    <span style="padding:1px 6px;background:#378ADD;border-radius:2px;font-size:9px;color:#fff">3–4</span>
+    <span style="padding:1px 6px;background:#042C53;border-radius:2px;font-size:9px;color:#fff">6+</span>
+  </div>
+</div>
+<div id="gantt-view" class="main"></div>
+<div id="heat-view" class="main hidden"></div>
+<div class="tip" id="tip"></div>
+
+<script>
+const RAW = {"people":[{"name":"Alyssa McDermott","total":26,"wd":23,"max":7,"hm":{"2025-01":4,"2025-02":3,"2025-03":3,"2025-04":4,"2025-05":3,"2025-06":1,"2025-07":0,"2025-08":2,"2025-09":2,"2025-10":2,"2025-11":0,"2025-12":0,"2026-01":0,"2026-02":0,"2026-03":0,"2026-04":0,"2026-05":0,"2026-06":0,"2026-07":0,"2026-08":0,"2026-09":0,"2026-10":0,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"5591 BARCELONA COURT SPARKS NV 89436","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dbc","role":"Project Estimator","s":"2024-03-09","e":"2024-05-09","hd":true,"inv":0},{"n":"684 CARSON RIVER DR FALLON NV 89408","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dae","role":"Project Estimator","s":"2024-03-10","e":"2024-05-10","hd":true,"inv":0},{"n":"888 DRESSLERVILLE LANE GARDNERVILLE NV 89410","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db3","role":"Project Estimator","s":"2024-06-21","e":"2024-08-21","hd":true,"inv":0},{"n":"208 RHODES ROAD RENO NV 89521","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dba","role":"Project Estimator","s":"2024-07-20","e":"2024-09-20","hd":true,"inv":0},{"n":"6265 CHIMNEY DRIVE SUN VALLEY NV 89433","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db6","role":"Project Estimator","s":"2024-07-26","e":"2024-09-26","hd":true,"inv":0},{"n":"328 LORRAINE COURT RENO NV 89509","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db7","role":"Project Estimator","s":"2024-08-10","e":"2024-10-10","hd":true,"inv":0},{"n":"5310 DESERT LANE STAGECOACH NV 89429","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db2","role":"Project Estimator","s":"2024-08-11","e":"2024-10-11","hd":true,"inv":0},{"n":"22 N RAINBOW DRIVE DAYTON NV 89403","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db9","role":"Project Estimator","s":"2024-08-24","e":"2024-10-24","hd":true,"inv":0},{"n":"3180 DALLAS DR FALLON NV 89406","sg":"Closeout & Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dac","role":"Project Estimator","s":"2024-09-08","e":"2024-11-08","hd":true,"inv":0},{"n":"3225 BRYAN ST RENO NV 89503","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dbb","role":"Project Estimator","s":"2024-09-27","e":"2024-11-27","hd":true,"inv":0},{"n":"5015 RENO HIGHWAY FALLON NV 89406","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dbd","role":"Project Estimator","s":"2024-10-04","e":"2024-12-04","hd":true,"inv":0},{"n":"750 BARON LANE FERNLEY NV 89408","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db4","role":"Project Estimator","s":"2024-11-30","e":"2025-01-31","hd":true,"inv":0},{"n":"637 Pleasant Vista Drive, Reno, NV 89506","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db8","role":"Project Estimator","s":"2024-11-30","e":"2025-01-31","hd":true,"inv":0},{"n":"19 Sandefer Lane Dayton NV 89403","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dad","role":"Project Estimator","s":"2024-12-27","e":"2025-02-27","hd":true,"inv":0},{"n":"921 CRAIGMONT DRIVE RENO NV 89511","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db5","role":"Project Estimator","s":"2024-12-28","e":"2025-02-28","hd":true,"inv":0},{"n":"8959 RED BARON BLVD RENO NV 89506","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db1","role":"Project Estimator","s":"2025-02-15","e":"2025-04-15","hd":true,"inv":0},{"n":"6466 POWERLINE ROAD FALLON NV 89406","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617daf","role":"Project Estimator","s":"2025-03-19","e":"2025-05-19","hd":true,"inv":0},{"n":"439 Beau Court Sparks NV","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db0","role":"Project Estimator","s":"2025-03-23","e":"2025-05-23","hd":true,"inv":0},{"n":"14555 Carson Highway, Fallon, NV 89406","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dab","role":"Project Estimator","s":"2025-04-26","e":"2025-06-26","hd":true,"inv":0},{"n":"4925 Cheyenne Trail Stagecoach NV 89429","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617da6","role":"Project Estimator","s":"2025-08-15","e":"2025-08-15","hd":true,"inv":281953},{"n":"680 ROWE PLACE WASHOE COUNTY NV 89441","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617daa","role":"Project Estimator","s":"2025-08-31","e":"2025-10-31","hd":true,"inv":1076261},{"n":"10300 N Virginia St, Reno, NV 89506","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7ab6c9ab6299b68bdae9f","role":"Project Estimator","s":"2025-09-04","e":"2025-09-04","hd":true,"inv":377664},{"n":"9555 Fleetwood Dr Reno NV 89506","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617da5","role":"Project Estimator","s":"2025-10-23","e":"2025-10-23","hd":true,"inv":475651},{"n":"Land/Home - Jakob Powers","sg":"Declined or Not Viable","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=690146f493e777aad5bfe6c3","role":"Project Estimator","s":null,"e":null,"hd":false,"inv":450000},{"n":"5294 Leon Dr, Sun Valley, NV 89433","sg":"Declined or Not Viable","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69010a018376f0e4f98045cd","role":"Project Estimator","s":null,"e":null,"hd":false,"inv":250000},{"n":"2286 HAYFIELD","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=695ec76b8cfe5d75510f7869","role":"Biz Dev Lead","s":null,"e":null,"hd":false,"inv":22386}]},{"name":"Amy Burkett","total":3,"wd":2,"max":2,"hm":{"2025-01":1,"2025-02":1,"2025-03":1,"2025-04":2,"2025-05":2,"2025-06":2,"2025-07":2,"2025-08":2,"2025-09":2,"2025-10":2,"2025-11":2,"2025-12":2,"2026-01":2,"2026-02":2,"2026-03":2,"2026-04":1,"2026-05":1,"2026-06":1,"2026-07":1,"2026-08":1,"2026-09":1,"2026-10":1,"2026-11":1,"2026-12":1,"2027-01":1,"2027-02":1,"2027-03":1,"2027-04":1,"2027-05":1,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"Coldstream Commercial (Parcels 1 & 2)-Shell","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68950d7d2f781ab6c41ed2e3","role":"Project Engineer","s":"2024-09-15","e":"2026-03-01","hd":true,"inv":5000000},{"n":"0 Riverside Dr. (RFP)","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68950d7d2f781ab6c41ed2e2","role":"Project Engineer","s":"2025-04-01","e":"2027-05-31","hd":true,"inv":25000000},{"n":"SSJ-Master Parcel Project","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68950d7d2f781ab6c41ed2e4","role":"Project Engineer","s":null,"e":null,"hd":false,"inv":0}]},{"name":"Amy Roberts","total":5,"wd":4,"max":2,"hm":{"2025-01":0,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":0,"2025-06":0,"2025-07":0,"2025-08":0,"2025-09":0,"2025-10":0,"2025-11":0,"2025-12":1,"2026-01":0,"2026-02":2,"2026-03":1,"2026-04":2,"2026-05":1,"2026-06":1,"2026-07":1,"2026-08":0,"2026-09":0,"2026-10":0,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"ML-3366 Swill Wall Infill","sg":"Closeout & Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=6938d6b59883bb8a03730550","role":"Project Engineer","s":"2025-12-02","e":"2025-12-12","hd":true,"inv":2525},{"n":"245 E. Liberty Street- Suite 300","sg":"WIP","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68967dbdb7c34984fd2e3639","role":"Project Manager","s":"2026-02-01","e":"2026-04-01","hd":true,"inv":359992},{"n":"Squeeze Inn @ RED (TI Hardbid)","sg":"WIP","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=687fbda0097f7311a3912603","role":"Project Estimator","s":"2026-02-21","e":"2026-02-21","hd":true,"inv":499493},{"n":"Land Ocean Patio Enclosure - 13697 S. Virginia","sg":"Declined or Not Viable","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=695e62efb4ee2554ff5add10","role":"Project Engineer","s":"2026-04-27","e":"2026-07-27","hd":true,"inv":350000},{"n":"Reprotech - 1950 McCarran Blvd","sg":"Job Lost","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=6948aac9ec61bb0477c6d90f","role":"Project Engineer","s":null,"e":null,"hd":false,"inv":2541139}]},{"name":"Ashley Wheaton","total":24,"wd":21,"max":4,"hm":{"2025-01":0,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":0,"2025-06":0,"2025-07":0,"2025-08":0,"2025-09":0,"2025-10":2,"2025-11":1,"2025-12":3,"2026-01":2,"2026-02":2,"2026-03":1,"2026-04":3,"2026-05":3,"2026-06":4,"2026-07":1,"2026-08":1,"2026-09":0,"2026-10":0,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"MB Ranch Complete (Formerly Bunk Move)","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68f01375123d471c5e7c810b","role":"Project Estimator","s":"2025-10-20","e":"2025-10-20","hd":true,"inv":672348},{"n":"I80w Phase 2 Office TI-Dermody","sg":"Job Lost","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=689c9b2545cfd31df16e39e7","role":"Project Estimator","s":"2025-10-30","e":"2025-10-30","hd":true,"inv":1000000},{"n":"COMO Restaurant","sg":"Closeout & Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68e047cd5faf967cc4e5dfba","role":"Project Estimator","s":"2025-11-03","e":"2025-11-03","hd":true,"inv":250000},{"n":"ML-3366 Swill Wall Infill","sg":"Closeout & Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=6938d6b59883bb8a03730550","role":"Project Estimator","s":"2025-12-02","e":"2025-12-02","hd":true,"inv":2525},{"n":"3370-3378 Lakeside Ct","sg":"WIP","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68cc5ac9ee76aab5c6dbd602","role":"Project Estimator","s":"2025-12-08","e":"2025-12-08","hd":true,"inv":191834},{"n":"3350 Lakeside Court-Pilates","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=689e3967d23474d8ddcbf405","role":"Project Estimator","s":"2025-12-08","e":"2025-12-08","hd":true,"inv":205192},{"n":"ML-3368 Yarn Refuge Plumbing Repairs","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=6966b102cb97a197c9324480","role":"Project Engineer","s":"2026-01-07","e":"2026-01-17","hd":true,"inv":4654},{"n":"245 Liberty #230 - Mercantile Land and Services","sg":"Job Lost","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=6938d74ad849c57615cecc6b","role":"Project Estimator","s":"2026-01-12","e":"2026-01-12","hd":true,"inv":200000},{"n":"245 E. Liberty Street- Suite 300","sg":"WIP","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68967dbdb7c34984fd2e3639","role":"Biz Dev Lead","s":"2026-02-01","e":"2026-04-01","hd":true,"inv":359992},{"n":"245 E. Liberty Street- Suite 300","sg":"WIP","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68967dbdb7c34984fd2e3639","role":"Project Estimator","s":"2026-02-01","e":"2026-02-01","hd":true,"inv":359992},{"n":"Reforma @ Living Stones","sg":"Job Lost","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68f6d556550bd21779e7df46","role":"Project Estimator","s":"2026-04-01","e":"2026-04-01","hd":true,"inv":6000000},{"n":"Land Ocean Patio Enclosure - 13697 S. Virginia","sg":"Declined or Not Viable","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=695e62efb4ee2554ff5add10","role":"Project Estimator","s":"2026-04-27","e":"2026-04-27","hd":true,"inv":350000},{"n":"Incline Village Bakery","sg":"Pipeline","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68967dd099ab5da84b2232ed","role":"Project Estimator","s":"2026-05-11","e":"2026-05-11","hd":true,"inv":2633924},{"n":"Full Belly Deli - 9333 Double R","sg":"Pipeline","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69684bb8dba2dada3c79b81d","role":"Project Estimator","s":"2026-05-11","e":"2026-05-11","hd":true,"inv":125000},{"n":"Pianetta Remodel","sg":"Biz Dev","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68dc6e76f1d079273340d409","role":"Project Estimator","s":"2026-05-26","e":"2026-05-26","hd":true,"inv":25000},{"n":"Wyld Ivy Salon Suites - 855 W. 7th","sg":"Job Lost","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69d535c2e98fa139e3e696f5","role":"Project Estimator","s":"2026-06-01","e":"2026-06-01","hd":true,"inv":819268},{"n":"Electric Pickle @ RED","sg":"Job Lost","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=688efc4ef34dc706cd118ffd","role":"Project Estimator","s":"2026-06-01","e":"2026-06-01","hd":true,"inv":7375653},{"n":"651  4th St - Restaurant TI","sg":"Pipeline","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68967dc8d4a7093cda6d910f","role":"Project Estimator","s":"2026-06-01","e":"2026-06-01","hd":true,"inv":339682},{"n":"3376 Lakeside Ct. Shell","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69f0fc44486ccf6bb906a44d","role":"Project Estimator","s":"2026-06-15","e":"2026-06-15","hd":true,"inv":30000},{"n":"TBD Nail Salon - 3462 Lakeside Dr.","sg":"Pipeline","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69dd14674b97ea0f2d3bce25","role":"Project Estimator","s":"2026-07-01","e":"2026-07-01","hd":true,"inv":135000},{"n":"3370 Lakeside Ct. Shell","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69f0fc3a344904e5b6e881c6","role":"Project Estimator","s":"2026-08-15","e":"2026-08-15","hd":true,"inv":100000},{"n":"United Health - Admin Space TI - 2345 E. Prater","sg":"Job Lost","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=6966b19d464b47ef914dab48","role":"Project Estimator","s":null,"e":null,"hd":false,"inv":1502458},{"n":"ML-3358/3362 Salon Rom","sg":"Declined or Not Viable","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=698e548a2b7689f98e383f9d","role":"Project Estimator","s":null,"e":null,"hd":false,"inv":100000},{"n":"5441 Kiezke Lane-TI","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=698b782ed8f5f9b78056addd","role":"Project Estimator","s":null,"e":null,"hd":false,"inv":2087598}]},{"name":"Bryce Phillips","total":1,"wd":1,"max":1,"hm":{"2025-01":1,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":0,"2025-06":0,"2025-07":0,"2025-08":0,"2025-09":0,"2025-10":0,"2025-11":0,"2025-12":0,"2026-01":0,"2026-02":0,"2026-03":0,"2026-04":0,"2026-05":0,"2026-06":0,"2026-07":0,"2026-08":0,"2026-09":0,"2026-10":0,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"Evolution Projects in Tahoe City-Phase 3 (Ground U","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68950d7d2f781ab6c41ed2e6","role":"Project Manager","s":"2024-05-01","e":"2025-01-31","hd":true,"inv":2500000}]},{"name":"Casey Albin","total":7,"wd":7,"max":3,"hm":{"2025-01":0,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":0,"2025-06":1,"2025-07":1,"2025-08":2,"2025-09":2,"2025-10":3,"2025-11":2,"2025-12":3,"2026-01":3,"2026-02":0,"2026-03":0,"2026-04":0,"2026-05":1,"2026-06":2,"2026-07":1,"2026-08":1,"2026-09":1,"2026-10":1,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"Nordic Ice Expansion","sg":"Closeout & Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=689236db0a19996121b6ee81","role":"Project Manager","s":"2025-06-02","e":"2025-10-31","hd":true,"inv":712979},{"n":"677 Virginia St. Restaurant TI","sg":"WIP","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=688ef9d1eb5a559ff9f8fea9","role":"Project Manager","s":"2025-08-25","e":"2026-01-18","hd":true,"inv":1643320},{"n":"MB Ranch Complete (Formerly Bunk Move)","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68f01375123d471c5e7c810b","role":"Project Manager","s":"2025-10-20","e":"2025-11-19","hd":true,"inv":672348},{"n":"3350 Lakeside Court-Pilates","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=689e3967d23474d8ddcbf405","role":"Project Engineer","s":"2025-12-08","e":"2026-01-08","hd":true,"inv":205192},{"n":"3370-3378 Lakeside Ct","sg":"WIP","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68cc5ac9ee76aab5c6dbd602","role":"Project Manager","s":"2025-12-08","e":"2026-01-12","hd":true,"inv":191834},{"n":"Pianetta Remodel","sg":"Biz Dev","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68dc6e76f1d079273340d409","role":"Project Manager","s":"2026-05-26","e":"2026-06-02","hd":true,"inv":25000},{"n":"Wyld Ivy Salon Suites - 855 W. 7th","sg":"Job Lost","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69d535c2e98fa139e3e696f5","role":"Project Manager","s":"2026-06-01","e":"2026-10-01","hd":true,"inv":819268}]},{"name":"Clint Stitser","total":5,"wd":5,"max":2,"hm":{"2025-01":0,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":0,"2025-06":0,"2025-07":0,"2025-08":0,"2025-09":0,"2025-10":2,"2025-11":1,"2025-12":2,"2026-01":2,"2026-02":0,"2026-03":0,"2026-04":1,"2026-05":0,"2026-06":0,"2026-07":0,"2026-08":1,"2026-09":0,"2026-10":0,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"3915 Innsbruck Refresh","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68f022d2e1030933c74036c3","role":"Project Estimator","s":"2025-10-20","e":"2025-10-20","hd":true,"inv":35000},{"n":"I80w Phase 2 Office TI-Dermody","sg":"Job Lost","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=689c9b2545cfd31df16e39e7","role":"Biz Dev Lead","s":"2025-10-30","e":"2026-01-30","hd":true,"inv":1000000},{"n":"3350 Lakeside Court-Pilates","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=689e3967d23474d8ddcbf405","role":"Biz Dev Lead","s":"2025-12-08","e":"2026-01-08","hd":true,"inv":205192},{"n":"Van Guilder - 9222 Wild Skies Ct | Reno Sale","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69f28f6c474594ab1e4ea98f","role":"Biz Dev Lead","s":"2026-04-29","e":"2026-04-29","hd":true,"inv":0},{"n":"Van Guilder - Incline Village / NV Tahoe Purchase","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69f28f7756ec9dc13622dcc9","role":"Biz Dev Lead","s":"2026-08-01","e":"2026-08-01","hd":true,"inv":0}]},{"name":"Gino Perano","total":1,"wd":1,"max":1,"hm":{"2025-01":0,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":0,"2025-06":0,"2025-07":0,"2025-08":0,"2025-09":1,"2025-10":1,"2025-11":1,"2025-12":1,"2026-01":1,"2026-02":1,"2026-03":1,"2026-04":1,"2026-05":1,"2026-06":1,"2026-07":0,"2026-08":0,"2026-09":0,"2026-10":0,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"Cold Stream Sales","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68d1a0364f96439d527aa1c2","role":"Biz Dev Lead","s":"2025-09-01","e":"2026-06-30","hd":true,"inv":17734023}]},{"name":"Haley Paulsen","total":27,"wd":23,"max":7,"hm":{"2025-01":4,"2025-02":3,"2025-03":3,"2025-04":4,"2025-05":3,"2025-06":1,"2025-07":0,"2025-08":2,"2025-09":3,"2025-10":4,"2025-11":3,"2025-12":1,"2026-01":0,"2026-02":0,"2026-03":0,"2026-04":0,"2026-05":0,"2026-06":0,"2026-07":0,"2026-08":0,"2026-09":0,"2026-10":0,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"5591 BARCELONA COURT SPARKS NV 89436","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dbc","role":"Project Manager","s":"2024-03-09","e":"2024-05-09","hd":true,"inv":0},{"n":"684 CARSON RIVER DR FALLON NV 89408","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dae","role":"Project Manager","s":"2024-03-10","e":"2024-05-10","hd":true,"inv":0},{"n":"888 DRESSLERVILLE LANE GARDNERVILLE NV 89410","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db3","role":"Project Manager","s":"2024-06-21","e":"2024-08-21","hd":true,"inv":0},{"n":"208 RHODES ROAD RENO NV 89521","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dba","role":"Project Manager","s":"2024-07-20","e":"2024-09-20","hd":true,"inv":0},{"n":"6265 CHIMNEY DRIVE SUN VALLEY NV 89433","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db6","role":"Project Manager","s":"2024-07-26","e":"2024-09-26","hd":true,"inv":0},{"n":"328 LORRAINE COURT RENO NV 89509","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db7","role":"Project Manager","s":"2024-08-10","e":"2024-10-10","hd":true,"inv":0},{"n":"5310 DESERT LANE STAGECOACH NV 89429","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db2","role":"Project Manager","s":"2024-08-11","e":"2024-10-11","hd":true,"inv":0},{"n":"22 N RAINBOW DRIVE DAYTON NV 89403","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db9","role":"Project Manager","s":"2024-08-24","e":"2024-10-24","hd":true,"inv":0},{"n":"3180 DALLAS DR FALLON NV 89406","sg":"Closeout & Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dac","role":"Project Manager","s":"2024-09-08","e":"2024-11-08","hd":true,"inv":0},{"n":"3225 BRYAN ST RENO NV 89503","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dbb","role":"Project Manager","s":"2024-09-27","e":"2024-11-27","hd":true,"inv":0},{"n":"5015 RENO HIGHWAY FALLON NV 89406","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dbd","role":"Project Manager","s":"2024-10-04","e":"2024-12-04","hd":true,"inv":0},{"n":"750 BARON LANE FERNLEY NV 89408","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db4","role":"Project Manager","s":"2024-11-30","e":"2025-01-31","hd":true,"inv":0},{"n":"637 Pleasant Vista Drive, Reno, NV 89506","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db8","role":"Project Manager","s":"2024-11-30","e":"2025-01-31","hd":true,"inv":0},{"n":"19 Sandefer Lane Dayton NV 89403","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dad","role":"Project Manager","s":"2024-12-27","e":"2025-02-27","hd":true,"inv":0},{"n":"921 CRAIGMONT DRIVE RENO NV 89511","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db5","role":"Project Manager","s":"2024-12-28","e":"2025-02-28","hd":true,"inv":0},{"n":"8959 RED BARON BLVD RENO NV 89506","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db1","role":"Project Manager","s":"2025-02-15","e":"2025-04-15","hd":true,"inv":0},{"n":"6466 POWERLINE ROAD FALLON NV 89406","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617daf","role":"Project Manager","s":"2025-03-19","e":"2025-05-19","hd":true,"inv":0},{"n":"439 Beau Court Sparks NV","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617db0","role":"Project Manager","s":"2025-03-23","e":"2025-05-23","hd":true,"inv":0},{"n":"14555 Carson Highway, Fallon, NV 89406","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dab","role":"Project Manager","s":"2025-04-26","e":"2025-06-26","hd":true,"inv":0},{"n":"4925 Cheyenne Trail Stagecoach NV 89429","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617da6","role":"Project Manager","s":"2025-08-15","e":"2025-11-28","hd":true,"inv":281953},{"n":"680 ROWE PLACE WASHOE COUNTY NV 89441","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617daa","role":"Project Manager","s":"2025-08-31","e":"2025-10-31","hd":true,"inv":1076261},{"n":"10300 N Virginia St, Reno, NV 89506","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7ab6c9ab6299b68bdae9f","role":"Project Manager","s":"2025-09-04","e":"2025-11-28","hd":true,"inv":377664},{"n":"9555 Fleetwood Dr Reno NV 89506","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617da5","role":"Biz Dev Lead","s":"2025-10-23","e":"2025-12-30","hd":true,"inv":475651},{"n":"Land/Home - Jakob Powers","sg":"Declined or Not Viable","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=690146f493e777aad5bfe6c3","role":"Project Manager","s":null,"e":null,"hd":false,"inv":450000},{"n":"5294 Leon Dr, Sun Valley, NV 89433","sg":"Declined or Not Viable","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69010a018376f0e4f98045cd","role":"Project Manager","s":null,"e":null,"hd":false,"inv":250000},{"n":"2286 HAYFIELD","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=695ec76b8cfe5d75510f7869","role":"Project Manager","s":null,"e":null,"hd":false,"inv":22386},{"n":"755/765 Douglas Fallon NV 89406 (220 Ferguson)","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68a7b20ca875efbf66617dc8","role":"Project Engineer","s":null,"e":null,"hd":false,"inv":329979}]},{"name":"Jim Kaplan","total":1,"wd":1,"max":1,"hm":{"2025-01":0,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":0,"2025-06":0,"2025-07":0,"2025-08":0,"2025-09":0,"2025-10":0,"2025-11":0,"2025-12":0,"2026-01":0,"2026-02":0,"2026-03":0,"2026-04":0,"2026-05":0,"2026-06":0,"2026-07":0,"2026-08":0,"2026-09":0,"2026-10":0,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":1,"2027-06":1,"2027-07":1,"2027-08":1,"2027-09":1,"2027-10":1,"2027-11":1,"2027-12":1},"assignments":[{"n":"Kings Beach Mixed Use","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=689f976d1b245c19be4ff27d","role":"Project Manager","s":"2027-05-01","e":"2029-05-01","hd":true,"inv":30000000}]},{"name":"Justin Burns","total":1,"wd":1,"max":1,"hm":{"2025-01":0,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":0,"2025-06":0,"2025-07":0,"2025-08":1,"2025-09":1,"2025-10":1,"2025-11":1,"2025-12":1,"2026-01":1,"2026-02":0,"2026-03":0,"2026-04":0,"2026-05":0,"2026-06":0,"2026-07":0,"2026-08":0,"2026-09":0,"2026-10":0,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"677 Virginia St. Restaurant TI","sg":"WIP","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=688ef9d1eb5a559ff9f8fea9","role":"Superintendent","s":"2025-08-25","e":"2026-01-18","hd":true,"inv":1643320}]},{"name":"Kip Thompson","total":5,"wd":5,"max":1,"hm":{"2025-01":0,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":0,"2025-06":0,"2025-07":0,"2025-08":0,"2025-09":0,"2025-10":0,"2025-11":0,"2025-12":0,"2026-01":0,"2026-02":0,"2026-03":0,"2026-04":0,"2026-05":0,"2026-06":0,"2026-07":0,"2026-08":0,"2026-09":0,"2026-10":0,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"Eagle Windows TI","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68950d7d2f781ab6c41ed38c","role":"Project Estimator","s":"2024-02-01","e":"2024-02-01","hd":true,"inv":511900},{"n":"Evolution Projects in Tahoe City-Phase 3 (Ground U","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68950d7d2f781ab6c41ed2e6","role":"Project Estimator","s":"2024-05-01","e":"2024-05-01","hd":true,"inv":2500000},{"n":"Sullivan Lane TIs","sg":"Old-Acquired/Pre-Con","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68950d7d2f781ab6c41ed2e7","role":"Project Estimator","s":"2024-06-17","e":"2024-06-17","hd":true,"inv":325000},{"n":"Eagle Windows Phase 2","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68950d7d2f781ab6c41ed38d","role":"Project Estimator","s":"2024-08-01","e":"2024-08-01","hd":true,"inv":130000},{"n":"Coldstream Commercial (Parcels 1 & 2)-Shell","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68950d7d2f781ab6c41ed2e3","role":"Project Estimator","s":"2024-09-15","e":"2024-09-15","hd":true,"inv":5000000}]},{"name":"Kurt Stitser","total":2,"wd":1,"max":1,"hm":{"2025-01":0,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":0,"2025-06":0,"2025-07":0,"2025-08":0,"2025-09":1,"2025-10":1,"2025-11":1,"2025-12":1,"2026-01":0,"2026-02":0,"2026-03":0,"2026-04":0,"2026-05":0,"2026-06":0,"2026-07":0,"2026-08":0,"2026-09":0,"2026-10":0,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"Cisco Grove Campground Waste Water Building","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68967dbf6f5e501eeb2b6b96","role":"Biz Dev Lead","s":"2025-09-12","e":"2025-12-12","hd":true,"inv":932360},{"n":"Spa Benefits / 9000sf Spa & Nail salon - Kiley Ran","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68432d7a280ed51df6a7982f","role":"Biz Dev Lead","s":null,"e":null,"hd":false,"inv":1800000}]},{"name":"Matt Fettig","total":1,"wd":1,"max":1,"hm":{"2025-01":0,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":0,"2025-06":0,"2025-07":0,"2025-08":0,"2025-09":0,"2025-10":0,"2025-11":0,"2025-12":1,"2026-01":0,"2026-02":0,"2026-03":0,"2026-04":0,"2026-05":0,"2026-06":0,"2026-07":0,"2026-08":0,"2026-09":0,"2026-10":0,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"SSJ-Master Parcel Project","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68950d7d2f781ab6c41ed2e4","role":"Biz Dev Lead","s":"2025-12-02","e":"2025-12-02","hd":true,"inv":0}]},{"name":"Toby Albin","total":13,"wd":12,"max":4,"hm":{"2025-01":1,"2025-02":1,"2025-03":1,"2025-04":1,"2025-05":1,"2025-06":3,"2025-07":4,"2025-08":4,"2025-09":2,"2025-10":4,"2025-11":4,"2025-12":4,"2026-01":3,"2026-02":1,"2026-03":1,"2026-04":1,"2026-05":2,"2026-06":4,"2026-07":3,"2026-08":3,"2026-09":3,"2026-10":1,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"Lot 14B - CS1 - 13222 Cold Creek Circle","sg":"Biz Dev","co":"SPI","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081db","role":"Biz Dev Lead","s":"2024-06-15","e":"2026-10-30","hd":true,"inv":2111186},{"n":"Lot 14B - CS1 - 13222 Cold Creek Circle","sg":"Biz Dev","co":"SPI","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081db","role":"Project Estimator","s":"2024-06-15","e":"2024-06-15","hd":true,"inv":2111186},{"n":"Nordic Ice Expansion","sg":"Closeout & Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=689236db0a19996121b6ee81","role":"Superintendent","s":"2025-06-02","e":"2025-10-31","hd":true,"inv":712979},{"n":"651 E. 4th Street Shell","sg":"Closeout & Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=689236c90d3f92bcdc8f4b95","role":"Superintendent","s":"2025-06-11","e":"2025-08-08","hd":true,"inv":256075},{"n":"LL-Country Creamery","sg":"Closeout & Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=6892387dc359faea893d0b0f","role":"Superintendent","s":"2025-07-09","e":"2025-08-29","hd":true,"inv":337109},{"n":"MB Ranch Complete (Formerly Bunk Move)","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68f01375123d471c5e7c810b","role":"Superintendent","s":"2025-10-20","e":"2025-11-19","hd":true,"inv":672348},{"n":"I80w Phase 2 Office TI-Dermody","sg":"Job Lost","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=689c9b2545cfd31df16e39e7","role":"Superintendent","s":"2025-10-30","e":"2026-01-30","hd":true,"inv":1000000},{"n":"COMO Restaurant","sg":"Closeout & Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68e047cd5faf967cc4e5dfba","role":"Superintendent","s":"2025-11-03","e":"2025-12-17","hd":true,"inv":250000},{"n":"3350 Lakeside Court-Pilates","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=689e3967d23474d8ddcbf405","role":"Superintendent","s":"2025-12-08","e":"2026-01-08","hd":true,"inv":205192},{"n":"Pianetta Remodel","sg":"Biz Dev","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68dc6e76f1d079273340d409","role":"Superintendent","s":"2026-05-26","e":"2026-06-02","hd":true,"inv":25000},{"n":"Electric Pickle @ RED","sg":"Job Lost","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=688efc4ef34dc706cd118ffd","role":"Superintendent","s":"2026-06-01","e":"2026-09-01","hd":true,"inv":7375653},{"n":"651  4th St - Restaurant TI","sg":"Pipeline","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68967dc8d4a7093cda6d910f","role":"Superintendent","s":"2026-06-01","e":"2026-09-01","hd":true,"inv":339682},{"n":"5441 Kiezke Lane-TI","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=698b782ed8f5f9b78056addd","role":"Project Manager","s":null,"e":null,"hd":false,"inv":2087598}]},{"name":"Tom Sinatra","total":12,"wd":12,"max":6,"hm":{"2025-01":3,"2025-02":2,"2025-03":2,"2025-04":2,"2025-05":2,"2025-06":2,"2025-07":2,"2025-08":2,"2025-09":4,"2025-10":4,"2025-11":4,"2025-12":5,"2026-01":6,"2026-02":5,"2026-03":5,"2026-04":4,"2026-05":3,"2026-06":5,"2026-07":4,"2026-08":4,"2026-09":4,"2026-10":3,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"Lot 8 - CS1 - 12993 Winter Camp Way","sg":"WIP","co":"PC-1","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081b0","role":"Project Manager","s":"2023-04-22","e":"2023-06-22","hd":true,"inv":839178},{"n":"Evolution Projects in Tahoe City-Phase 3 (Ground U","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68950d7d2f781ab6c41ed2e6","role":"Project Manager","s":"2024-05-01","e":"2025-01-31","hd":true,"inv":2500000},{"n":"Lot 14B - CS1 - 13222 Cold Creek Circle","sg":"Biz Dev","co":"SPI","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081db","role":"Project Manager","s":"2024-06-15","e":"2026-10-01","hd":true,"inv":2111186},{"n":"Lot 14B - CS1 - 13222 Cold Creek Circle","sg":"Biz Dev","co":"SPI","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081db","role":"Project Manager","s":"2024-06-15","e":"2026-10-01","hd":true,"inv":2111186},{"n":"Cold Stream Sales","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68d1a0364f96439d527aa1c2","role":"Project Manager","s":"2025-09-01","e":"2026-06-30","hd":true,"inv":17734023},{"n":"California Building Remodel FM1001B WA-2025-152","sg":"Closeout & Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=686dff988e32f4880f6848ea","role":"Project Manager","s":"2025-09-17","e":"2026-01-09","hd":true,"inv":936543},{"n":"3350 Lakeside Court-Pilates","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=689e3967d23474d8ddcbf405","role":"Project Manager","s":"2025-12-08","e":"2026-01-08","hd":true,"inv":205192},{"n":"Squeeze Inn @ RED (Shell)","sg":"WIP","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=687fbd6dca32ec50cc52d449","role":"Project Manager","s":"2026-01-26","e":"2026-03-09","hd":true,"inv":284664},{"n":"Squeeze Inn @ RED (TI Hardbid)","sg":"WIP","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=687fbda0097f7311a3912603","role":"Project Manager","s":"2026-02-21","e":"2026-04-21","hd":true,"inv":499493},{"n":"651  4th St - Restaurant TI","sg":"Pipeline","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68967dc8d4a7093cda6d910f","role":"Project Manager","s":"2026-06-01","e":"2026-09-01","hd":true,"inv":339682},{"n":"3376 Lakeside Ct. Shell","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69f0fc44486ccf6bb906a44d","role":"Project Manager","s":"2026-06-15","e":"2026-07-15","hd":true,"inv":30000},{"n":"3370 Lakeside Ct. Shell","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69f0fc3a344904e5b6e881c6","role":"Project Manager","s":"2026-08-15","e":"2026-10-15","hd":true,"inv":100000}]},{"name":"Tommy Trause","total":1,"wd":1,"max":1,"hm":{"2025-01":1,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":0,"2025-06":0,"2025-07":0,"2025-08":0,"2025-09":0,"2025-10":0,"2025-11":0,"2025-12":0,"2026-01":0,"2026-02":0,"2026-03":0,"2026-04":0,"2026-05":0,"2026-06":0,"2026-07":0,"2026-08":0,"2026-09":0,"2026-10":0,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"Evolution Projects in Tahoe City-Phase 3 (Ground U","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68950d7d2f781ab6c41ed2e6","role":"Project Manager","s":"2024-05-01","e":"2025-01-31","hd":true,"inv":2500000}]},{"name":"Zach Roullier","total":27,"wd":25,"max":12,"hm":{"2025-01":12,"2025-02":12,"2025-03":12,"2025-04":11,"2025-05":11,"2025-06":11,"2025-07":11,"2025-08":12,"2025-09":10,"2025-10":10,"2025-11":10,"2025-12":10,"2026-01":11,"2026-02":11,"2026-03":11,"2026-04":10,"2026-05":9,"2026-06":11,"2026-07":9,"2026-08":8,"2026-09":8,"2026-10":6,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"Lot 8 - CS1 - 12993 Winter Camp Way","sg":"WIP","co":"PC-1","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081b0","role":"Superintendent","s":"2023-04-22","e":"2023-06-22","hd":true,"inv":839178},{"n":"Lot 4 - CS1 - 13051 Split Rock Court","sg":"WIP","co":"PC-1","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081ac","role":"Superintendent","s":"2023-10-07","e":"2023-12-07","hd":true,"inv":829859},{"n":"Lot 1 - CS1 - 13068 Split Rock Court","sg":"Pipeline","co":"PC-1","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081a9","role":"Superintendent","s":"2023-10-07","e":"2023-12-07","hd":true,"inv":1176109},{"n":"Lot 27B - CS1 - 13263 Cold Creek Circle","sg":"Pipeline","co":"PC-1","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081e8","role":"Superintendent","s":"2024-06-15","e":"2026-07-31","hd":true,"inv":1954085},{"n":"Lot 25B - CS1 - 13275 Cold Creek Circle","sg":"Pipeline","co":"PC-1","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081e6","role":"Superintendent","s":"2024-06-15","e":"2026-06-30","hd":true,"inv":1878258},{"n":"Lot 19B - CS1 - 13252 Cold Creek Circle","sg":"Pipeline","co":"PC-1","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081e0","role":"Superintendent","s":"2024-06-15","e":"2026-09-30","hd":true,"inv":1429662},{"n":"Lot 18B - CS1 - 13246 Cold Creek Circle","sg":"Pipeline","co":"PC-1","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081df","role":"Superintendent","s":"2024-06-15","e":"2026-09-30","hd":true,"inv":1930827},{"n":"Lot 17B - CS1 - 13240 Cold Creek Circle","sg":"Biz Dev","co":"PC-1","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081de","role":"Superintendent","s":"2024-06-15","e":"2026-10-30","hd":true,"inv":1189762},{"n":"Lot 16B - CS1 - 13234 Cold Creek Circle","sg":"Biz Dev","co":"PC-1","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081dd","role":"Superintendent","s":"2024-06-15","e":"2026-10-30","hd":true,"inv":1126478},{"n":"Lot 15B - CS1 - 13228 Cold Creek Circle","sg":"Biz Dev","co":"PC-1","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081dc","role":"Superintendent","s":"2024-06-15","e":"2026-10-30","hd":true,"inv":1126966},{"n":"Lot 14B - CS1 - 13222 Cold Creek Circle","sg":"Biz Dev","co":"SPI","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081db","role":"Superintendent","s":"2024-06-15","e":"2026-10-30","hd":true,"inv":2111186},{"n":"Sullivan Lane TIs","sg":"Old-Acquired/Pre-Con","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68950d7d2f781ab6c41ed2e7","role":"Superintendent","s":"2024-06-17","e":"2024-09-15","hd":true,"inv":325000},{"n":"Eagle Windows Phase 2","sg":"Closed Job-Closed Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68950d7d2f781ab6c41ed38d","role":"Superintendent","s":"2024-08-01","e":"2024-10-31","hd":true,"inv":130000},{"n":"CS-R10 (18B & 27B)","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=6892374c3acebcf1e3d39ad7","role":"Superintendent","s":"2025-01-01","e":"2025-08-15","hd":true,"inv":1822584},{"n":"CS-11 (14B-17B)-Exteriors","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=6892375cad425c7ec61f3beb","role":"Superintendent","s":"2025-01-01","e":"2025-08-15","hd":true,"inv":2394158},{"n":"CS-9 (19B & 20B)","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=6892376eefd91339711ed319","role":"Superintendent","s":"2025-01-01","e":"2025-08-15","hd":true,"inv":1384126},{"n":"Lot 6 - CS1 - 13005 Winter Camp Way","sg":"WIP","co":"PC-1","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081ae","role":"Superintendent","s":"2025-01-31","e":"2025-03-31","hd":true,"inv":807167},{"n":"CS-HOA Heat Tape & Snow Retention","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=6892377aba7ea938808156d8","role":"Superintendent","s":"2025-08-01","e":"2025-08-15","hd":true,"inv":76317},{"n":"Cold Stream Sales","sg":"WIP","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68d1a0364f96439d527aa1c2","role":"Superintendent","s":"2025-09-01","e":"2026-06-30","hd":true,"inv":17734023},{"n":"California Building Remodel FM1001B WA-2025-152","sg":"Closeout & Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=686dff988e32f4880f6848ea","role":"Superintendent","s":"2025-09-17","e":"2026-01-09","hd":true,"inv":936543},{"n":"Squeeze Inn @ RED (Shell)","sg":"WIP","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=687fbd6dca32ec50cc52d449","role":"Superintendent","s":"2026-01-26","e":"2026-03-09","hd":true,"inv":284664},{"n":"Squeeze Inn @ RED (TI Hardbid)","sg":"WIP","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=687fbda0097f7311a3912603","role":"Superintendent","s":"2026-02-21","e":"2026-04-21","hd":true,"inv":499493},{"n":"Wyld Ivy Salon Suites - 855 W. 7th","sg":"Job Lost","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69d535c2e98fa139e3e696f5","role":"Superintendent","s":"2026-06-01","e":"2026-10-01","hd":true,"inv":819268},{"n":"3376 Lakeside Ct. Shell","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69f0fc44486ccf6bb906a44d","role":"Superintendent","s":"2026-06-15","e":"2026-07-15","hd":true,"inv":30000},{"n":"3370 Lakeside Ct. Shell","sg":"Biz Dev","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69f0fc3a344904e5b6e881c6","role":"Superintendent","s":"2026-08-15","e":"2026-10-15","hd":true,"inv":100000},{"n":"Lot 14 - CS1 - 12957 Winter Camp Way","sg":"Pipeline","co":"PC-1","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081b6","role":"Superintendent","s":null,"e":null,"hd":false,"inv":1157228},{"n":"Lot 9 - CS1 - 12987 Winter Camp Way","sg":"Pipeline","co":"PC-1","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=69b24d9e3e15e402a66081b1","role":"Superintendent","s":null,"e":null,"hd":false,"inv":1165199}]},{"name":"Zack Poindexter","total":2,"wd":2,"max":1,"hm":{"2025-01":0,"2025-02":0,"2025-03":0,"2025-04":0,"2025-05":0,"2025-06":0,"2025-07":0,"2025-08":0,"2025-09":0,"2025-10":0,"2025-11":1,"2025-12":1,"2026-01":0,"2026-02":0,"2026-03":0,"2026-04":0,"2026-05":1,"2026-06":1,"2026-07":0,"2026-08":0,"2026-09":0,"2026-10":0,"2026-11":0,"2026-12":0,"2027-01":0,"2027-02":0,"2027-03":0,"2027-04":0,"2027-05":0,"2027-06":0,"2027-07":0,"2027-08":0,"2027-09":0,"2027-10":0,"2027-11":0,"2027-12":0},"assignments":[{"n":"COMO Restaurant","sg":"Closeout & Warranty","co":"\u2014","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68e047cd5faf967cc4e5dfba","role":"Project Manager","s":"2025-11-03","e":"2025-12-17","hd":true,"inv":250000},{"n":"Pianetta Remodel","sg":"Biz Dev","co":"BUILT.","url":"https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=68dc6e76f1d079273340d409","role":"Project Manager","s":"2026-05-26","e":"2026-06-02","hd":true,"inv":25000}]}],"months":["2025-01","2025-02","2025-03","2025-04","2025-05","2025-06","2025-07","2025-08","2025-09","2025-10","2025-11","2025-12","2026-01","2026-02","2026-03","2026-04","2026-05","2026-06","2026-07","2026-08","2026-09","2026-10","2026-11","2026-12","2027-01","2027-02","2027-03","2027-04","2027-05","2027-06","2027-07","2027-08","2027-09","2027-10","2027-11","2027-12"]};
+const ALL_MONTHS = RAW.months;
+const CUR = '2026-05';
+
+let roleFilter='ALL', sgFilter='ALL', viewMode='gantt', yrFilter='ALL';
+
+const ROLE_CLASS = {
+  'Project Manager':'r-pm','Superintendent':'r-super',
+  'Project Estimator':'r-est','Project Engineer':'r-pe',
+  'Biz Dev Lead':'r-bdl'
+};
+const SG_COLORS = {
+  WIP:'#1E4D8C','Closeout & Warranty':'#2D6A3F',
+  Pipeline:'#B85C1A','Biz Dev':'#8A6B00',
+  Closed:'#888','Other':'#888'
+};
+const SG_LABEL = {WIP:'WIP','Active in Closeout & Warranty':'Closeout','Closeout & Warranty':'Closeout',Pipeline:'Pipeline','Active in Pipeline':'Pipeline','Hot':'Hot (0-6 mo)','Warm':'Warm (6-12 mo)','Nurture':'Nurture (12+ mo)','New Opportunity':'New Opp','Biz Dev':'Biz Dev','Closed':'Closed','Closed Job-Closed Warranty':'Closed'};
+
+function visMonths(){
+  if(yrFilter==='ALL') return ALL_MONTHS;
+  return ALL_MONTHS.filter(m=>m.startsWith(yrFilter));
+}
+
+function filteredAssignments(person){
+  return person.assignments.filter(a=>{
+    if(roleFilter!=='ALL'&&a.role!==roleFilter) return false;
+    if(sgFilter!=='ALL'&&a.sg!==sgFilter) return false;
+    return true;
+  });
+}
+
+function visiblePeople(){
+  return RAW.people.filter(p=>filteredAssignments(p).length>0);
+}
+
+// ── GANTT ────────────────────────────────────────────────────
+function renderGantt(){
+  const months = visMonths();
+  const people = visiblePeople();
+  const n = months.length;
+
+  const headHtml = months.map(m=>{
+    const [y,mo]=m.split('-');
+    const isYrStart = mo==='01';
+    const isCur = m===CUR;
+    const lbl = new Date(+y,+mo-1,1).toLocaleString('en',{month:'short'});
+    const lblFull = isYrStart ? y : lbl;
+    return `<div class="gantt-mo-hdr${isCur?' cur':''}${isYrStart?' yr-start':''}" title="${m}">${lblFull}</div>`;
+  }).join('');
+
+  const peopleHtml = people.map((person,pi)=>{
+    const asgns = filteredAssignments(person);
+    const open = pi===0;
+
+    // Compute per-row bars
+    // Find date range of months
+    const moStart = months[0], moEnd = months[months.length-1];
+    const msStart = new Date(moStart+'-01').getTime();
+    const msEnd   = new Date(moEnd.split('-')[0]+'-'+(+moEnd.split('-')[1]+1 > 12 ? '01' : String(+moEnd.split('-')[1]+1).padStart(2,'0'))+'-01').getTime();
+    const totalMs = msEnd - msStart;
+
+    // Current line position
+    const curMs = new Date(CUR+'-01').getTime();
+    const curPct = Math.max(0,Math.min(100,(curMs-msStart)/totalMs*100));
+
+    const rowsHtml = asgns.map(a=>{
+      if(!a.s||!a.e){
+        return `<div class="asgn-row">
+          <div class="asgn-name" title="${a.n}"><a href="${a.url}" target="_blank">${a.n}</a></div>
+          <div class="asgn-timeline" style="display:flex;align-items:center;padding-left:8px">
+            <span style="font-size:10px;color:var(--tx3);font-style:italic">No dates</span>
+          </div>
+        </div>`;
+      }
+      const s = new Date(a.s).getTime();
+      const e = new Date(a.e).getTime() + 86400000*30;
+      const left = Math.max(0,(s-msStart)/totalMs*100);
+      const right= Math.min(100,(e-msStart)/totalMs*100);
+      const width= Math.max(0.5, right-left);
+      const rc = ROLE_CLASS[a.role]||'r-other';
+      const sgLbl = SG_LABEL[a.sg]||a.sg;
+      const label = width > 8 ? a.n : '';
+
+      return `<div class="asgn-row">
+        <div class="asgn-name" title="${a.n} · ${a.role}">
+          <a href="${a.url}" target="_blank">${a.n}</a>
+          <div style="font-size:9px;color:var(--tx3)">${sgLbl}</div>
+        </div>
+        <div class="asgn-timeline"
+             onmouseenter="showTip(event,'${a.n.replace(/'/g,'')}','${a.role}','${a.s}','${a.e}','${sgLbl}')"
+             onmouseleave="hideTip()">
+          <div class="gantt-cur-line" style="left:${curPct.toFixed(1)}%"></div>
+          <div class="gantt-bar ${rc}"
+               style="left:${left.toFixed(1)}%;width:${width.toFixed(1)}%"
+               title="${a.n} · ${a.role} · ${a.s} → ${a.e}">${label}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    const roles = [...new Set(asgns.map(a=>a.role))].join(', ');
+    return `<div class="person-group">
+      <div class="person-label" onclick="togglePerson(this)">
+        <div class="person-name">${person.name}</div>
+        <div class="person-meta">
+          <span>${asgns.length} assignment${asgns.length!==1?'s':''}</span>
+          <span style="color:var(--tx3)">${roles}</span>
+        </div>
+        <i class="ti ti-chevron-down p-chev${open?' open':''}" aria-hidden="true"></i>
+      </div>
+      <div class="person-rows${open?' open':''}">
+        <div class="asgn-row" style="height:2px;background:transparent"></div>
+        ${rowsHtml}
+        <div class="asgn-row" style="height:2px;background:transparent"></div>
+      </div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('gantt-view').innerHTML=`<div class="gantt-wrap">
+    <div class="gantt-head">
+      <div class="gantt-name-col">Person / Project</div>
+      <div class="gantt-months">${headHtml}</div>
+    </div>
+    ${peopleHtml||'<div style="padding:40px;text-align:center;color:var(--tx3)">No assignments match current filters.</div>'}
+  </div>`;
+}
+
+function togglePerson(el){
+  const rows=el.nextElementSibling, chev=el.querySelector('.p-chev');
+  rows.classList.toggle('open'); chev.classList.toggle('open');
+}
+
+// ── HEATMAP ──────────────────────────────────────────────────
+function loadClass(v,max){
+  if(v===0) return 'lc0';
+  const frac = v/Math.max(max,1);
+  if(frac<=0.15) return 'lc1';
+  if(frac<=0.3)  return 'lc2';
+  if(frac<=0.5)  return 'lc3';
+  if(frac<=0.7)  return 'lc4';
+  if(frac<=0.85) return 'lc5';
+  return 'lc6';
+}
+
+function renderHeatmap(){
+  const months = visMonths();
+  const people = visiblePeople();
+
+  // Recompute heatmap per person with current filters
+  const headHtml = months.map(m=>{
+    const [y,mo]=m.split('-');
+    const isYrStart=mo==='01', isCur=m===CUR;
+    const lbl=new Date(+y,+mo-1,1).toLocaleString('en',{month:'short'});
+    return `<div class="heat-mo-hdr${isCur?' cur':''}${isYrStart?' yr-start':''}">${isYrStart?y:lbl}</div>`;
+  }).join('');
+
+  const globalMax = Math.max(...people.map(person=>{
+    const asgns = filteredAssignments(person);
+    const hm={};
+    asgns.forEach(a=>{
+      if(!a.s||!a.e) return;
+      const sd=new Date(a.s), ed=new Date(a.e);
+      let cur=new Date(sd.getFullYear(),sd.getMonth(),1);
+      while(cur<=ed){
+        const k=cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0');
+        hm[k]=(hm[k]||0)+1;
+        cur.setMonth(cur.getMonth()+1);
+      }
+    });
+    return Math.max(0,...Object.values(hm));
+  }),1);
+
+  const rowsHtml = people.map(person=>{
+    const asgns = filteredAssignments(person);
+    // Rebuild heatmap from filtered assignments
+    const hm={};
+    asgns.forEach(a=>{
+      if(!a.s||!a.e) return;
+      const sd=new Date(a.s), ed=new Date(a.e);
+      let cur=new Date(sd.getFullYear(),sd.getMonth(),1);
+      while(cur<=ed){
+        const k=cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0');
+        hm[k]=(hm[k]||0)+1;
+        cur.setMonth(cur.getMonth()+1);
+      }
+    });
+    const cells=months.map(m=>{
+      const v=hm[m]||0;
+      const cls=loadClass(v,globalMax);
+      const isCur=m===CUR;
+      const projs = asgns.filter(a=>{
+        if(!a.s||!a.e) return false;
+        return a.s<=m+'-31'&&a.e>=m+'-01';
+      }).map(a=>a.n).join(', ');
+      return `<div class="heat-cell ${cls}${isCur?' cur':''}"
+                   onmouseenter="showHeatTip(event,'${person.name}','${m}',${v},'${projs.replace(/'/g,"&#39;")}')"
+                   onmouseleave="hideTip()">${v||''}</div>`;
+    }).join('');
+
+    const maxLoad=Math.max(0,...Object.values(hm).filter(v=>months.some(m=>hm[m]===v)));
+    return `<div class="heat-person-row">
+      <div class="heat-pname" title="${person.name}">${person.name}
+        <span style="color:var(--tx3);font-size:9px;font-family:var(--mono)"> ·${asgns.length}</span>
+      </div>
+      <div class="heat-cells">${cells}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('heat-view').innerHTML=`<div class="heat-wrap">
+    <div class="heat-head">
+      <div class="heat-name-col">Person</div>
+      <div class="heat-months">${headHtml}</div>
+    </div>
+    ${rowsHtml||'<div style="padding:40px;text-align:center;color:var(--tx3)">No assignments match current filters.</div>'}
+  </div>`;
+}
+
+// ── TOOLTIP ──────────────────────────────────────────────────
+function showTip(e,name,role,s,end,sg){
+  const tip=document.getElementById('tip');
+  tip.innerHTML=`<strong>${name}</strong><br>${role} · ${sg}<br>${s} → ${end}`;
+  tip.style.display='block';
+  moveTip(e);
+}
+function showHeatTip(e,person,month,count,projs){
+  const tip=document.getElementById('tip');
+  const [y,mo]=month.split('-');
+  const lbl=new Date(+y,+mo-1,1).toLocaleString('en',{month:'long',year:'numeric'});
+  tip.innerHTML=`<strong>${person}</strong> · ${lbl}<br>${count} active project${count!==1?'s':''}<br><span style="color:#aaa;font-size:10px">${projs}</span>`;
+  tip.style.display='block';
+  moveTip(e);
+}
+function hideTip(){document.getElementById('tip').style.display='none';}
+document.addEventListener('mousemove',e=>{
+  const tip=document.getElementById('tip');
+  if(tip.style.display==='block') moveTip(e);
+});
+function moveTip(e){
+  const tip=document.getElementById('tip');
+  const x=e.clientX+12, y=e.clientY+12;
+  tip.style.left=Math.min(x,window.innerWidth-tip.offsetWidth-8)+'px';
+  tip.style.top=Math.min(y,window.innerHeight-tip.offsetHeight-8)+'px';
+}
+
+// ── CONTROLS ─────────────────────────────────────────────────
+function setRole(el,val){
+  roleFilter=val;
+  el.closest('.pills').querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  render();
+}
+function setSg(el,val){
+  sgFilter=val;
+  el.closest('.pills').querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  render();
+}
+function setView(v){
+  viewMode=v;
+  document.getElementById('gantt-btn').classList.toggle('on',v==='gantt');
+  document.getElementById('heat-btn').classList.toggle('on',v==='heat');
+  document.getElementById('gantt-view').classList.toggle('hidden',v!=='gantt');
+  document.getElementById('heat-view').classList.toggle('hidden',v!=='heat');
+  document.getElementById('heat-legend').style.display=v==='heat'?'flex':'none';
+  render();
+}
+function setYr(el,val){
+  yrFilter=val;
+  el.closest('.pills').querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  render();
+}
+function render(){
+  if(viewMode==='gantt') renderGantt();
+  else renderHeatmap();
+}
+render();
+</script>
+</body>
+</html>
