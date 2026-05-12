@@ -4,25 +4,16 @@
 /**
  * refresh-data.js
  *
- * Fetches live project data from SmartSuite and writes it into index.html.
- * Run with: SMARTSUITE_API_KEY=<key> node refresh-data.js
- *
- * Required env vars:
- *   SMARTSUITE_API_KEY  — SmartSuite API token
+ * Exports fetchSmartSuiteData() for use by server.js.
+ * Also runnable as a CLI to bake data into index.html:
+ *   SMARTSUITE_API_KEY=<key> node refresh-data.js
  */
 
-const fs = require('fs');
+const fs   = require('fs');
 const path = require('path');
 
-const API_KEY    = process.env.SMARTSUITE_API_KEY;
 const ACCOUNT_ID = 's71hvw05';
 const BASE_URL   = 'https://app.smartsuite.com/api/v1';
-const INDEX_HTML = path.join(__dirname, 'index.html');
-
-if (!API_KEY) {
-  console.error('Error: SMARTSUITE_API_KEY env var is required');
-  process.exit(1);
-}
 
 // ── App IDs ────────────────────────────────────────────────────────────────
 const APPS = {
@@ -101,15 +92,14 @@ const TRACK_MAP = {
 };
 
 // ── API helpers ────────────────────────────────────────────────────────────
-const HEADERS = {
-  'Authorization': `Token ${API_KEY}`,
-  'ACCOUNT-ID': ACCOUNT_ID,
-  'Content-Type': 'application/json',
-};
-
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-async function listRecords(appId, body = {}, fields = null) {
+async function listRecords(appId, apiKey, body = {}, fields = null) {
+  const headers = {
+    'Authorization': `Token ${apiKey}`,
+    'ACCOUNT-ID': ACCOUNT_ID,
+    'Content-Type': 'application/json',
+  };
   const records = [];
   let offset = 0;
   const limit = 1000;
@@ -120,7 +110,7 @@ async function listRecords(appId, body = {}, fields = null) {
     while (true) {
       res = await fetch(`${BASE_URL}/applications/${appId}/records/list/`, {
         method: 'POST',
-        headers: HEADERS,
+        headers,
         body: JSON.stringify(payload),
       });
       if (res.status === 429) {
@@ -140,7 +130,7 @@ async function listRecords(appId, body = {}, fields = null) {
     const total = data.total ?? data.count ?? 0;
     offset += limit;
     if (offset >= total) break;
-    await sleep(500); // small delay between paginated requests
+    await sleep(500);
   }
   return records;
 }
@@ -150,20 +140,12 @@ function toYMD(isoStr) {
   if (!isoStr) return null;
   return isoStr.slice(0, 10);
 }
-
 function dateVal(field) {
   if (!field) return null;
   return toYMD(field.date);
 }
-
-function bestDate(est, base, act) {
-  return dateVal(act) || dateVal(base) || dateVal(est);
-}
-
-const TODAY = new Date().toISOString().slice(0, 10);
-
 function computeNkd(datePairs) {
-  // datePairs: [{e, d}] where d is YYYY-MM-DD or null
+  const TODAY = new Date().toISOString().slice(0, 10);
   const valid = datePairs.filter(x => x.d);
   if (!valid.length) return null;
   const future = valid.filter(x => x.d >= TODAY).sort((a, b) => a.d.localeCompare(b.d));
@@ -172,51 +154,36 @@ function computeNkd(datePairs) {
   return { e: chosen.e, d: chosen.d, past: chosen.d < TODAY };
 }
 
-// ── Main ───────────────────────────────────────────────────────────────────
-async function main() {
+// ── Core fetch + transform ─────────────────────────────────────────────────
+async function fetchSmartSuiteData(apiKey) {
   console.log('Fetching SmartSuite data…');
 
-  // Sequential fetches to avoid rate limits (each waits for the previous)
-  const projects     = await listRecords(APPS.projects);    await sleep(1000);
-  const people       = await listRecords(APPS.people);       await sleep(1000);
-  const companies    = await listRecords(APPS.companies);    await sleep(1000);
-  const stakeholders = await listRecords(APPS.stakeholders); await sleep(1000);
-  const dateRecs     = await listRecords(APPS.dates);        await sleep(1000);
-  const budgetRecs   = await listRecords(APPS.budget);
+  const projects     = await listRecords(APPS.projects,     apiKey); await sleep(1000);
+  const people       = await listRecords(APPS.people,       apiKey); await sleep(1000);
+  const companies    = await listRecords(APPS.companies,    apiKey); await sleep(1000);
+  const stakeholders = await listRecords(APPS.stakeholders, apiKey); await sleep(1000);
+  const dateRecs     = await listRecords(APPS.dates,        apiKey); await sleep(1000);
+  const budgetRecs   = await listRecords(APPS.budget,       apiKey);
 
   console.log(`Fetched: ${projects.length} projects, ${people.length} people, ${companies.length} companies`);
   console.log(`         ${stakeholders.length} stakeholders, ${dateRecs.length} date records, ${budgetRecs.length} budget items`);
 
-  // Build lookup maps
-  const peopleById    = Object.fromEntries(people.map(p => [p.id, p.title || '']));
-  const companyById   = Object.fromEntries(companies.map(c => [c.id, c.title || '']));
+  const peopleById  = Object.fromEntries(people.map(p => [p.id, p.title || '']));
+  const companyById = Object.fromEntries(companies.map(c => [c.id, c.title || '']));
 
-  // Index child records by project ID
-  const datesByProject   = {};
+  const datesByProject = {};
   for (const r of dateRecs) {
-    const projIds = r.sed6d961dc || [];
-    for (const pid of projIds) {
-      (datesByProject[pid] ||= []).push(r);
-    }
+    for (const pid of (r.sed6d961dc || [])) (datesByProject[pid] ||= []).push(r);
   }
-
-  const budgetByProject  = {};
+  const budgetByProject = {};
   for (const r of budgetRecs) {
-    const projIds = r.s2ba7b261b || [];
-    for (const pid of projIds) {
-      (budgetByProject[pid] ||= []).push(r);
-    }
+    for (const pid of (r.s2ba7b261b || [])) (budgetByProject[pid] ||= []).push(r);
   }
-
   const stakeholdersByProject = {};
   for (const r of stakeholders) {
-    const projIds = r.sbb52b9f41 || [];
-    for (const pid of projIds) {
-      (stakeholdersByProject[pid] ||= []).push(r);
-    }
+    for (const pid of (r.sbb52b9f41 || [])) (stakeholdersByProject[pid] ||= []).push(r);
   }
 
-  // Transform projects
   const result = [];
   for (const proj of projects) {
     const statusVal = (proj.status?.value) || proj.status;
@@ -227,11 +194,9 @@ async function main() {
     const n   = proj.title || '';
     const url = `https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=${id}`;
 
-    // Company
     const coIds = proj.s828d7f9ef || [];
     const co    = coIds.length ? (companyById[coIds[0]] || '—') : '—';
 
-    // Dates — include est/base/act for each event so the UI can show variance
     const projDateRecs = datesByProject[id] || [];
     const datePairs = [];
     for (const dr of projDateRecs) {
@@ -246,10 +211,9 @@ async function main() {
     datePairs.sort((a, b) => a.d.localeCompare(b.d));
     const nkd = computeNkd(datePairs);
 
-    // Team members
     const mp = {};
     for (const sr of (stakeholdersByProject[id] || [])) {
-      const roles    = sr.sfc079d5e5 || [];
+      const roles     = sr.sfc079d5e5 || [];
       const peopleIds = sr.s9b0ef21d0 || [];
       for (const roleVal of roles) {
         const roleLabel = ROLE_MAP[roleVal] || roleVal;
@@ -261,8 +225,7 @@ async function main() {
       }
     }
 
-    // Budget rows
-    const rows    = [];
+    const rows = [];
     let inv_b = 0, inv_c = 0, inv_x = 0;
     let op_b  = 0, op_c  = 0, op_x  = 0;
     let fin_b = 0, fin_c = 0, fin_x = 0;
@@ -292,19 +255,31 @@ async function main() {
   }
 
   console.log(`Transformed ${result.length} active projects`);
-
-  // Write to index.html — APP object is a single line so we use a line-level regex
-  const html    = fs.readFileSync(INDEX_HTML, 'utf8');
-  const appJson = JSON.stringify({ projects: result });
-  const updated = html.replace(/const APP = \{.*\};/, `const APP = ${appJson};`);
-
-  if (updated === html) {
-    console.error('Could not locate "const APP = {...};" in index.html');
-    process.exit(1);
-  }
-  fs.writeFileSync(INDEX_HTML, updated, 'utf8');
-
-  console.log(`✓ index.html updated with ${result.length} projects`);
+  return result;
 }
 
-main().catch(err => { console.error(err); process.exit(1); });
+module.exports = { fetchSmartSuiteData };
+
+// ── CLI wrapper (bakes data into index.html) ───────────────────────────────
+if (require.main === module) {
+  const API_KEY    = process.env.SMARTSUITE_API_KEY;
+  const INDEX_HTML = path.join(__dirname, 'index.html');
+
+  if (!API_KEY) {
+    console.error('Error: SMARTSUITE_API_KEY env var is required');
+    process.exit(1);
+  }
+
+  fetchSmartSuiteData(API_KEY).then(result => {
+    const html    = fs.readFileSync(INDEX_HTML, 'utf8');
+    const appJson = JSON.stringify({ projects: result });
+    const updated = html.replace(/let APP=\{projects:\[\]\};/, `let APP=${appJson};`);
+
+    if (updated === html) {
+      console.error('Could not locate data placeholder in index.html');
+      process.exit(1);
+    }
+    fs.writeFileSync(INDEX_HTML, updated, 'utf8');
+    console.log(`✓ index.html updated with ${result.length} projects`);
+  }).catch(err => { console.error(err); process.exit(1); });
+}
