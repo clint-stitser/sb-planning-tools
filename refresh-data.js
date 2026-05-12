@@ -156,17 +156,19 @@ function computeNkd(datePairs) {
 
 // ── Core fetch + transform ─────────────────────────────────────────────────
 async function fetchSmartSuiteData(apiKey) {
+  const t0 = Date.now();
   console.log('Fetching SmartSuite data…');
 
-  const projects     = await listRecords(APPS.projects,     apiKey); await sleep(1000);
-  const people       = await listRecords(APPS.people,       apiKey); await sleep(1000);
-  const companies    = await listRecords(APPS.companies,    apiKey); await sleep(1000);
-  const stakeholders = await listRecords(APPS.stakeholders, apiKey); await sleep(1000);
-  const dateRecs     = await listRecords(APPS.dates,        apiKey); await sleep(1000);
-  const budgetRecs   = await listRecords(APPS.budget,       apiKey);
+  const [projects, people, companies, stakeholders, dateRecs, budgetRecs] = await Promise.all([
+    listRecords(APPS.projects,     apiKey),
+    listRecords(APPS.people,       apiKey),
+    listRecords(APPS.companies,    apiKey),
+    listRecords(APPS.stakeholders, apiKey),
+    listRecords(APPS.dates,        apiKey),
+    listRecords(APPS.budget,       apiKey),
+  ]);
 
-  console.log(`Fetched: ${projects.length} projects, ${people.length} people, ${companies.length} companies`);
-  console.log(`         ${stakeholders.length} stakeholders, ${dateRecs.length} date records, ${budgetRecs.length} budget items`);
+  console.log(`Fetched in ${((Date.now()-t0)/1000).toFixed(1)}s: ${projects.length} projects, ${people.length} people, ${companies.length} companies, ${stakeholders.length} stakeholders, ${dateRecs.length} dates, ${budgetRecs.length} budget items`);
 
   const peopleById  = Object.fromEntries(people.map(p => [p.id, p.title || '']));
   const companyById = Object.fromEntries(companies.map(c => [c.id, c.title || '']));

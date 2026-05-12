@@ -1045,26 +1045,55 @@ async function loadData(force) {
   const overlay = document.getElementById('load-overlay');
   const loadMsg = document.getElementById('load-msg');
   const loadErr = document.getElementById('load-err');
+  const btn = document.getElementById('refresh-btn');
+
+  // If forcing a refresh, show a non-blocking toast instead of full overlay
+  if (force) {
+    if (btn) { btn.disabled = true; btn.textContent = '…'; }
+    try {
+      const res  = await fetch('/api/data?force=true');
+      if (!res.ok) throw new Error('Server error ' + res.status);
+      const data = await res.json();
+      if (data.error) throw new Error(data.error);
+      initApp(data);
+      showToast('Data refreshed');
+    } catch (err) {
+      showToast('Refresh failed: ' + err.message, true);
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = '↻ Refresh'; }
+    }
+    return;
+  }
+
+  // Initial load — show overlay only if we have no data yet
   overlay.style.display = 'flex';
   loadErr.style.display = 'none';
-  loadMsg.textContent = force ? 'Refreshing from SmartSuite…' : 'Loading project data…';
-  const btn = document.getElementById('refresh-btn');
-  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  loadMsg.textContent = 'Loading project data…';
   try {
-    const url = force ? '/api/data?force=true' : '/api/data';
-    const res  = await fetch(url);
+    const res  = await fetch('/api/data');
     if (!res.ok) throw new Error('Server error ' + res.status);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     initApp(data);
     overlay.style.display = 'none';
+    if (data.stale) showToast('Showing cached data — refreshing in background…');
   } catch (err) {
     loadMsg.textContent = 'Failed to load data';
     loadErr.textContent = err.message;
     loadErr.style.display = 'block';
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '↻ Refresh'; }
   }
+}
+
+function showToast(msg, isErr) {
+  const t = document.createElement('div');
+  t.textContent = msg;
+  t.style.cssText = `position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:${isErr?'#8C1F1F':'#1E5C36'};color:#fff;padding:8px 18px;border-radius:6px;
+    font-size:11px;font-family:var(--mono);z-index:600;opacity:0;transition:opacity .2s;
+    white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)`;
+  document.body.appendChild(t);
+  requestAnimationFrame(() => { t.style.opacity = '1'; });
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
 }
 
 function refreshData() { loadData(true); }

@@ -18,14 +18,32 @@ if (!API_KEY) {
 let cache        = null;
 let cacheTime    = null;
 let fetchPromise = null;
-const CACHE_TTL  = 5 * 60 * 1000; // 5 minutes
+const CACHE_TTL  = 30 * 60 * 1000; // 30 minutes
+
+function startBackgroundRefresh() {
+  if (fetchPromise) return;
+  fetchPromise = fetchSmartSuiteData(API_KEY).then(projects => {
+    cache        = projects;
+    cacheTime    = Date.now();
+    fetchPromise = null;
+    console.log(`Cache refreshed — ${projects.length} projects`);
+  }).catch(err => {
+    fetchPromise = null;
+    console.error('Background refresh failed:', err.message);
+  });
+}
 
 async function getData(force) {
-  const now = Date.now();
-  if (!force && cache && cacheTime && (now - cacheTime) < CACHE_TTL) {
-    return { projects: cache, lastUpdated: new Date(cacheTime).toISOString(), cached: true };
+  const now   = Date.now();
+  const fresh = cache && cacheTime && (now - cacheTime) < CACHE_TTL;
+
+  // Serve instantly from cache; kick off background refresh if stale or forced
+  if (cache && !force) {
+    if (!fresh) startBackgroundRefresh();
+    return { projects: cache, lastUpdated: new Date(cacheTime).toISOString(), stale: !fresh };
   }
-  // Deduplicate concurrent requests — only one SmartSuite fetch at a time
+
+  // Force refresh OR no cache yet — must wait
   if (!fetchPromise) {
     fetchPromise = fetchSmartSuiteData(API_KEY).then(projects => {
       cache        = projects;
@@ -37,8 +55,8 @@ async function getData(force) {
       throw err;
     });
   }
-  const projects = await fetchPromise;
-  return { projects, lastUpdated: new Date(cacheTime).toISOString(), cached: false };
+  await fetchPromise;
+  return { projects: cache, lastUpdated: new Date(cacheTime).toISOString(), stale: false };
 }
 
 // ── Routes ─────────────────────────────────────────────────────────────────
