@@ -245,7 +245,8 @@ async function fetchSmartSuiteData(apiKey) {
       const btf    = parseFloat(br.s6506ec407)  || 0;
       const pct    = parseFloat(br.s3636482e0)  || 0;
 
-      rows.push({ a: br.s32eed8560 || '', s, t, e, b, co, adj, ctd, act, btf, pct, mo: {} });
+      const rowCos = (br.s2f27d033f || []).map(id => companyById[id]).filter(Boolean);
+      rows.push({ a: br.s32eed8560 || '', s, t, e, b, co, adj, ctd, act, btf, pct, mo: {}, cos: rowCos });
 
       if (s === 'inv') { inv_b += b; inv_c += co; inv_x += adj; }
       if (s === 'op')  { op_b  += b; op_c  += co; op_x  += adj; }

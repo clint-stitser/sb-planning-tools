@@ -260,6 +260,11 @@ thead .sticky-col{background:var(--canvas);z-index:6;}
 .sb-inv{background:var(--blue-l);color:var(--blue);}
 .sb-op{background:var(--green-l);color:var(--green);}
 .sb-fin{background:var(--amber-l);color:var(--amber);}
+/* ── COMPANY LENS FILTER ─────────────────── */
+#pp-co-filter { display:flex; gap:6px; padding:6px 20px 10px; flex-wrap:wrap; background:var(--paper); border-bottom:1px solid var(--rule2); flex-shrink:0; }
+.co-chip { padding:3px 10px; border-radius:12px; font-size:11px; cursor:pointer; border:1px solid var(--rule); background:var(--canvas); color:var(--ink2); }
+.co-chip.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+
 /* ── GAAP Compute Engine ─────────────────── */
 .gaap-warn{margin:10px 16px 6px;padding:8px 12px;background:var(--amber-l);border-left:3px solid var(--amber);border-radius:0 4px 4px 0;font-size:10px;color:var(--amber);line-height:1.7;}
 .cf-neg{color:var(--red)!important;}
@@ -521,10 +526,14 @@ function classifyRow(row,dm){
   }
   return{gl:'cogs',sign:-1,sYM:null,eYM:null,type:'point'};
 }
-function computeProjectCF(p){
+function computeProjectCF(p, override){
   const dm=buildDateMap(p), mos=new Set(), warns=[];
   const rows=(p.rows||[]).map(r=>{
     const cl=classifyRow(r,dm);
+    // If an override window is provided, apply it to all non-gp_budget rows
+    if(override && cl.gl!=='gp_budget'){
+      cl.sYM=override.sYM; cl.eYM=override.eYM; cl.type='even';
+    }
     const budMo=spreadMo((r.adj||r.b||0)*cl.sign,cl.sYM,cl.eYM,cl.type);
     const actMo=spreadMo((r.act||0)*cl.sign,cl.sYM,cl.eYM,cl.type);
     if(!cl.sYM && cl.gl!=='gp_budget') warns.push(`"${r.a}": no spread date`);
@@ -535,6 +544,10 @@ function computeProjectCF(p){
 }
 // CF_CACHE is populated by initApp() after data loads
 const CF_CACHE={};
+// CF_DATE_OVERRIDE: keyed by project ID → {sYM, eYM} or absent
+const CF_DATE_OVERRIDE={};
+// SELECTED_CO: keyed by project ID → company name string or null (all)
+const SELECTED_CO={};
 
 
 
@@ -804,6 +817,9 @@ function openProject(id){
   const p=PROJECTS.find(x=>x.id===id);
   if(!p){document.getElementById('pp-detail').innerHTML='<div class="pp-empty"><div class="pp-empty-icon">!</div><div>Project not found</div></div>';return;}
 
+  // Collect unique companies across all rows for this project
+  const allCos=[...new Set((p.rows||[]).flatMap(r=>r.cos||[]))].sort();
+
   document.getElementById('pp-detail').innerHTML=`
     <div class="pp-detail-hdr">
       <div class="pp-detail-title">${p.n}</div>
@@ -818,6 +834,10 @@ function openProject(id){
       <div class="pp-tab" onclick="ppTab(this,'cf')">Cash Flow Spread</div>
       <div class="pp-tab" onclick="ppTab(this,'dates')">Dates</div>
     </div>
+    ${allCos.length>1?`<div id="pp-co-filter">
+      <span class="co-chip active" data-co="" onclick="selectCo(this,'${p.id}')">All companies</span>
+      ${allCos.map(c=>`<span class="co-chip" data-co="${c}" onclick="selectCo(this,'${p.id}')">${c}</span>`).join('')}
+    </div>`:''}
     <div class="pp-body" id="pp-body"></div>`;
 
   renderIS(p);
@@ -835,9 +855,13 @@ function ppTab(el,tab){
 
 // ── Income Statement ──────────────────────
 function renderIS(p){
-  const rows=p.rows||[];
+  const selCo=SELECTED_CO[p.id]||null;
+  const fp=selCo
+    ? {...p, rows:(p.rows||[]).filter(r=>!r.cos||r.cos.length===0||r.cos.includes(selCo))}
+    : p;
+  const rows=fp.rows||[];
   if(!rows.length){document.getElementById('pp-body').innerHTML='<div class="no-data">No baseline budget data yet — add BBI records in SmartSuite.</div>';return;}
-  const cf=CF_CACHE[p.id]||computeProjectCF(p);
+  const cf=(selCo ? computeProjectCF(fp) : (CF_CACHE[p.id]||computeProjectCF(fp)));
   const byGL={revenue:[],cogs:[],oprev:[],opex:[],fin:[],gp_budget:[]};
   cf.rows.forEach(r=>{const g=r.cl.gl||'cogs';if(byGL[g])byGL[g].push(r);});
 
@@ -957,19 +981,51 @@ function renderIS(p){
     html+=`</div>`;
   }
 
-  // Net Development Profit
-  html+=gpLine('NET DEVELOPMENT PROFIT',null,ebitdaB||null,ebitdaAdj||null,null,ebitdaB>=0?'var(--ink)':'var(--red)');
+  // Net Project Profit
+  html+=gpLine('NET PROJECT PROFIT',null,ebitdaB||null,ebitdaAdj||null,null,ebitdaB>=0?'var(--ink)':'var(--red)');
   html+='</div>';
   document.getElementById('pp-body').innerHTML=html;
 }
 
 function renderCFProject(p){
-  const cf=CF_CACHE[p.id]||computeProjectCF(p);
+  // Apply company filter if set
+  const selCo=SELECTED_CO[p.id]||null;
+  const fp=selCo
+    ? {...p, rows:(p.rows||[]).filter(r=>!r.cos||r.cos.length===0||r.cos.includes(selCo))}
+    : p;
+
+  // Apply date override if set, and recompute (bypass cache when override active)
+  const ov=CF_DATE_OVERRIDE[p.id]||null;
+  const cf=(ov||selCo) ? computeProjectCF(fp, ov) : (CF_CACHE[p.id]||computeProjectCF(fp));
+  if(!ov&&!selCo) CF_CACHE[p.id]=cf;
+
   const{rows,months,warns}=cf;
+
+  // Build date dropdown options from p.dates (sorted chronologically)
+  const dateOpts=(p.dates||[]).slice().sort((a,b)=>a.d.localeCompare(b.d))
+    .map(d=>`<option value="${d.d}">${d.e} (${d.d})</option>`).join('');
+  const fromVal=(ov&&ov.sYM)?
+    (p.dates||[]).find(d=>toYM(d.d)===ov.sYM)?.d||'':'';
+  const toVal=(ov&&ov.eYM)?
+    (p.dates||[]).find(d=>toYM(d.d)===ov.eYM)?.d||'':'';
+  const dateCtrl=`<div style="padding:8px 0 12px;display:flex;align-items:center;gap:8px;font-size:12px">
+    <span style="color:var(--ink3);font-size:11px">Override spread:</span>
+    <select style="font-size:12px" data-proj-id="${p.id}" data-role="cf-from" onchange="cfOverrideChange(this)">
+      <option value="">— auto —</option>${dateOpts}
+    </select>
+    <span style="color:var(--ink3)">→</span>
+    <select style="font-size:12px" data-proj-id="${p.id}" data-role="cf-to" onchange="cfOverrideChange(this)">
+      <option value="">— auto —</option>${dateOpts}
+    </select>
+    ${ov?`<button onclick="cfOverrideClear('${p.id}')" style="font-size:11px;padding:2px 8px;border:1px solid var(--rule);border-radius:3px;background:var(--canvas);cursor:pointer;color:var(--ink2)">Clear</button>`:''}
+  </div>`;
+
   if(!months.length){
     let wb='';
     if(warns.length) wb=`<div class="gaap-warn" style="margin:0 0 12px">${warns.map(w=>`<div>⚠ ${w}</div>`).join('')}</div>`;
-    document.getElementById('pp-body').innerHTML=`<div class="no-data">${wb}No dated cash flows — add milestone dates in SmartSuite to generate the spread.</div>`;
+    document.getElementById('pp-body').innerHTML=`<div class="pcf-wrap">${dateCtrl}${wb}<div class="no-data" style="padding:16px 0">No dated cash flows — add milestone dates in SmartSuite to generate the spread.</div></div>`;
+    // Restore dropdown selections after render
+    _restoreCFDropdowns(p.id, fromVal, toVal);
     return;
   }
   // Exclude gp_budget items (sign=0) from cash flow — they're reference-only
@@ -986,7 +1042,7 @@ function renderCFProject(p){
   }).join('');
   const SEC_NAME={inv:'Investing Cash',op:'Operating Cash',fin:'Financing Cash'};
   const NET_LBL={inv:'Net Investing Cash Flow',op:'Net Operating Cash Flow',fin:'Net Financing Cash Flow'};
-  let html=`<div class="pcf-wrap">`;
+  let html=`<div class="pcf-wrap">${dateCtrl}`;
   if(warns.length) html+=`<div class="gaap-warn" style="margin-bottom:12px">${warns.map(w=>`<div>⚠ ${w}</div>`).join('')}</div>`;
   html+=`<div class="pcf-legend">
     <div class="pcf-leg"><div class="pcf-dot" style="background:var(--blue)"></div>Investing</div>
@@ -1035,6 +1091,56 @@ function renderCFProject(p){
   html+=`<tr><td class="acct" style="color:var(--ink3);font-style:italic">Cumulative CF</td>${cumCells}<td style="color:var(--ink3);font-style:italic">${fmts(Math.round(cum))}</td></tr>`;
   html+='</tbody></table></div></div>';
   document.getElementById('pp-body').innerHTML=html;
+  _restoreCFDropdowns(p.id, fromVal, toVal);
+}
+
+// ── CF date override helpers ──────────────
+function _restoreCFDropdowns(pid, fromVal, toVal){
+  document.querySelectorAll(`select[data-proj-id="${pid}"]`).forEach(sel=>{
+    if(sel.dataset.role==='cf-from') sel.value=fromVal||'';
+    if(sel.dataset.role==='cf-to')   sel.value=toVal||'';
+  });
+}
+function cfOverrideChange(sel){
+  const pid=sel.dataset.pid||sel.dataset.projId||sel.getAttribute('data-proj-id');
+  const body=document.getElementById('pp-body');
+  const fromSel=body.querySelector(`select[data-proj-id="${pid}"][data-role="cf-from"]`);
+  const toSel  =body.querySelector(`select[data-proj-id="${pid}"][data-role="cf-to"]`);
+  const fromDate=fromSel?fromSel.value:'';
+  const toDate  =toSel  ?toSel.value  :'';
+  if(fromDate&&toDate){
+    CF_DATE_OVERRIDE[pid]={sYM:toYM(fromDate),eYM:toYM(toDate)};
+  } else {
+    delete CF_DATE_OVERRIDE[pid];
+  }
+  delete CF_CACHE[pid];
+  const p=PROJECTS.find(x=>x.id===pid);
+  if(p) renderCFProject(p);
+}
+function cfOverrideClear(pid){
+  delete CF_DATE_OVERRIDE[pid];
+  delete CF_CACHE[pid];
+  const p=PROJECTS.find(x=>x.id===pid);
+  if(p) renderCFProject(p);
+}
+
+// ── Company lens filter ───────────────────
+function selectCo(el, pid){
+  document.querySelectorAll('#pp-co-filter .co-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  const co=el.dataset.co||null;
+  SELECTED_CO[pid]=co||null;
+  // Clear CF cache so it recomputes with new filter
+  delete CF_CACHE[pid];
+  const p=PROJECTS.find(x=>x.id===pid);
+  if(!p) return;
+  // Re-render whichever tab is active
+  const activeTab=document.querySelector('.pp-tab.active');
+  if(!activeTab) return;
+  const tabText=activeTab.textContent.trim();
+  if(tabText==='Income Statement') renderIS(p);
+  else if(tabText==='Cash Flow Spread') renderCFProject(p);
+  else renderDates(p);
 }
 
 // ── Dates tab ─────────────────────────────
