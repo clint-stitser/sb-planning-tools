@@ -253,10 +253,14 @@ async function fetchSmartSuiteData(apiKey) {
     }
 
     // ── Pillar tool indicators ─────────────────────────────────────────────
-    const hasBudget   = rows.length > 0;
-    const hasSchedule = !!(proj.s4ec74af74 && String(proj.s4ec74af74).trim());
-    const hasChecklist= (proj.synemrwc  || []).length > 0;
-    const hasGYR      = (proj.s0dm3fca  || []).length > 0;
+    const hasGYR          = (proj.s0dm3fca    || []).length > 0;
+    const hasStakeholders = (proj.sw6mypea    || []).length > 0;
+    const hasBudget       = rows.length > 0;
+    const hasG702         = (proj.sfiz2vvh    || []).length > 0;
+    const hasDates        = datePairs.length > 0;
+    const hasSchedule     = !!(proj.s4ec74af74 && String(proj.s4ec74af74).trim());
+    const hasDrive        = !!(proj.s561f1796b && String(proj.s561f1796b).trim());
+    const hasChecklist    = (proj.synemrwc    || []).length > 0;
 
     // ── Project type ───────────────────────────────────────────────────────
     const PT_MAP = {
@@ -272,7 +276,7 @@ async function fetchSmartSuiteData(apiKey) {
 
     result.push({ id, n, sg: stage, co, url, nkd, dates: datePairs, mp, rows,
       inv_b, inv_c, inv_x, op_b, op_c, op_x, fin_b, fin_c, fin_x,
-      hasBudget, hasSchedule, hasChecklist, hasGYR, pt });
+      hasGYR, hasStakeholders, hasBudget, hasG702, hasDates, hasSchedule, hasDrive, hasChecklist, pt });
   }
 
   console.log(`Transformed ${result.length} active projects`);
