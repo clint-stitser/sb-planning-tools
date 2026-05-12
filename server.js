@@ -9,9 +9,6 @@ const app     = express();
 const PORT    = process.env.PORT || 3000;
 const API_KEY = process.env.SMARTSUITE_API_KEY;
 
-console.log('ENV KEYS:', Object.keys(process.env).filter(k => !k.includes('npm')).join(', '));
-console.log('SMARTSUITE_API_KEY present:', !!API_KEY);
-
 if (!API_KEY) {
   console.error('Error: SMARTSUITE_API_KEY is not set. Add it to .env or your environment.');
   process.exit(1);
