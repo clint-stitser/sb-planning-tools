@@ -445,8 +445,11 @@ const SEC_COL   = {inv:'val-inv',op:'val-op',fin:'val-fin'};
 const SEC_ORD   = ['inv','op','fin'];
 
 // ── GAAP Compute Engine ───────────────────
-const REV_RE  = /revenue|proceeds|income|profit|return|refi|sale|back.end|lease income|nnn income/i;
-const COST_RE = /cost|price|acquisition|improvement|carry|interest carry|closing/i;
+const REV_RE     = /revenue|proceeds|income|return|refi|sale|back.end|lease income|nnn income/i;
+const COST_RE    = /cost|price|acquisition|improvement|carry|interest carry|closing/i;
+const GP_RE      = /gross\s*profit/i;
+const FIN_OUT_RE = /repay|distribut|return of capital|interest|fee[s]?|costs?\s+to|penalty/i;
+const FIN_IN_RE  = /required|debt|equity|loan proceeds|capital contribution|borrow|draw\b|refinanc/i;
 
 function buildDateMap(p){
   const m={};
@@ -472,14 +475,24 @@ function spreadMo(amount,sYM,eYM,type){
   return m;
 }
 function classifyRow(row,dm){
-  const a=row.a||'', s=row.s;
-  const isRev=REV_RE.test(a)&&!COST_RE.test(a);
+  const a=row.a||'', s=row.s, t=row.t||'';
+  const hasTrack=!!(t&&t.trim());
+
+  // Gross profit budget items: reference only — excluded from all IS/CF calculations
+  if(GP_RE.test(a)) return{gl:'gp_budget',sign:0,sYM:null,eYM:null,type:'point'};
+
   if(s==='fin'){
-    const isOut=/repay|distribut|return of capital/i.test(a);
-    return{gl:'fin',sign:isOut?-1:1,
-      sYM:toYM(dm['Purchase Close Date']||dm['Construction Start']),eYM:null,type:'point'};
+    // Explicit inflow keywords take precedence over outflow matching
+    const isIn=FIN_IN_RE.test(a);
+    const isOut=!isIn&&FIN_OUT_RE.test(a);
+    const sign=isOut?-1:1;
+    return{gl:'fin',sign,
+      sYM:toYM(sign<0?(dm['Construction Start']||dm['Purchase Close Date']):dm['Purchase Close Date']||dm['Construction Start']),
+      eYM:sign<0?toYM(dm['COE/Lease Commence']||dm['Construction End']):null,
+      type:sign<0?'even':'point'};
   }
   if(s==='inv'){
+    const isRev=hasTrack||(REV_RE.test(a)&&!COST_RE.test(a));
     if(isRev) return{gl:'revenue',sign:1,
       sYM:toYM(dm['COE/Lease Commence']||dm['Closeout & Punch List']||dm['Construction End']),eYM:null,type:'point'};
     if(/purchase price|land cost|land acquisition/i.test(a))
@@ -492,12 +505,12 @@ function classifyRow(row,dm){
       return{gl:'cogs',sign:-1,
         sYM:toYM(dm['Purchase Close Date']||dm['Construction Start']),
         eYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),type:'even'};
-    // Default inv: cost spread over construction
     return{gl:'cogs',sign:-1,
       sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
       eYM:toYM(dm['Construction End']),type:'even'};
   }
   if(s==='op'){
+    const isRev=hasTrack||(REV_RE.test(a)&&!COST_RE.test(a));
     if(isRev) return{gl:'oprev',sign:1,
       sYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),
       eYM:toYM(dm['1 Year Warranty End Date']||dm['Statutory Liability End Date']||dm['Closeout & Punch List']),
@@ -825,19 +838,40 @@ function renderIS(p){
   const rows=p.rows||[];
   if(!rows.length){document.getElementById('pp-body').innerHTML='<div class="no-data">No baseline budget data yet — add BBI records in SmartSuite.</div>';return;}
   const cf=CF_CACHE[p.id]||computeProjectCF(p);
-  const byGL={revenue:[],cogs:[],oprev:[],opex:[],fin:[]};
+  const byGL={revenue:[],cogs:[],oprev:[],opex:[],fin:[],gp_budget:[]};
   cf.rows.forEach(r=>{const g=r.cl.gl||'cogs';if(byGL[g])byGL[g].push(r);});
-  const sum=(arr,f)=>arr.reduce((a,r)=>a+(r[f]||0),0);
-  const totRev=sum(byGL.revenue,'adj'), totCOGS=sum(byGL.cogs,'adj');
-  const totOpRev=sum(byGL.oprev,'adj'), totOpEx=sum(byGL.opex,'adj'), totFin=sum(byGL.fin,'adj');
-  const gp=totRev-totCOGS, totR=totRev+totOpRev;
-  const gm=totR>0?(gp/totR*100).toFixed(1):null, ebitda=gp+totOpRev-totOpEx;
+
+  // Sum helpers — three columns (Est, Baseline, Adj) computed separately
+  const sE  =arr=>arr.reduce((a,r)=>a+(r.e||0),0);
+  const sB  =arr=>arr.reduce((a,r)=>a+(r.b||0),0);
+  const sAdj=arr=>arr.reduce((a,r)=>a+(r.adj||0),0);
+  const sCTD=arr=>arr.reduce((a,r)=>a+(r.ctd||0),0);
+  const sAct=arr=>arr.reduce((a,r)=>a+(r.act||0),0);
+
+  // Revenue totals (inv + op revenue, gross profit items excluded)
+  const revAll=[...byGL.revenue,...byGL.oprev];
+  const totRevE=sE(revAll), totRevB=sB(revAll), totRevAdj=sAdj(revAll);
+
+  // COGS totals
+  const totCOGSE=sE(byGL.cogs), totCOGSB=sB(byGL.cogs), totCOGSAdj=sAdj(byGL.cogs);
+
+  // Gross profit per column
+  const gpE=totRevE-totCOGSE, gpB=totRevB-totCOGSB, gpAdj=totRevAdj-totCOGSAdj;
+  const gpBudgetRef=byGL.gp_budget.length?sB(byGL.gp_budget):null;
+
+  // OpEx / financing
+  const totOpExB=sB(byGL.opex), totOpExAdj=sAdj(byGL.opex);
+  const totFinInB =sB(byGL.fin.filter(r=>r.cl.sign>0));
+  const totFinOutB=sB(byGL.fin.filter(r=>r.cl.sign<0));
+  const ebitdaB=gpB-totOpExB, ebitdaAdj=gpAdj-totOpExAdj;
+
   // Validation warnings
   const allWarns=[...cf.warns];
-  if(totRev===0&&totCOGS>0) allWarns.push('No revenue accounts identified — verify account names match keywords (revenue/proceeds/sale/profit/income)');
-  if(gp<0&&totRev>0) allWarns.push(`Negative gross profit: ${fmt(gp)}`);
-  if(totFin>0&&totCOGS>0){const gap=totFin-totCOGS;if(Math.abs(gap)>totCOGS*0.15)allWarns.push(`Financing gap: sources ${fmt(totFin)} vs costs ${fmt(totCOGS)} (diff ${fmt(gap)})`);};
+  if(totRevB===0&&totCOGSB>0) allWarns.push('No revenue accounts identified — verify account names match keywords (revenue/proceeds/sale/income)');
+  if(gpB<0&&totRevB>0) allWarns.push(`Negative gross profit: ${fmt(gpB)}`);
+
   const colH=`<div class="is-col">Est.</div><div class="is-col">Baseline</div><div class="is-col">Adj.</div><div class="is-col">CTD</div><div class="is-col">Actual</div><div class="is-col">BTF / %</div>`;
+
   const rowLine=r=>{
     const trk=r.t?`<span class="${r.t.includes('1')?'t1':'t2'}">${r.t.includes('1')?'T1':'T2'}</span>`:'';
     const bar=r.b>0?`<div class="pct-bar"><div class="pct-fill" style="width:${Math.min(100,r.pct||0)}%"></div></div>`:'';
@@ -851,52 +885,77 @@ function renderIS(p){
       <div class="is-v">${bar}${r.btf?fmt(r.btf):'—'}</div>
     </div>`;
   };
-  const totLine=(lbl,val)=>`<div class="is-total">
-    <div class="is-total-lbl">${lbl}</div><div></div><div></div>
-    <div class="is-v" style="font-weight:700">${val?fmt(val):'—'}</div>
-    <div></div><div></div><div></div>
-  </div>`;
-  const gpLine=(lbl,val,sub,bg)=>`<div class="is-grand" style="background:${bg||'var(--green)'}">
+
+  // totLine: shows Est / Baseline / Adj with optional highlight color
+  const totLine=(lbl,eV,bV,aV,color)=>{
+    const c=color?`color:${color};`:'';
+    return`<div class="is-total">
+      <div class="is-total-lbl">${lbl}</div>
+      <div class="is-v" style="font-weight:700;${c}">${eV?fmt(eV):'—'}</div>
+      <div class="is-v" style="font-weight:700;${c}">${bV?fmt(bV):'—'}</div>
+      <div class="is-v" style="font-weight:700;${c}">${aV?fmt(aV):'—'}</div>
+      <div></div><div></div><div></div>
+    </div>`;
+  };
+
+  // gpLine: full-width highlight row showing Est / Baseline / Adj
+  const gpLine=(lbl,eV,bV,aV,sub,bg)=>`<div class="is-grand" style="background:${bg||'var(--green)'}">
     <div class="is-grand-lbl">${lbl}${sub?`<span style="font-size:10px;font-weight:400;opacity:.7;margin-left:8px">${sub}</span>`:''}</div>
-    <div></div><div></div>
-    <div class="is-v" style="font-weight:800;color:#fff">${fmt(val)}</div>
+    <div class="is-v" style="font-weight:800;color:#fff">${eV?fmt(eV):'—'}</div>
+    <div class="is-v" style="font-weight:800;color:#fff">${bV?fmt(bV):'—'}</div>
+    <div class="is-v" style="font-weight:800;color:#fff">${aV?fmt(aV):'—'}</div>
     <div></div><div></div><div></div>
   </div>`;
+
   let html='<div class="is-wrap">';
   if(allWarns.length) html+=`<div class="gaap-warn">${allWarns.map(w=>`<div>⚠ ${w}</div>`).join('')}</div>`;
+
   // Revenue
   html+=`<div class="is-sec"><div class="is-sec-hdr">
     <div><span class="sec-badge" style="background:var(--green);color:#fff">REVENUE</span></div>${colH}</div>
     ${byGL.revenue.map(rowLine).join('')}
     ${byGL.oprev.length?`<div class="is-gaap-sub">Operating Revenue</div>${byGL.oprev.map(rowLine).join('')}`:''}
-    ${!byGL.revenue.length&&!byGL.oprev.length?'<div class="is-row"><div class="is-acct" style="color:var(--ink3)">No revenue accounts detected</div></div>':''}
-    ${totLine('Total Revenue',totR)}
+    ${!revAll.length?'<div class="is-row"><div class="is-acct" style="color:var(--ink3)">No revenue accounts detected</div></div>':''}
+    ${totLine('Total Revenue',totRevE,totRevB,totRevAdj,'var(--green)')}
   </div>`;
+
   // COGS
   if(byGL.cogs.length) html+=`<div class="is-sec"><div class="is-sec-hdr">
     <div><span class="sec-badge" style="background:var(--red);color:#fff">COST OF REVENUE</span></div>${colH}</div>
     ${byGL.cogs.map(rowLine).join('')}
-    ${totLine('Total Cost of Revenue',totCOGS)}
+    ${totLine('Total Cost of Revenue',totCOGSE,totCOGSB,totCOGSAdj,'var(--red)')}
   </div>`;
-  // Gross Profit
-  html+=gpLine('GROSS PROFIT',gp,gm?`${gm}% margin`:null,gp>=0?'var(--green)':'var(--red)');
+
+  // Gross Profit — show budgeted GP as reference annotation if available
+  const gpMargin=totRevB>0?(gpB/totRevB*100).toFixed(1):null;
+  const gpNote=gpBudgetRef?` · Budgeted GP: ${fmt(gpBudgetRef)}`:'';
+  html+=gpLine('GROSS PROFIT',gpE||null,gpB||null,gpAdj||null,
+    (gpMargin?`${gpMargin}% margin`:'')+gpNote,
+    gpB>=0?'var(--green)':'var(--red)');
+
   // OpEx
   if(byGL.opex.length){
     html+=`<div class="is-sec"><div class="is-sec-hdr">
       <div><span class="sec-badge" style="background:var(--amber);color:#fff">OPERATING EXPENSES</span></div>${colH}</div>
       ${byGL.opex.map(rowLine).join('')}
-      ${totLine('Total Operating Expenses',totOpEx)}
+      ${totLine('Total Operating Expenses',null,totOpExB,totOpExAdj,'var(--amber)')}
     </div>`;
-    html+=gpLine('EBITDA',ebitda,null,ebitda>=0?'var(--green)':'var(--red)');
+    html+=gpLine('EBITDA',null,ebitdaB||null,ebitdaAdj||null,null,ebitdaB>=0?'var(--green)':'var(--red)');
   }
-  // Financing
-  if(byGL.fin.length) html+=`<div class="is-sec"><div class="is-sec-hdr">
-    <div><span class="sec-badge sb-inv">FINANCING SOURCES</span></div>${colH}</div>
-    ${byGL.fin.map(rowLine).join('')}
-    ${totLine('Total Financing',totFin)}
-  </div>`;
-  // Net
-  html+=gpLine('NET DEVELOPMENT PROFIT',ebitda,null,ebitda>=0?'var(--ink)':'var(--red)');
+
+  // Financing Sources & Uses
+  if(byGL.fin.length){
+    const finIn=byGL.fin.filter(r=>r.cl.sign>0), finOut=byGL.fin.filter(r=>r.cl.sign<0);
+    html+=`<div class="is-sec"><div class="is-sec-hdr">
+      <div><span class="sec-badge sb-inv">FINANCING</span></div>${colH}</div>`;
+    if(finIn.length){html+=`<div class="is-gaap-sub">Sources (Inflows)</div>${finIn.map(rowLine).join('')}`;}
+    if(finOut.length){html+=`<div class="is-gaap-sub">Uses (Outflows)</div>${finOut.map(rowLine).join('')}`;}
+    html+=totLine('Net Financing',null,totFinInB-totFinOutB,null,(totFinInB-totFinOutB)>=0?'var(--blue)':'var(--red)');
+    html+=`</div>`;
+  }
+
+  // Net Development Profit
+  html+=gpLine('NET DEVELOPMENT PROFIT',null,ebitdaB||null,ebitdaAdj||null,null,ebitdaB>=0?'var(--ink)':'var(--red)');
   html+='</div>';
   document.getElementById('pp-body').innerHTML=html;
 }
@@ -910,45 +969,60 @@ function renderCFProject(p){
     document.getElementById('pp-body').innerHTML=`<div class="no-data">${wb}No dated cash flows — add milestone dates in SmartSuite to generate the spread.</div>`;
     return;
   }
+  // Exclude gp_budget items (sign=0) from cash flow — they're reference-only
+  const cfRows=rows.filter(r=>r.cl.gl!=='gp_budget');
   const bySec={inv:[],op:[],fin:[]};
-  rows.forEach(r=>{if(bySec[r.s])bySec[r.s].push(r);});
+  cfRows.forEach(r=>{if(bySec[r.s])bySec[r.s].push(r);});
   const netMo={};months.forEach(m=>{netMo[m]=0;});
-  rows.forEach(r=>Object.entries(r.budMo||{}).forEach(([m,v])=>{if(m in netMo)netMo[m]+=v;}));
+  cfRows.forEach(r=>Object.entries(r.budMo||{}).forEach(([m,v])=>{if(m in netMo)netMo[m]+=v;}));
   let cum=0;const cumMo={};months.forEach(m=>{cum+=netMo[m]||0;cumMo[m]=cum;});
   const moHdrs=months.map(m=>{
     const[y,mo]=m.split('-'),isCur=m===CUR,isYrS=mo==='01';
     const lbl=new Date(+y,+mo-1,1).toLocaleString('en',{month:'short'});
     return`<th class="${isCur?'mo-cur-col':''}">${isYrS?y:lbl}</th>`;
   }).join('');
+  const SEC_NAME={inv:'Investing Cash',op:'Operating Cash',fin:'Financing Cash'};
+  const NET_LBL={inv:'Net Investing Cash Flow',op:'Net Operating Cash Flow',fin:'Net Financing Cash Flow'};
   let html=`<div class="pcf-wrap">`;
   if(warns.length) html+=`<div class="gaap-warn" style="margin-bottom:12px">${warns.map(w=>`<div>⚠ ${w}</div>`).join('')}</div>`;
   html+=`<div class="pcf-legend">
     <div class="pcf-leg"><div class="pcf-dot" style="background:var(--blue)"></div>Investing</div>
     <div class="pcf-leg"><div class="pcf-dot" style="background:var(--green)"></div>Operating</div>
     <div class="pcf-leg"><div class="pcf-dot" style="background:var(--amber)"></div>Financing</div>
-    <div class="pcf-leg" style="color:var(--ink3);font-size:9px">+ = inflow &nbsp;− = outflow &nbsp;·  Date hints show spread window</div>
+    <div class="pcf-leg" style="color:var(--ink3);font-size:9px">+ = inflow &nbsp;− = outflow</div>
   </div>
   <div style="overflow-x:auto"><table class="pcf-tbl">
   <thead><tr><th class="acct">Account</th>${moHdrs}<th>Total</th></tr></thead><tbody>`;
-  const secMo={inv:{},op:{},fin:{}};months.forEach(m=>{secMo.inv[m]=0;secMo.op[m]=0;secMo.fin[m]=0;});
-  SEC_ORD.filter(s=>bySec[s]&&bySec[s].length).forEach(sec=>{
-    const sr=bySec[sec];
-    html+=`<tr class="sec-hdr"><td class="acct" colspan="${months.length+2}"><span class="sec-badge ${SEC_CLS[sec]}">${SEC_LABEL[sec]}</span></td></tr>`;
-    const smTot={};months.forEach(m=>{smTot[m]=0;});
-    sr.forEach(r=>{
+
+  // Helper: render a group of rows with a sub-header label
+  function cfGroup(label, groupRows, sec, secTot){
+    if(!groupRows.length) return '';
+    let out=`<tr class="cf-subhdr"><td class="acct" colspan="${months.length+2}" style="padding-left:20px;font-size:9px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;background:var(--canvas)">${label}</td></tr>`;
+    groupRows.forEach(r=>{
       let rowTot=0;
-      const hint=r.cl.sYM?`<span class="cf-date-hint">${r.cl.sYM}${r.cl.eYM&&r.cl.eYM!==r.cl.sYM?' → '+r.cl.eYM:''} · ${r.cl.type}</span>`:'<span class="cf-no-date"> ⚠ no date</span>';
+      const hint=r.cl.sYM?`<span class="cf-date-hint">${r.cl.sYM}${r.cl.eYM&&r.cl.eYM!==r.cl.sYM?' → '+r.cl.eYM:''}</span>`:'<span class="cf-no-date"> ⚠ no date</span>';
       const cells=months.map(m=>{
-        const v=r.budMo[m]||0;rowTot+=v;secMo[sec][m]+=v;smTot[m]+=v;
+        const v=r.budMo[m]||0;rowTot+=v;secTot[m]=(secTot[m]||0)+v;
         const vCls=v<0?'cf-neg':v>0?SEC_COL[sec]:'';
         return`<td class="${vCls}${m===CUR?' mo-cur-col':''}">${v?fmts(Math.round(v)):'<span class="val-zero">·</span>'}</td>`;
       }).join('');
-      html+=`<tr><td class="acct">${r.a}${hint}</td>${cells}<td class="${rowTot<0?'cf-neg':SEC_COL[sec]}" style="font-weight:500">${fmts(Math.round(rowTot))}</td></tr>`;
+      out+=`<tr><td class="acct" style="padding-left:24px">${r.a}${hint}</td>${cells}<td class="${rowTot<0?'cf-neg':SEC_COL[sec]}" style="font-weight:500">${fmts(Math.round(rowTot))}</td></tr>`;
     });
+    return out;
+  }
+
+  SEC_ORD.filter(s=>bySec[s]&&bySec[s].length).forEach(sec=>{
+    const sr=bySec[sec];
+    const pos=sr.filter(r=>r.cl.sign>0), neg=sr.filter(r=>r.cl.sign<0);
+    const smTot={};months.forEach(m=>{smTot[m]=0;});
+    html+=`<tr class="sec-hdr"><td class="acct" colspan="${months.length+2}"><span class="sec-badge ${SEC_CLS[sec]}">${SEC_NAME[sec]}</span></td></tr>`;
+    html+=cfGroup('↑ Inflows',pos,sec,smTot);
+    html+=cfGroup('↓ Outflows',neg,sec,smTot);
     const stot=months.reduce((a,m)=>a+(smTot[m]||0),0);
-    const sc=months.map(m=>{const v=smTot[m]||0;return`<td class="${v<0?'cf-neg':SEC_COL[sec]}${m===CUR?' mo-cur-col':''}" style="font-weight:600">${v?fmts(Math.round(v)):'·'}</td>`;}).join('');
-    html+=`<tr class="subtotal"><td class="acct">Section Total</td>${sc}<td class="${stot<0?'cf-neg':SEC_COL[sec]}" style="font-weight:700">${fmts(Math.round(stot))}</td></tr>`;
+    const sc=months.map(m=>{const v=smTot[m]||0;return`<td class="${v<0?'cf-neg':SEC_COL[sec]}${m===CUR?' mo-cur-col':''}" style="font-weight:700">${v?fmts(Math.round(v)):'·'}</td>`;}).join('');
+    html+=`<tr class="subtotal"><td class="acct" style="font-weight:700">${NET_LBL[sec]}</td>${sc}<td class="${stot<0?'cf-neg':SEC_COL[sec]}" style="font-weight:800">${fmts(Math.round(stot))}</td></tr>`;
   });
+
   // NET CASH FLOW
   const netTot=Object.values(netMo).reduce((a,v)=>a+v,0);
   const netCells=months.map(m=>{const v=netMo[m]||0;return`<td class="${v<0?'cf-neg':v>0?'cf-pos':''}${m===CUR?' mo-cur-col':''}" style="font-weight:700">${v?fmts(Math.round(v)):'·'}</td>`;}).join('');
