@@ -173,6 +173,15 @@ async function fetchSmartSuiteData(apiKey) {
   const peopleById  = Object.fromEntries(people.map(p => [p.id, p.title || '']));
   const companyById = Object.fromEntries(companies.map(c => [c.id, c.title || '']));
 
+  // Date record lookup for resolving Begin/End Date linked fields on budget items
+  // Priority: actual > baseline > estimated (most accurate wins)
+  const dateRecById = Object.fromEntries(dateRecs.map(r => [r.id, r]));
+  function getBestDate(recId) {
+    const rec = dateRecById[recId];
+    if (!rec) return null;
+    return dateVal(rec.s7c51ac6b5) || dateVal(rec.s8ca756976) || dateVal(rec.s147d5462c);
+  }
+
   const datesByProject = {};
   for (const r of dateRecs) {
     for (const pid of (r.sed6d961dc || [])) (datesByProject[pid] ||= []).push(r);
@@ -245,8 +254,12 @@ async function fetchSmartSuiteData(apiKey) {
       const btf    = parseFloat(br.s6506ec407)  || 0;
       const pct    = parseFloat(br.s3636482e0)  || 0;
 
-      const rowCos = (br.s2f27d033f || []).map(id => companyById[id]).filter(Boolean);
-      rows.push({ a: br.s32eed8560 || '', s, t, e, b, co, adj, ctd, act, btf, pct, mo: {}, cos: rowCos });
+      const rowCos  = (br.s2f27d033f || []).map(id => companyById[id]).filter(Boolean);
+      const bDateId = (br.s91a919bb8 || [])[0];
+      const eDateId = (br.s70dd1c897 || [])[0];
+      const bDate   = bDateId ? getBestDate(bDateId) : null;  // YYYY-MM-DD or null
+      const eDate   = eDateId ? getBestDate(eDateId) : null;
+      rows.push({ a: br.s32eed8560 || '', s, t, e, b, co, adj, ctd, act, btf, pct, mo: {}, cos: rowCos, bDate, eDate });
 
       if (s === 'inv') { inv_b += b; inv_c += co; inv_x += adj; }
       if (s === 'op')  { op_b  += b; op_c  += co; op_x  += adj; }

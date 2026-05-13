@@ -527,17 +527,40 @@ function classifyRow(row,dm){
   return{gl:'cogs',sign:-1,sYM:null,eYM:null,type:'point'};
 }
 function computeProjectCF(p, override){
+  const TODAY=new Date().toISOString().slice(0,10);
+  const TODAY_YM=TODAY.slice(0,7);
   const dm=buildDateMap(p), mos=new Set(), warns=[];
   const rows=(p.rows||[]).map(r=>{
     const cl=classifyRow(r,dm);
-    // If an override window is provided, apply it to all non-gp_budget rows
-    if(override && cl.gl!=='gp_budget'){
+    if(cl.gl==='gp_budget') return{...r,cl,budMo:{},actMo:{}};
+
+    // ── 1. Manual override (UI dropdowns) takes highest priority ──
+    if(override){
       cl.sYM=override.sYM; cl.eYM=override.eYM; cl.type='even';
     }
-    const budMo=spreadMo((r.adj||r.b||0)*cl.sign,cl.sYM,cl.eYM,cl.type);
+    // ── 2. Item-level Begin/End dates override keyword-based dates ──
+    else if(r.bDate||r.eDate){
+      const iSYM=r.bDate?toYM(r.bDate):null;
+      const iEYM=r.eDate?toYM(r.eDate):null;
+      cl.sYM=iSYM||cl.sYM;
+      cl.eYM=iEYM||cl.eYM;
+      cl.type=(cl.sYM&&cl.eYM&&cl.eYM>cl.sYM)?'even':'point';
+    }
+
+    // ── 3. BTF logic: item spans today with remaining balance → spread BTF forward ──
+    let budAmt=(r.adj||r.b||0)*cl.sign;
+    let sYM=cl.sYM, eYM=cl.eYM, type=cl.type;
+    if(!override && cl.sYM && cl.eYM && cl.sYM<TODAY_YM && cl.eYM>=TODAY_YM && r.btf>0){
+      budAmt=r.btf*cl.sign;
+      sYM=TODAY_YM;
+      type='even';
+    }
+
+    const budMo=spreadMo(budAmt,sYM,eYM,type);
     const actMo=spreadMo((r.act||0)*cl.sign,cl.sYM,cl.eYM,cl.type);
-    if(!cl.sYM && cl.gl!=='gp_budget') warns.push(`"${r.a}": no spread date`);
+    if(!sYM) warns.push(`"${r.a}": no spread date`);
     Object.keys(budMo).forEach(m=>mos.add(m));
+    Object.keys(actMo).forEach(m=>mos.add(m));
     return{...r,cl,budMo,actMo};
   });
   return{rows,months:[...mos].sort(),warns,dm};
@@ -1059,7 +1082,10 @@ function renderCFProject(p){
     let out=`<tr class="cf-subhdr"><td class="acct" colspan="${months.length+2}" style="padding-left:20px;font-size:9px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;background:var(--canvas)">${label}</td></tr>`;
     groupRows.forEach(r=>{
       let rowTot=0;
-      const hint=r.cl.sYM?`<span class="cf-date-hint">${r.cl.sYM}${r.cl.eYM&&r.cl.eYM!==r.cl.sYM?' → '+r.cl.eYM:''}</span>`:'<span class="cf-no-date"> ⚠ no date</span>';
+      const TODAY_YM=new Date().toISOString().slice(0,7);
+      const isBTF=!r.cl._ov&&r.bDate&&r.eDate&&toYM(r.bDate)<TODAY_YM&&toYM(r.eDate)>=TODAY_YM&&r.btf>0;
+      const dSrc=r.bDate||r.eDate?'●':'';  // dot = item-level date
+      const hint=r.cl.sYM?`<span class="cf-date-hint">${dSrc}${isBTF?'BTF ':''} ${r.cl.sYM}${r.cl.eYM&&r.cl.eYM!==r.cl.sYM?' → '+r.cl.eYM:''}</span>`:'<span class="cf-no-date"> ⚠ no date</span>';
       const cells=months.map(m=>{
         const v=r.budMo[m]||0;rowTot+=v;secTot[m]=(secTot[m]||0)+v;
         const vCls=v<0?'cf-neg':v>0?SEC_COL[sec]:'';
