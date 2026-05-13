@@ -497,7 +497,7 @@ function classifyRow(row,dm){
       type:sign<0?'even':'point'};
   }
   if(s==='inv'){
-    const isRev=hasTrack||(REV_RE.test(a)&&!COST_RE.test(a));
+    const isRev=REV_RE.test(a)&&!COST_RE.test(a);
     if(isRev) return{gl:'revenue',sign:1,
       sYM:toYM(dm['COE/Lease Commence']||dm['Closeout & Punch List']||dm['Construction End']),eYM:null,type:'point'};
     if(/purchase price|land cost|land acquisition/i.test(a))
@@ -515,7 +515,7 @@ function classifyRow(row,dm){
       eYM:toYM(dm['Construction End']),type:'even'};
   }
   if(s==='op'){
-    const isRev=hasTrack||(REV_RE.test(a)&&!COST_RE.test(a));
+    const isRev=REV_RE.test(a)&&!COST_RE.test(a);
     if(isRev) return{gl:'oprev',sign:1,
       sYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),
       eYM:toYM(dm['1 Year Warranty End Date']||dm['Statutory Liability End Date']||dm['Closeout & Punch List']),
