@@ -453,6 +453,7 @@ const SEC_ORD   = ['inv','op','fin'];
 const REV_RE     = /revenue|proceeds|income|return|refi|sale|back.end|lease income|nnn income/i;
 const COST_RE    = /cost|price|acquisition|improvement|carry|interest carry|closing/i;
 const GP_RE      = /gross\s*profit/i;
+const WIP_RE     = /wip\s*offset|work.in.progress\s*offset/i;
 const FIN_OUT_RE = /repay|distribut|return of capital|interest|fee[s]?|costs?\s+to|penalty/i;
 const FIN_IN_RE  = /required|debt|equity|loan proceeds|capital contribution|borrow|draw\b|refinanc/i;
 
@@ -483,8 +484,14 @@ function classifyRow(row,dm){
   const a=row.a||'', s=row.s, t=row.t||'';
   const hasTrack=!!(t&&t.trim());
 
-  // Gross profit budget items: reference only — excluded from all IS/CF calculations
+  // Gross profit: reference annotation only — excluded from IS and CF
   if(GP_RE.test(a)) return{gl:'gp_budget',sign:0,sYM:null,eYM:null,type:'point'};
+
+  // WIP Offset: investing inflow at sale (recovery of cost basis) — excluded from IS
+  // Spreads BTF forward if item spans today, otherwise points at COE/sale date
+  if(WIP_RE.test(a)) return{gl:'wip_offset',sign:1,
+    sYM:toYM(dm['COE/Lease Commence']||dm['Closeout & Punch List']||dm['Construction End']),
+    eYM:null,type:'point'};
 
   if(s==='fin'){
     // Explicit inflow keywords take precedence over outflow matching
@@ -558,7 +565,7 @@ function computeProjectCF(p, override){
 
     const budMo=spreadMo(budAmt,sYM,eYM,type);
     const actMo=spreadMo((r.act||0)*cl.sign,cl.sYM,cl.eYM,cl.type);
-    if(!sYM) warns.push(`"${r.a}": no spread date`);
+    if(!sYM && cl.gl!=='wip_offset') warns.push(`"${r.a}": no spread date`);
     Object.keys(budMo).forEach(m=>mos.add(m));
     Object.keys(actMo).forEach(m=>mos.add(m));
     return{...r,cl,budMo,actMo};
@@ -885,7 +892,7 @@ function renderIS(p){
   const rows=fp.rows||[];
   if(!rows.length){document.getElementById('pp-body').innerHTML='<div class="no-data">No baseline budget data yet — add BBI records in SmartSuite.</div>';return;}
   const cf=(selCo ? computeProjectCF(fp) : (CF_CACHE[p.id]||computeProjectCF(fp)));
-  const byGL={revenue:[],cogs:[],oprev:[],opex:[],fin:[],gp_budget:[]};
+  const byGL={revenue:[],cogs:[],oprev:[],opex:[],fin:[],gp_budget:[],wip_offset:[]};
   cf.rows.forEach(r=>{const g=r.cl.gl||'cogs';if(byGL[g])byGL[g].push(r);});
 
   // Sum helpers — three columns (Est, Baseline, Adj) computed separately
