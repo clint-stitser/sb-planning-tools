@@ -111,6 +111,18 @@ select{padding:3px 8px;border:1px solid var(--rule);border-radius:4px;font-size:
 .cf-neg{color:var(--red)!important;}
 .cf-cur{background:#FFFCEE!important;}
 .cf-tbl th.cf-cur{background:#FFF8D6!important;}
+.cf-clickable{cursor:pointer;text-decoration:underline dotted var(--ink3);}
+.cf-clickable:hover{background:var(--purple-l)!important;color:var(--purple)!important;}
+#cf-drill-dlg{width:520px;max-width:94vw;}
+#cf-drill-dlg .drill-proj-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--rule);font-size:11px;}
+#cf-drill-dlg .drill-proj-row:last-child{border-bottom:none;}
+#cf-drill-dlg .drill-proj-name{color:var(--ink);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:12px;}
+#cf-drill-dlg .drill-proj-name a{color:var(--purple);text-decoration:none;}
+#cf-drill-dlg .drill-proj-name a:hover{text-decoration:underline;}
+#cf-drill-dlg .drill-proj-val{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;}
+#cf-drill-dlg .drill-proj-val.neg{color:var(--red);}
+#cf-drill-dlg .drill-total-row{display:flex;justify-content:space-between;padding:7px 0 0;font-size:11px;font-weight:700;border-top:2px solid var(--ink);}
+#cf-drill-dlg .drill-empty{color:var(--ink3);font-size:11px;padding:12px 0;text-align:center;}
 
 /* ── PLATFORM P&L ── */
 .pl-layout{display:flex;flex:1;gap:0;overflow:hidden;}
@@ -328,6 +340,20 @@ dialog::backdrop{background:rgba(14,13,11,.5);}
   </div>
 </div>
 
+<!-- ══ CF DRILL-DOWN DIALOG ══ -->
+<dialog id="cf-drill-dlg">
+  <div class="dlg-hdr">
+    <div class="dlg-title" id="cf-drill-title">Project Breakdown</div>
+    <button class="dlg-close" onclick="document.getElementById('cf-drill-dlg').close()">✕</button>
+  </div>
+  <div class="dlg-body" style="max-height:60vh;overflow-y:auto;">
+    <div id="cf-drill-body"></div>
+  </div>
+  <div class="dlg-footer" style="justify-content:flex-end;">
+    <button class="act-btn primary" onclick="document.getElementById('cf-drill-dlg').close()">Close</button>
+  </div>
+</dialog>
+
 <!-- ══ SHARE DIALOG ══ -->
 <dialog id="share-dialog">
   <div class="dlg-hdr">
@@ -352,6 +378,7 @@ dialog::backdrop{background:rgba(14,13,11,.5);}
 // ═══════════════════════════════════════════════════════════════
 let PROJECTS = [];
 let CF_CACHE = {}; // project id → {rows, months, warns, dm}
+let CF_DRILL = []; // drill-down data reset each renderCF
 
 const CUR = new Date().toISOString().slice(0,7);
 const TODAY = new Date().toISOString().slice(0,10);
@@ -536,6 +563,53 @@ function cfCell(v,isCur){
   if(!v||v===0) return `<td class="${isCur?'cf-cur':''}">—</td>`;
   const cls=(v<0?'cf-neg ':'')+(isCur?'cf-cur':'');
   return `<td class="${cls}">${fmtFull(v)}</td>`;
+}
+function cfCellClick(v,isCur,di,mo){
+  if(!v||v===0) return `<td class="${isCur?'cf-cur':''}">—</td>`;
+  const cls=(v<0?'cf-neg ':'')+(isCur?'cf-cur ':'')+' cf-clickable';
+  return `<td class="${cls}" onclick="showCFDrill(${di},'${mo}')" title="Click to see project breakdown">${fmtFull(v)}</td>`;
+}
+
+function showCFDrill(di, mo){
+  const entry=CF_DRILL[di];
+  if(!entry) return;
+  const sign=entry.sign;
+  const isTotal=(mo==='total');
+
+  // Build month label
+  let moLabel;
+  if(isTotal){
+    moLabel='All Periods';
+  } else {
+    const [y,m]=mo.split('-');
+    moLabel=m==='01'?y:new Date(+y,+m-1,1).toLocaleString('en',{month:'long',year:'numeric'});
+  }
+  document.getElementById('cf-drill-title').textContent=`${entry.lbl} — ${moLabel}`;
+
+  // Collect per-project values
+  const rows=Object.values(entry.byProj).map(pd=>{
+    const val=isTotal
+      ? Object.values(pd.mo).reduce((a,v)=>a+v,0)*sign
+      : (pd.mo[mo]||0)*sign;
+    return {name:pd.name,url:pd.url,val};
+  }).filter(r=>r.val!==0).sort((a,b)=>Math.abs(b.val)-Math.abs(a.val));
+
+  const total=rows.reduce((a,r)=>a+r.val,0);
+
+  let html='';
+  if(!rows.length){
+    html='<div class="drill-empty">No project data for this cell.</div>';
+  } else {
+    html=rows.map(r=>`
+      <div class="drill-proj-row">
+        <div class="drill-proj-name"><a href="${r.url}" target="_blank">${r.name}</a></div>
+        <div class="drill-proj-val${r.val<0?' neg':''}">${fmtFull(r.val)}</div>
+      </div>`).join('');
+    html+=`<div class="drill-total-row"><span>Total</span><span class="${total<0?'cf-neg':''}">${fmtFull(total)}</span></div>`;
+  }
+
+  document.getElementById('cf-drill-body').innerHTML=html;
+  document.getElementById('cf-drill-dlg').showModal();
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -871,6 +945,7 @@ function getProjectsForLens(){
 }
 
 function renderCF(){
+  CF_DRILL=[];
   if(!PROJECTS.length) return;
   const months=getPeriodMonths();
   if(!months.length){
@@ -897,7 +972,7 @@ function renderCF(){
   // sections: op.in, op.out, fin.in, fin.out
   // rows keyed by account name within each section
   function aggregateGroup(projs){
-    // Map: sectionKey → {accountLabel → {monthMap, total}}
+    // Map: sectionKey → {accountLabel → {monthMap, total, byProj}}
     const secs={
       'op.in':{},'op.out':{},'fin.in':{},'fin.out':{}
     };
@@ -910,11 +985,16 @@ function renderCF(){
         const secKey=gs.sec+'.'+gs.dir;
         if(!secs[secKey]) secs[secKey]={};
         const lbl=r.a||'(unnamed)';
-        if(!secs[secKey][lbl]) secs[secKey][lbl]={mo:{},total:0};
+        if(!secs[secKey][lbl]) secs[secKey][lbl]={mo:{},total:0,byProj:{}};
+        const entry=secs[secKey][lbl];
+        if(!entry.byProj[p.id]) entry.byProj[p.id]={name:p.n,url:p.url,mo:{},total:0};
+        const pd=entry.byProj[p.id];
         for(const [m,v] of Object.entries(r.budMo||{})){
           if(months.includes(m)){
-            secs[secKey][lbl].mo[m]=(secs[secKey][lbl].mo[m]||0)+v;
-            secs[secKey][lbl].total+=(v||0);
+            entry.mo[m]=(entry.mo[m]||0)+v;
+            entry.total+=(v||0);
+            pd.mo[m]=(pd.mo[m]||0)+v;
+            pd.total+=(v||0);
           }
         }
       }
@@ -942,12 +1022,15 @@ function renderCF(){
     }
     function rowHtml(lbl,moData,dir){
       const sign=dir==='out'?-1:1;
+      // Register drill entry and get index
+      const di=CF_DRILL.length;
+      CF_DRILL.push({lbl,dir,sign,byProj:moData.byProj||{}});
       const moCells=months.map(m=>{
-        const v=(moData[m]||0)*sign;
-        return cfCell(v||0,m===CUR);
+        const v=(moData.mo[m]||0)*sign;
+        return cfCellClick(v||0,m===CUR,di,m);
       }).join('');
-      const total=Object.values(moData).reduce((a,v)=>a+v,0)*sign;
-      return `<tr><td class="acct-col" style="padding-left:20px;font-size:10px;color:var(--ink2)">${lbl}</td>${moCells}${cfCell(total,false)}</tr>`;
+      const total=Object.values(moData.mo||{}).reduce((a,v)=>a+v,0)*sign;
+      return `<tr><td class="acct-col" style="padding-left:20px;font-size:10px;color:var(--ink2)">${lbl}</td>${moCells}${cfCellClick(total,false,di,'total')}</tr>`;
     }
     function subtotalRow(lbl,sectionData,dir){
       const sign=dir==='out'?-1:1;
@@ -964,12 +1047,12 @@ function renderCF(){
     // Inflows
     if(Object.keys(opIn).length){
       html+=`<tr><td class="acct-col" style="padding-left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--green);font-weight:600">Inflows</td>${months.map(()=>'<td></td>').join('')}<td></td></tr>`;
-      Object.entries(opIn).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lbl,d])=>{html+=rowHtml(lbl,d.mo,'in');});
+      Object.entries(opIn).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lbl,d])=>{html+=rowHtml(lbl,d,'in');});
     }
     // Outflows
     if(Object.keys(opOut).length){
       html+=`<tr><td class="acct-col" style="padding-left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--red);font-weight:600">Outflows</td>${months.map(()=>'<td></td>').join('')}<td></td></tr>`;
-      Object.entries(opOut).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lbl,d])=>{html+=rowHtml(lbl,d.mo,'out');});
+      Object.entries(opOut).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lbl,d])=>{html+=rowHtml(lbl,d,'out');});
     }
     // Op subtotal
     {
@@ -984,11 +1067,11 @@ function renderCF(){
     html+=secLabel('FINANCING ACTIVITIES');
     if(Object.keys(finIn).length){
       html+=`<tr><td class="acct-col" style="padding-left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--green);font-weight:600">Inflows</td>${months.map(()=>'<td></td>').join('')}<td></td></tr>`;
-      Object.entries(finIn).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lbl,d])=>{html+=rowHtml(lbl,d.mo,'in');});
+      Object.entries(finIn).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lbl,d])=>{html+=rowHtml(lbl,d,'in');});
     }
     if(Object.keys(finOut).length){
       html+=`<tr><td class="acct-col" style="padding-left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--red);font-weight:600">Outflows</td>${months.map(()=>'<td></td>').join('')}<td></td></tr>`;
-      Object.entries(finOut).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lbl,d])=>{html+=rowHtml(lbl,d.mo,'out');});
+      Object.entries(finOut).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lbl,d])=>{html+=rowHtml(lbl,d,'out');});
     }
     {
       const moTotals={};
