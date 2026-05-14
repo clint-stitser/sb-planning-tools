@@ -17,38 +17,61 @@
   --red:#A81C1C;--red-l:#FDEBEB;
   --purple:#5B3E8C;--purple-l:#F0EBFB;
   --mono:'IBM Plex Mono',monospace;--sans:'DM Sans',sans-serif;
-  --row:36px;--name-w:160px;--mo-w:28px;
+  --row:36px;--name-w:160px;--col-w:32px;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:var(--sans);background:var(--bg);color:var(--tx);font-size:13px;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
-.hdr{background:var(--tx);color:#fff;padding:11px 18px;display:flex;align-items:center;justify-content:space-between;}
+.hdr{background:var(--tx);color:#fff;padding:11px 18px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .hdr-t{font-size:11px;font-weight:500;letter-spacing:.6px;text-transform:uppercase;}
 .hdr-s{font-family:var(--mono);font-size:10px;color:#888;}
 .hdr-btn{margin-left:auto;padding:3px 10px;border:1px solid rgba(255,255,255,.2);border-radius:4px;font-size:11px;font-family:var(--sans);background:transparent;color:rgba(255,255,255,.7);cursor:pointer;transition:all .15s;}
 .hdr-btn:hover{background:rgba(255,255,255,.1);color:#fff;}
-/* toolbar */
-.toolbar{background:var(--srf);border-bottom:1px solid var(--bdr);padding:7px 14px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
+
+/* ── Toolbar ── */
+.toolbar{background:var(--srf);border-bottom:1px solid var(--bdr);padding:6px 14px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex-shrink:0;}
+.toolbar-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap;width:100%;padding:4px 0;}
+.toolbar-row + .toolbar-row{border-top:1px solid var(--bdr2);padding-top:6px;}
 .tl{font-size:10px;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;}
-.pills{display:flex;gap:3px;flex-wrap:wrap;}
-.pill{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--bdr);background:var(--srf2);color:var(--tx2);transition:all .12s;white-space:nowrap;}
-.pill.on{background:var(--blue);color:#fff;border-color:var(--blue);}
-.sep{width:1px;height:20px;background:var(--bdr);margin:0 2px;flex-shrink:0;}
+.sep{width:1px;height:20px;background:var(--bdr);margin:0 3px;flex-shrink:0;}
+
+/* ── Multi-select dropdown ── */
+.ms-wrap{position:relative;display:inline-block;}
+.ms-btn{display:flex;align-items:center;gap:5px;padding:4px 10px;border:1px solid var(--bdr);border-radius:4px;background:var(--srf2);color:var(--tx2);font-size:11px;font-family:var(--sans);cursor:pointer;white-space:nowrap;transition:all .12s;min-width:90px;}
+.ms-btn:hover{border-color:var(--blue);color:var(--tx);}
+.ms-btn.active{background:var(--blue-l);border-color:var(--blue);color:var(--blue);font-weight:500;}
+.ms-btn .ms-caret{font-size:8px;color:var(--tx3);margin-left:auto;}
+.ms-panel{position:absolute;top:calc(100% + 3px);left:0;background:var(--srf);border:1px solid var(--bdr);border-radius:6px;z-index:200;min-width:180px;max-height:260px;overflow-y:auto;box-shadow:0 6px 20px rgba(0,0,0,.12);display:none;}
+.ms-wrap.open .ms-panel{display:block;}
+.ms-panel-hdr{padding:6px 10px 4px;font-size:9px;text-transform:uppercase;letter-spacing:.04em;color:var(--tx3);border-bottom:1px solid var(--bdr2);display:flex;justify-content:space-between;}
+.ms-panel-hdr a{color:var(--blue);cursor:pointer;font-size:9px;text-decoration:none;}
+.ms-panel-hdr a:hover{text-decoration:underline;}
+.ms-opt{display:flex;align-items:center;gap:8px;padding:5px 10px;cursor:pointer;font-size:11px;transition:background .1s;}
+.ms-opt:hover{background:var(--srf2);}
+.ms-opt input[type=checkbox]{accent-color:var(--blue);width:13px;height:13px;cursor:pointer;}
+
+/* ── Standard select ── */
+.ab-sel{padding:4px 8px;border:1px solid var(--bdr);border-radius:4px;font-size:11px;font-family:var(--sans);background:var(--srf2);color:var(--tx);cursor:pointer;}
+
+/* ── Quick range buttons ── */
+.qr-btn{padding:3px 9px;border:1px solid var(--bdr);border-radius:4px;font-size:11px;font-family:var(--sans);background:var(--srf2);color:var(--tx2);cursor:pointer;transition:all .12s;white-space:nowrap;}
+.qr-btn:hover,.qr-btn.on{background:var(--blue);color:#fff;border-color:var(--blue);}
+
+/* ── View toggle ── */
 .toggle{display:flex;border:1px solid var(--bdr);border-radius:4px;overflow:hidden;}
-.tbtn{padding:3px 10px;font-size:11px;cursor:pointer;background:var(--srf2);color:var(--tx2);border:none;font-family:var(--sans);transition:all .12s;}
+.tbtn{padding:4px 12px;font-size:11px;cursor:pointer;background:var(--srf2);color:var(--tx2);border:none;font-family:var(--sans);transition:all .12s;}
 .tbtn.on{background:var(--tx);color:#fff;}
-/* view toggle */
-#gantt-view, #heat-view{transition:opacity .15s;}
-/* main layout */
-.main{overflow:auto;flex:1;padding:12px 14px;}
-/* GANTT */
-.gantt-wrap{min-width:900px;}
-.gantt-head{display:flex;border-bottom:2px solid var(--bdr);margin-bottom:0;position:sticky;top:0;background:var(--srf2);z-index:10;}
+
+/* ── Main ── */
+.main{overflow:auto;flex:1;padding:10px 14px;}
+
+/* ── GANTT ── */
+.gantt-wrap{min-width:600px;}
+.gantt-head{display:flex;border-bottom:2px solid var(--bdr);position:sticky;top:0;background:var(--srf2);z-index:10;}
 .gantt-name-col{width:var(--name-w);min-width:var(--name-w);flex-shrink:0;padding:5px 8px;font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;letter-spacing:.4px;}
-.gantt-months{display:flex;flex:1;overflow:hidden;}
-.gantt-mo-hdr{flex:1;min-width:var(--mo-w);text-align:center;font-size:9px;font-weight:600;color:var(--tx3);padding:5px 0;white-space:nowrap;overflow:hidden;text-overflow:clip;}
-.gantt-mo-hdr.cur{color:var(--blue);font-weight:700;}
-.gantt-mo-hdr.yr-start{border-left:1px solid var(--bdr);}
-/* Person row group */
+.gantt-periods{display:flex;flex:1;overflow:hidden;}
+.gantt-p-hdr{flex:0 0 var(--col-w);text-align:center;font-size:9px;font-weight:600;color:var(--tx3);padding:5px 0;white-space:nowrap;overflow:hidden;text-overflow:clip;}
+.gantt-p-hdr.cur{color:var(--blue);font-weight:700;}
+.gantt-p-hdr.boundary{border-left:1px solid var(--bdr);}
 .person-group{border-bottom:1px solid var(--bdr2);margin-bottom:2px;}
 .person-label{display:flex;align-items:center;gap:6px;padding:5px 8px;background:var(--srf2);cursor:pointer;border-top:1px solid var(--bdr);}
 .person-label:hover{background:var(--bdr2);}
@@ -58,7 +81,6 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tx);font-size:13px
 .p-chev.open{transform:rotate(180deg);}
 .person-rows{display:none;}
 .person-rows.open{display:block;}
-/* Assignment row */
 .asgn-row{display:flex;align-items:center;height:var(--row);border-bottom:1px solid #F0EDE6;}
 .asgn-row:last-child{border-bottom:none;}
 .asgn-row:hover{background:#FAFAF7;}
@@ -69,28 +91,26 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tx);font-size:13px
 .gantt-bar{position:absolute;top:8px;height:20px;border-radius:3px;opacity:.9;display:flex;align-items:center;padding:0 6px;font-size:9px;font-weight:500;color:#fff;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;cursor:pointer;transition:opacity .12s;}
 .gantt-bar:hover{opacity:1;}
 .gantt-cur-line{position:absolute;top:0;bottom:0;width:1px;background:var(--red);opacity:.5;pointer-events:none;z-index:5;}
+
 /* role colors */
-.r-pm{background:#1E4D8C;}
-.r-super{background:#2D6A3F;}
-.r-est{background:#8A6B00;}
-.r-pe{background:#5B3E8C;}
-.r-bdl{background:#B85C1A;}
-.r-other{background:#6B6560;}
-/* HEATMAP */
-.heat-wrap{min-width:700px;}
+.r-pm{background:#1E4D8C;}.r-super{background:#2D6A3F;}.r-est{background:#8A6B00;}
+.r-pe{background:#5B3E8C;}.r-bdl{background:#B85C1A;}.r-other{background:#6B6560;}
+
+/* ── HEATMAP ── */
+.heat-wrap{min-width:600px;}
 .heat-head{display:flex;border-bottom:2px solid var(--bdr);background:var(--srf2);position:sticky;top:0;z-index:10;}
 .heat-name-col{width:var(--name-w);min-width:var(--name-w);flex-shrink:0;padding:5px 8px;font-size:9px;font-weight:600;color:var(--tx3);text-transform:uppercase;}
-.heat-months{display:flex;flex:1;}
-.heat-mo-hdr{flex:1;min-width:var(--mo-w);text-align:center;font-size:9px;font-weight:600;color:var(--tx3);padding:5px 0;}
-.heat-mo-hdr.cur{color:var(--blue);}
-.heat-mo-hdr.yr-start{border-left:1px solid var(--bdr);}
+.heat-periods{display:flex;flex:1;}
+.heat-p-hdr{flex:0 0 var(--col-w);text-align:center;font-size:9px;font-weight:600;color:var(--tx3);padding:5px 0;}
+.heat-p-hdr.cur{color:var(--blue);}
+.heat-p-hdr.boundary{border-left:1px solid var(--bdr);}
 .heat-person-row{display:flex;align-items:center;border-bottom:1px solid var(--bdr2);height:32px;}
 .heat-pname{width:var(--name-w);min-width:var(--name-w);flex-shrink:0;padding:0 8px;font-size:11px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .heat-cells{display:flex;flex:1;height:100%;}
-.heat-cell{flex:1;min-width:var(--mo-w);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:500;cursor:default;transition:opacity .1s;}
+.heat-cell{flex:0 0 var(--col-w);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:9px;font-weight:500;cursor:default;transition:opacity .1s;}
 .heat-cell:hover{opacity:.75;}
 .heat-cell.cur{outline:1px solid var(--red);outline-offset:-1px;}
-/* Load colors 0→max */
+.heat-cell.boundary{border-left:1px solid var(--bdr);}
 .lc0{background:transparent;color:var(--tx3);}
 .lc1{background:#E6F1FB;color:#0C447C;}
 .lc2{background:#B5D4F4;color:#0C447C;}
@@ -98,10 +118,10 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tx);font-size:13px
 .lc4{background:#185FA5;color:#fff;}
 .lc5{background:#0C447C;color:#fff;}
 .lc6{background:#042C53;color:#fff;}
-/* tooltip */
-.tip{position:fixed;background:var(--tx);color:#fff;border-radius:4px;padding:6px 10px;font-size:11px;pointer-events:none;z-index:100;max-width:260px;display:none;line-height:1.5;}
-/* legend */
-.legend{display:flex;gap:12px;padding:6px 14px;background:var(--srf2);border-bottom:1px solid var(--bdr);flex-wrap:wrap;}
+
+/* ── Misc ── */
+.tip{position:fixed;background:var(--tx);color:#fff;border-radius:4px;padding:6px 10px;font-size:11px;pointer-events:none;z-index:300;max-width:280px;display:none;line-height:1.5;}
+.legend{display:flex;gap:12px;padding:5px 14px;background:var(--srf2);border-bottom:1px solid var(--bdr);flex-wrap:wrap;flex-shrink:0;}
 .leg-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--tx2);}
 .leg-dot{width:10px;height:10px;border-radius:2px;}
 .hidden{display:none;}
@@ -109,50 +129,108 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tx);font-size:13px
 </head>
 <body>
 <div id="mp-progress" style="position:fixed;top:0;left:0;height:2px;background:#C8961A;z-index:700;transition:width .3s ease,opacity .4s ease;width:0;opacity:0"></div>
-<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Manpower planner showing project assignments per team member as a Gantt chart and monthly load heatmap</h2>
 <div class="hdr">
   <a href="/" style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.55);font-size:11px;text-decoration:none;margin-right:16px;padding-right:16px;border-right:1px solid rgba(255,255,255,.15);white-space:nowrap;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.55)'">← Home</a>
   <div class="hdr-t" style="flex:1">Stitser BUILT · Manpower Planner</div>
   <div class="hdr-s" id="mp-subtitle">Loading…</div>
   <button class="hdr-btn" onclick="refreshData()" style="margin-left:12px">↻ Refresh</button>
 </div>
+
+<!-- ── TOOLBAR ROW 1: FILTERS ── -->
 <div class="toolbar">
-  <span class="tl">Role</span>
-  <div class="pills" id="role-pills">
-    <div class="pill on" onclick="setRole(this,'ALL')">All</div>
-    <div class="pill" onclick="setRole(this,'Project Manager')">PM</div>
-    <div class="pill" onclick="setRole(this,'Superintendent')">Super</div>
-    <div class="pill" onclick="setRole(this,'Project Estimator')">Estimator</div>
-    <div class="pill" onclick="setRole(this,'Project Engineer')">Engineer</div>
-    <div class="pill" onclick="setRole(this,'Biz Dev Lead')">Biz Dev Lead</div>
+  <div class="toolbar-row">
+    <span class="tl">Filters</span>
+
+    <!-- Role multi-select -->
+    <div class="ms-wrap" id="ms-role">
+      <button class="ms-btn" onclick="toggleMs('ms-role')">
+        <span class="ms-lbl">All Roles</span>
+        <span class="ms-caret">▾</span>
+      </button>
+      <div class="ms-panel">
+        <div class="ms-panel-hdr">Role <a onclick="clearMs('ms-role')">Clear</a></div>
+        <label class="ms-opt"><input type="checkbox" value="Project Manager" onchange="onMsChange('ms-role')"> Project Manager</label>
+        <label class="ms-opt"><input type="checkbox" value="Superintendent" onchange="onMsChange('ms-role')"> Superintendent</label>
+        <label class="ms-opt"><input type="checkbox" value="Project Estimator" onchange="onMsChange('ms-role')"> Estimator</label>
+        <label class="ms-opt"><input type="checkbox" value="Project Engineer" onchange="onMsChange('ms-role')"> Project Engineer</label>
+        <label class="ms-opt"><input type="checkbox" value="Biz Dev Lead" onchange="onMsChange('ms-role')"> Biz Dev Lead</label>
+      </div>
+    </div>
+
+    <!-- Status multi-select -->
+    <div class="ms-wrap" id="ms-sg">
+      <button class="ms-btn" onclick="toggleMs('ms-sg')">
+        <span class="ms-lbl">All Status</span>
+        <span class="ms-caret">▾</span>
+      </button>
+      <div class="ms-panel">
+        <div class="ms-panel-hdr">Status <a onclick="clearMs('ms-sg')">Clear</a></div>
+        <label class="ms-opt"><input type="checkbox" value="WIP" onchange="onMsChange('ms-sg')"> WIP</label>
+        <label class="ms-opt"><input type="checkbox" value="Closeout" onchange="onMsChange('ms-sg')"> Closeout</label>
+        <label class="ms-opt"><input type="checkbox" value="Pipeline" onchange="onMsChange('ms-sg')"> Pipeline</label>
+        <label class="ms-opt"><input type="checkbox" value="Hot" onchange="onMsChange('ms-sg')"> Hot</label>
+        <label class="ms-opt"><input type="checkbox" value="Warm" onchange="onMsChange('ms-sg')"> Warm</label>
+        <label class="ms-opt"><input type="checkbox" value="Nurture" onchange="onMsChange('ms-sg')"> Nurture</label>
+        <label class="ms-opt"><input type="checkbox" value="New Opportunity" onchange="onMsChange('ms-sg')"> New Opportunity</label>
+      </div>
+    </div>
+
+    <!-- Company multi-select (populated dynamically) -->
+    <div class="ms-wrap" id="ms-co">
+      <button class="ms-btn" onclick="toggleMs('ms-co')">
+        <span class="ms-lbl">All Companies</span>
+        <span class="ms-caret">▾</span>
+      </button>
+      <div class="ms-panel">
+        <div class="ms-panel-hdr">Company <a onclick="clearMs('ms-co')">Clear</a></div>
+      </div>
+    </div>
+
+    <!-- Project Type multi-select (populated dynamically) -->
+    <div class="ms-wrap" id="ms-pt">
+      <button class="ms-btn" onclick="toggleMs('ms-pt')">
+        <span class="ms-lbl">All Types</span>
+        <span class="ms-caret">▾</span>
+      </button>
+      <div class="ms-panel">
+        <div class="ms-panel-hdr">Project Type <a onclick="clearMs('ms-pt')">Clear</a></div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+    <span class="tl">View</span>
+    <div class="toggle">
+      <button class="tbtn on" id="gantt-btn" onclick="setView('gantt')">Gantt</button>
+      <button class="tbtn" id="heat-btn" onclick="setView('heat')">Heatmap</button>
+    </div>
   </div>
-  <div class="sep"></div>
-  <span class="tl">Status</span>
-  <div class="pills" id="sg-pills">
-    <div class="pill on" onclick="setSg(this,'ALL')">All</div>
-    <div class="pill" onclick="setSg(this,'WIP')">WIP</div>
-    <div class="pill" onclick="setSg(this,'Active in Closeout & Warranty')">Closeout</div>
-    <div class="pill" onclick="setSg(this,'Pipeline')">Pipeline</div>
-    <div class="pill" onclick="setSg(this,'Hot')">Hot</div>
-    <div class="pill" onclick="setSg(this,'Warm')">Warm</div>
-    <div class="pill" onclick="setSg(this,'Nurture')">Nurture</div>
-    <div class="pill" onclick="setSg(this,'New Opportunity')">New Opp</div>
-  </div>
-  <div class="sep"></div>
-  <span class="tl">View</span>
-  <div class="toggle">
-    <button class="tbtn on" id="gantt-btn" onclick="setView('gantt')">Gantt</button>
-    <button class="tbtn" id="heat-btn" onclick="setView('heat')">Heatmap</button>
-  </div>
-  <div class="sep"></div>
-  <span class="tl">Year</span>
-  <div class="pills" id="yr-pills">
-    <div class="pill on" onclick="setYr(this,'ALL')">All</div>
-    <div class="pill" onclick="setYr(this,'2025')">2025</div>
-    <div class="pill" onclick="setYr(this,'2026')">2026</div>
-    <div class="pill" onclick="setYr(this,'2027')">2027</div>
+
+  <!-- ── TOOLBAR ROW 2: TIMEFRAME ── -->
+  <div class="toolbar-row">
+    <span class="tl">Granularity</span>
+    <select class="ab-sel" id="gran-sel" onchange="onGranChange()">
+      <option value="week">Weekly</option>
+      <option value="biweek">Bi-weekly</option>
+      <option value="month" selected>Monthly</option>
+      <option value="year">Annually</option>
+    </select>
+
+    <div class="sep"></div>
+    <span class="tl">From</span>
+    <input type="month" id="range-from" class="ab-sel" onchange="render()">
+    <span class="tl">To</span>
+    <input type="month" id="range-to" class="ab-sel" onchange="render()">
+
+    <div class="sep"></div>
+    <span class="tl">Quick</span>
+    <button class="qr-btn" onclick="setRange(0,2,'3mo')">3 Mo</button>
+    <button class="qr-btn on" onclick="setRange(-1,5,'6mo')">6 Mo</button>
+    <button class="qr-btn" onclick="setRange(-2,11,'1yr')">1 Yr</button>
+    <button class="qr-btn" onclick="setRange(-3,23,'2yr')">2 Yr</button>
+    <button class="qr-btn" onclick="setRangeAll('all')">All</button>
   </div>
 </div>
+
 <div class="legend">
   <div class="leg-item"><div class="leg-dot" style="background:#1E4D8C"></div>Project Manager</div>
   <div class="leg-item"><div class="leg-dot" style="background:#2D6A3F"></div>Superintendent</div>
@@ -170,131 +248,247 @@ body{font-family:var(--sans);background:var(--bg);color:var(--tx);font-size:13px
 <div class="tip" id="tip"></div>
 
 <script>
-let PEOPLE = [];  // populated by loadData()
-const ALL_MONTHS = (()=>{
-  const m=[];
-  for(let y=2023;y<=2032;y++) for(let mo=1;mo<=12;mo++) m.push(`${y}-${String(mo).padStart(2,'0')}`);
-  return m;
-})();
+let PEOPLE = [];
 const CUR = new Date().toISOString().slice(0,7);
+const TODAY = new Date();
 
-let roleFilter='ALL', sgFilter='ALL', viewMode='gantt', yrFilter='ALL';
+// ── Filter state (Sets = multi-select, empty = show all) ──────────────────
+const F = { role:new Set(), sg:new Set(), co:new Set(), pt:new Set() };
 
-const ROLE_CLASS = {
-  'Project Manager':'r-pm','Superintendent':'r-super',
-  'Project Estimator':'r-est','Project Engineer':'r-pe',
-  'Biz Dev Lead':'r-bdl'
-};
-const SG_COLORS = {
-  WIP:'#1E4D8C','Closeout & Warranty':'#2D6A3F',
-  Pipeline:'#B85C1A','Biz Dev':'#8A6B00',
-  Closed:'#888','Other':'#888'
-};
-const SG_LABEL = {WIP:'WIP','Active in Closeout & Warranty':'Closeout','Closeout & Warranty':'Closeout',Pipeline:'Pipeline','Active in Pipeline':'Pipeline','Hot':'Hot (0-6 mo)','Warm':'Warm (6-12 mo)','Nurture':'Nurture (12+ mo)','New Opportunity':'New Opp','Biz Dev':'Biz Dev','Closed':'Closed','Closed Job-Closed Warranty':'Closed'};
+// ── Timeframe state ───────────────────────────────────────────────────────
+let granularity = 'month';
+let rangeFrom, rangeTo;
 
-function visMonths(){
-  if(yrFilter==='ALL') return ALL_MONTHS;
-  return ALL_MONTHS.filter(m=>m.startsWith(yrFilter));
+function addMonths(ym, n){
+  const [y,m] = ym.split('-').map(Number);
+  const d = new Date(y, m-1+n, 1);
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+function initDefaultRange(){
+  rangeFrom = addMonths(CUR, -1);
+  rangeTo   = addMonths(CUR, 5);
+  document.getElementById('range-from').value = rangeFrom;
+  document.getElementById('range-to').value   = rangeTo;
+}
+function setRange(fromOff, toOff, btnId){
+  rangeFrom = addMonths(CUR, fromOff);
+  rangeTo   = addMonths(CUR, toOff);
+  document.getElementById('range-from').value = rangeFrom;
+  document.getElementById('range-to').value   = rangeTo;
+  document.querySelectorAll('.qr-btn').forEach(b=>b.classList.remove('on'));
+  if(btnId) document.querySelectorAll('.qr-btn').forEach(b=>{ if(b.textContent.trim().toLowerCase()===btnId.replace('mo',' mo').replace('yr',' yr').toLowerCase()||b.onclick.toString().includes(`'${btnId}'`)) b.classList.add('on'); });
+  render();
+}
+function setRangeAll(){
+  // Span all projects with dates
+  let minYM = '9999-99', maxYM = '0000-00';
+  PEOPLE.forEach(p=>p.assignments.forEach(a=>{
+    if(a.s){ const ym=a.s.slice(0,7); if(ym<minYM) minYM=ym; }
+    if(a.e){ const ym=a.e.slice(0,7); if(ym>maxYM) maxYM=ym; }
+  }));
+  if(minYM==='9999-99') minYM=addMonths(CUR,-3);
+  if(maxYM==='0000-00') maxYM=addMonths(CUR,12);
+  rangeFrom = minYM;
+  rangeTo   = maxYM;
+  document.getElementById('range-from').value = rangeFrom;
+  document.getElementById('range-to').value   = rangeTo;
+  document.querySelectorAll('.qr-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.qr-btn').forEach(b=>{ if(b.textContent.trim()==='All') b.classList.add('on'); });
+  render();
+}
+function onGranChange(){
+  granularity = document.getElementById('gran-sel').value;
+  // Adjust column width CSS variable
+  const w = {week:20, biweek:28, month:36, year:80}[granularity]||32;
+  document.documentElement.style.setProperty('--col-w', w+'px');
+  render();
 }
 
-function filteredAssignments(person){
-  return person.assignments.filter(a=>{
-    if(roleFilter!=='ALL'&&a.role!==roleFilter) return false;
-    if(sgFilter!=='ALL'&&a.sg!==sgFilter) return false;
-    return true;
+// ── Build time periods ────────────────────────────────────────────────────
+function getTimePeriods(){
+  const from = document.getElementById('range-from').value || rangeFrom;
+  const to   = document.getElementById('range-to').value   || rangeTo;
+  const fromDate = new Date(from+'-01');
+  let   toDate   = new Date(to+'-01');
+  toDate.setMonth(toDate.getMonth()+1); // exclusive upper bound
+
+  const periods = [];
+
+  if(granularity==='month'){
+    let d = new Date(fromDate);
+    while(d < toDate){
+      const y=d.getFullYear(), m=d.getMonth();
+      const key=`${y}-${String(m+1).padStart(2,'0')}`;
+      const start=new Date(y,m,1), end=new Date(y,m+1,0,23,59,59);
+      const isCur = key===CUR;
+      const isBoundary = m===0;
+      const label = m===0 ? String(y) : new Date(y,m,1).toLocaleString('en',{month:'short'});
+      periods.push({key,label,start,end,isCur,isBoundary});
+      d.setMonth(d.getMonth()+1);
+    }
+  } else if(granularity==='year'){
+    let y=fromDate.getFullYear();
+    const toY=toDate.getFullYear();
+    while(y<=toY){
+      periods.push({key:String(y),label:String(y),start:new Date(y,0,1),end:new Date(y,11,31,23,59,59),isCur:y===TODAY.getFullYear(),isBoundary:true});
+      y++;
+    }
+  } else {
+    // week (7) or biweek (14)
+    const step = granularity==='week' ? 7 : 14;
+    let d = new Date(fromDate);
+    // snap to Monday
+    const dow=d.getDay(); d.setDate(d.getDate()-(dow===0?6:dow-1));
+    while(d < toDate){
+      const start=new Date(d);
+      const end=new Date(d); end.setDate(end.getDate()+step-1); end.setHours(23,59,59);
+      const isCur = TODAY>=start && TODAY<=end;
+      const mo=start.getMonth(), y=start.getFullYear();
+      // boundary = first period of each month
+      const prevD=new Date(start); prevD.setDate(prevD.getDate()-step);
+      const isBoundary = prevD.getMonth()!==mo || prevD.getFullYear()!==y;
+      const label=start.toLocaleString('en',{month:'short',day:'numeric'});
+      periods.push({key:start.toISOString().slice(0,10),label,start,end,isCur,isBoundary});
+      d.setDate(d.getDate()+step);
+    }
+  }
+  return periods;
+}
+
+// ── Role / status short labels ────────────────────────────────────────────
+const ROLE_CLASS={
+  'Project Manager':'r-pm','Superintendent':'r-super',
+  'Project Estimator':'r-est','Project Engineer':'r-pe','Biz Dev Lead':'r-bdl'
+};
+const SG_NORM={
+  'WIP':'WIP','Active in Closeout & Warranty':'Closeout','Closeout & Warranty':'Closeout',
+  'Closeout':'Closeout','Pipeline':'Pipeline','Active in Pipeline':'Pipeline',
+  'Hot':'Hot','Warm':'Warm','Nurture':'Nurture','New Opportunity':'New Opportunity','Closed':'Closed'
+};
+
+// ── Multi-select helpers ──────────────────────────────────────────────────
+const MS_KEY = {'ms-role':'role','ms-sg':'sg','ms-co':'co','ms-pt':'pt'};
+const MS_LABEL = {'ms-role':'Roles','ms-sg':'Status','ms-co':'Companies','ms-pt':'Types'};
+
+function toggleMs(id){
+  const wrap=document.getElementById(id);
+  // Close others
+  document.querySelectorAll('.ms-wrap.open').forEach(w=>{ if(w.id!==id) w.classList.remove('open'); });
+  wrap.classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.ms-wrap')) document.querySelectorAll('.ms-wrap.open').forEach(w=>w.classList.remove('open'));
+});
+function onMsChange(id){
+  const key=MS_KEY[id];
+  const checked=[...document.querySelectorAll(`#${id} input:checked`)].map(c=>c.value);
+  F[key]=new Set(checked);
+  updateMsBtn(id);
+  render();
+}
+function clearMs(id){
+  document.querySelectorAll(`#${id} input`).forEach(c=>c.checked=false);
+  F[MS_KEY[id]]=new Set();
+  updateMsBtn(id);
+  render();
+}
+function updateMsBtn(id){
+  const key=MS_KEY[id];
+  const btn=document.querySelector(`#${id} .ms-btn`);
+  const lbl=document.querySelector(`#${id} .ms-lbl`);
+  const selected=[...F[key]];
+  if(!selected.length){ lbl.textContent=`All ${MS_LABEL[id]}`; btn.classList.remove('active'); }
+  else if(selected.length<=2){ lbl.textContent=selected.join(', '); btn.classList.add('active'); }
+  else{ lbl.textContent=`${selected.length} ${MS_LABEL[id]}`; btn.classList.add('active'); }
+}
+function populateMs(id, values){
+  const panel=document.querySelector(`#${id} .ms-panel`);
+  const hdr=panel.querySelector('.ms-panel-hdr');
+  // Remove existing options
+  [...panel.querySelectorAll('.ms-opt')].forEach(o=>o.remove());
+  values.forEach(v=>{
+    const lbl=document.createElement('label');
+    lbl.className='ms-opt';
+    lbl.innerHTML=`<input type="checkbox" value="${v.replace(/"/g,'&quot;')}" onchange="onMsChange('${id}')"> ${v}`;
+    panel.appendChild(lbl);
   });
 }
 
+// ── Filtering ─────────────────────────────────────────────────────────────
+function filteredAssignments(person){
+  return person.assignments.filter(a=>{
+    if(F.role.size && !F.role.has(a.role)) return false;
+    const sgNorm = SG_NORM[a.sg]||a.sg;
+    if(F.sg.size && !F.sg.has(sgNorm)) return false;
+    if(F.co.size && !F.co.has(a.co)) return false;
+    if(F.pt.size && !F.pt.has(a.pt)) return false;
+    return true;
+  });
+}
 function visiblePeople(){
   return PEOPLE.filter(p=>filteredAssignments(p).length>0);
 }
 
-// ── GANTT ────────────────────────────────────────────────────
+// ── GANTT ─────────────────────────────────────────────────────────────────
 function renderGantt(){
-  const months = visMonths();
-  const people = visiblePeople();
-  const n = months.length;
+  const periods=getTimePeriods();
+  if(!periods.length){ document.getElementById('gantt-view').innerHTML='<div style="padding:40px;text-align:center;color:var(--tx3)">No periods in selected range.</div>'; return; }
+  const people=visiblePeople();
 
-  const headHtml = months.map(m=>{
-    const [y,mo]=m.split('-');
-    const isYrStart = mo==='01';
-    const isCur = m===CUR;
-    const lbl = new Date(+y,+mo-1,1).toLocaleString('en',{month:'short'});
-    const lblFull = isYrStart ? y : lbl;
-    return `<div class="gantt-mo-hdr${isCur?' cur':''}${isYrStart?' yr-start':''}" title="${m}">${lblFull}</div>`;
-  }).join('');
+  const msStart=periods[0].start.getTime();
+  const msEnd  =periods[periods.length-1].end.getTime()+1;
+  const totalMs=msEnd-msStart;
 
-  const peopleHtml = people.map((person,pi)=>{
-    const asgns = filteredAssignments(person);
-    const open = pi===0;
+  const headHtml=periods.map(p=>`<div class="gantt-p-hdr${p.isCur?' cur':''}${p.isBoundary?' boundary':''}" style="flex:0 0 var(--col-w)" title="${p.key}">${p.label}</div>`).join('');
 
-    // Compute per-row bars
-    // Find date range of months
-    const moStart = months[0], moEnd = months[months.length-1];
-    const msStart = new Date(moStart+'-01').getTime();
-    const msEnd   = new Date(moEnd.split('-')[0]+'-'+(+moEnd.split('-')[1]+1 > 12 ? '01' : String(+moEnd.split('-')[1]+1).padStart(2,'0'))+'-01').getTime();
-    const totalMs = msEnd - msStart;
+  const curPct=Math.max(0,Math.min(100,(TODAY.getTime()-msStart)/totalMs*100));
 
-    // Current line position
-    const curMs = new Date(CUR+'-01').getTime();
-    const curPct = Math.max(0,Math.min(100,(curMs-msStart)/totalMs*100));
-
-    const rowsHtml = asgns.map(a=>{
-      if(!a.s||!a.e){
-        return `<div class="asgn-row">
-          <div class="asgn-name" title="${a.n}"><a href="${a.url}" target="_blank">${a.n}</a></div>
-          <div class="asgn-timeline" style="display:flex;align-items:center;padding-left:8px">
-            <span style="font-size:10px;color:var(--tx3);font-style:italic">No dates</span>
-          </div>
-        </div>`;
-      }
-      const s = new Date(a.s).getTime();
-      const e = new Date(a.e).getTime() + 86400000*30;
-      const left = Math.max(0,(s-msStart)/totalMs*100);
-      const right= Math.min(100,(e-msStart)/totalMs*100);
-      const width= Math.max(0.5, right-left);
-      const rc = ROLE_CLASS[a.role]||'r-other';
-      const sgLbl = SG_LABEL[a.sg]||a.sg;
-      const label = width > 8 ? a.n : '';
-
+  const peopleHtml=people.map((person,pi)=>{
+    const asgns=filteredAssignments(person);
+    const open=pi===0;
+    const rowsHtml=asgns.map(a=>{
+      if(!a.s||!a.e) return `<div class="asgn-row">
+        <div class="asgn-name" title="${a.n}"><a href="${a.url}" target="_blank">${a.n}</a></div>
+        <div class="asgn-timeline" style="display:flex;align-items:center;padding-left:8px"><span style="font-size:10px;color:var(--tx3);font-style:italic">No dates</span></div></div>`;
+      const s=new Date(a.s).getTime();
+      const e=new Date(a.e).getTime()+86400000;
+      const left=Math.max(0,(s-msStart)/totalMs*100);
+      const right=Math.min(100,(e-msStart)/totalMs*100);
+      const width=Math.max(0.3,right-left);
+      const rc=ROLE_CLASS[a.role]||'r-other';
+      const sgLbl=SG_NORM[a.sg]||a.sg;
+      const label=width>6?a.n:'';
       return `<div class="asgn-row">
         <div class="asgn-name" title="${a.n} · ${a.role}">
           <a href="${a.url}" target="_blank">${a.n}</a>
           <div style="font-size:9px;color:var(--tx3)">${sgLbl}</div>
         </div>
         <div class="asgn-timeline"
-             onmouseenter="showTip(event,'${a.n.replace(/'/g,'')}','${a.role}','${a.s}','${a.e}','${sgLbl}')"
+             onmouseenter="showTip(event,'${esc(a.n)}','${esc(a.role)}','${a.s}','${a.e}','${esc(sgLbl)}')"
              onmouseleave="hideTip()">
           <div class="gantt-cur-line" style="left:${curPct.toFixed(1)}%"></div>
-          <div class="gantt-bar ${rc}"
-               style="left:${left.toFixed(1)}%;width:${width.toFixed(1)}%"
-               title="${a.n} · ${a.role} · ${a.s} → ${a.e}">${label}</div>
-        </div>
-      </div>`;
+          <div class="gantt-bar ${rc}" style="left:${left.toFixed(1)}%;width:${width.toFixed(1)}%" title="${a.n} · ${a.role} · ${a.s} → ${a.e}">${label}</div>
+        </div></div>`;
     }).join('');
 
-    const roles = [...new Set(asgns.map(a=>a.role))].join(', ');
+    const roles=[...new Set(asgns.map(a=>a.role))].join(', ');
     return `<div class="person-group">
       <div class="person-label" onclick="togglePerson(this)">
         <div class="person-name">${person.name}</div>
-        <div class="person-meta">
-          <span>${asgns.length} assignment${asgns.length!==1?'s':''}</span>
-          <span style="color:var(--tx3)">${roles}</span>
-        </div>
+        <div class="person-meta"><span>${asgns.length} assignment${asgns.length!==1?'s':''}</span><span style="color:var(--tx3)">${roles}</span></div>
         <i class="ti ti-chevron-down p-chev${open?' open':''}" aria-hidden="true"></i>
       </div>
       <div class="person-rows${open?' open':''}">
         <div class="asgn-row" style="height:2px;background:transparent"></div>
         ${rowsHtml}
         <div class="asgn-row" style="height:2px;background:transparent"></div>
-      </div>
-    </div>`;
+      </div></div>`;
   }).join('');
 
   document.getElementById('gantt-view').innerHTML=`<div class="gantt-wrap">
     <div class="gantt-head">
       <div class="gantt-name-col">Person / Project</div>
-      <div class="gantt-months">${headHtml}</div>
+      <div class="gantt-periods">${headHtml}</div>
     </div>
     ${peopleHtml||'<div style="padding:40px;text-align:center;color:var(--tx3)">No assignments match current filters.</div>'}
   </div>`;
@@ -305,78 +499,44 @@ function togglePerson(el){
   rows.classList.toggle('open'); chev.classList.toggle('open');
 }
 
-// ── HEATMAP ──────────────────────────────────────────────────
+// ── HEATMAP ───────────────────────────────────────────────────────────────
 function loadClass(v,max){
   if(v===0) return 'lc0';
-  const frac = v/Math.max(max,1);
-  if(frac<=0.15) return 'lc1';
-  if(frac<=0.3)  return 'lc2';
-  if(frac<=0.5)  return 'lc3';
-  if(frac<=0.7)  return 'lc4';
-  if(frac<=0.85) return 'lc5';
-  return 'lc6';
+  const f=v/Math.max(max,1);
+  if(f<=.15) return 'lc1'; if(f<=.3) return 'lc2'; if(f<=.5) return 'lc3';
+  if(f<=.7) return 'lc4';  if(f<=.85) return 'lc5'; return 'lc6';
+}
+function assignmentActiveInPeriod(a, p){
+  if(!a.s||!a.e) return false;
+  const aStart=new Date(a.s).getTime(), aEnd=new Date(a.e).getTime()+86400000;
+  return aStart<=p.end.getTime() && aEnd>=p.start.getTime();
 }
 
 function renderHeatmap(){
-  const months = visMonths();
-  const people = visiblePeople();
+  const periods=getTimePeriods();
+  if(!periods.length){ document.getElementById('heat-view').innerHTML='<div style="padding:40px;text-align:center;color:var(--tx3)">No periods in selected range.</div>'; return; }
+  const people=visiblePeople();
 
-  // Recompute heatmap per person with current filters
-  const headHtml = months.map(m=>{
-    const [y,mo]=m.split('-');
-    const isYrStart=mo==='01', isCur=m===CUR;
-    const lbl=new Date(+y,+mo-1,1).toLocaleString('en',{month:'short'});
-    return `<div class="heat-mo-hdr${isCur?' cur':''}${isYrStart?' yr-start':''}">${isYrStart?y:lbl}</div>`;
-  }).join('');
+  const headHtml=periods.map(p=>`<div class="heat-p-hdr${p.isCur?' cur':''}${p.isBoundary?' boundary':''}">${p.label}</div>`).join('');
 
-  const globalMax = Math.max(...people.map(person=>{
-    const asgns = filteredAssignments(person);
-    const hm={};
-    asgns.forEach(a=>{
-      if(!a.s||!a.e) return;
-      const sd=new Date(a.s), ed=new Date(a.e);
-      let cur=new Date(sd.getFullYear(),sd.getMonth(),1);
-      while(cur<=ed){
-        const k=cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0');
-        hm[k]=(hm[k]||0)+1;
-        cur.setMonth(cur.getMonth()+1);
-      }
-    });
-    return Math.max(0,...Object.values(hm));
+  const globalMax=Math.max(...people.map(person=>{
+    const asgns=filteredAssignments(person);
+    return Math.max(0,...periods.map(p=>asgns.filter(a=>assignmentActiveInPeriod(a,p)).length));
   }),1);
 
-  const rowsHtml = people.map(person=>{
-    const asgns = filteredAssignments(person);
-    // Rebuild heatmap from filtered assignments
-    const hm={};
-    asgns.forEach(a=>{
-      if(!a.s||!a.e) return;
-      const sd=new Date(a.s), ed=new Date(a.e);
-      let cur=new Date(sd.getFullYear(),sd.getMonth(),1);
-      while(cur<=ed){
-        const k=cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0');
-        hm[k]=(hm[k]||0)+1;
-        cur.setMonth(cur.getMonth()+1);
-      }
-    });
-    const cells=months.map(m=>{
-      const v=hm[m]||0;
+  const rowsHtml=people.map(person=>{
+    const asgns=filteredAssignments(person);
+    const cells=periods.map(p=>{
+      const active=asgns.filter(a=>assignmentActiveInPeriod(a,p));
+      const v=active.length;
       const cls=loadClass(v,globalMax);
-      const isCur=m===CUR;
-      const projs = asgns.filter(a=>{
-        if(!a.s||!a.e) return false;
-        return a.s<=m+'-31'&&a.e>=m+'-01';
-      }).map(a=>a.n).join(', ');
-      return `<div class="heat-cell ${cls}${isCur?' cur':''}"
-                   onmouseenter="showHeatTip(event,'${person.name}','${m}',${v},'${projs.replace(/'/g,"&#39;")}')"
+      const projs=active.map(a=>a.n).join(', ');
+      return `<div class="heat-cell ${cls}${p.isCur?' cur':''}${p.isBoundary?' boundary':''}"
+                   onmouseenter="showHeatTip(event,'${esc(person.name)}','${p.label}',${v},'${esc(projs)}')"
                    onmouseleave="hideTip()">${v||''}</div>`;
     }).join('');
-
-    const maxLoad=Math.max(0,...Object.values(hm).filter(v=>months.some(m=>hm[m]===v)));
     return `<div class="heat-person-row">
-      <div class="heat-pname" title="${person.name}">${person.name}
-        <span style="color:var(--tx3);font-size:9px;font-family:var(--mono)"> ·${asgns.length}</span>
-      </div>
+      <div class="heat-pname" title="${person.name}">${person.name}<span style="color:var(--tx3);font-size:9px;font-family:var(--mono)"> ·${asgns.length}</span></div>
       <div class="heat-cells">${cells}</div>
     </div>`;
   }).join('');
@@ -384,52 +544,34 @@ function renderHeatmap(){
   document.getElementById('heat-view').innerHTML=`<div class="heat-wrap">
     <div class="heat-head">
       <div class="heat-name-col">Person</div>
-      <div class="heat-months">${headHtml}</div>
+      <div class="heat-periods">${headHtml}</div>
     </div>
     ${rowsHtml||'<div style="padding:40px;text-align:center;color:var(--tx3)">No assignments match current filters.</div>'}
   </div>`;
 }
 
-// ── TOOLTIP ──────────────────────────────────────────────────
+// ── Tooltip ───────────────────────────────────────────────────────────────
+function esc(s){ return (s||'').replace(/'/g,'&#39;').replace(/"/g,'&quot;'); }
 function showTip(e,name,role,s,end,sg){
   const tip=document.getElementById('tip');
   tip.innerHTML=`<strong>${name}</strong><br>${role} · ${sg}<br>${s} → ${end}`;
-  tip.style.display='block';
-  moveTip(e);
+  tip.style.display='block'; moveTip(e);
 }
-function showHeatTip(e,person,month,count,projs){
+function showHeatTip(e,person,period,count,projs){
   const tip=document.getElementById('tip');
-  const [y,mo]=month.split('-');
-  const lbl=new Date(+y,+mo-1,1).toLocaleString('en',{month:'long',year:'numeric'});
-  tip.innerHTML=`<strong>${person}</strong> · ${lbl}<br>${count} active project${count!==1?'s':''}<br><span style="color:#aaa;font-size:10px">${projs}</span>`;
-  tip.style.display='block';
-  moveTip(e);
+  tip.innerHTML=`<strong>${person}</strong> · ${period}<br>${count} active project${count!==1?'s':''}<br><span style="color:#aaa;font-size:10px">${projs}</span>`;
+  tip.style.display='block'; moveTip(e);
 }
-function hideTip(){document.getElementById('tip').style.display='none';}
-document.addEventListener('mousemove',e=>{
-  const tip=document.getElementById('tip');
-  if(tip.style.display==='block') moveTip(e);
-});
+function hideTip(){ document.getElementById('tip').style.display='none'; }
+document.addEventListener('mousemove',e=>{ const tip=document.getElementById('tip'); if(tip.style.display==='block') moveTip(e); });
 function moveTip(e){
   const tip=document.getElementById('tip');
-  const x=e.clientX+12, y=e.clientY+12;
-  tip.style.left=Math.min(x,window.innerWidth-tip.offsetWidth-8)+'px';
-  tip.style.top=Math.min(y,window.innerHeight-tip.offsetHeight-8)+'px';
+  tip.style.left=Math.min(e.clientX+12,window.innerWidth-tip.offsetWidth-8)+'px';
+  tip.style.top =Math.min(e.clientY+12,window.innerHeight-tip.offsetHeight-8)+'px';
 }
 
-// ── CONTROLS ─────────────────────────────────────────────────
-function setRole(el,val){
-  roleFilter=val;
-  el.closest('.pills').querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on');
-  render();
-}
-function setSg(el,val){
-  sgFilter=val;
-  el.closest('.pills').querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on');
-  render();
-}
+// ── View ──────────────────────────────────────────────────────────────────
+let viewMode='gantt';
 function setView(v){
   viewMode=v;
   document.getElementById('gantt-btn').classList.toggle('on',v==='gantt');
@@ -437,12 +579,6 @@ function setView(v){
   document.getElementById('gantt-view').classList.toggle('hidden',v!=='gantt');
   document.getElementById('heat-view').classList.toggle('hidden',v!=='heat');
   document.getElementById('heat-legend').style.display=v==='heat'?'flex':'none';
-  render();
-}
-function setYr(el,val){
-  yrFilter=val;
-  el.closest('.pills').querySelectorAll('.pill').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on');
   render();
 }
 function render(){
@@ -455,74 +591,45 @@ function render(){
   else renderHeatmap();
 }
 
-// ── Role → date range logic ───────────────────────────────────────────────
-const STAFF_ROLES = new Set(['Project Manager','Superintendent','Project Estimator','Project Engineer','Biz Dev Lead']);
-
-function getRoleDates(role, dm){
-  const s = k => dm[k] || null;
+// ── Role → date range ─────────────────────────────────────────────────────
+const STAFF_ROLES=new Set(['Project Manager','Superintendent','Project Estimator','Project Engineer','Biz Dev Lead']);
+function getRoleDates(role,dm){
+  const s=k=>dm[k]||null;
   if(role==='Project Manager'||role==='Superintendent')
-    return { s: s('Construction Start')||s('Purchase Close Date'), e: s('COE/Lease Commence')||s('Construction End') };
+    return{s:s('Construction Start')||s('Purchase Close Date'),e:s('COE/Lease Commence')||s('Construction End')};
   if(role==='Project Estimator')
-    return { s: s('UW Start')||s('First Meeting/Job Walk'), e: s('Bid Completion Date')||s('Construction Start') };
+    return{s:s('UW Start')||s('First Meeting/Job Walk'),e:s('Bid Completion Date')||s('Construction Start')};
   if(role==='Biz Dev Lead')
-    return { s: s('UW Start')||s('First Meeting/Job Walk'), e: s('Date to Enter Pipeline')||s('Construction Start') };
+    return{s:s('UW Start')||s('First Meeting/Job Walk'),e:s('Date to Enter Pipeline')||s('Construction Start')};
   if(role==='Project Engineer')
-    return { s: s('Construction Start')||s('Purchase Close Date'), e: s('Construction End')||s('COE/Lease Commence') };
-  return { s: s('Construction Start')||s('Purchase Close Date'), e: s('COE/Lease Commence')||s('Construction End') };
+    return{s:s('Construction Start')||s('Purchase Close Date'),e:s('Construction End')||s('COE/Lease Commence')};
+  return{s:s('Construction Start')||s('Purchase Close Date'),e:s('COE/Lease Commence')||s('Construction End')};
 }
 
 function buildManpowerData(projects){
-  const byPerson = {};
+  const byPerson={};
   for(const p of projects){
-    const dm = {};
-    for(const d of (p.dates||[])) dm[d.e] = d.d;
-    for(const [role, names] of Object.entries(p.mp||{})){
+    const dm={};
+    for(const d of (p.dates||[])) dm[d.e]=d.d;
+    for(const [role,names] of Object.entries(p.mp||{})){
       if(!STAFF_ROLES.has(role)) continue;
-      const {s, e} = getRoleDates(role, dm);
+      const{s,e}=getRoleDates(role,dm);
       for(const name of names){
         if(!name) continue;
-        if(!byPerson[name]) byPerson[name] = {name, assignments:[]};
-        byPerson[name].assignments.push({
-          n:p.n, sg:p.sg, co:p.co, url:p.url, role, s, e, inv:p.inv_b||0
-        });
+        if(!byPerson[name]) byPerson[name]={name,assignments:[]};
+        byPerson[name].assignments.push({n:p.n,sg:p.sg,co:p.co,pt:p.pt||'—',url:p.url,role,s,e,inv:p.inv_b||0});
       }
     }
   }
-  const people = Object.values(byPerson).sort((a,b)=>a.name.localeCompare(b.name));
-  // Compute heatmap per person
-  for(const person of people){
-    const hm={};
-    for(const a of person.assignments){
-      if(!a.s||!a.e) continue;
-      let d=new Date(a.s), end=new Date(a.e);
-      if(isNaN(d)||isNaN(end)) continue;
-      while(d<=end){
-        const k=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-        hm[k]=(hm[k]||0)+1;
-        d.setMonth(d.getMonth()+1);
-      }
-    }
-    person.hm=hm;
-    person.max=Math.max(0,...Object.values(hm));
-    person.total=person.assignments.length;
-    person.wd=person.assignments.filter(a=>a.s&&a.e).length;
-  }
-  return people;
+  return Object.values(byPerson).sort((a,b)=>a.name.localeCompare(b.name));
 }
 
 // ── Data loading ──────────────────────────────────────────────────────────
 function setProgressBar(on){
   const bar=document.getElementById('mp-progress');
-  if(on){
-    bar.style.opacity='1';bar.style.width='0';
-    requestAnimationFrame(()=>{bar.style.width='70%';});
-    bar._iv=setInterval(()=>{const w=parseFloat(bar.style.width);if(w<90)bar.style.width=(w+(90-w)*.1)+'%';},400);
-  } else {
-    clearInterval(bar._iv);bar.style.width='100%';
-    setTimeout(()=>{bar.style.opacity='0';setTimeout(()=>{bar.style.width='0';},400);},200);
-  }
+  if(on){ bar.style.opacity='1';bar.style.width='0';requestAnimationFrame(()=>{bar.style.width='70%';});bar._iv=setInterval(()=>{const w=parseFloat(bar.style.width);if(w<90)bar.style.width=(w+(90-w)*.1)+'%';},400); }
+  else{ clearInterval(bar._iv);bar.style.width='100%';setTimeout(()=>{bar.style.opacity='0';setTimeout(()=>{bar.style.width='0';},400);},200); }
 }
-
 function showToast(msg,isErr){
   const t=document.createElement('div');
   t.textContent=msg;
@@ -536,31 +643,40 @@ async function loadData(force){
   const btn=document.querySelector('.hdr-btn');
   if(btn){btn.disabled=true;btn.textContent='…';}
   setProgressBar(true);
-  render(); // show loading state
+  render();
   try{
     const res=await fetch(force?'/api/data?force=true':'/api/data');
     if(!res.ok) throw new Error('Server error '+res.status);
     const data=await res.json();
     if(data.error) throw new Error(data.error);
     PEOPLE=buildManpowerData(data.projects||[]);
+
+    // Populate dynamic multi-select options
+    const cos=[...new Set(PEOPLE.flatMap(p=>p.assignments.map(a=>a.co)).filter(c=>c&&c!=='—'))].sort();
+    const pts=[...new Set(PEOPLE.flatMap(p=>p.assignments.map(a=>a.pt)).filter(t=>t&&t!=='—'))].sort();
+    populateMs('ms-co', cos);
+    populateMs('ms-pt', pts);
+
     if(data.lastUpdated){
       const d=new Date(data.lastUpdated);
-      const lbl=d.toLocaleString('en',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
-      document.getElementById('mp-subtitle').textContent=`Updated ${lbl} · ${PEOPLE.length} team members`;
+      document.getElementById('mp-subtitle').textContent=`Updated ${d.toLocaleString('en',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})} · ${PEOPLE.length} team members`;
     }
     render();
     if(force) showToast('Data refreshed — '+PEOPLE.length+' team members');
-  } catch(err){
+  }catch(err){
     showToast('Failed to load: '+err.message,true);
-    document.getElementById('gantt-view').innerHTML=`<div style="padding:48px;text-align:center;color:#A81C1C;font-size:12px">Failed to load data: ${err.message}</div>`;
-  } finally {
+    document.getElementById('gantt-view').innerHTML=`<div style="padding:48px;text-align:center;color:#A81C1C;font-size:12px">Failed to load: ${err.message}</div>`;
+  }finally{
     if(btn){btn.disabled=false;btn.textContent='↻ Refresh';}
     setProgressBar(false);
   }
 }
-
 function refreshData(){ loadData(true); }
 
+// ── Init ──────────────────────────────────────────────────────────────────
+initDefaultRange();
+// Mark default quick-range button
+document.querySelectorAll('.qr-btn').forEach(b=>{ if(b.onclick.toString().includes("'6mo'")) b.classList.add('on'); });
 loadData(false);
 </script>
 </body>
