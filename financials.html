@@ -585,8 +585,9 @@ function initApp(data){
     CF_CACHE[p.id]=computeProjectCF(p);
   }
 
-  // Populate entity filter
-  const cos=[...new Set(PROJECTS.map(p=>p.co).filter(Boolean))].sort();
+  // Populate entity filter from budget row companies (SB Company Receiving/Paying)
+  // — not from the project-level company field
+  const cos=[...new Set(PROJECTS.flatMap(p=>(p.rows||[]).flatMap(r=>r.cos||[])).filter(Boolean))].sort();
   const ef=document.getElementById('entity-filter');
   ef.innerHTML='<option value="">All Entities</option>'+cos.map(c=>`<option value="${c}">${c}</option>`).join('');
 
@@ -648,8 +649,13 @@ function sortJob(key){
   renderJob();
 }
 
-function jobMetrics(p){
-  const rows=p.rows||[];
+function jobMetrics(p, entity){
+  // Filter rows by SB Company Receiving/Paying when entity is set.
+  // Rows with no company assigned always included (unassigned rows count for all).
+  const allRows=p.rows||[];
+  const rows=entity
+    ? allRows.filter(r=>!r.cos||r.cos.length===0||r.cos.includes(entity))
+    : allRows;
   let rev_b=0,rev_adj=0,rev_ctd=0;
   let cogs_b=0,cogs_adj=0;
   let opex_b=0;
@@ -674,15 +680,23 @@ function jobMetrics(p){
 
 function renderJob(){
   const entityFilter=document.getElementById('entity-filter').value;
+  // Include a project if ANY of its budget rows belong to the selected entity
+  // (or if no entity filter is set). Filter by row company, not project company.
   let data=PROJECTS.filter(p=>{
-    if(entityFilter&&p.co!==entityFilter) return false;
+    if(entityFilter){
+      const rowCos=new Set((p.rows||[]).flatMap(r=>r.cos||[]));
+      if(!rowCos.has(entityFilter)) return false;
+    }
     if(JOB_FILTER_STAGE!=='All'&&p.sg!==JOB_FILTER_STAGE) return false;
-    if(JOB_FILTER_COS.size>0&&!JOB_FILTER_COS.has(p.co)) return false;
+    if(JOB_FILTER_COS.size>0){
+      const rowCos=new Set((p.rows||[]).flatMap(r=>r.cos||[]));
+      if(![...JOB_FILTER_COS].some(c=>rowCos.has(c))) return false;
+    }
     return true;
   });
 
-  // Compute metrics
-  const rows=data.map(p=>({p,...jobMetrics(p)}));
+  // Compute metrics — pass entity so only that company's rows are summed
+  const rows=data.map(p=>({p,...jobMetrics(p, entityFilter||null)}));
 
   // Sort
   rows.sort((a,b)=>{
@@ -792,7 +806,11 @@ function getProjectsForLens(){
   const lens=document.getElementById('cf-lens').value;
   const entityFilter=document.getElementById('entity-filter').value;
   let projs=PROJECTS;
-  if(entityFilter) projs=projs.filter(p=>p.co===entityFilter);
+  // Filter projects by row-level company (SB Company Receiving/Paying)
+  if(entityFilter) projs=projs.filter(p=>{
+    const rowCos=new Set((p.rows||[]).flatMap(r=>r.cos||[]));
+    return rowCos.has(entityFilter);
+  });
 
   if(lens.startsWith('proj:')){
     const id=lens.slice(5);
@@ -800,8 +818,13 @@ function getProjectsForLens(){
     return p?{type:'single',groups:[{label:p.n,projects:[p]}]}:{type:'single',groups:[]};
   }
   if(lens==='company'){
+    // Group by row-level company, not project-level company
     const byco={};
-    projs.forEach(p=>{const k=p.co||'Unknown';(byco[k]=byco[k]||[]).push(p);});
+    projs.forEach(p=>{
+      const rowCos=[...new Set((p.rows||[]).flatMap(r=>r.cos||[]))];
+      const keys=rowCos.length?rowCos:['Unassigned'];
+      keys.forEach(k=>{(byco[k]=byco[k]||[]).push(p);});
+    });
     const groups=Object.keys(byco).sort().map(k=>({label:k,projects:byco[k]}));
     return{type:'company',groups};
   }
@@ -1083,11 +1106,17 @@ function getOHTotalAnnual(){
 function renderPL(){
   const entityFilter=document.getElementById('entity-filter').value;
   let projs=PROJECTS;
-  if(entityFilter) projs=projs.filter(p=>p.co===entityFilter);
+  if(entityFilter) projs=projs.filter(p=>{
+    const rowCos=new Set((p.rows||[]).flatMap(r=>r.cos||[]));
+    return rowCos.has(entityFilter);
+  });
 
   let revB=0,revAdj=0,cogsB=0,opRevB=0,btfTotal=0;
   for(const p of projs){
-    for(const r of(p.rows||[])){
+    const filteredRows=(entityFilter
+      ? (p.rows||[]).filter(r=>!r.cos||r.cos.length===0||r.cos.includes(entityFilter))
+      : (p.rows||[]));
+    for(const r of filteredRows){
       const dm=buildDateMap(p);
       const cl=r.cl||classifyRow(r,dm);
       const gl=cl.gl;
