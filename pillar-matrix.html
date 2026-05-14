@@ -127,12 +127,9 @@ tr:hover td{background:#FAFAF8;}
   </div>
   <div class="sep"></div>
   <span class="tl">Company</span>
-  <div class="pills" id="co-pills">
-    <div class="pill" data-v="BUILT."  onclick="togglePill(this,'co')">BUILT.</div>
-    <div class="pill" data-v="PC-1"    onclick="togglePill(this,'co')">PC-1</div>
-    <div class="pill" data-v="SSJ"     onclick="togglePill(this,'co')">SSJ</div>
-    <div class="pill" data-v="SPI"     onclick="togglePill(this,'co')">SPI</div>
-  </div>
+  <select id="co-sel" onchange="setCo(this)">
+    <option value="">All</option>
+  </select>
   <div class="sep"></div>
   <span class="tl">Type</span>
   <select id="type-filter" onchange="render()"><option value="">All Types</option></select>
@@ -175,7 +172,7 @@ tr:hover td{background:#FAFAF8;}
 <script>
 // ── State ─────────────────────────────────────────────────────────────────
 let PROJECTS = [];
-const F = { sg: new Set(['WIP','Closeout']), co: new Set() };
+const F = { sg: new Set(['WIP','Closeout']), co: '' };
 
 const SG_CLS = {
   WIP:'bwip', Closeout:'bclo', Pipeline:'bpip',
@@ -189,6 +186,7 @@ const SG_LABEL = {
 };
 
 // ── Filters ───────────────────────────────────────────────────────────────
+function setCo(sel) { F.co = sel.value; render(); }
 function togglePill(el, group) {
   const v = el.dataset.v;
   const set = F[group];
@@ -201,7 +199,7 @@ function filtered() {
   const type = document.getElementById('type-filter').value;
   return PROJECTS.filter(p => {
     if (F.sg.size && !F.sg.has(p.sg)) return false;
-    if (F.co.size && !F.co.has(p.co)) return false;
+    if (F.co && p.co !== F.co) return false;
     if (type && p.pt !== type) return false;
     return true;
   });
@@ -300,6 +298,13 @@ function score(p) {
 // ── Data loading ──────────────────────────────────────────────────────────
 function initApp(data) {
   PROJECTS = data.projects || [];
+  // Build company dropdown dynamically from live data
+  const coSel = document.getElementById('co-sel');
+  if (coSel) {
+    const cos = [...new Set(PROJECTS.map(p => p.co).filter(c => c && c !== '—'))].sort();
+    coSel.innerHTML = '<option value="">All</option>' + cos.map(c => `<option value="${c}">${c}</option>`).join('');
+    if (F.co) coSel.value = F.co;
+  }
   if (data.lastUpdated) {
     const d = new Date(data.lastUpdated);
     document.getElementById('last-updated').textContent =
