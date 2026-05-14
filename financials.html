@@ -225,7 +225,9 @@ dialog::backdrop{background:rgba(14,13,11,.5);}
     </div>
     <div class="sep"></div>
     <span class="tl">Company</span>
-    <div class="pills" id="job-co-pills"></div>
+    <select id="job-co-sel" onchange="onJobCoChange()">
+      <option value="">All</option>
+    </select>
   </div>
   <div class="scroll-area">
     <div class="fin-table-wrap">
@@ -407,7 +409,7 @@ let ACTIVE_TAB = 'job';
 
 // Job table state
 let JOB_FILTER_STAGE = 'All';
-let JOB_FILTER_COS = new Set();
+let JOB_FILTER_COS = '';
 let JOB_SORT_KEY = 'gp_d';
 let JOB_SORT_DIR = -1; // -1 = desc
 
@@ -675,9 +677,9 @@ function initApp(data){
   const ef=document.getElementById('entity-filter');
   ef.innerHTML='<option value="">All Entities</option>'+cos.map(c=>`<option value="${c}">${c}</option>`).join('');
 
-  // Populate company pills in job tab
-  const pills=document.getElementById('job-co-pills');
-  pills.innerHTML=cos.map(c=>`<div class="pill" data-v="${c}" onclick="toggleCoPill(this)">${c}</div>`).join('');
+  // Populate company dropdown in job tab
+  const jobCoSel=document.getElementById('job-co-sel');
+  jobCoSel.innerHTML='<option value="">All</option>'+cos.map(c=>`<option value="${c}">${c}</option>`).join('');
 
   // Populate CF lens project options + company selector
   const lens=document.getElementById('cf-lens');
@@ -729,10 +731,8 @@ function setJobStage(v,el){
   el.classList.add('on');
   renderJob();
 }
-function toggleCoPill(el){
-  const v=el.dataset.v;
-  if(JOB_FILTER_COS.has(v)){JOB_FILTER_COS.delete(v);el.classList.remove('on');}
-  else{JOB_FILTER_COS.add(v);el.classList.add('on');}
+function onJobCoChange(){
+  JOB_FILTER_COS=document.getElementById('job-co-sel').value;
   renderJob();
 }
 function sortJob(key){
@@ -781,10 +781,7 @@ function renderJob(){
       if(!match) return false;
     }
     if(JOB_FILTER_STAGE!=='All'&&p.sg!==JOB_FILTER_STAGE) return false;
-    if(JOB_FILTER_COS.size>0){
-      // company pills filter by p.co since row.cos may be unpopulated
-      if(!JOB_FILTER_COS.has(p.co)) return false;
-    }
+    if(JOB_FILTER_COS&&p.co!==JOB_FILTER_COS) return false;
     return true;
   });
 

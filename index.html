@@ -355,12 +355,9 @@ thead .sticky-col{background:var(--canvas);z-index:6;}
     </div>
     <div class="sep"></div>
     <span class="tl">Company</span>
-    <div class="pills" id="pf-co">
-      <div class="pill" data-f="co" data-v="BUILT." onclick="togglePill(this)">BUILT.</div>
-      <div class="pill" data-f="co" data-v="PC-1" onclick="togglePill(this)">PC-1</div>
-      <div class="pill" data-f="co" data-v="SSJ" onclick="togglePill(this)">SSJ</div>
-      <div class="pill" data-f="co" data-v="SPI" onclick="togglePill(this)">SPI</div>
-    </div>
+    <select id="pf-co-sel" onchange="setPfCo(this)">
+      <option value="">All</option>
+    </select>
     <div class="sep"></div>
     <span class="tl">Group</span>
     <div class="pills" id="pf-grp">
@@ -602,7 +599,7 @@ const SELECTED_CO={};
 
 
 // ── Filters ──────────────────────────────
-const F = { sg:new Set(), co:new Set(), ppsg:new Set(['WIP','Closeout']), pfview:'table', grpby:'sg' };
+const F = { sg:new Set(), co:'', ppsg:new Set(['WIP','Closeout']), pfview:'table', grpby:'sg' };
 let ppSelectedId = null;
 
 function togglePill(el){
@@ -612,6 +609,7 @@ function togglePill(el){
   if(f==='ppsg') renderPPList();
   else renderPortfolio();
 }
+function setPfCo(sel){ F.co=sel.value; renderPortfolio(); }
 function setGrp(el,val){
   F.grpby=val;
   document.querySelectorAll('#pf-grp .pill').forEach(p=>p.classList.remove('on'));
@@ -658,7 +656,7 @@ function goto(screen){
 function pfFiltered(){
   return PROJECTS.filter(p=>{
     if(F.sg.size>0&&!F.sg.has(p.sg)) return false;
-    if(F.co.size>0&&!F.co.has(p.co)) return false;
+    if(F.co&&p.co!==F.co) return false;
     return true;
   });
 }
@@ -691,7 +689,7 @@ function renderPortfolio(){
     <div class="si"><span class="si-l">Op CTD</span><span class="si-v">${fmt(s.oc)}</span></div>
     <div class="si"><span class="si-l">Financing</span><span class="si-v">${fmt(s.fb)}</span></div>`;
 
-  if(!data.length){document.getElementById('pf-content').innerHTML='<div class="empty">No projects. Click pills to add status filters.</div>';return;}
+  if(!data.length){document.getElementById('pf-content').innerHTML='<div class="empty">No projects match the current filters.</div>';return;}
 
   if(F.pfview==='stack'){ renderPfStack(data); return; }
 
@@ -1297,6 +1295,14 @@ function initApp(data) {
   APP      = data;
   PROJECTS = data.projects || [];
   PROJECTS.forEach(p => { CF_CACHE[p.id] = computeProjectCF(p); });
+  // Populate company dropdown dynamically from live data
+  const coSel=document.getElementById('pf-co-sel');
+  if(coSel){
+    const cos=[...new Set(PROJECTS.map(p=>p.co).filter(c=>c&&c!=='—'))].sort();
+    coSel.innerHTML='<option value="">All</option>'+cos.map(c=>`<option value="${c}">${c}</option>`).join('');
+    // Restore current selection
+    if(F.co) coSel.value=F.co;
+  }
   initHome();
   if (data.lastUpdated) {
     const d = new Date(data.lastUpdated);
