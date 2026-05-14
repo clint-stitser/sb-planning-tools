@@ -261,9 +261,8 @@ thead .sticky-col{background:var(--canvas);z-index:6;}
 .sb-op{background:var(--green-l);color:var(--green);}
 .sb-fin{background:var(--amber-l);color:var(--amber);}
 /* ── COMPANY LENS FILTER ─────────────────── */
-#pp-co-filter { display:flex; gap:6px; padding:6px 20px 10px; flex-wrap:wrap; background:var(--paper); border-bottom:1px solid var(--rule2); flex-shrink:0; }
-.co-chip { padding:3px 10px; border-radius:12px; font-size:11px; cursor:pointer; border:1px solid var(--rule); background:var(--canvas); color:var(--ink2); }
-.co-chip.active { background:var(--ink); color:#fff; border-color:var(--ink); }
+#pp-co-filter { display:flex; align-items:center; gap:8px; padding:6px 20px 8px; background:var(--paper); border-bottom:1px solid var(--rule2); flex-shrink:0; }
+#pp-co-sel { font-size:12px; padding:3px 6px; border:1px solid var(--rule); border-radius:4px; background:var(--canvas); color:var(--ink); cursor:pointer; }
 
 /* ── GAAP Compute Engine ─────────────────── */
 .gaap-warn{margin:10px 16px 6px;padding:8px 12px;background:var(--amber-l);border-left:3px solid var(--amber);border-radius:0 4px 4px 0;font-size:10px;color:var(--amber);line-height:1.7;}
@@ -868,8 +867,9 @@ function openProject(id){
   const p=PROJECTS.find(x=>x.id===id);
   if(!p){document.getElementById('pp-detail').innerHTML='<div class="pp-empty"><div class="pp-empty-icon">!</div><div>Project not found</div></div>';return;}
 
-  // Collect unique companies across all rows for this project
-  const allCos=[...new Set((p.rows||[]).flatMap(r=>r.cos||[]))].sort();
+  // Collect unique companies: prefer row-level cos, fall back to p.co
+  const rowCosRaw=[...new Set((p.rows||[]).flatMap(r=>r.cos||[]).filter(Boolean))].sort();
+  const allCos=rowCosRaw.length ? rowCosRaw : (p.co&&p.co!=='—'?[p.co]:[]);
 
   document.getElementById('pp-detail').innerHTML=`
     <div class="pp-detail-hdr">
@@ -885,9 +885,12 @@ function openProject(id){
       <div class="pp-tab" onclick="ppTab(this,'cf')">Cash Flow Spread</div>
       <div class="pp-tab" onclick="ppTab(this,'dates')">Dates</div>
     </div>
-    ${allCos.length>1?`<div id="pp-co-filter">
-      <span class="co-chip active" data-co="" onclick="selectCo(this,'${p.id}')">All companies</span>
-      ${allCos.map(c=>`<span class="co-chip" data-co="${c}" onclick="selectCo(this,'${p.id}')">${c}</span>`).join('')}
+    ${allCos.length?`<div id="pp-co-filter">
+      <span style="font-size:11px;color:var(--ink3);white-space:nowrap">View by company:</span>
+      <select id="pp-co-sel" onchange="selectCo(this,'${p.id}')">
+        <option value="">All Companies</option>
+        ${allCos.map(c=>`<option value="${c}">${c}</option>`).join('')}
+      </select>
     </div>`:''}
     <div class="pp-body" id="pp-body"></div>`;
 
@@ -1179,10 +1182,8 @@ function cfOverrideClear(pid){
 }
 
 // ── Company lens filter ───────────────────
-function selectCo(el, pid){
-  document.querySelectorAll('#pp-co-filter .co-chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
-  const co=el.dataset.co||null;
+function selectCo(sel, pid){
+  const co=sel.value||null;
   SELECTED_CO[pid]=co||null;
   // Clear CF cache so it recomputes with new filter
   delete CF_CACHE[pid];
