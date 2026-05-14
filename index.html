@@ -487,11 +487,9 @@ function classifyRow(row,dm){
   // Gross profit: reference annotation only — excluded from IS and CF
   if(GP_RE.test(a)) return{gl:'gp_budget',sign:0,sYM:null,eYM:null,type:'point'};
 
-  // WIP Offset: investing inflow at sale (recovery of cost basis) — excluded from IS
-  // Spreads BTF forward if item spans today, otherwise points at COE/sale date
-  if(WIP_RE.test(a)) return{gl:'wip_offset',sign:1,
-    sYM:toYM(dm['COE/Lease Commence']||dm['Closeout & Punch List']||dm['Construction End']),
-    eYM:null,type:'point'};
+  // WIP Offset: balance sheet reclassification only — excluded from both IS and CF
+  // (Not a cash transaction; actual cash captured by Job Cost outflows + Revenue inflow)
+  if(WIP_RE.test(a)) return{gl:'wip_offset',sign:0,sYM:null,eYM:null,type:'point'};
 
   if(s==='fin'){
     // Explicit inflow keywords take precedence over outflow matching
@@ -539,7 +537,7 @@ function computeProjectCF(p, override){
   const dm=buildDateMap(p), mos=new Set(), warns=[];
   const rows=(p.rows||[]).map(r=>{
     const cl=classifyRow(r,dm);
-    if(cl.gl==='gp_budget') return{...r,cl,budMo:{},actMo:{}};
+    if(cl.gl==='gp_budget'||cl.gl==='wip_offset') return{...r,cl,budMo:{},actMo:{}};
 
     // ── 1. Manual override (UI dropdowns) takes highest priority ──
     if(override){
@@ -554,16 +552,32 @@ function computeProjectCF(p, override){
       cl.type=(cl.sYM&&cl.eYM&&cl.eYM>cl.sYM)?'even':'point';
     }
 
-    // ── 3. BTF logic: item spans today with remaining balance → spread BTF forward ──
+    // ── 3. BTF + CTD spreading ──────────────────────────────────────────────
+    // Default: spread full budget across the assigned date range
     let budAmt=(r.adj||r.b||0)*cl.sign;
     let sYM=cl.sYM, eYM=cl.eYM, type=cl.type;
-    if(!override && cl.sYM && cl.eYM && cl.sYM<TODAY_YM && cl.eYM>=TODAY_YM && r.btf>0){
-      budAmt=r.btf*cl.sign;
-      sYM=TODAY_YM;
-      type='even';
+    let ctdMo={};
+
+    if(!override && cl.sYM && cl.eYM && cl.sYM<TODAY_YM && cl.eYM>=TODAY_YM){
+      // Item spans today: split into historical CTD + forward BTF
+      if(r.ctd){
+        // Spread CTD across the historical window (begin → last completed month)
+        const lastMo=monthRange(cl.sYM,TODAY_YM).slice(-2,-1)[0]||cl.sYM;
+        ctdMo=spreadMo(r.ctd*cl.sign,cl.sYM,lastMo,'even');
+      }
+      if(r.btf>0){
+        // Spread BTF forward from today → end date
+        budAmt=r.btf*cl.sign;
+        sYM=TODAY_YM;
+        type='even';
+      } else {
+        budAmt=0;
+      }
     }
 
     const budMo=spreadMo(budAmt,sYM,eYM,type);
+    // Merge CTD historical months into budMo
+    Object.entries(ctdMo).forEach(([m,v])=>{ budMo[m]=(budMo[m]||0)+v; });
     const actMo=spreadMo((r.act||0)*cl.sign,cl.sYM,cl.eYM,cl.type);
     if(!sYM && cl.gl!=='wip_offset') warns.push(`"${r.a}": no spread date`);
     Object.keys(budMo).forEach(m=>mos.add(m));
