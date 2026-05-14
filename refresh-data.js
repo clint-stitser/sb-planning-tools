@@ -288,9 +288,12 @@ async function fetchSmartSuiteData(apiKey) {
     const ptRaw = proj.sefedb2ee0?.value || proj.sefedb2ee0 || '';
     const pt    = PT_MAP[ptRaw] || ptRaw || '—';
 
+    const FOR_SALE_PTS = new Set(['Turnkey (CM+Brokerage)','Turnkey (Brokerage)','Retail (Value Add)','Retail (Ground Up)','Housing (Value Add)','Housing (Ground Up)','Midsize MF (Value Add)','Midsize MF (Ground Up)','2nd Home (Fractional)','2nd Home (Whole)','3rd Party GC','Cool Shit']);
+    const isForSale = FOR_SALE_PTS.has(pt);
+
     result.push({ id, n, sg: stage, co, url, nkd, dates: datePairs, mp, rows,
       inv_b, inv_c, inv_x, op_b, op_c, op_x, fin_b, fin_c, fin_x,
-      hasGYR, hasStakeholders, hasBudget, hasG702, hasDates, hasSchedule, hasDrive, hasChecklist, pt });
+      hasGYR, hasStakeholders, hasBudget, hasG702, hasDates, hasSchedule, hasDrive, hasChecklist, pt, isForSale });
   }
 
   console.log(`Transformed ${result.length} active projects`);

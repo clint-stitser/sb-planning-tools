@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stitser BUILT — Financials</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap">
+<style>
+:root{
+  --ink:#0E0D0B; --ink2:#4A4640; --ink3:#8A847C;
+  --canvas:#F7F4EF; --paper:#FFFFFF; --rule:#E2DDD6; --rule2:#EDE9E2;
+  --gold:#C8961A; --gold-l:#FBF3DE;
+  --blue:#1A3F72; --blue-l:#EAF0F9;
+  --green:#1E5C36; --green-l:#E4F2E9;
+  --red:#8C1F1F; --red-l:#F9E8E8;
+  --amber:#9C5A00; --amber-l:#FEF3E2;
+  --purple:#5B3E8C; --purple-l:#F0EBFB;
+  --mono:'DM Mono',monospace; --display:'Syne',sans-serif; --body:'DM Sans',sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:13px;}
+body{font-family:var(--body);background:var(--canvas);color:var(--ink);height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── APP BAR ── */
+.app-bar{background:var(--ink);color:#fff;padding:0 20px;display:flex;align-items:center;gap:0;height:44px;flex-shrink:0;}
+.app-bar-back{display:flex;align-items:center;gap:6px;font-size:11px;color:rgba(255,255,255,.5);text-decoration:none;padding:0 14px 0 0;border-right:1px solid rgba(255,255,255,.1);margin-right:14px;height:100%;transition:color .15s;white-space:nowrap;}
+.app-bar-back:hover{color:#fff;}
+.app-bar-title{font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.01em;flex:1;color:#fff;}
+.app-bar-actions{display:flex;gap:8px;align-items:center;}
+.ab-btn{padding:4px 12px;border:1px solid rgba(255,255,255,.2);border-radius:4px;font-size:11px;font-family:var(--body);background:transparent;color:rgba(255,255,255,.8);cursor:pointer;transition:all .15s;white-space:nowrap;}
+.ab-btn:hover{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.4);}
+.ab-sel{padding:4px 8px;border:1px solid rgba(255,255,255,.2);border-radius:4px;font-size:11px;font-family:var(--body);background:transparent;color:rgba(255,255,255,.8);cursor:pointer;}
+.ab-sel option{background:#222;color:#fff;}
+
+/* ── TAB BAR ── */
+.tab-bar{background:var(--paper);border-bottom:2px solid var(--rule);display:flex;flex-shrink:0;}
+.tab{padding:11px 20px;font-size:12px;font-weight:500;cursor:pointer;color:var(--ink3);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;user-select:none;}
+.tab.active{color:var(--purple);border-bottom-color:var(--purple);}
+.tab:hover:not(.active){color:var(--ink);}
+
+/* ── SCROLL ── */
+.scroll-area{overflow:auto;flex:1;}
+
+/* ── TOOLBAR ── */
+.toolbar{background:var(--paper);border-bottom:1px solid var(--rule);padding:7px 16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-height:42px;flex-shrink:0;}
+.tl{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;font-weight:500;}
+.pills{display:flex;gap:3px;flex-wrap:wrap;}
+.pill{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--rule);background:var(--canvas);color:var(--ink2);transition:all .12s;user-select:none;white-space:nowrap;}
+.pill.on{background:var(--ink);color:#fff;border-color:var(--ink);}
+.pill:hover:not(.on){background:var(--rule2);}
+.sep{width:1px;height:18px;background:var(--rule);margin:0 4px;flex-shrink:0;}
+select{padding:3px 8px;border:1px solid var(--rule);border-radius:4px;font-size:11px;font-family:var(--body);background:var(--paper);color:var(--ink);}
+
+/* ── BADGES ── */
+.bdg{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:600;white-space:nowrap;letter-spacing:.02em;}
+.bwip{background:var(--blue-l);color:var(--blue);}
+.bclo{background:var(--green-l);color:var(--green);}
+.bpip{background:var(--amber-l);color:var(--amber);}
+.bhot{background:#FF702E;color:#fff;}
+.bwarm{background:#FFD5B3;color:#7A3200;}
+.bnurture{background:#FFF2DC;color:#7A5800;}
+.bnewopp{background:#EEF6EE;color:#1E5C36;}
+.bcls{background:var(--rule2);color:var(--ink3);}
+.both{background:var(--purple-l);color:var(--purple);}
+
+/* ── SORTABLE TABLE ── */
+.fin-table-wrap{padding:14px 16px;overflow-x:auto;}
+.fin-table{width:100%;border-collapse:collapse;background:var(--paper);border:1px solid var(--rule);border-radius:6px;overflow:hidden;}
+.fin-table thead{background:var(--canvas);}
+.fin-table th{padding:7px 10px;text-align:right;font-size:9px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid var(--rule);white-space:nowrap;position:sticky;top:0;z-index:10;background:var(--canvas);cursor:pointer;user-select:none;}
+.fin-table th.l{text-align:left;}
+.fin-table th:hover{color:var(--ink);}
+.fin-table th.sort-asc::after{content:' ↑';}
+.fin-table th.sort-desc::after{content:' ↓';}
+.fin-table td{padding:6px 10px;border-bottom:1px solid var(--rule2);font-size:11px;vertical-align:middle;text-align:right;font-family:var(--mono);font-size:10px;}
+.fin-table td.l{text-align:left;font-family:var(--body);font-size:11px;}
+.fin-table tr:last-child td{border-bottom:none;}
+.fin-table tr:hover td{background:#FAFAF8;}
+.fin-table .totals-row td{border-top:2px solid var(--rule);font-weight:700;background:var(--canvas);position:sticky;bottom:0;}
+.plink{color:var(--blue);text-decoration:none;font-weight:500;}
+.plink:hover{text-decoration:underline;}
+.gp-green{color:var(--green);}
+.gp-amber{color:var(--amber);}
+.gp-red{color:var(--red);}
+.neg{color:var(--red);}
+.empty-state{padding:48px;text-align:center;color:var(--ink3);font-size:12px;}
+
+/* ── CF STATEMENT ── */
+.cf-wrap{padding:14px 16px;}
+.cf-controls{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+.gaap-note{margin-bottom:10px;}
+.gaap-note summary{font-size:10px;color:var(--ink3);cursor:pointer;user-select:none;font-weight:500;}
+.gaap-note p{font-size:10px;color:var(--ink3);padding:6px 0 0 12px;line-height:1.6;font-style:italic;}
+.cf-tbl{width:100%;border-collapse:collapse;background:var(--paper);border:1px solid var(--rule);border-radius:6px;overflow:hidden;min-width:700px;}
+.cf-tbl th{padding:5px 8px;font-size:8px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--rule);white-space:nowrap;text-align:right;position:sticky;top:0;z-index:10;background:var(--canvas);}
+.cf-tbl th.acct-col{text-align:left;min-width:200px;position:sticky;left:0;z-index:11;background:var(--canvas);}
+.cf-tbl td{padding:4px 8px;border-bottom:1px solid var(--rule2);font-family:var(--mono);font-size:9px;text-align:right;}
+.cf-tbl td.acct-col{text-align:left;font-family:var(--body);font-size:11px;position:sticky;left:0;background:var(--paper);z-index:5;}
+.cf-tbl tr:hover td{background:#FAFAF8;}
+.cf-tbl tr:hover td.acct-col{background:#F5F2ED;}
+.cf-sec-hdr td{background:var(--canvas)!important;font-family:var(--body)!important;font-size:9px!important;font-weight:700;color:var(--ink)!important;text-transform:uppercase;letter-spacing:.07em;padding:7px 8px!important;border-top:2px solid var(--rule);}
+.cf-sec-hdr td.acct-col{position:sticky;left:0;background:var(--canvas)!important;z-index:5;}
+.cf-subtotal td{border-top:1px solid var(--rule);font-weight:700;background:var(--canvas)!important;}
+.cf-subtotal td.acct-col{position:sticky;left:0;background:var(--canvas)!important;z-index:5;font-family:var(--body);font-size:10px;}
+.cf-grand td{border-top:2px solid var(--ink);font-weight:700;background:var(--ink)!important;color:#fff;}
+.cf-grand td.acct-col{position:sticky;left:0;background:var(--ink)!important;z-index:5;font-family:var(--body);font-size:11px;color:#fff;}
+.cf-cumul td{background:#F0EBFB!important;font-weight:600;color:var(--purple);}
+.cf-cumul td.acct-col{position:sticky;left:0;background:#F0EBFB!important;z-index:5;font-family:var(--body);font-size:10px;color:var(--purple);}
+.cf-neg{color:var(--red)!important;}
+.cf-cur{background:#FFFCEE!important;}
+.cf-tbl th.cf-cur{background:#FFF8D6!important;}
+
+/* ── PLATFORM P&L ── */
+.pl-layout{display:flex;flex:1;gap:0;overflow:hidden;}
+.pl-left{width:42%;border-right:1px solid var(--rule);display:flex;flex-direction:column;overflow:hidden;background:var(--paper);}
+.pl-right{flex:1;overflow:auto;background:var(--canvas);}
+.pl-panel-hdr{padding:12px 16px;border-bottom:1px solid var(--rule);background:var(--canvas);flex-shrink:0;}
+.pl-panel-hdr-title{font-family:var(--display);font-size:13px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+.pl-panel-sub{font-size:10px;color:var(--ink3);}
+.oh-table-wrap{overflow:auto;flex:1;padding:0;}
+.oh-table{width:100%;border-collapse:collapse;}
+.oh-table th{padding:6px 10px;font-size:9px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid var(--rule);background:var(--canvas);text-align:left;white-space:nowrap;}
+.oh-table th.r{text-align:right;}
+.oh-table td{padding:4px 8px;border-bottom:1px solid var(--rule2);font-size:11px;vertical-align:middle;}
+.oh-table td.r{text-align:right;font-family:var(--mono);font-size:10px;}
+.oh-table .oh-total td{border-top:2px solid var(--rule);font-weight:700;background:var(--canvas);}
+.oh-input{width:100%;border:none;font-size:11px;font-family:var(--body);background:transparent;color:var(--ink);padding:2px 4px;border-radius:3px;}
+.oh-input:focus{outline:1px solid var(--blue);background:var(--blue-l);}
+.oh-input.mono{font-family:var(--mono);text-align:right;}
+.oh-actions{padding:8px 16px;border-top:1px solid var(--rule);display:flex;gap:8px;align-items:center;background:var(--paper);flex-shrink:0;}
+.act-btn{padding:5px 14px;border-radius:4px;font-size:11px;font-family:var(--body);cursor:pointer;border:1px solid var(--rule);background:var(--canvas);color:var(--ink2);transition:all .15s;}
+.act-btn:hover{background:var(--rule2);}
+.act-btn.primary{background:var(--ink);color:#fff;border-color:var(--ink);}
+.act-btn.primary:hover{background:#2a2826;}
+.act-btn.danger{color:var(--red);border-color:var(--red-l);}
+.act-btn.danger:hover{background:var(--red-l);}
+
+/* ── PLATFORM SUMMARY ── */
+.pl-summary{padding:20px 24px;max-width:680px;}
+.pl-title{font-family:var(--display);font-size:15px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);margin-bottom:14px;}
+.pl-rule{border:none;border-top:1px solid var(--rule);margin:6px 0;}
+.pl-rule.thick{border-top-width:2px;border-top-color:var(--rule);}
+.pl-rule.double{border-top:3px double var(--ink);margin:8px 0;}
+.pl-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;gap:12px;}
+.pl-row-lbl{font-size:12px;color:var(--ink2);}
+.pl-row-val{font-family:var(--mono);font-size:12px;color:var(--ink);text-align:right;min-width:120px;}
+.pl-subtotal{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;gap:12px;border-top:1px solid var(--rule);margin-top:2px;}
+.pl-subtotal-lbl{font-size:13px;font-weight:700;color:var(--ink);}
+.pl-subtotal-val{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);text-align:right;min-width:120px;}
+.pl-subtotal-pct{font-size:10px;font-family:var(--mono);color:var(--ink3);margin-left:8px;}
+.pl-grand{display:flex;justify-content:space-between;align-items:baseline;padding:10px 12px;gap:12px;background:var(--ink);border-radius:6px;margin-top:8px;}
+.pl-grand-lbl{font-family:var(--display);font-size:14px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.04em;}
+.pl-grand-val{font-family:var(--mono);font-size:14px;font-weight:700;color:#fff;text-align:right;}
+.pl-grand-pct{font-size:10px;font-family:var(--mono);color:rgba(255,255,255,.5);margin-left:8px;}
+.pl-forward{margin-top:24px;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;}
+.pl-forward-title{font-family:var(--display);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:10px;}
+.pl-indent{padding-left:16px;}
+.pl-row.indent{padding-left:16px;}
+.pl-row.indent .pl-row-lbl{color:var(--ink3);font-size:11px;}
+.pl-row.neg .pl-row-val{color:var(--red);}
+.pl-row.pos .pl-row-val{color:var(--green);}
+
+/* ── LOADING ── */
+#progress-bar{position:fixed;top:0;left:0;height:2px;background:var(--purple);z-index:700;transition:width .3s ease,opacity .4s ease;width:0;opacity:0;}
+.loading-msg{padding:48px;text-align:center;color:var(--ink3);font-size:12px;}
+
+/* ── DIALOG ── */
+dialog{border:none;border-radius:8px;padding:0;box-shadow:0 12px 40px rgba(0,0,0,.2);width:440px;max-width:92vw;}
+dialog::backdrop{background:rgba(14,13,11,.5);}
+.dlg-hdr{padding:14px 18px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;}
+.dlg-title{font-family:var(--display);font-size:13px;font-weight:700;}
+.dlg-close{background:none;border:none;font-size:14px;cursor:pointer;color:var(--ink3);padding:0;}
+.dlg-close:hover{color:var(--ink);}
+.dlg-body{padding:18px;}
+.dlg-footer{padding:12px 18px;border-top:1px solid var(--rule);display:flex;justify-content:flex-end;gap:8px;}
+</style>
+</head>
+<body>
+
+<div id="progress-bar"></div>
+
+<div class="app-bar">
+  <a href="/" class="app-bar-back">← Home</a>
+  <div class="app-bar-title">Financials</div>
+  <div class="app-bar-actions">
+    <select class="ab-sel" id="entity-filter" onchange="onFilterChange()">
+      <option value="">All Entities</option>
+    </select>
+    <button class="ab-btn" onclick="openShare()">Share</button>
+    <button class="ab-btn" onclick="exportJSON()">Export JSON</button>
+  </div>
+</div>
+
+<div class="tab-bar">
+  <div class="tab active" onclick="switchTab('job',this)">Job Profitability</div>
+  <div class="tab" onclick="switchTab('cf',this)">GAAP Cash Flow</div>
+  <div class="tab" onclick="switchTab('pl',this)">Platform P&L</div>
+</div>
+
+<!-- ══ TAB 1: JOB PROFITABILITY ══ -->
+<div id="tab-job" class="scroll-area" style="display:flex;flex-direction:column;">
+  <div class="toolbar" id="job-toolbar">
+    <span class="tl">Stage</span>
+    <div class="pills" id="job-stage-pills">
+      <div class="pill on" data-v="All" onclick="setJobStage('All',this)">All</div>
+      <div class="pill" data-v="WIP" onclick="setJobStage('WIP',this)">WIP</div>
+      <div class="pill" data-v="Closeout" onclick="setJobStage('Closeout',this)">Closeout</div>
+      <div class="pill" data-v="Pipeline" onclick="setJobStage('Pipeline',this)">Pipeline</div>
+      <div class="pill" data-v="Hot" onclick="setJobStage('Hot',this)">Hot</div>
+      <div class="pill" data-v="Warm" onclick="setJobStage('Warm',this)">Warm</div>
+    </div>
+    <div class="sep"></div>
+    <span class="tl">Company</span>
+    <div class="pills" id="job-co-pills"></div>
+  </div>
+  <div class="scroll-area">
+    <div class="fin-table-wrap">
+      <table class="fin-table" id="job-table">
+        <thead>
+          <tr id="job-thead-row">
+            <th class="l" onclick="sortJob('n')" data-key="n">Project</th>
+            <th class="l" onclick="sortJob('sg')" data-key="sg">Stage</th>
+            <th class="l" onclick="sortJob('pt')" data-key="pt">Type</th>
+            <th class="l" onclick="sortJob('co')" data-key="co">Company</th>
+            <th onclick="sortJob('rev_b')" data-key="rev_b">Contract (Base)</th>
+            <th onclick="sortJob('rev_adj')" data-key="rev_adj">Contract (Adj)</th>
+            <th onclick="sortJob('rev_ctd')" data-key="rev_ctd">Contract (CTD)</th>
+            <th onclick="sortJob('cogs_b')" data-key="cogs_b">COGS (Base)</th>
+            <th onclick="sortJob('cogs_adj')" data-key="cogs_adj">COGS (Adj)</th>
+            <th onclick="sortJob('gp_d')" data-key="gp_d">Gross Profit $</th>
+            <th onclick="sortJob('gp_pct')" data-key="gp_pct">GP %</th>
+            <th onclick="sortJob('btf')" data-key="btf">BTF</th>
+            <th onclick="sortJob('net')" data-key="net">Net Profit</th>
+          </tr>
+        </thead>
+        <tbody id="job-tbody">
+          <tr><td colspan="13" class="loading-msg">Loading data…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 2: GAAP CASH FLOW ══ -->
+<div id="tab-cf" style="display:none;flex-direction:column;flex:1;overflow:hidden;">
+  <div class="toolbar cf-controls">
+    <span class="tl">Period</span>
+    <select id="cf-period" onchange="renderCF()">
+      <option value="ytd">YTD</option>
+      <option value="qtd">QTD</option>
+      <option value="mtd">MTD</option>
+      <option value="fulllife" selected>Full Life</option>
+      <option value="all">All Months</option>
+    </select>
+    <div class="sep"></div>
+    <span class="tl">Lens</span>
+    <select id="cf-lens" onchange="renderCF()">
+      <option value="portfolio">Portfolio</option>
+      <option value="company">By Company</option>
+    </select>
+  </div>
+  <div style="padding:0 16px 8px;flex-shrink:0;">
+    <details class="gaap-note">
+      <summary>GAAP basis note (ASC 230 / ASC 606)</summary>
+      <p>Operating activities include property sale proceeds and construction costs for held-for-sale inventory per ASC 230-10-45-12. Revenue recognized at close of escrow per ASC 606. Direct method presentation.</p>
+    </details>
+  </div>
+  <div class="scroll-area" style="padding:0 16px 16px;">
+    <div style="overflow-x:auto;">
+      <table class="cf-tbl" id="cf-table">
+        <tbody id="cf-tbody"><tr><td colspan="3" class="loading-msg">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TAB 3: PLATFORM P&L ══ -->
+<div id="tab-pl" style="display:none;flex:1;overflow:hidden;">
+  <div class="pl-layout" style="height:100%;">
+    <div class="pl-left">
+      <div class="pl-panel-hdr">
+        <div class="pl-panel-hdr-title">Overhead Input</div>
+        <div class="pl-panel-sub">Monthly averages — auto-computes annual total</div>
+      </div>
+      <div class="oh-table-wrap">
+        <table class="oh-table">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th class="r">Monthly Avg</th>
+              <th class="r">Annual</th>
+              <th>Notes</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="oh-tbody"></tbody>
+          <tfoot>
+            <tr class="oh-total">
+              <td><strong>Total Overhead</strong></td>
+              <td class="r" id="oh-total-mo">—</td>
+              <td class="r" id="oh-total-ann">—</td>
+              <td colspan="2"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="oh-actions">
+        <button class="act-btn" onclick="addOHRow()">+ Add Row</button>
+        <button class="act-btn primary" onclick="saveOverhead()">Save</button>
+        <span id="oh-save-msg" style="font-size:10px;color:var(--green);opacity:0;transition:opacity .3s;">Saved</span>
+      </div>
+    </div>
+    <div class="pl-right">
+      <div class="pl-summary" id="pl-summary">
+        <div class="loading-msg">Loading…</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ SHARE DIALOG ══ -->
+<dialog id="share-dialog">
+  <div class="dlg-hdr">
+    <div class="dlg-title">Share Snapshot</div>
+    <button class="dlg-close" onclick="document.getElementById('share-dialog').close()">✕</button>
+  </div>
+  <div class="dlg-body">
+    <p style="font-size:12px;color:var(--ink2);line-height:1.7;margin-bottom:14px;">Download a self-contained HTML snapshot of the current report view. The snapshot embeds data and renders statically — no server connection required.</p>
+    <div style="padding:10px 12px;background:var(--canvas);border-radius:4px;border:1px solid var(--rule);font-size:11px;color:var(--ink3);">
+      Active tab: <strong id="share-active-tab" style="color:var(--ink)"></strong>
+    </div>
+  </div>
+  <div class="dlg-footer">
+    <button class="act-btn" onclick="document.getElementById('share-dialog').close()">Cancel</button>
+    <button class="act-btn primary" onclick="downloadSnapshot()">Download Snapshot</button>
+  </div>
+</dialog>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONSTANTS & GLOBALS
+// ═══════════════════════════════════════════════════════════════
+let PROJECTS = [];
+let CF_CACHE = {}; // project id → {rows, months, warns, dm}
+
+const CUR = new Date().toISOString().slice(0,7);
+const TODAY = new Date().toISOString().slice(0,10);
+
+const SG_CLS = {
+  WIP:'bwip', Closeout:'bclo', Pipeline:'bpip',
+  Hot:'bhot', Warm:'bwarm', Nurture:'bnurture',
+  'New Opportunity':'bnewopp', Closed:'bcls'
+};
+const SG_LABEL = {
+  WIP:'WIP', Closeout:'Closeout', Pipeline:'Pipeline',
+  Hot:'Hot', Warm:'Warm', Nurture:'Nurture',
+  'New Opportunity':'New Opp', Closed:'Closed'
+};
+
+const ALL_MONTHS = (() => {
+  const m = [];
+  for (let y = 2024; y <= 2030; y++)
+    for (let mo = 1; mo <= 12; mo++)
+      m.push(`${y}-${String(mo).padStart(2,'0')}`);
+  return m;
+})();
+
+// Tab state
+let ACTIVE_TAB = 'job';
+
+// Job table state
+let JOB_FILTER_STAGE = 'All';
+let JOB_FILTER_COS = new Set();
+let JOB_SORT_KEY = 'gp_d';
+let JOB_SORT_DIR = -1; // -1 = desc
+
+// ═══════════════════════════════════════════════════════════════
+// GAAP COMPUTE ENGINE (copied from index.html)
+// ═══════════════════════════════════════════════════════════════
+const REV_RE     = /revenue|proceeds|income|return|refi|sale|back.end|lease income|nnn income/i;
+const COST_RE    = /cost|price|acquisition|improvement|carry|interest carry|closing/i;
+const GP_RE      = /gross\s*profit/i;
+const WIP_RE     = /wip\s*offset|work.in.progress\s*offset/i;
+const FIN_OUT_RE = /repay|distribut|return of capital|interest|fee[s]?|costs?\s+to|penalty/i;
+const FIN_IN_RE  = /required|debt|equity|loan proceeds|capital contribution|borrow|draw\b|refinanc/i;
+
+function buildDateMap(p){
+  const m={};
+  for(const d of(p.dates||[])) m[d.e]=d.d;
+  return m;
+}
+function toYM(ds){ return ds?ds.slice(0,7):null; }
+function monthRange(a,b){
+  if(!a) return [];
+  const r=[]; let [y,mo]=a.split('-').map(Number);
+  const end=b&&b>a?b:a, [ey,em]=end.split('-').map(Number);
+  while(y<ey||(y===ey&&mo<=em)){
+    r.push(`${y}-${String(mo).padStart(2,'0')}`);
+    if(++mo>12){mo=1;y++;}
+  }
+  return r;
+}
+function spreadMo(amount,sYM,eYM,type){
+  const m={};
+  if(!sYM||!amount) return m;
+  if(type==='point'||!eYM||eYM<=sYM){ m[sYM]=(m[sYM]||0)+amount; }
+  else { const mos=monthRange(sYM,eYM), pp=amount/mos.length; for(const mo of mos) m[mo]=(m[mo]||0)+pp; }
+  return m;
+}
+function classifyRow(row,dm){
+  const a=row.a||'', s=row.s, t=row.t||'';
+  if(GP_RE.test(a)) return{gl:'gp_budget',sign:0,sYM:null,eYM:null,type:'point'};
+  if(WIP_RE.test(a)) return{gl:'wip_offset',sign:0,sYM:null,eYM:null,type:'point'};
+  if(s==='fin'){
+    const isIn=FIN_IN_RE.test(a);
+    const isOut=!isIn&&FIN_OUT_RE.test(a);
+    const sign=isOut?-1:1;
+    return{gl:'fin',sign,
+      sYM:toYM(sign<0?(dm['Construction Start']||dm['Purchase Close Date']):dm['Purchase Close Date']||dm['Construction Start']),
+      eYM:sign<0?toYM(dm['COE/Lease Commence']||dm['Construction End']):null,
+      type:sign<0?'even':'point'};
+  }
+  if(s==='inv'){
+    const isRev=REV_RE.test(a)&&!COST_RE.test(a);
+    if(isRev) return{gl:'revenue',sign:1,
+      sYM:toYM(dm['COE/Lease Commence']||dm['Closeout & Punch List']||dm['Construction End']),eYM:null,type:'point'};
+    if(/purchase price|land cost|land acquisition/i.test(a))
+      return{gl:'cogs',sign:-1,sYM:toYM(dm['Purchase Close Date']),eYM:null,type:'point'};
+    if(/improvement|construction cost|hard cost|soft cost|permit fee|design|architect/i.test(a))
+      return{gl:'cogs',sign:-1,
+        sYM:toYM(dm['Construction Start']||dm['Permit Issuance']||dm['Purchase Close Date']),
+        eYM:toYM(dm['Construction End']),type:'even'};
+    if(/carry|holding|interest carry|closing cost/i.test(a))
+      return{gl:'cogs',sign:-1,
+        sYM:toYM(dm['Purchase Close Date']||dm['Construction Start']),
+        eYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),type:'even'};
+    return{gl:'cogs',sign:-1,
+      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
+      eYM:toYM(dm['Construction End']),type:'even'};
+  }
+  if(s==='op'){
+    const isRev=REV_RE.test(a)&&!COST_RE.test(a);
+    if(isRev) return{gl:'oprev',sign:1,
+      sYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),
+      eYM:toYM(dm['1 Year Warranty End Date']||dm['Statutory Liability End Date']||dm['Closeout & Punch List']),
+      type:'even'};
+    return{gl:'opex',sign:-1,
+      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
+      eYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),type:'even'};
+  }
+  return{gl:'cogs',sign:-1,sYM:null,eYM:null,type:'point'};
+}
+
+function computeProjectCF(p){
+  const TODAY_YM = TODAY.slice(0,7);
+  const dm=buildDateMap(p), mos=new Set();
+  const rows=(p.rows||[]).map(r=>{
+    const cl=classifyRow(r,dm);
+    if(cl.gl==='gp_budget'||cl.gl==='wip_offset') return{...r,cl,budMo:{},actMo:{}};
+    let budAmt=(r.adj||r.b||0)*cl.sign;
+    let sYM=cl.sYM, eYM=cl.eYM, type=cl.type;
+    let ctdMo={};
+    if(r.bDate||r.eDate){
+      const iSYM=r.bDate?toYM(r.bDate):null;
+      const iEYM=r.eDate?toYM(r.eDate):null;
+      cl.sYM=iSYM||cl.sYM; sYM=cl.sYM;
+      cl.eYM=iEYM||cl.eYM; eYM=cl.eYM;
+      cl.type=(cl.sYM&&cl.eYM&&cl.eYM>cl.sYM)?'even':'point';
+      type=cl.type;
+    }
+    if(cl.sYM&&cl.eYM&&cl.sYM<TODAY_YM&&cl.eYM>=TODAY_YM){
+      if(r.ctd){
+        const lastMo=monthRange(cl.sYM,TODAY_YM).slice(-2,-1)[0]||cl.sYM;
+        ctdMo=spreadMo(r.ctd*cl.sign,cl.sYM,lastMo,'even');
+      }
+      if(r.btf>0){budAmt=r.btf*cl.sign;sYM=TODAY_YM;type='even';}
+      else{budAmt=0;}
+    }
+    const budMo=spreadMo(budAmt,sYM,eYM,type);
+    Object.entries(ctdMo).forEach(([m,v])=>{ budMo[m]=(budMo[m]||0)+v; });
+    const actMo=spreadMo((r.act||0)*cl.sign,cl.sYM,cl.eYM,cl.type);
+    Object.keys(budMo).forEach(m=>mos.add(m));
+    Object.keys(actMo).forEach(m=>mos.add(m));
+    return{...r,cl,budMo,actMo};
+  });
+  return{rows,months:[...mos].sort(),dm};
+}
+
+// ═══════════════════════════════════════════════════════════════
+// GAAP SECTION CLASSIFIER (ASC 230)
+// ═══════════════════════════════════════════════════════════════
+function gaapSection(row){
+  const gl = row.cl ? row.cl.gl : 'cogs';
+  const sign = row.cl ? row.cl.sign : -1;
+  if(gl==='gp_budget'||gl==='wip_offset') return null;
+  if(gl==='revenue'||gl==='oprev') return{sec:'op',dir:'in'};
+  if(gl==='cogs') return{sec:'op',dir:'out'};
+  if(gl==='opex') return{sec:'op',dir:'out'};
+  if(gl==='fin') return{sec:'fin',dir:sign>0?'in':'out'};
+  return{sec:'op',dir:'out'};
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FORMATTERS
+// ═══════════════════════════════════════════════════════════════
+function fmt(v){
+  if(!v||v===0) return '—';
+  const a=Math.abs(v);
+  if(a>=1e9) return '$'+(v/1e9).toFixed(2)+'B';
+  if(a>=1e6) return '$'+(v/1e6).toFixed(1)+'M';
+  if(a>=1e3) return '$'+Math.round(v/1e3)+'K';
+  return '$'+Math.round(v).toLocaleString();
+}
+function fmtFull(v){
+  if(v===null||v===undefined||v===0) return '—';
+  const s=v<0?'(':'';
+  const e=v<0?')':'';
+  return s+'$'+Math.abs(Math.round(v)).toLocaleString()+e;
+}
+function fmtPct(v){
+  if(!v&&v!==0) return '—';
+  return (v*100).toFixed(1)+'%';
+}
+function badge(sg){return `<span class="bdg ${SG_CLS[sg]||'both'}">${SG_LABEL[sg]||sg}</span>`;}
+function cfCell(v,isCur){
+  if(!v||v===0) return `<td class="${isCur?'cf-cur':''}">—</td>`;
+  const cls=(v<0?'cf-neg ':'')+(isCur?'cf-cur':'');
+  return `<td class="${cls}">${fmtFull(v)}</td>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PROGRESS BAR & TOAST
+// ═══════════════════════════════════════════════════════════════
+function setProgressBar(on){
+  const bar=document.getElementById('progress-bar');
+  if(on){
+    bar.style.opacity='1';bar.style.width='0';
+    requestAnimationFrame(()=>{bar.style.width='70%';});
+    bar._iv=setInterval(()=>{const w=parseFloat(bar.style.width);if(w<90)bar.style.width=(w+(90-w)*.1)+'%';},400);
+  }else{
+    clearInterval(bar._iv);bar.style.width='100%';
+    setTimeout(()=>{bar.style.opacity='0';setTimeout(()=>{bar.style.width='0';},400);},200);
+  }
+}
+function showToast(msg,isErr){
+  const t=document.createElement('div');
+  t.textContent=msg;
+  t.style.cssText=`position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:${isErr?'#8C1F1F':'#1E5C36'};color:#fff;padding:8px 18px;border-radius:6px;
+    font-size:11px;font-family:var(--mono);z-index:600;opacity:0;transition:opacity .2s;
+    white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)`;
+  document.body.appendChild(t);
+  requestAnimationFrame(()=>{t.style.opacity='1';});
+  setTimeout(()=>{t.style.opacity='0';setTimeout(()=>t.remove(),300);},3000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// DATA LOADING
+// ═══════════════════════════════════════════════════════════════
+async function loadData(){
+  setProgressBar(true);
+  try{
+    const res=await fetch('/api/data');
+    if(!res.ok) throw new Error('Server error '+res.status);
+    const data=await res.json();
+    if(data.error) throw new Error(data.error);
+    initApp(data);
+  }catch(err){
+    showToast('Failed to load: '+err.message,true);
+    document.getElementById('job-tbody').innerHTML=`<tr><td colspan="13" class="loading-msg">Error: ${err.message}</td></tr>`;
+    document.getElementById('cf-tbody').innerHTML=`<tr><td colspan="3" class="loading-msg">Error: ${err.message}</td></tr>`;
+    document.getElementById('pl-summary').innerHTML=`<div class="loading-msg">Error: ${err.message}</div>`;
+  }finally{
+    setProgressBar(false);
+  }
+}
+
+function initApp(data){
+  PROJECTS=(data.projects||[]);
+
+  // Pre-compute CF for each project and cache
+  for(const p of PROJECTS){
+    CF_CACHE[p.id]=computeProjectCF(p);
+  }
+
+  // Populate entity filter
+  const cos=[...new Set(PROJECTS.map(p=>p.co).filter(Boolean))].sort();
+  const ef=document.getElementById('entity-filter');
+  ef.innerHTML='<option value="">All Entities</option>'+cos.map(c=>`<option value="${c}">${c}</option>`).join('');
+
+  // Populate company pills in job tab
+  const pills=document.getElementById('job-co-pills');
+  pills.innerHTML=cos.map(c=>`<div class="pill" data-v="${c}" onclick="toggleCoPill(this)">${c}</div>`).join('');
+
+  // Populate CF lens project options
+  const lens=document.getElementById('cf-lens');
+  const projOpts=PROJECTS.map(p=>`<option value="proj:${p.id}">${p.n}</option>`).join('');
+  lens.innerHTML='<option value="portfolio">Portfolio</option><option value="company">By Company</option>'+projOpts;
+
+  // Load overhead from localStorage
+  loadOverhead();
+
+  // Render active tab
+  renderActiveTab();
+}
+
+function onFilterChange(){ renderActiveTab(); }
+
+// ═══════════════════════════════════════════════════════════════
+// TAB SWITCHING
+// ═══════════════════════════════════════════════════════════════
+function switchTab(tab,el){
+  ACTIVE_TAB=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-job').style.display=tab==='job'?'flex':'none';
+  document.getElementById('tab-cf').style.display=tab==='cf'?'flex':'none';
+  document.getElementById('tab-pl').style.display=tab==='pl'?'flex':'none';
+  renderActiveTab();
+}
+
+function renderActiveTab(){
+  if(ACTIVE_TAB==='job') renderJob();
+  else if(ACTIVE_TAB==='cf') renderCF();
+  else if(ACTIVE_TAB==='pl') renderPL();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB 1: JOB PROFITABILITY
+// ═══════════════════════════════════════════════════════════════
+function setJobStage(v,el){
+  JOB_FILTER_STAGE=v;
+  document.querySelectorAll('#job-stage-pills .pill').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  renderJob();
+}
+function toggleCoPill(el){
+  const v=el.dataset.v;
+  if(JOB_FILTER_COS.has(v)){JOB_FILTER_COS.delete(v);el.classList.remove('on');}
+  else{JOB_FILTER_COS.add(v);el.classList.add('on');}
+  renderJob();
+}
+function sortJob(key){
+  if(JOB_SORT_KEY===key) JOB_SORT_DIR*=-1;
+  else{JOB_SORT_KEY=key;JOB_SORT_DIR=-1;}
+  renderJob();
+}
+
+function jobMetrics(p){
+  const rows=p.rows||[];
+  let rev_b=0,rev_adj=0,rev_ctd=0;
+  let cogs_b=0,cogs_adj=0;
+  let opex_b=0;
+  let btf=0;
+  for(const r of rows){
+    const gl=r.cl?r.cl.gl:classifyRow(r,buildDateMap(p)).gl;
+    if(gl==='gp_budget'||gl==='wip_offset') continue;
+    if(gl==='revenue'||gl==='oprev'){
+      rev_b+=(r.b||0);rev_adj+=(r.adj||r.b||0);rev_ctd+=(r.ctd||0);
+    } else if(gl==='cogs'){
+      cogs_b+=(r.b||0);cogs_adj+=(r.adj||r.b||0);
+    } else if(gl==='opex'){
+      opex_b+=(r.b||0);
+    }
+    if((r.btf||0)>0) btf+=(r.btf||0);
+  }
+  const gp_d=rev_b-cogs_b;
+  const gp_pct=rev_b?gp_d/rev_b:0;
+  const net=gp_d-opex_b;
+  return{rev_b,rev_adj,rev_ctd,cogs_b,cogs_adj,gp_d,gp_pct,btf,net};
+}
+
+function renderJob(){
+  const entityFilter=document.getElementById('entity-filter').value;
+  let data=PROJECTS.filter(p=>{
+    if(entityFilter&&p.co!==entityFilter) return false;
+    if(JOB_FILTER_STAGE!=='All'&&p.sg!==JOB_FILTER_STAGE) return false;
+    if(JOB_FILTER_COS.size>0&&!JOB_FILTER_COS.has(p.co)) return false;
+    return true;
+  });
+
+  // Compute metrics
+  const rows=data.map(p=>({p,...jobMetrics(p)}));
+
+  // Sort
+  rows.sort((a,b)=>{
+    let av=a[JOB_SORT_KEY], bv=b[JOB_SORT_KEY];
+    if(typeof av==='string') return JOB_SORT_DIR*(av||'').localeCompare(bv||'');
+    return JOB_SORT_DIR*((av||0)-(bv||0));
+  });
+
+  // Update sort indicators
+  document.querySelectorAll('#job-thead-row th').forEach(th=>{
+    th.classList.remove('sort-asc','sort-desc');
+    if(th.dataset.key===JOB_SORT_KEY){
+      th.classList.add(JOB_SORT_DIR>0?'sort-asc':'sort-desc');
+    }
+  });
+
+  if(!rows.length){
+    document.getElementById('job-tbody').innerHTML=`<tr><td colspan="13" class="empty-state">No projects match the current filters.</td></tr>`;
+    return;
+  }
+
+  // Totals
+  const T={rev_b:0,rev_adj:0,rev_ctd:0,cogs_b:0,cogs_adj:0,gp_d:0,btf:0,net:0};
+  rows.forEach(r=>{for(const k of Object.keys(T)) T[k]+=(r[k]||0);});
+  const tGpPct=T.rev_b?T.gp_d/T.rev_b:0;
+
+  function gpCls(pct){
+    if(pct>0.25) return 'gp-green';
+    if(pct>0.10) return 'gp-amber';
+    return 'gp-red';
+  }
+
+  const trs=rows.map(({p,rev_b,rev_adj,rev_ctd,cogs_b,cogs_adj,gp_d,gp_pct,btf,net})=>`
+    <tr>
+      <td class="l"><a class="plink" href="${p.url}" target="_blank">${p.n}</a></td>
+      <td class="l">${badge(p.sg)}</td>
+      <td class="l" style="font-size:10px;color:var(--ink2)">${p.pt||'—'}</td>
+      <td class="l" style="font-size:10px;color:var(--ink2)">${p.co||'—'}</td>
+      <td>${fmt(rev_b)}</td>
+      <td>${fmt(rev_adj)}</td>
+      <td>${fmt(rev_ctd)}</td>
+      <td>${rev_b&&cogs_b?'('+fmt(cogs_b).replace('$','$')+')':`<span style="color:var(--ink3)">${fmt(cogs_b)}</span>`}</td>
+      <td>${fmt(cogs_adj)}</td>
+      <td class="${gp_d<0?'neg':''}">${fmtFull(gp_d)}</td>
+      <td class="${gpCls(gp_pct)}">${fmtPct(gp_pct)}</td>
+      <td>${btf?fmt(btf):'—'}</td>
+      <td class="${net<0?'neg':''}">${fmtFull(net)}</td>
+    </tr>`).join('');
+
+  const totRow=`
+    <tr class="totals-row">
+      <td class="l"><strong>TOTALS</strong></td>
+      <td class="l"></td><td class="l"></td><td class="l">${rows.length} projects</td>
+      <td><strong>${fmt(T.rev_b)}</strong></td>
+      <td><strong>${fmt(T.rev_adj)}</strong></td>
+      <td><strong>${fmt(T.rev_ctd)}</strong></td>
+      <td><strong>${fmt(T.cogs_b)}</strong></td>
+      <td><strong>${fmt(T.cogs_adj)}</strong></td>
+      <td class="${T.gp_d<0?'neg':''}"><strong>${fmtFull(T.gp_d)}</strong></td>
+      <td class="${gpCls(tGpPct)}"><strong>${fmtPct(tGpPct)}</strong></td>
+      <td><strong>${fmt(T.btf)}</strong></td>
+      <td class="${T.net<0?'neg':''}"><strong>${fmtFull(T.net)}</strong></td>
+    </tr>`;
+
+  document.getElementById('job-tbody').innerHTML=trs+totRow;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB 2: GAAP CASH FLOW STATEMENT
+// ═══════════════════════════════════════════════════════════════
+function getPeriodMonths(){
+  const period=document.getElementById('cf-period').value;
+  const now=new Date();
+  const curYM=CUR;
+  const y=now.getFullYear(), mo=now.getMonth()+1;
+  if(period==='mtd') return [curYM];
+  if(period==='ytd'){
+    const start=`${y}-01`;
+    return ALL_MONTHS.filter(m=>m>=start&&m<=curYM);
+  }
+  if(period==='qtd'){
+    const q=Math.floor((mo-1)/3);
+    const qStart=`${y}-${String(q*3+1).padStart(2,'0')}`;
+    return ALL_MONTHS.filter(m=>m>=qStart&&m<=curYM);
+  }
+  if(period==='fulllife'){
+    // Find earliest and latest months with data across all projects
+    let minM=null, maxM=null;
+    for(const p of PROJECTS){
+      const cf=CF_CACHE[p.id];
+      if(!cf) continue;
+      for(const r of cf.rows){
+        for(const m of Object.keys(r.budMo||{})){
+          if(!minM||m<minM) minM=m;
+          if(!maxM||m>maxM) maxM=m;
+        }
+      }
+    }
+    if(!minM) return ALL_MONTHS.slice(0,12);
+    return ALL_MONTHS.filter(m=>m>=minM&&m<=maxM);
+  }
+  // 'all'
+  return ALL_MONTHS;
+}
+
+function getProjectsForLens(){
+  const lens=document.getElementById('cf-lens').value;
+  const entityFilter=document.getElementById('entity-filter').value;
+  let projs=PROJECTS;
+  if(entityFilter) projs=projs.filter(p=>p.co===entityFilter);
+
+  if(lens.startsWith('proj:')){
+    const id=lens.slice(5);
+    const p=projs.find(x=>x.id===id)||PROJECTS.find(x=>x.id===id);
+    return p?{type:'single',groups:[{label:p.n,projects:[p]}]}:{type:'single',groups:[]};
+  }
+  if(lens==='company'){
+    const byco={};
+    projs.forEach(p=>{const k=p.co||'Unknown';(byco[k]=byco[k]||[]).push(p);});
+    const groups=Object.keys(byco).sort().map(k=>({label:k,projects:byco[k]}));
+    return{type:'company',groups};
+  }
+  return{type:'portfolio',groups:[{label:'Portfolio',projects:projs}]};
+}
+
+function renderCF(){
+  if(!PROJECTS.length) return;
+  const months=getPeriodMonths();
+  if(!months.length){
+    document.getElementById('cf-tbody').innerHTML='<tr><td colspan="3" class="empty-state">No data for selected period.</td></tr>';
+    return;
+  }
+
+  const {type,groups}=getProjectsForLens();
+
+  // For single-group lens: one column set
+  // Build header row
+  const moHdrs=months.map(m=>{
+    const [y,mo]=m.split('-');
+    const lbl=mo==='01'?y:new Date(+y,+mo-1,1).toLocaleString('en',{month:'short'});
+    return `<th class="${m===CUR?'cf-cur':''}">${lbl}</th>`;
+  }).join('');
+  const thead=`<thead><tr>
+    <th class="acct-col" style="min-width:220px">Account</th>
+    ${moHdrs}
+    <th>Total</th>
+  </tr></thead>`;
+
+  // Aggregate data per group
+  // sections: op.in, op.out, fin.in, fin.out
+  // rows keyed by account name within each section
+  function aggregateGroup(projs){
+    // Map: sectionKey → {accountLabel → {monthMap, total}}
+    const secs={
+      'op.in':{},'op.out':{},'fin.in':{},'fin.out':{}
+    };
+    for(const p of projs){
+      const cf=CF_CACHE[p.id];
+      if(!cf) continue;
+      for(const r of cf.rows){
+        const gs=gaapSection(r);
+        if(!gs) continue;
+        const secKey=gs.sec+'.'+gs.dir;
+        if(!secs[secKey]) secs[secKey]={};
+        const lbl=r.a||'(unnamed)';
+        if(!secs[secKey][lbl]) secs[secKey][lbl]={mo:{},total:0};
+        for(const [m,v] of Object.entries(r.budMo||{})){
+          if(months.includes(m)){
+            secs[secKey][lbl].mo[m]=(secs[secKey][lbl].mo[m]||0)+v;
+            secs[secKey][lbl].total+=(v||0);
+          }
+        }
+      }
+    }
+    return secs;
+  }
+
+  // Combine groups for display
+  // If type=portfolio or single: one set of aggregated rows
+  // If type=company: show company header rows, then aggregate under each
+
+  let tbody='';
+
+  function renderSection(secs,prefix){
+    let html='';
+    // Operating Activities
+    const opIn=secs['op.in']||{};
+    const opOut=secs['op.out']||{};
+    // Financing Activities
+    const finIn=secs['fin.in']||{};
+    const finOut=secs['fin.out']||{};
+
+    function secLabel(lbl){
+      return `<tr class="cf-sec-hdr"><td class="acct-col">${lbl}</td>${months.map(()=>'<td></td>').join('')}<td></td></tr>`;
+    }
+    function rowHtml(lbl,moData,dir){
+      const sign=dir==='out'?-1:1;
+      const moCells=months.map(m=>{
+        const v=(moData[m]||0)*sign;
+        return cfCell(v||0,m===CUR);
+      }).join('');
+      const total=Object.values(moData).reduce((a,v)=>a+v,0)*sign;
+      return `<tr><td class="acct-col" style="padding-left:20px;font-size:10px;color:var(--ink2)">${lbl}</td>${moCells}${cfCell(total,false)}</tr>`;
+    }
+    function subtotalRow(lbl,sectionData,dir){
+      const sign=dir==='out'?-1:1;
+      const moTotals={};
+      Object.values(sectionData).forEach(d=>{
+        Object.entries(d.mo).forEach(([m,v])=>{moTotals[m]=(moTotals[m]||0)+v*sign;});
+      });
+      const moCells=months.map(m=>cfCell(moTotals[m]||0,m===CUR)).join('');
+      const total=Object.values(moTotals).reduce((a,v)=>a+v,0);
+      return `<tr class="cf-subtotal"><td class="acct-col" style="font-size:10px">${lbl}</td>${moCells}${cfCell(total,false)}</tr>`;
+    }
+
+    html+=secLabel('OPERATING ACTIVITIES');
+    // Inflows
+    if(Object.keys(opIn).length){
+      html+=`<tr><td class="acct-col" style="padding-left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--green);font-weight:600">Inflows</td>${months.map(()=>'<td></td>').join('')}<td></td></tr>`;
+      Object.entries(opIn).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lbl,d])=>{html+=rowHtml(lbl,d.mo,'in');});
+    }
+    // Outflows
+    if(Object.keys(opOut).length){
+      html+=`<tr><td class="acct-col" style="padding-left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--red);font-weight:600">Outflows</td>${months.map(()=>'<td></td>').join('')}<td></td></tr>`;
+      Object.entries(opOut).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lbl,d])=>{html+=rowHtml(lbl,d.mo,'out');});
+    }
+    // Op subtotal
+    {
+      const moTotals={};
+      Object.values(opIn).forEach(d=>Object.entries(d.mo).forEach(([m,v])=>{moTotals[m]=(moTotals[m]||0)+v;}));
+      Object.values(opOut).forEach(d=>Object.entries(d.mo).forEach(([m,v])=>{moTotals[m]=(moTotals[m]||0)-v;}));
+      const moCells=months.map(m=>cfCell(moTotals[m]||0,m===CUR)).join('');
+      const total=Object.values(moTotals).reduce((a,v)=>a+v,0);
+      html+=`<tr class="cf-subtotal"><td class="acct-col" style="font-size:10px">Net Cash from Operating</td>${moCells}${cfCell(total,false)}</tr>`;
+    }
+
+    html+=secLabel('FINANCING ACTIVITIES');
+    if(Object.keys(finIn).length){
+      html+=`<tr><td class="acct-col" style="padding-left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--green);font-weight:600">Inflows</td>${months.map(()=>'<td></td>').join('')}<td></td></tr>`;
+      Object.entries(finIn).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lbl,d])=>{html+=rowHtml(lbl,d.mo,'in');});
+    }
+    if(Object.keys(finOut).length){
+      html+=`<tr><td class="acct-col" style="padding-left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--red);font-weight:600">Outflows</td>${months.map(()=>'<td></td>').join('')}<td></td></tr>`;
+      Object.entries(finOut).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lbl,d])=>{html+=rowHtml(lbl,d.mo,'out');});
+    }
+    {
+      const moTotals={};
+      Object.values(finIn).forEach(d=>Object.entries(d.mo).forEach(([m,v])=>{moTotals[m]=(moTotals[m]||0)+v;}));
+      Object.values(finOut).forEach(d=>Object.entries(d.mo).forEach(([m,v])=>{moTotals[m]=(moTotals[m]||0)-v;}));
+      const moCells=months.map(m=>cfCell(moTotals[m]||0,m===CUR)).join('');
+      const total=Object.values(moTotals).reduce((a,v)=>a+v,0);
+      html+=`<tr class="cf-subtotal"><td class="acct-col" style="font-size:10px">Net Cash from Financing</td>${moCells}${cfCell(total,false)}</tr>`;
+    }
+
+    // Grand net
+    {
+      const allSecs=[opIn,opOut,finIn,finOut];
+      const dirs=['in','out','in','out'];
+      const moTotals={};
+      allSecs.forEach((sec,i)=>{
+        const sign=dirs[i]==='in'?1:-1;
+        Object.values(sec).forEach(d=>Object.entries(d.mo).forEach(([m,v])=>{moTotals[m]=(moTotals[m]||0)+v*sign;}));
+      });
+      const moCells=months.map(m=>{
+        const v=moTotals[m]||0;
+        if(!v) return `<td class="${m===CUR?'cf-cur':''}">—</td>`;
+        const cls=(v<0?'cf-neg ':'')+(m===CUR?'cf-cur':'');
+        return `<td class="${cls}" style="color:${v<0?'':'inherit'};font-weight:700">${fmtFull(v)}</td>`;
+      }).join('');
+      const total=Object.values(moTotals).reduce((a,v)=>a+v,0);
+      html+=`<tr class="cf-grand"><td class="acct-col">NET CASH FLOW</td>${moCells}<td style="font-weight:700">${fmtFull(total)}</td></tr>`;
+
+      // Cumulative
+      let cum=0;
+      const cumCells=months.map(m=>{
+        cum+=(moTotals[m]||0);
+        if(cum===0) return `<td class="${m===CUR?'cf-cur':''}">—</td>`;
+        const cls=(cum<0?'cf-neg ':'')+(m===CUR?'cf-cur':'');
+        return `<td class="${cls}">${fmtFull(cum)}</td>`;
+      }).join('');
+      html+=`<tr class="cf-cumul"><td class="acct-col">Cumulative Cash Flow</td>${cumCells}<td>${fmtFull(cum)}</td></tr>`;
+    }
+
+    return html;
+  }
+
+  if(type==='company'){
+    for(const g of groups){
+      if(!g.projects.length) continue;
+      const secs=aggregateGroup(g.projects);
+      tbody+=`<tr><td colspan="${months.length+2}" style="background:var(--purple-l);color:var(--purple);font-family:var(--display);font-weight:700;font-size:11px;padding:8px 12px;letter-spacing:.04em">${g.label}</td></tr>`;
+      tbody+=renderSection(secs,g.label);
+    }
+  } else {
+    const allProjs=groups.flatMap(g=>g.projects);
+    const secs=aggregateGroup(allProjs);
+    tbody+=renderSection(secs,'');
+  }
+
+  document.getElementById('cf-table').innerHTML=thead+`<tbody>${tbody}</tbody>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TAB 3: PLATFORM P&L
+// ═══════════════════════════════════════════════════════════════
+let OH_ROWS=[
+  {cat:'Salaries & Benefits',mo:'',ann:'',notes:''},
+  {cat:'Rent & Utilities',mo:'',ann:'',notes:''},
+  {cat:'Software & Technology',mo:'',ann:'',notes:''},
+  {cat:'Marketing & Business Dev',mo:'',ann:'',notes:''},
+  {cat:'Insurance',mo:'',ann:'',notes:''},
+  {cat:'Professional Fees',mo:'',ann:'',notes:''},
+  {cat:'Other',mo:'',ann:'',notes:''},
+];
+
+function loadOverhead(){
+  try{
+    const saved=localStorage.getItem('sb_overhead_v1');
+    if(saved){OH_ROWS=JSON.parse(saved);}
+  }catch(e){}
+  renderOHTable();
+  renderPL();
+}
+
+function saveOverhead(){
+  OH_ROWS=collectOHRows();
+  localStorage.setItem('sb_overhead_v1',JSON.stringify(OH_ROWS));
+  const msg=document.getElementById('oh-save-msg');
+  msg.style.opacity='1';
+  setTimeout(()=>{msg.style.opacity='0';},2000);
+  renderPL();
+}
+
+function collectOHRows(){
+  const rows=[];
+  document.querySelectorAll('#oh-tbody tr[data-idx]').forEach(tr=>{
+    const cat=tr.querySelector('.oh-cat').value;
+    const mo=parseFloat(tr.querySelector('.oh-mo').value)||0;
+    const notes=tr.querySelector('.oh-notes').value;
+    rows.push({cat,mo:mo||'',ann:mo?(mo*12):'',notes});
+  });
+  return rows;
+}
+
+function addOHRow(){
+  OH_ROWS=collectOHRows();
+  OH_ROWS.push({cat:'New Category',mo:'',ann:'',notes:''});
+  renderOHTable();
+}
+
+function removeOHRow(idx){
+  OH_ROWS=collectOHRows();
+  OH_ROWS.splice(idx,1);
+  renderOHTable();
+  renderPL();
+}
+
+function onOHChange(){
+  // Live update annual column and PL
+  document.querySelectorAll('#oh-tbody tr[data-idx]').forEach(tr=>{
+    const mo=parseFloat(tr.querySelector('.oh-mo').value)||0;
+    tr.querySelector('.oh-ann').textContent=mo?'$'+Math.round(mo*12).toLocaleString():'—';
+  });
+  updateOHTotal();
+  renderPL();
+}
+
+function updateOHTotal(){
+  let totalMo=0;
+  document.querySelectorAll('#oh-tbody tr[data-idx] .oh-mo').forEach(inp=>{
+    totalMo+=parseFloat(inp.value)||0;
+  });
+  document.getElementById('oh-total-mo').textContent=totalMo?'$'+Math.round(totalMo).toLocaleString():'—';
+  document.getElementById('oh-total-ann').textContent=totalMo?'$'+Math.round(totalMo*12).toLocaleString():'—';
+}
+
+function renderOHTable(){
+  const tbody=document.getElementById('oh-tbody');
+  tbody.innerHTML=OH_ROWS.map((r,i)=>`
+    <tr data-idx="${i}">
+      <td><input class="oh-input oh-cat" value="${r.cat||''}" placeholder="Category" oninput="onOHChange()"></td>
+      <td class="r"><input class="oh-input mono oh-mo" value="${r.mo||''}" placeholder="0" type="number" min="0" style="width:90px;text-align:right" oninput="onOHChange()"></td>
+      <td class="r oh-ann" style="color:var(--ink2)">${r.mo?'$'+Math.round((parseFloat(r.mo)||0)*12).toLocaleString():'—'}</td>
+      <td><input class="oh-input oh-notes" value="${r.notes||''}" placeholder="Notes…" oninput="onOHChange()"></td>
+      <td><button class="act-btn danger" onclick="removeOHRow(${i})" style="padding:2px 8px;font-size:10px">✕</button></td>
+    </tr>`).join('');
+  updateOHTotal();
+}
+
+function getOHTotalAnnual(){
+  let total=0;
+  document.querySelectorAll('#oh-tbody tr[data-idx] .oh-mo').forEach(inp=>{
+    total+=parseFloat(inp.value)||0;
+  });
+  return total*12;
+}
+
+function renderPL(){
+  const entityFilter=document.getElementById('entity-filter').value;
+  let projs=PROJECTS;
+  if(entityFilter) projs=projs.filter(p=>p.co===entityFilter);
+
+  let revB=0,revAdj=0,cogsB=0,opRevB=0,btfTotal=0;
+  for(const p of projs){
+    for(const r of(p.rows||[])){
+      const dm=buildDateMap(p);
+      const cl=r.cl||classifyRow(r,dm);
+      const gl=cl.gl;
+      if(gl==='gp_budget'||gl==='wip_offset') continue;
+      if(gl==='revenue'){ revB+=(r.b||0);revAdj+=(r.adj||r.b||0); }
+      if(gl==='oprev'){ opRevB+=(r.b||0); }
+      if(gl==='cogs'){ cogsB+=(r.b||0); }
+      if((r.btf||0)>0) btfTotal+=(r.btf||0);
+    }
+  }
+  const portGP=revB-cogsB;
+  const portGPPct=revB?portGP/revB:0;
+  const totalRevWithOpRev=revB+opRevB;
+  const overhead=getOHTotalAnnual();
+  const netIncome=(portGP+opRevB)-overhead;
+  const niMargin=totalRevWithOpRev?(netIncome/totalRevWithOpRev):0;
+
+  // Forward projection
+  const wip=projs.filter(p=>p.sg==='WIP'||p.sg==='Closeout');
+  let btfWIP=0;
+  for(const p of wip){
+    for(const r of(p.rows||[])){
+      if((r.btf||0)>0) btfWIP+=(r.btf||0);
+    }
+  }
+  // Remaining overhead: rough estimate (12 months)
+  const remOverhead=overhead;
+
+  const pl=document.getElementById('pl-summary');
+  pl.innerHTML=`
+    <div class="pl-title">Platform Income Statement</div>
+    <hr class="pl-rule">
+
+    <div class="pl-row">
+      <span class="pl-row-lbl">Portfolio Gross Revenue (Baseline)</span>
+      <span class="pl-row-val">${fmtFull(revB)}</span>
+    </div>
+    <div class="pl-row">
+      <span class="pl-row-lbl">Portfolio Gross Revenue (Adjusted)</span>
+      <span class="pl-row-val">${fmtFull(revAdj)}</span>
+    </div>
+    <div class="pl-row neg">
+      <span class="pl-row-lbl">Cost of Revenue (Baseline)</span>
+      <span class="pl-row-val">${cogsB?'('+fmt(cogsB)+')':'—'}</span>
+    </div>
+    <hr class="pl-rule thick">
+
+    <div class="pl-subtotal">
+      <span class="pl-subtotal-lbl">PORTFOLIO GROSS PROFIT</span>
+      <span class="pl-subtotal-val">${fmtFull(portGP)}<span class="pl-subtotal-pct">${fmtPct(portGPPct)}</span></span>
+    </div>
+    <div class="pl-row indent pos">
+      <span class="pl-row-lbl">+ Operating Revenue (T1/GC fees)</span>
+      <span class="pl-row-val">${fmtFull(opRevB)}</span>
+    </div>
+    <hr class="pl-rule">
+    <div class="pl-row neg">
+      <span class="pl-row-lbl">TOTAL OVERHEAD (Annual)</span>
+      <span class="pl-row-val">${overhead?'('+fmt(overhead)+')':'—'}</span>
+    </div>
+    <hr class="pl-rule double">
+
+    <div class="pl-grand">
+      <span class="pl-grand-lbl">Platform Net Income</span>
+      <span class="pl-grand-val">${fmtFull(netIncome)}<span class="pl-grand-pct">${fmtPct(niMargin)}</span></span>
+    </div>
+
+    <div class="pl-forward">
+      <div class="pl-forward-title">Forward Projection (Active WIP)</div>
+      <div class="pl-row">
+        <span class="pl-row-lbl">Balance to Finish (all active)</span>
+        <span class="pl-row-val">${fmtFull(btfWIP)}</span>
+      </div>
+      <div class="pl-row neg">
+        <span class="pl-row-lbl">Remaining Overhead (est. annual)</span>
+        <span class="pl-row-val">${overhead?'('+fmt(overhead)+')':'—'}</span>
+      </div>
+      <hr class="pl-rule" style="margin:6px 0;">
+      <div class="pl-subtotal">
+        <span class="pl-subtotal-lbl">Projected Platform Net Income</span>
+        <span class="pl-subtotal-val ${(btfWIP-remOverhead)<0?'neg':''}">${fmtFull(btfWIP-remOverhead)}</span>
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// EXPORT JSON
+// ═══════════════════════════════════════════════════════════════
+function exportJSON(){
+  const entityFilter=document.getElementById('entity-filter').value;
+  let projs=PROJECTS;
+  if(entityFilter) projs=projs.filter(p=>p.co===entityFilter);
+
+  const projData=projs.map(p=>{
+    const m=jobMetrics(p);
+    const cf=CF_CACHE[p.id];
+    // Aggregate CF totals
+    let cfOp=0,cfFin=0;
+    if(cf){
+      for(const r of cf.rows){
+        const gs=gaapSection(r);
+        if(!gs) continue;
+        const sign=gs.dir==='in'?1:-1;
+        const v=Object.values(r.budMo||{}).reduce((a,x)=>a+x,0)*sign;
+        if(gs.sec==='op') cfOp+=v;
+        else if(gs.sec==='fin') cfFin+=v;
+      }
+    }
+    return{id:p.id,name:p.n,stage:p.sg,type:p.pt,company:p.co,...m,cfOperating:cfOp,cfFinancing:cfFin};
+  });
+
+  const T={contractValue:0,cogs:0,grossProfit:0,cfOperating:0,cfFinancing:0};
+  projData.forEach(p=>{T.contractValue+=p.rev_b;T.cogs+=p.cogs_b;T.grossProfit+=p.gp_d;T.cfOperating+=p.cfOperating;T.cfFinancing+=p.cfFinancing;});
+  T.gpPct=T.contractValue?T.grossProfit/T.contractValue:0;
+
+  const overhead=getOHTotalAnnual();
+  const portGP=T.grossProfit;
+  let opRevB=0;
+  projs.forEach(p=>(p.rows||[]).forEach(r=>{if((r.cl||classifyRow(r,buildDateMap(p))).gl==='oprev') opRevB+=(r.b||0);}));
+  const netIncome=(portGP+opRevB)-overhead;
+
+  const out={
+    meta:{generated:new Date().toISOString(),source:'sb-planning-tools'},
+    projects:projData,
+    portfolio_totals:T,
+    overhead:{annualTotal:overhead,rows:collectOHRows()},
+    platform_pl:{portfolioGP:portGP,opRevenue:opRevB,totalOverhead:overhead,platformNetIncome:netIncome,platformNIMarginPct:(portGP+opRevB)?(netIncome/(portGP+opRevB)):0}
+  };
+
+  const date=new Date().toISOString().slice(0,10);
+  const blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`sb-financials-${date}.json`;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000);
+  showToast('Exported sb-financials-'+date+'.json');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SHARE / SNAPSHOT
+// ═══════════════════════════════════════════════════════════════
+function openShare(){
+  const tabNames={job:'Job Profitability',cf:'GAAP Cash Flow',pl:'Platform P&L'};
+  document.getElementById('share-active-tab').textContent=tabNames[ACTIVE_TAB]||ACTIVE_TAB;
+  document.getElementById('share-dialog').showModal();
+}
+
+function downloadSnapshot(){
+  document.getElementById('share-dialog').close();
+  const date=new Date().toISOString().slice(0,10);
+
+  // Capture current rendered table HTML
+  let tableHTML='';
+  let title='';
+  if(ACTIVE_TAB==='job'){
+    title='Job Profitability';
+    const tbl=document.getElementById('job-table');
+    tableHTML=tbl?tbl.outerHTML:'';
+  } else if(ACTIVE_TAB==='cf'){
+    title='GAAP Cash Flow Statement';
+    const tbl=document.getElementById('cf-table');
+    tableHTML=tbl?`<div style="overflow-x:auto">${tbl.outerHTML}</div>`:'';
+  } else {
+    title='Platform P&L';
+    const pl=document.getElementById('pl-summary');
+    tableHTML=pl?pl.outerHTML:'';
+  }
+
+  const snap=`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><title>Stitser BUILT — ${title} Snapshot ${date}</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap">
+<style>
+:root{--ink:#0E0D0B;--ink2:#4A4640;--ink3:#8A847C;--canvas:#F7F4EF;--paper:#FFFFFF;--rule:#E2DDD6;--rule2:#EDE9E2;--gold:#C8961A;--gold-l:#FBF3DE;--blue:#1A3F72;--blue-l:#EAF0F9;--green:#1E5C36;--green-l:#E4F2E9;--red:#8C1F1F;--red-l:#F9E8E8;--amber:#9C5A00;--amber-l:#FEF3E2;--purple:#5B3E8C;--purple-l:#F0EBFB;--mono:'DM Mono',monospace;--display:'Syne',sans-serif;--body:'DM Sans',sans-serif;}
+*{box-sizing:border-box;margin:0;padding:0;}html{font-size:13px;}body{font-family:var(--body);background:var(--canvas);color:var(--ink);padding:24px;}
+.snap-hdr{background:var(--ink);color:#fff;padding:14px 20px;border-radius:6px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;}
+.snap-title{font-family:var(--display);font-size:15px;font-weight:800;}
+.snap-meta{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.5);}
+.fin-table,.cf-tbl{width:100%;border-collapse:collapse;background:var(--paper);border:1px solid var(--rule);border-radius:6px;overflow:hidden;}
+.fin-table thead,.cf-tbl thead{background:var(--canvas);}
+.fin-table th,.cf-tbl th{padding:7px 10px;text-align:right;font-size:9px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;border-bottom:2px solid var(--rule);white-space:nowrap;background:var(--canvas);}
+.fin-table th.l{text-align:left;}.cf-tbl th.acct-col{text-align:left;}
+.fin-table td{padding:6px 10px;border-bottom:1px solid var(--rule2);font-family:var(--mono);font-size:10px;text-align:right;}
+.fin-table td.l{text-align:left;font-family:var(--body);font-size:11px;}
+.cf-tbl td{padding:4px 8px;border-bottom:1px solid var(--rule2);font-family:var(--mono);font-size:9px;text-align:right;}
+.cf-tbl td.acct-col{text-align:left;font-family:var(--body);font-size:11px;}
+.cf-sec-hdr td{background:var(--canvas)!important;font-family:var(--body)!important;font-size:9px!important;font-weight:700;color:var(--ink)!important;text-transform:uppercase;letter-spacing:.07em;padding:7px 8px!important;border-top:2px solid var(--rule);}
+.cf-subtotal td{border-top:1px solid var(--rule);font-weight:700;background:var(--canvas)!important;}
+.cf-grand td{border-top:2px solid var(--ink);font-weight:700;background:var(--ink)!important;color:#fff;}
+.cf-cumul td{background:#F0EBFB!important;font-weight:600;color:var(--purple);}
+.cf-neg{color:var(--red)!important;}.cf-cur{background:#FFFCEE!important;}
+.totals-row td{border-top:2px solid var(--rule);font-weight:700;background:var(--canvas);}
+.bdg{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:600;}
+.bwip{background:var(--blue-l);color:var(--blue);}.bclo{background:var(--green-l);color:var(--green);}
+.bpip{background:var(--amber-l);color:var(--amber);}.bhot{background:#FF702E;color:#fff;}
+.bwarm{background:#FFD5B3;color:#7A3200;}.gp-green{color:var(--green);}.gp-amber{color:var(--amber);}.gp-red{color:var(--red);}.neg{color:var(--red);}
+.plink{color:var(--blue);text-decoration:none;}
+.pl-title{font-family:var(--display);font-size:15px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--ink);margin-bottom:14px;}
+.pl-rule{border:none;border-top:1px solid var(--rule);margin:6px 0;}.pl-rule.thick{border-top-width:2px;}.pl-rule.double{border-top:3px double var(--ink);margin:8px 0;}
+.pl-row{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;gap:12px;}
+.pl-row-lbl{font-size:12px;color:var(--ink2);}.pl-row-val{font-family:var(--mono);font-size:12px;color:var(--ink);text-align:right;min-width:120px;}
+.pl-subtotal{display:flex;justify-content:space-between;align-items:baseline;padding:8px 0;gap:12px;border-top:1px solid var(--rule);margin-top:2px;}
+.pl-subtotal-lbl{font-size:13px;font-weight:700;color:var(--ink);}.pl-subtotal-val{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink);text-align:right;min-width:120px;}
+.pl-grand{display:flex;justify-content:space-between;align-items:baseline;padding:10px 12px;gap:12px;background:var(--ink);border-radius:6px;margin-top:8px;}
+.pl-grand-lbl{font-family:var(--display);font-size:14px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.04em;}
+.pl-grand-val{font-family:var(--mono);font-size:14px;font-weight:700;color:#fff;text-align:right;}
+.pl-forward{margin-top:24px;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:14px 16px;}
+.pl-forward-title{font-family:var(--display);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink3);margin-bottom:10px;}
+.pl-row.neg .pl-row-val,.neg{color:var(--red)!important;}.pl-row.pos .pl-row-val{color:var(--green);}
+.pl-subtotal-pct,.pl-grand-pct{font-size:10px;font-family:var(--mono);color:var(--ink3);margin-left:8px;}
+.pl-grand-pct{color:rgba(255,255,255,.5);}
+.pl-row.indent{padding-left:16px;}.pl-row.indent .pl-row-lbl{color:var(--ink3);font-size:11px;}
+</style></head><body>
+<div class="snap-hdr">
+  <div class="snap-title">Stitser BUILT — ${title}</div>
+  <div class="snap-meta">Snapshot ${date} · sb-planning-tools</div>
+</div>
+${tableHTML}
+</body></html>`;
+
+  const blob=new Blob([snap],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;a.download=`sb-financials-snapshot-${date}.html`;
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},1000);
+  showToast('Snapshot downloaded');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+loadData();
+</script>
+</body>
+</html>

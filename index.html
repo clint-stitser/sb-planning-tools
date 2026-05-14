@@ -291,7 +291,7 @@ thead .sticky-col{background:var(--canvas);z-index:6;}
       <p>Financial planning and team capacity · S-Bos data · May 2026</p>
     </div>
     <div class="home-stats" id="home-stats"></div>
-    <div class="home-cards">
+    <div class="home-cards" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
       <div class="home-card" onclick="goto('portfolio')">
         <div class="card-accent gold"></div>
         <div class="card-arrow">↗</div>
@@ -319,6 +319,13 @@ thead .sticky-col{background:var(--canvas);z-index:6;}
         <div class="card-icon">⊟</div>
         <div class="card-title">Pillar Matrix</div>
         <div class="card-desc">One row per project. Confirms whether each of the four pillars — Alignment, Budget, Schedule, QC &amp; Safety — has its required tool in place.</div>
+      </div>
+      <div class="home-card" onclick="window.location.href='/financials.html'">
+        <div class="card-accent" style="background:linear-gradient(90deg,#5B3E8C,transparent)"></div>
+        <div class="card-arrow">↗</div>
+        <div class="card-icon">📊</div>
+        <div class="card-title">Financials</div>
+        <div class="card-desc">GAAP job profitability, ASC 230 cash flow statement, and platform P&amp;L with overhead. Export to CFO CoWork.</div>
       </div>
     </div>
   </div>
