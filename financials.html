@@ -256,10 +256,16 @@ dialog::backdrop{background:rgba(14,13,11,.5);}
     </select>
     <div class="sep"></div>
     <span class="tl">Lens</span>
-    <select id="cf-lens" onchange="renderCF()">
+    <select id="cf-lens" onchange="onCFLensChange()">
       <option value="portfolio">Portfolio</option>
       <option value="company">By Company</option>
     </select>
+    <span id="cf-company-wrap" style="display:none">
+      <span class="tl">Company</span>
+      <select id="cf-company-sel" onchange="renderCF()">
+        <option value="">All</option>
+      </select>
+    </span>
   </div>
   <div style="padding:0 16px 8px;flex-shrink:0;">
     <details class="gaap-note">
@@ -585,9 +591,11 @@ function initApp(data){
     CF_CACHE[p.id]=computeProjectCF(p);
   }
 
-  // Populate entity filter from budget row companies (SB Company Receiving/Paying)
-  // — not from the project-level company field
-  const cos=[...new Set(PROJECTS.flatMap(p=>(p.rows||[]).flatMap(r=>r.cos||[])).filter(Boolean))].sort();
+  // Build company list: prefer row-level cos when populated, fall back to p.co
+  const rowCosAll=[...new Set(PROJECTS.flatMap(p=>(p.rows||[]).flatMap(r=>r.cos||[])).filter(Boolean))].sort();
+  const projCosAll=[...new Set(PROJECTS.map(p=>p.co).filter(c=>c&&c!=='—'))].sort();
+  const cos=rowCosAll.length?rowCosAll:projCosAll;
+
   const ef=document.getElementById('entity-filter');
   ef.innerHTML='<option value="">All Entities</option>'+cos.map(c=>`<option value="${c}">${c}</option>`).join('');
 
@@ -595,10 +603,12 @@ function initApp(data){
   const pills=document.getElementById('job-co-pills');
   pills.innerHTML=cos.map(c=>`<div class="pill" data-v="${c}" onclick="toggleCoPill(this)">${c}</div>`).join('');
 
-  // Populate CF lens project options
+  // Populate CF lens project options + company selector
   const lens=document.getElementById('cf-lens');
   const projOpts=PROJECTS.map(p=>`<option value="proj:${p.id}">${p.n}</option>`).join('');
   lens.innerHTML='<option value="portfolio">Portfolio</option><option value="company">By Company</option>'+projOpts;
+  const cfCoSel=document.getElementById('cf-company-sel');
+  cfCoSel.innerHTML='<option value="">All</option>'+cos.map(c=>`<option value="${c}">${c}</option>`).join('');
 
   // Load overhead from localStorage
   loadOverhead();
@@ -608,6 +618,12 @@ function initApp(data){
 }
 
 function onFilterChange(){ renderActiveTab(); }
+function onCFLensChange(){
+  const lens=document.getElementById('cf-lens').value;
+  const wrap=document.getElementById('cf-company-wrap');
+  wrap.style.display=(lens==='company')?'inline-flex':'none';
+  renderCF();
+}
 
 // ═══════════════════════════════════════════════════════════════
 // TAB SWITCHING
@@ -685,12 +701,13 @@ function renderJob(){
   let data=PROJECTS.filter(p=>{
     if(entityFilter){
       const rowCos=new Set((p.rows||[]).flatMap(r=>r.cos||[]));
-      if(!rowCos.has(entityFilter)) return false;
+      const match=rowCos.size?rowCos.has(entityFilter):p.co===entityFilter;
+      if(!match) return false;
     }
     if(JOB_FILTER_STAGE!=='All'&&p.sg!==JOB_FILTER_STAGE) return false;
     if(JOB_FILTER_COS.size>0){
-      const rowCos=new Set((p.rows||[]).flatMap(r=>r.cos||[]));
-      if(![...JOB_FILTER_COS].some(c=>rowCos.has(c))) return false;
+      // company pills filter by p.co since row.cos may be unpopulated
+      if(!JOB_FILTER_COS.has(p.co)) return false;
     }
     return true;
   });
@@ -802,15 +819,22 @@ function getPeriodMonths(){
   return ALL_MONTHS;
 }
 
+// Returns company for a project: prefer row-level cos, fall back to p.co
+function projectCo(p){ return (p.rows||[]).flatMap(r=>r.cos||[]).filter(Boolean)[0]||p.co||'—'; }
+
 function getProjectsForLens(){
   const lens=document.getElementById('cf-lens').value;
   const entityFilter=document.getElementById('entity-filter').value;
+  const cfCoFilter=(document.getElementById('cf-company-sel')||{}).value||'';
+
+  // Filter by top-level entity selector (uses p.co as fallback when row.cos empty)
   let projs=PROJECTS;
-  // Filter projects by row-level company (SB Company Receiving/Paying)
-  if(entityFilter) projs=projs.filter(p=>{
-    const rowCos=new Set((p.rows||[]).flatMap(r=>r.cos||[]));
-    return rowCos.has(entityFilter);
-  });
+  if(entityFilter){
+    projs=projs.filter(p=>{
+      const rowCos=new Set((p.rows||[]).flatMap(r=>r.cos||[]));
+      return rowCos.size ? rowCos.has(entityFilter) : p.co===entityFilter;
+    });
+  }
 
   if(lens.startsWith('proj:')){
     const id=lens.slice(5);
@@ -818,14 +842,16 @@ function getProjectsForLens(){
     return p?{type:'single',groups:[{label:p.n,projects:[p]}]}:{type:'single',groups:[]};
   }
   if(lens==='company'){
-    // Group by row-level company, not project-level company
+    // Group by row-level cos when available, else by p.co
     const byco={};
     projs.forEach(p=>{
-      const rowCos=[...new Set((p.rows||[]).flatMap(r=>r.cos||[]))];
-      const keys=rowCos.length?rowCos:['Unassigned'];
+      const rowCos=[...new Set((p.rows||[]).flatMap(r=>r.cos||[]))].filter(Boolean);
+      const keys=rowCos.length?rowCos:[p.co||'—'];
       keys.forEach(k=>{(byco[k]=byco[k]||[]).push(p);});
     });
-    const groups=Object.keys(byco).sort().map(k=>({label:k,projects:byco[k]}));
+    let groups=Object.keys(byco).sort().map(k=>({label:k,projects:byco[k]}));
+    // If a specific company is selected in the CF company picker, filter to that one
+    if(cfCoFilter) groups=groups.filter(g=>g.label===cfCoFilter);
     return{type:'company',groups};
   }
   return{type:'portfolio',groups:[{label:'Portfolio',projects:projs}]};
