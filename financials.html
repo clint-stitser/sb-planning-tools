@@ -251,6 +251,8 @@ dialog::backdrop{background:rgba(14,13,11,.5);}
       <option value="ytd">YTD</option>
       <option value="qtd">QTD</option>
       <option value="mtd">MTD</option>
+      <option value="fwd6">6 Month Forward</option>
+      <option value="fwd12">12 Month Forward</option>
       <option value="fulllife" selected>Full Life</option>
       <option value="all">All Months</option>
     </select>
@@ -798,6 +800,17 @@ function getPeriodMonths(){
     const q=Math.floor((mo-1)/3);
     const qStart=`${y}-${String(q*3+1).padStart(2,'0')}`;
     return ALL_MONTHS.filter(m=>m>=qStart&&m<=curYM);
+  }
+  if(period==='fwd6'){
+    const end=ALL_MONTHS.find(m=>m>curYM) ? ALL_MONTHS.filter(m=>m>curYM)[5] || ALL_MONTHS[ALL_MONTHS.length-1] : curYM;
+    const start=curYM;
+    return ALL_MONTHS.filter(m=>m>=start&&m<=end);
+  }
+  if(period==='fwd12'){
+    const fwdMonths=ALL_MONTHS.filter(m=>m>curYM);
+    const end=fwdMonths[11]||ALL_MONTHS[ALL_MONTHS.length-1];
+    const start=curYM;
+    return ALL_MONTHS.filter(m=>m>=start&&m<=end);
   }
   if(period==='fulllife'){
     // Find earliest and latest months with data across all projects
