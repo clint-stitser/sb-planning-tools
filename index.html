@@ -403,6 +403,14 @@ thead .sticky-col{background:var(--canvas);z-index:6;}
           <div class="pill" data-f="ppsg" data-v="New Opportunity" onclick="togglePill(this)">New Opp</div>
           <div class="pill" data-f="ppsg" data-v="Closed" onclick="togglePill(this)">Closed</div>
         </div>
+        <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">
+          <select id="pp-co-sel" onchange="F.ppco=this.value;renderPPList()" style="font-size:11px;padding:4px 6px;border:1px solid var(--rule);border-radius:4px;background:var(--canvas);color:var(--ink);width:100%">
+            <option value="">All Companies</option>
+          </select>
+          <select id="pp-pt-sel" onchange="F.pppt=this.value;renderPPList()" style="font-size:11px;padding:4px 6px;border:1px solid var(--rule);border-radius:4px;background:var(--canvas);color:var(--ink);width:100%">
+            <option value="">All Types</option>
+          </select>
+        </div>
       </div>
       <div class="pp-list" id="pp-list"></div>
     </div>
@@ -599,7 +607,7 @@ const SELECTED_CO={};
 
 
 // ── Filters ──────────────────────────────
-const F = { sg:new Set(), co:'', ppsg:new Set(['WIP','Closeout']), pfview:'table', grpby:'sg' };
+const F = { sg:new Set(), co:'', ppsg:new Set(['WIP','Closeout']), ppco:'', pppt:'', pfview:'table', grpby:'sg' };
 let ppSelectedId = null;
 
 function togglePill(el){
@@ -842,6 +850,8 @@ function ppFiltered(){
   const q=(document.getElementById('pp-search').value||'').toLowerCase();
   return PROJECTS.filter(p=>{
     if(F.ppsg.size>0&&!F.ppsg.has(p.sg)) return false;
+    if(F.ppco&&p.co!==F.ppco) return false;
+    if(F.pppt&&p.pt!==F.pppt) return false;
     if(q&&!p.n.toLowerCase().includes(q)) return false;
     return true;
   });
@@ -1295,14 +1305,22 @@ function initApp(data) {
   APP      = data;
   PROJECTS = data.projects || [];
   PROJECTS.forEach(p => { CF_CACHE[p.id] = computeProjectCF(p); });
-  // Populate company dropdown dynamically from live data
+  // Build company + type lists from live data
+  const cos=[...new Set(PROJECTS.map(p=>p.co).filter(c=>c&&c!=='—'))].sort();
+  const pts=[...new Set(PROJECTS.map(p=>p.pt).filter(t=>t&&t!=='—'))].sort();
+
+  // Portfolio planner company dropdown
   const coSel=document.getElementById('pf-co-sel');
   if(coSel){
-    const cos=[...new Set(PROJECTS.map(p=>p.co).filter(c=>c&&c!=='—'))].sort();
     coSel.innerHTML='<option value="">All</option>'+cos.map(c=>`<option value="${c}">${c}</option>`).join('');
-    // Restore current selection
     if(F.co) coSel.value=F.co;
   }
+  // Project planner sidebar dropdowns
+  const ppCoSel=document.getElementById('pp-co-sel');
+  if(ppCoSel) ppCoSel.innerHTML='<option value="">All Companies</option>'+cos.map(c=>`<option value="${c}">${c}</option>`).join('');
+  const ppPtSel=document.getElementById('pp-pt-sel');
+  if(ppPtSel) ppPtSel.innerHTML='<option value="">All Types</option>'+pts.map(t=>`<option value="${t}">${t}</option>`).join('');
+
   initHome();
   if (data.lastUpdated) {
     const d = new Date(data.lastUpdated);
