@@ -23,6 +23,7 @@ const APPS = {
   companies:    '68216a706900e8eaf75a05c0',
   dates:        '69bb7d64740e0e696d88c47f',
   budget:       '69bb89ebf6a195c2c73a3b3e',
+  projectTypes: '6a06221f3502ff6d098b571d',  // linked record table for field s4687ad08c
 };
 
 // ── Lookup tables ──────────────────────────────────────────────────────────
@@ -159,16 +160,20 @@ async function fetchSmartSuiteData(apiKey) {
   const t0 = Date.now();
   console.log('Fetching SmartSuite data…');
 
-  const [projects, people, companies, stakeholders, dateRecs, budgetRecs] = await Promise.all([
+  const [projects, people, companies, stakeholders, dateRecs, budgetRecs, projectTypeRecs] = await Promise.all([
     listRecords(APPS.projects,     apiKey),
     listRecords(APPS.people,       apiKey),
     listRecords(APPS.companies,    apiKey),
     listRecords(APPS.stakeholders, apiKey),
     listRecords(APPS.dates,        apiKey),
     listRecords(APPS.budget,       apiKey),
+    listRecords(APPS.projectTypes, apiKey),
   ]);
 
-  console.log(`Fetched in ${((Date.now()-t0)/1000).toFixed(1)}s: ${projects.length} projects, ${people.length} people, ${companies.length} companies, ${stakeholders.length} stakeholders, ${dateRecs.length} dates, ${budgetRecs.length} budget items`);
+  console.log(`Fetched in ${((Date.now()-t0)/1000).toFixed(1)}s: ${projects.length} projects, ${people.length} people, ${companies.length} companies, ${stakeholders.length} stakeholders, ${dateRecs.length} dates, ${budgetRecs.length} budget items, ${projectTypeRecs.length} project types`);
+
+  // Project type lookup: record ID → title (from linked record table)
+  const ptById = Object.fromEntries(projectTypeRecs.map(r => [r.id, r.title || '']));
 
   const peopleById  = Object.fromEntries(people.map(p => [p.id, p.title || '']));
   const companyById = Object.fromEntries(companies.map(c => [c.id, c.title || '']));
@@ -276,20 +281,11 @@ async function fetchSmartSuiteData(apiKey) {
     const hasDrive        = !!(proj.s561f1796b && String(proj.s561f1796b).trim());
     const hasChecklist    = (proj.synemrwc    || []).length > 0;
 
-    // ── Project type ───────────────────────────────────────────────────────
-    const PT_MAP = {
-      jPLRC:'Turnkey (CM+Brokerage)', vS35P:'Turnkey (Brokerage)',
-      SAwXv:'Retail (Value Add)',      '4xiIg':'Retail (Ground Up)',
-      OjC5r:'Housing (Value Add)',     Fwb1s:'Housing (Ground Up)',
-      uosa8:'Midsize MF (Value Add)',  '1N650':'Midsize MF (Ground Up)',
-      X3qNS:'2nd Home (Fractional)',   moy1G:'2nd Home (Whole)',
-      bby4W:'3rd Party GC',            JsTY8:'Cool Shit',
-    };
-    const ptRaw = proj.sefedb2ee0?.value || proj.sefedb2ee0 || '';
-    const pt    = PT_MAP[ptRaw] || ptRaw || '—';
-
-    const FOR_SALE_PTS = new Set(['Turnkey (CM+Brokerage)','Turnkey (Brokerage)','Retail (Value Add)','Retail (Ground Up)','Housing (Value Add)','Housing (Ground Up)','Midsize MF (Value Add)','Midsize MF (Ground Up)','2nd Home (Fractional)','2nd Home (Whole)','3rd Party GC','Cool Shit']);
-    const isForSale = FOR_SALE_PTS.has(pt);
+    // ── Project type (linked record field s4687ad08c) ──────────────────────
+    const ptIds = proj.s4687ad08c || [];
+    const pt    = ptIds.length ? (ptById[ptIds[0]] || '—') : '—';
+    // isForSale: true for any type that involves a property sale (used for GAAP CF ASC 230 classification)
+    const isForSale = pt !== '—' && pt !== 'Internal/Company Improvement';
 
     result.push({ id, n, sg: stage, co, url, nkd, dates: datePairs, mp, rows,
       inv_b, inv_c, inv_x, op_b, op_c, op_x, fin_b, fin_c, fin_x,
