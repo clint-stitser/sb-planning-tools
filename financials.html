@@ -466,15 +466,7 @@ function classifyRow(row,dm){
   const dirSign = cfDir==='Wr0tD' ? 1 : cfDir==='oGjmd' ? -1 : 0;
 
   if(series===1){
-    // 1xxx Assets — default: Investing Cash Flow
-    // Exception: if user explicitly tagged as Financing in SmartSuite (r.s==='fin'),
-    // respect that — e.g. inter-company notes receivable repayments.
-    if(row.s==='fin'){
-      const sign=dirSign||1;
-      return{gl:'fin',sign,_cfSec:'fin',
-        sYM:toYM(dm['COE/Lease Commence']||dm['Construction End']||dm['Purchase Close Date']),
-        eYM:null,type:'point'};
-    }
+    // 1xxx Assets — Investing Cash Flow (asset creation = outflow, asset disposition = inflow)
     const sign=dirSign||-1;
     return{gl:'inv_asset',sign,_cfSec:'inv',
       sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
