@@ -950,9 +950,17 @@ function openProject(id){
   const p=PROJECTS.find(x=>x.id===id);
   if(!p){document.getElementById('pp-detail').innerHTML='<div class="pp-empty"><div class="pp-empty-icon">!</div><div>Project not found</div></div>';return;}
 
-  // Collect unique companies: prefer row-level cos, fall back to p.co
-  const rowCosRaw=[...new Set((p.rows||[]).flatMap(r=>r.cos||[]).filter(Boolean))].sort();
-  const allCos=rowCosRaw.length ? rowCosRaw : (p.co&&p.co!=='—'?[p.co]:[]);
+  // Build entity list: always include project entity, plus any entities from row-level cos
+  const rowCosRaw=[...new Set((p.rows||[]).flatMap(r=>r.cos||[]).filter(Boolean))];
+  const allCos=[...new Set([...(p.co&&p.co!=='—'?[p.co]:[]),...rowCosRaw])].sort();
+  // hasMultiEntityRows: true when any rows carry a cos assignment (risk of double-counting)
+  const hasMultiEntityRows=rowCosRaw.length>0;
+
+  // Auto-select project entity on first open — prevents "All Companies" double-counting by default
+  if(!SELECTED_CO.hasOwnProperty(p.id) && p.co && p.co!=='—'){
+    SELECTED_CO[p.id]=p.co;
+  }
+  const curSelCo=SELECTED_CO[p.id]||'';
 
   document.getElementById('pp-detail').innerHTML=`
     <div class="pp-detail-hdr">
@@ -969,11 +977,12 @@ function openProject(id){
       <div class="pp-tab" onclick="ppTab(this,'dates')">Dates</div>
     </div>
     ${allCos.length?`<div id="pp-co-filter">
-      <span style="font-size:11px;color:var(--ink3);white-space:nowrap">View by company:</span>
+      <span style="font-size:11px;color:var(--ink3);white-space:nowrap">Entity view:</span>
       <select id="pp-co-sel" onchange="selectCo(this,'${p.id}')">
-        <option value="">All Companies</option>
-        ${allCos.map(c=>`<option value="${c}">${c}</option>`).join('')}
+        <option value="" ${!curSelCo?'selected':''}>All Entities ⚠</option>
+        ${allCos.map(c=>`<option value="${c}" ${c===curSelCo?'selected':''}>${c}</option>`).join('')}
       </select>
+      <span data-role="entity-warn" style="font-size:10px;color:var(--amber);margin-left:6px;${hasMultiEntityRows&&!curSelCo?'':'display:none'}">⚠ Select an entity for accurate statements</span>
     </div>`:''}
     <div class="pp-body" id="pp-body"></div>`;
 
@@ -993,9 +1002,14 @@ function ppTab(el,tab){
 // ── Income Statement ──────────────────────
 function renderIS(p){
   const selCo=SELECTED_CO[p.id]||null;
-  const fp=selCo
-    ? {...p, rows:(p.rows||[]).filter(r=>!r.cos||r.cos.length===0||r.cos.includes(selCo))}
-    : p;
+  // Row filter: rows with no cos assignment always show (project-wide);
+  // rows with a cos only show when their entity matches the selection.
+  const hasMultiEntityRows=(p.rows||[]).some(r=>r.cos&&r.cos.length>0);
+  const fp={...p, rows:(p.rows||[]).filter(r=>
+    !selCo
+      ? true                                                // All Entities: show everything (with warning)
+      : (!r.cos||r.cos.length===0||r.cos.includes(selCo)) // Specific entity: match or unassigned
+  )};
   const rows=fp.rows||[];
   if(!rows.length){document.getElementById('pp-body').innerHTML='<div class="no-data">No baseline budget data yet — add BBI records in SmartSuite.</div>';return;}
   const cf=(selCo ? computeProjectCF(fp) : (CF_CACHE[p.id]||computeProjectCF(fp)));
@@ -1075,6 +1089,7 @@ function renderIS(p){
   </div>`;
 
   let html='<div class="is-wrap">';
+  if(!selCo&&hasMultiEntityRows) allWarns.unshift('All Entities selected — inter-entity transactions may double-count or offset incorrectly. Use the Entity View selector above to see one entity at a time.');
   if(allWarns.length) html+=`<div class="gaap-warn">${allWarns.map(w=>`<div>⚠ ${w}</div>`).join('')}</div>`;
 
   // Revenue
@@ -1128,11 +1143,14 @@ function renderIS(p){
 }
 
 function renderCFProject(p){
-  // Apply company filter if set
   const selCo=SELECTED_CO[p.id]||null;
-  const fp=selCo
-    ? {...p, rows:(p.rows||[]).filter(r=>!r.cos||r.cos.length===0||r.cos.includes(selCo))}
-    : p;
+  const hasMultiEntityRows=(p.rows||[]).some(r=>r.cos&&r.cos.length>0);
+  // Row filter: unassigned rows always show; cos-assigned rows only show for matching entity
+  const fp={...p, rows:(p.rows||[]).filter(r=>
+    !selCo
+      ? true
+      : (!r.cos||r.cos.length===0||r.cos.includes(selCo))
+  )};
 
   // Apply date override if set, and recompute (bypass cache when override active)
   const ov=CF_DATE_OVERRIDE[p.id]||null;
@@ -1156,6 +1174,7 @@ function renderCFProject(p){
     ${ov?`<button onclick="cfOverrideClear('${p.id}')" style="font-size:11px;padding:2px 8px;border:1px solid var(--rule);border-radius:3px;background:var(--canvas);cursor:pointer;color:var(--ink2)">Clear</button>`:''}
   </div>`;
 
+  if(!selCo&&hasMultiEntityRows) warns.unshift('All Entities selected — inter-entity transactions may double-count. Select an entity above for accurate cash flows.');
   if(!months.length){
     let wb='';
     if(warns.length) wb=`<div class="gaap-warn" style="margin:0 0 12px">${warns.map(w=>`<div>⚠ ${w}</div>`).join('')}</div>`;
@@ -1271,12 +1290,15 @@ function cfOverrideClear(pid){
   if(p) renderCFProject(p);
 }
 
-// ── Company lens filter ───────────────────
+// ── Entity lens filter ────────────────────
 function selectCo(sel, pid){
   const co=sel.value||null;
   SELECTED_CO[pid]=co||null;
-  // Clear CF cache so it recomputes with new filter
+  // Clear CF cache so it recomputes with new entity filter
   delete CF_CACHE[pid];
+  // Update the inline warning span immediately
+  const warnSpan=document.querySelector('#pp-co-filter span[data-role="entity-warn"]');
+  if(warnSpan) warnSpan.style.display=co?'none':'';
   const p=PROJECTS.find(x=>x.id===pid);
   if(!p) return;
   // Re-render whichever tab is active
