@@ -21,6 +21,7 @@ const APPS = {
   stakeholders: '6996a3079f04b5f34a06ad88',
   people:       '68216a706900e8eaf75a05af',
   companies:    '68216a706900e8eaf75a05c0',
+  sbCompanies:  '6914fb94e53085946b899cb0',  // "SB Company Receiving/Paying" target (budget field s2f27d033f)
   dates:        '69bb7d64740e0e696d88c47f',
   budget:       '69bb89ebf6a195c2c73a3b3e',
   projectTypes: '6a06221f3502ff6d098b571d',  // linked record table for field s4687ad08c
@@ -161,10 +162,11 @@ async function fetchSmartSuiteData(apiKey) {
   const t0 = Date.now();
   console.log('Fetching SmartSuite data…');
 
-  const [projects, people, companies, stakeholders, dateRecs, budgetRecs, projectTypeRecs, accountCodeRecs] = await Promise.all([
+  const [projects, people, companies, sbCompanyRecs, stakeholders, dateRecs, budgetRecs, projectTypeRecs, accountCodeRecs] = await Promise.all([
     listRecords(APPS.projects,     apiKey),
     listRecords(APPS.people,       apiKey),
     listRecords(APPS.companies,    apiKey),
+    listRecords(APPS.sbCompanies,  apiKey),   // SB entities linked on budget rows (s2f27d033f)
     listRecords(APPS.stakeholders, apiKey),
     listRecords(APPS.dates,        apiKey),
     listRecords(APPS.budget,       apiKey),
@@ -172,7 +174,7 @@ async function fetchSmartSuiteData(apiKey) {
     listRecords(APPS.accountCodes, apiKey),
   ]);
 
-  console.log(`Fetched in ${((Date.now()-t0)/1000).toFixed(1)}s: ${projects.length} projects, ${people.length} people, ${companies.length} companies, ${stakeholders.length} stakeholders, ${dateRecs.length} dates, ${budgetRecs.length} budget items, ${projectTypeRecs.length} project types, ${accountCodeRecs.length} account codes`);
+  console.log(`Fetched in ${((Date.now()-t0)/1000).toFixed(1)}s: ${projects.length} projects, ${people.length} people, ${companies.length} companies, ${sbCompanyRecs.length} SB companies, ${stakeholders.length} stakeholders, ${dateRecs.length} dates, ${budgetRecs.length} budget items, ${projectTypeRecs.length} project types, ${accountCodeRecs.length} account codes`);
 
   // Project type lookup: record ID → title (from linked record table)
   const ptById = Object.fromEntries(projectTypeRecs.map(r => [r.id, r.title || '']));
@@ -188,8 +190,11 @@ async function fetchSmartSuiteData(apiKey) {
     }])
   );
 
-  const peopleById  = Object.fromEntries(people.map(p => [p.id, p.title || '']));
-  const companyById = Object.fromEntries(companies.map(c => [c.id, c.title || '']));
+  const peopleById     = Object.fromEntries(people.map(p => [p.id, p.title || '']));
+  const companyById    = Object.fromEntries(companies.map(c => [c.id, c.title || '']));
+  // sbCompanyById: the correct lookup for s2f27d033f "SB Company Receiving/Paying"
+  // (linked to app 6914fb94e53085946b899cb0, NOT the same as companies above)
+  const sbCompanyById  = Object.fromEntries(sbCompanyRecs.map(c => [c.id, c.title || '']));
 
   // Date record lookup for resolving Begin/End Date linked fields on budget items
   // Priority: actual > baseline > estimated (most accurate wins)
@@ -272,7 +277,7 @@ async function fetchSmartSuiteData(apiKey) {
       const btf    = parseFloat(br.s6506ec407)  || 0;
       const pct    = parseFloat(br.s3636482e0)  || 0;
 
-      const rowCos  = (br.s2f27d033f || []).map(id => companyById[id]).filter(Boolean);
+      const rowCos  = (br.s2f27d033f || []).map(id => sbCompanyById[id]).filter(Boolean);
       const bDateId = (br.s91a919bb8 || [])[0];
       const eDateId = (br.s70dd1c897 || [])[0];
       const bDate   = bDateId ? getBestDate(bDateId) : null;  // YYYY-MM-DD or null
