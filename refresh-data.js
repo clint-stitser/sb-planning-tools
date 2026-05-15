@@ -24,6 +24,7 @@ const APPS = {
   dates:        '69bb7d64740e0e696d88c47f',
   budget:       '69bb89ebf6a195c2c73a3b3e',
   projectTypes: '6a06221f3502ff6d098b571d',  // linked record table for field s4687ad08c
+  accountCodes: '68dd644f026c0ecd248201c7',  // Intacct Account Codes — linked via budget field se51cd20e3
 };
 
 // ── Lookup tables ──────────────────────────────────────────────────────────
@@ -160,7 +161,7 @@ async function fetchSmartSuiteData(apiKey) {
   const t0 = Date.now();
   console.log('Fetching SmartSuite data…');
 
-  const [projects, people, companies, stakeholders, dateRecs, budgetRecs, projectTypeRecs] = await Promise.all([
+  const [projects, people, companies, stakeholders, dateRecs, budgetRecs, projectTypeRecs, accountCodeRecs] = await Promise.all([
     listRecords(APPS.projects,     apiKey),
     listRecords(APPS.people,       apiKey),
     listRecords(APPS.companies,    apiKey),
@@ -168,12 +169,24 @@ async function fetchSmartSuiteData(apiKey) {
     listRecords(APPS.dates,        apiKey),
     listRecords(APPS.budget,       apiKey),
     listRecords(APPS.projectTypes, apiKey),
+    listRecords(APPS.accountCodes, apiKey),
   ]);
 
-  console.log(`Fetched in ${((Date.now()-t0)/1000).toFixed(1)}s: ${projects.length} projects, ${people.length} people, ${companies.length} companies, ${stakeholders.length} stakeholders, ${dateRecs.length} dates, ${budgetRecs.length} budget items, ${projectTypeRecs.length} project types`);
+  console.log(`Fetched in ${((Date.now()-t0)/1000).toFixed(1)}s: ${projects.length} projects, ${people.length} people, ${companies.length} companies, ${stakeholders.length} stakeholders, ${dateRecs.length} dates, ${budgetRecs.length} budget items, ${projectTypeRecs.length} project types, ${accountCodeRecs.length} account codes`);
 
   // Project type lookup: record ID → title (from linked record table)
   const ptById = Object.fromEntries(projectTypeRecs.map(r => [r.id, r.title || '']));
+
+  // Account code lookup: record ID → { acctNo, cfClass }
+  // acctNo  = s00d687f72 (e.g. "4000", "5015")
+  // cfClass = se39ab97b9 formula (e.g. "Operating Cash-Income", "Operating Cash-COGS",
+  //                                    "Investing Cash", "Financing Cash-Liability", "Financing Cash-Equity")
+  const acctById = Object.fromEntries(
+    accountCodeRecs.map(r => [r.id, {
+      acctNo:  r.s00d687f72 || '',
+      cfClass: r.se39ab97b9 || '',
+    }])
+  );
 
   const peopleById  = Object.fromEntries(people.map(p => [p.id, p.title || '']));
   const companyById = Object.fromEntries(companies.map(c => [c.id, c.title || '']));
@@ -264,7 +277,17 @@ async function fetchSmartSuiteData(apiKey) {
       const eDateId = (br.s70dd1c897 || [])[0];
       const bDate   = bDateId ? getBestDate(bDateId) : null;  // YYYY-MM-DD or null
       const eDate   = eDateId ? getBestDate(eDateId) : null;
-      rows.push({ a: br.s32eed8560 || '', s, t, e, b, co, adj, ctd, act, btf, pct, mo: {}, cos: rowCos, bDate, eDate });
+
+      // Account code: se51cd20e3 links to Intacct Account Codes app
+      // cfDir: s9be09b673 single-select — 'Wr0tD' = + Inflow, 'oGjmd' = - Outflow
+      const acctCodeId  = (br.se51cd20e3 || [])[0];
+      const acctInfo    = acctCodeId ? acctById[acctCodeId] : null;
+      const acctNo      = acctInfo?.acctNo  || '';   // e.g. "4000", "5015"
+      const cfClass     = acctInfo?.cfClass || '';   // e.g. "Operating Cash-Income"
+      const cfDir       = br.s9be09b673    || '';   // slug: 'Wr0tD' | 'oGjmd' | ''
+      const acctSeries  = acctNo ? parseInt(acctNo.charAt(0), 10) : 0; // 1–6
+
+      rows.push({ a: br.s32eed8560 || '', s, t, e, b, co, adj, ctd, act, btf, pct, mo: {}, cos: rowCos, bDate, eDate, acctNo, acctSeries, cfClass, cfDir });
 
       if (s === 'inv') { inv_b += b; inv_c += co; inv_x += adj; }
       if (s === 'op')  { op_b  += b; op_c  += co; op_x  += adj; }

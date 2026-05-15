@@ -492,18 +492,85 @@ function spreadMo(amount,sYM,eYM,type){
   return m;
 }
 function classifyRow(row,dm){
-  const a=row.a||'', s=row.s, t=row.t||'';
-  const hasTrack=!!(t&&t.trim());
+  const a=row.a||'', s=row.s;
 
-  // Gross profit: reference annotation only — excluded from IS and CF
-  if(GP_RE.test(a)) return{gl:'gp_budget',sign:0,sYM:null,eYM:null,type:'point'};
-
-  // WIP Offset: balance sheet reclassification only — excluded from both IS and CF
-  // (Not a cash transaction; actual cash captured by Job Cost outflows + Revenue inflow)
+  // Always-first: GP budget reference and WIP offset — excluded from IS and CF
+  if(GP_RE.test(a))  return{gl:'gp_budget', sign:0,sYM:null,eYM:null,type:'point'};
   if(WIP_RE.test(a)) return{gl:'wip_offset',sign:0,sYM:null,eYM:null,type:'point'};
 
+  // ── Account-code-driven classification (primary path) ────────────────────
+  // Uses acctSeries (1–6) and cfDir slug from refresh-data.js
+  // cfDir slugs: 'Wr0tD' = + Inflow (+1),  'oGjmd' = - Outflow (-1)
+  const series = row.acctSeries || 0;
+  const cfDir  = row.cfDir || '';
+  const dirSign = cfDir==='Wr0tD' ? 1 : cfDir==='oGjmd' ? -1 : 0;
+
+  if(series===1){
+    // 1xxx Assets — balance sheet only; WIP-offset style (excluded from IS and CF)
+    return{gl:'wip_offset',sign:0,sYM:null,eYM:null,type:'point'};
+  }
+
+  if(series===2||series===3){
+    // 2xxx Liabilities / 3xxx Equity — Financing Cash
+    const sign=dirSign||1;
+    return{gl:'fin',sign,_cfSec:'fin',
+      sYM:toYM(sign>0 ? dm['Purchase Close Date']||dm['Construction Start']
+                      : dm['Construction Start']||dm['Purchase Close Date']),
+      eYM:toYM(sign<0 ? dm['COE/Lease Commence']||dm['Construction End'] : null),
+      type:sign<0?'even':'point'};
+  }
+
+  if(series===4){
+    // 4xxx Revenue — Operating Cash / Income
+    // Distinguish for-sale property (point at COE) vs service/recurring (spread)
+    if(s==='inv'){
+      // For-sale: revenue recognized at closing / COE
+      return{gl:'revenue',sign:1,_cfSec:'op',
+        sYM:toYM(dm['COE/Lease Commence']||dm['Purchase Close Date']||dm['Construction End']),
+        eYM:null,type:'point'};
+    }
+    return{gl:'oprev',sign:1,_cfSec:'op',
+      sYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),
+      eYM:toYM(dm['1 Year Warranty End Date']||dm['Statutory Liability End Date']||dm['Closeout & Punch List']),
+      type:'even'};
+  }
+
+  if(series===5){
+    // 5xxx Cost of Goods Sold / Cost of Revenue — Operating Cash / COGS
+    if(s==='inv'){
+      // For-sale project: sub-account timing then default to sale date (point)
+      if(/purchase price|land cost|land acquisition/i.test(a))
+        return{gl:'cogs',sign:-1,_cfSec:'op',sYM:toYM(dm['Purchase Close Date']),eYM:null,type:'point'};
+      if(/improvement|construction cost|hard cost|soft cost|permit fee|design|architect/i.test(a))
+        return{gl:'cogs',sign:-1,_cfSec:'op',
+          sYM:toYM(dm['Construction Start']||dm['Permit Issuance']||dm['Purchase Close Date']),
+          eYM:toYM(dm['Construction End']),type:'even'};
+      if(/carry|holding|interest carry|closing cost/i.test(a))
+        return{gl:'cogs',sign:-1,_cfSec:'op',
+          sYM:toYM(dm['Purchase Close Date']||dm['Construction Start']),
+          eYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),type:'even'};
+      // Default for-sale COGS: cost basis recognized at sale (COE / closing)
+      return{gl:'cogs',sign:-1,_cfSec:'op',
+        sYM:toYM(dm['COE/Lease Commence']||dm['Purchase Close Date']||dm['Construction End']),
+        eYM:null,type:'point'};
+    }
+    // Service/construction/TI: spread over build period
+    return{gl:'cogs',sign:-1,_cfSec:'op',
+      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
+      eYM:toYM(dm['Construction End']||dm['COE/Lease Commence']),
+      type:'even'};
+  }
+
+  if(series===6){
+    // 6xxx Overhead / Operating Expenses
+    return{gl:'opex',sign:-1,_cfSec:'op',
+      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
+      eYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),
+      type:'even'};
+  }
+
+  // ── Keyword fallback (no account code set) ────────────────────────────────
   if(s==='fin'){
-    // Explicit inflow keywords take precedence over outflow matching
     const isIn=FIN_IN_RE.test(a);
     const isOut=!isIn&&FIN_OUT_RE.test(a);
     const sign=isOut?-1:1;
@@ -536,7 +603,6 @@ function classifyRow(row,dm){
       sYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),
       eYM:toYM(dm['1 Year Warranty End Date']||dm['Statutory Liability End Date']||dm['Closeout & Punch List']),
       type:'even'};
-    // Direct project costs (COGS) — job costs, materials, subs, labor, etc.
     const OP_COGS_RE=/cost of (goods|revenue|sales)|direct cost|job cost|labor|material|subcontract|\bsub\b|gc cost|construction cost|hard cost|soft cost/i;
     if(OP_COGS_RE.test(a)) return{gl:'cogs',sign:-1,
       sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
@@ -1099,9 +1165,10 @@ function renderCFProject(p){
     return;
   }
   // Exclude gp_budget items (sign=0) from cash flow — they're reference-only
-  const cfRows=rows.filter(r=>r.cl.gl!=='gp_budget');
+  const cfRows=rows.filter(r=>r.cl.gl!=='gp_budget'&&r.cl.gl!=='wip_offset');
   const bySec={inv:[],op:[],fin:[]};
-  cfRows.forEach(r=>{if(bySec[r.s])bySec[r.s].push(r);});
+  // Use account-code-derived section (_cfSec) if available, else fall back to SmartSuite field (r.s)
+  cfRows.forEach(r=>{const bucket=r.cl._cfSec||r.s||'op'; if(bySec[bucket])bySec[bucket].push(r);});
   const netMo={};months.forEach(m=>{netMo[m]=0;});
   cfRows.forEach(r=>Object.entries(r.budMo||{}).forEach(([m,v])=>{if(m in netMo)netMo[m]+=v;}));
   let cum=0;const cumMo={};months.forEach(m=>{cum+=netMo[m]||0;cumMo[m]=cum;});
