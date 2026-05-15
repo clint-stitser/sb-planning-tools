@@ -870,9 +870,11 @@ function renderPfStack(data){
       const mo=cfP?r.budMo:(r.mo||{});
       Object.entries(mo).forEach(([m,v])=>{
         const av=Math.abs(v);
-        if(r.s==='inv') moInv[m]=(moInv[m]||0)+av;
-        else if(r.s==='op') moOp[m]=(moOp[m]||0)+av;
-        else if(r.s==='fin') moFin[m]=(moFin[m]||0)+av;
+        // Use classifyRow-derived CF section (_cfSec) when available; fall back to raw SmartSuite field (r.s)
+        const sec=(r.cl&&r.cl._cfSec)||r.s||'op';
+        if(sec==='inv') moInv[m]=(moInv[m]||0)+av;
+        else if(sec==='op') moOp[m]=(moOp[m]||0)+av;
+        else if(sec==='fin') moFin[m]=(moFin[m]||0)+av;
       });
     });
     return {...p,moInv,moOp,moFin};

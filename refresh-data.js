@@ -289,9 +289,15 @@ async function fetchSmartSuiteData(apiKey) {
 
       rows.push({ a: br.s32eed8560 || '', s, t, e, b, co, adj, ctd, act, btf, pct, mo: {}, cos: rowCos, bDate, eDate, acctNo, acctSeries, cfClass, cfDir });
 
-      if (s === 'inv') { inv_b += b; inv_c += co; inv_x += adj; }
-      if (s === 'op')  { op_b  += b; op_c  += co; op_x  += adj; }
-      if (s === 'fin') { fin_b += b; fin_c += co; fin_x += adj; }
+      // Bucket by account code series (primary) → SmartSuite CF field (fallback)
+      // series 1 = assets/investing, 2-3 = liabilities-equity/financing, 4-6 = op, 0 = use r.s
+      const cfBucket = acctSeries===1 ? 'inv'
+                     : acctSeries===2||acctSeries===3 ? 'fin'
+                     : acctSeries>=4&&acctSeries<=6   ? 'op'
+                     : s; // fallback to SmartSuite CF Type field
+      if (cfBucket === 'inv') { inv_b += b; inv_c += co; inv_x += adj; }
+      if (cfBucket === 'op')  { op_b  += b; op_c  += co; op_x  += adj; }
+      if (cfBucket === 'fin') { fin_b += b; fin_c += co; fin_x += adj; }
     }
 
     // ── Pillar tool indicators ─────────────────────────────────────────────

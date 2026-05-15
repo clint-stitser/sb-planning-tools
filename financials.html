@@ -447,9 +447,76 @@ function spreadMo(amount,sYM,eYM,type){
   return m;
 }
 function classifyRow(row,dm){
-  const a=row.a||'', s=row.s, t=row.t||'';
+  const a=row.a||'', s=row.s;
+
+  // GP budget reference — excluded from all statements
   if(GP_RE.test(a)) return{gl:'gp_budget',sign:0,sYM:null,eYM:null,type:'point'};
-  if(WIP_RE.test(a)) return{gl:'wip_offset',sign:0,sYM:null,eYM:null,type:'point'};
+
+  // WIP Offset — investing cash outflow (capitalizing costs to WIP asset)
+  if(WIP_RE.test(a)){
+    const sign=row.cfDir==='Wr0tD'?1:-1;
+    return{gl:'inv_asset',sign,_cfSec:'inv',
+      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
+      eYM:toYM(dm['Construction End']),type:'even'};
+  }
+
+  // ── Account-code-driven (primary path) ─────────────────────────────────────
+  const series = row.acctSeries || 0;
+  const cfDir  = row.cfDir || '';
+  const dirSign = cfDir==='Wr0tD' ? 1 : cfDir==='oGjmd' ? -1 : 0;
+
+  if(series===1){
+    // 1xxx Assets — Investing Cash Flow
+    const sign=dirSign||-1;
+    return{gl:'inv_asset',sign,_cfSec:'inv',
+      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
+      eYM:toYM(sign>0?(dm['COE/Lease Commence']||dm['Construction End']):(dm['Construction End'])),
+      type:'even'};
+  }
+  if(series===2||series===3){
+    // 2xxx/3xxx Liabilities/Equity — Financing Cash Flow
+    const sign=dirSign||1;
+    return{gl:'fin',sign,_cfSec:'fin',
+      sYM:toYM(sign>0?dm['Purchase Close Date']||dm['Construction Start']:dm['Construction Start']||dm['Purchase Close Date']),
+      eYM:toYM(sign<0?dm['COE/Lease Commence']||dm['Construction End']:null),
+      type:sign<0?'even':'point'};
+  }
+  if(series===4){
+    // 4xxx Revenue — Operating Cash
+    if(s==='inv') return{gl:'revenue',sign:1,_cfSec:'op',
+      sYM:toYM(dm['COE/Lease Commence']||dm['Purchase Close Date']||dm['Construction End']),eYM:null,type:'point'};
+    return{gl:'oprev',sign:1,_cfSec:'op',
+      sYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),
+      eYM:toYM(dm['1 Year Warranty End Date']||dm['Statutory Liability End Date']||dm['Closeout & Punch List']),type:'even'};
+  }
+  if(series===5){
+    // 5xxx COGS — Operating Cash
+    if(s==='inv'){
+      if(/purchase price|land cost|land acquisition/i.test(a))
+        return{gl:'cogs',sign:-1,_cfSec:'op',sYM:toYM(dm['Purchase Close Date']),eYM:null,type:'point'};
+      if(/improvement|construction cost|hard cost|soft cost|permit fee|design|architect/i.test(a))
+        return{gl:'cogs',sign:-1,_cfSec:'op',
+          sYM:toYM(dm['Construction Start']||dm['Permit Issuance']||dm['Purchase Close Date']),
+          eYM:toYM(dm['Construction End']),type:'even'};
+      if(/carry|holding|interest carry|closing cost/i.test(a))
+        return{gl:'cogs',sign:-1,_cfSec:'op',
+          sYM:toYM(dm['Purchase Close Date']||dm['Construction Start']),
+          eYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),type:'even'};
+      return{gl:'cogs',sign:-1,_cfSec:'op',
+        sYM:toYM(dm['COE/Lease Commence']||dm['Purchase Close Date']||dm['Construction End']),eYM:null,type:'point'};
+    }
+    return{gl:'cogs',sign:-1,_cfSec:'op',
+      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
+      eYM:toYM(dm['Construction End']||dm['COE/Lease Commence']),type:'even'};
+  }
+  if(series===6){
+    // 6xxx Overhead — Operating Cash
+    return{gl:'opex',sign:-1,_cfSec:'op',
+      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
+      eYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),type:'even'};
+  }
+
+  // ── Keyword fallback (no account code) ─────────────────────────────────────
   if(s==='fin'){
     const isIn=FIN_IN_RE.test(a);
     const isOut=!isIn&&FIN_OUT_RE.test(a);
@@ -483,6 +550,10 @@ function classifyRow(row,dm){
       sYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),
       eYM:toYM(dm['1 Year Warranty End Date']||dm['Statutory Liability End Date']||dm['Closeout & Punch List']),
       type:'even'};
+    const OP_COGS_RE=/cost of (goods|revenue|sales)|direct cost|job cost|labor|material|subcontract|\bsub\b|gc cost|construction cost|hard cost|soft cost/i;
+    if(OP_COGS_RE.test(a)) return{gl:'cogs',sign:-1,
+      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
+      eYM:toYM(dm['Construction End']||dm['COE/Lease Commence']),type:'even'};
     return{gl:'opex',sign:-1,
       sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
       eYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),type:'even'};
@@ -495,7 +566,7 @@ function computeProjectCF(p){
   const dm=buildDateMap(p), mos=new Set();
   const rows=(p.rows||[]).map(r=>{
     const cl=classifyRow(r,dm);
-    if(cl.gl==='gp_budget'||cl.gl==='wip_offset') return{...r,cl,budMo:{},actMo:{}};
+    if(cl.gl==='gp_budget') return{...r,cl,budMo:{},actMo:{}}; // inv_asset rows now spread
     let budAmt=(r.adj||r.b||0)*cl.sign;
     let sYM=cl.sYM, eYM=cl.eYM, type=cl.type;
     let ctdMo={};
@@ -529,13 +600,14 @@ function computeProjectCF(p){
 // GAAP SECTION CLASSIFIER (ASC 230)
 // ═══════════════════════════════════════════════════════════════
 function gaapSection(row){
-  const gl = row.cl ? row.cl.gl : 'cogs';
+  const gl   = row.cl ? row.cl.gl   : 'cogs';
   const sign = row.cl ? row.cl.sign : -1;
   if(gl==='gp_budget'||gl==='wip_offset') return null;
-  if(gl==='revenue'||gl==='oprev') return{sec:'op',dir:'in'};
-  if(gl==='cogs') return{sec:'op',dir:'out'};
-  if(gl==='opex') return{sec:'op',dir:'out'};
-  if(gl==='fin') return{sec:'fin',dir:sign>0?'in':'out'};
+  if(gl==='revenue'||gl==='oprev') return{sec:'op', dir:'in'};
+  if(gl==='cogs')      return{sec:'op',  dir:'out'};
+  if(gl==='opex')      return{sec:'op',  dir:'out'};
+  if(gl==='fin')       return{sec:'fin', dir:sign>0?'in':'out'};
+  if(gl==='inv_asset') return{sec:'inv', dir:sign>0?'in':'out'};
   return{sec:'op',dir:'out'};
 }
 
@@ -754,7 +826,7 @@ function jobMetrics(p, entity){
   let btf=0;
   for(const r of rows){
     const gl=r.cl?r.cl.gl:classifyRow(r,buildDateMap(p)).gl;
-    if(gl==='gp_budget'||gl==='wip_offset') continue;
+    if(gl==='gp_budget'||gl==='wip_offset'||gl==='inv_asset') continue; // balance sheet items excluded from job P&L
     if(gl==='revenue'||gl==='oprev'){
       rev_b+=(r.b||0);rev_adj+=(r.adj||r.b||0);rev_ctd+=(r.ctd||0);
     } else if(gl==='cogs'){
@@ -1010,6 +1082,9 @@ function renderCF(){
     // Operating Activities
     const opIn=secs['op.in']||{};
     const opOut=secs['op.out']||{};
+    // Investing Activities (1xxx — asset creation outflows, asset sale inflows)
+    const invIn=secs['inv.in']||{};
+    const invOut=secs['inv.out']||{};
     // Financing Activities
     const finIn=secs['fin.in']||{};
     const finOut=secs['fin.out']||{};
@@ -1061,6 +1136,27 @@ function renderCF(){
       html+=`<tr class="cf-subtotal"><td class="acct-col" style="font-size:10px">Net Cash from Operating</td>${moCells}${cfCell(total,false)}</tr>`;
     }
 
+    // Investing Activities
+    if(Object.keys(invIn).length||Object.keys(invOut).length){
+      html+=secLabel('INVESTING ACTIVITIES');
+      if(Object.keys(invOut).length){
+        html+=`<tr><td class="acct-col" style="padding-left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--red);font-weight:600">Asset Investments / Outflows</td>${months.map(()=>'<td></td>').join('')}<td></td></tr>`;
+        Object.entries(invOut).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lbl,d])=>{html+=rowHtml(lbl,d,'out');});
+      }
+      if(Object.keys(invIn).length){
+        html+=`<tr><td class="acct-col" style="padding-left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--green);font-weight:600">Asset Dispositions / Inflows</td>${months.map(()=>'<td></td>').join('')}<td></td></tr>`;
+        Object.entries(invIn).sort((a,b)=>a[0].localeCompare(b[0])).forEach(([lbl,d])=>{html+=rowHtml(lbl,d,'in');});
+      }
+      {
+        const moTotals={};
+        Object.values(invIn).forEach(d=>Object.entries(d.mo).forEach(([m,v])=>{moTotals[m]=(moTotals[m]||0)+v;}));
+        Object.values(invOut).forEach(d=>Object.entries(d.mo).forEach(([m,v])=>{moTotals[m]=(moTotals[m]||0)-v;}));
+        const moCells=months.map(m=>cfCell(moTotals[m]||0,m===CUR)).join('');
+        const total=Object.values(moTotals).reduce((a,v)=>a+v,0);
+        html+=`<tr class="cf-subtotal"><td class="acct-col" style="font-size:10px">Net Cash from Investing</td>${moCells}${cfCell(total,false)}</tr>`;
+      }
+    }
+
     html+=secLabel('FINANCING ACTIVITIES');
     if(Object.keys(finIn).length){
       html+=`<tr><td class="acct-col" style="padding-left:12px;font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--green);font-weight:600">Inflows</td>${months.map(()=>'<td></td>').join('')}<td></td></tr>`;
@@ -1079,10 +1175,10 @@ function renderCF(){
       html+=`<tr class="cf-subtotal"><td class="acct-col" style="font-size:10px">Net Cash from Financing</td>${moCells}${cfCell(total,false)}</tr>`;
     }
 
-    // Grand net
+    // Grand net — Operating + Investing + Financing
     {
-      const allSecs=[opIn,opOut,finIn,finOut];
-      const dirs=['in','out','in','out'];
+      const allSecs=[opIn,opOut,invIn,invOut,finIn,finOut];
+      const dirs=['in','out','in','out','in','out'];
       const moTotals={};
       allSecs.forEach((sec,i)=>{
         const sign=dirs[i]==='in'?1:-1;
@@ -1239,7 +1335,7 @@ function renderPL(){
       const dm=buildDateMap(p);
       const cl=r.cl||classifyRow(r,dm);
       const gl=cl.gl;
-      if(gl==='gp_budget'||gl==='wip_offset') continue;
+      if(gl==='gp_budget'||gl==='wip_offset'||gl==='inv_asset') continue; // balance sheet items excluded from platform P&L
       if(gl==='revenue'){ revB+=(r.b||0);revAdj+=(r.adj||r.b||0); }
       if(gl==='oprev'){ opRevB+=(r.b||0); }
       if(gl==='cogs'){ cogsB+=(r.b||0); }
