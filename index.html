@@ -536,6 +536,11 @@ function classifyRow(row,dm){
       sYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),
       eYM:toYM(dm['1 Year Warranty End Date']||dm['Statutory Liability End Date']||dm['Closeout & Punch List']),
       type:'even'};
+    // Direct project costs (COGS) — job costs, materials, subs, labor, etc.
+    const OP_COGS_RE=/cost of (goods|revenue|sales)|direct cost|job cost|labor|material|subcontract|\bsub\b|gc cost|construction cost|hard cost|soft cost/i;
+    if(OP_COGS_RE.test(a)) return{gl:'cogs',sign:-1,
+      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
+      eYM:toYM(dm['Construction End']||dm['COE/Lease Commence']),type:'even'};
     return{gl:'opex',sign:-1,
       sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
       eYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),type:'even'};
@@ -552,7 +557,9 @@ function computeProjectCF(p, override){
 
     // ── 1. Manual override (UI dropdowns) takes highest priority ──
     if(override){
-      cl.sYM=override.sYM; cl.eYM=override.eYM; cl.type='even';
+      if(override.sYM) cl.sYM=override.sYM;
+      if(override.eYM) cl.eYM=override.eYM;
+      if(override.sYM&&override.eYM) cl.type='even';
     }
     // ── 2. Item-level Begin/End dates override keyword-based dates ──
     else if(r.bDate||r.eDate){
@@ -560,6 +567,8 @@ function computeProjectCF(p, override){
       const iEYM=r.eDate?toYM(r.eDate):null;
       cl.sYM=iSYM||cl.sYM;
       cl.eYM=iEYM||cl.eYM;
+      // Safety: if dates are reversed (begin > end), swap them
+      if(cl.sYM&&cl.eYM&&cl.sYM>cl.eYM){const _t=cl.sYM;cl.sYM=cl.eYM;cl.eYM=_t;}
       cl.type=(cl.sYM&&cl.eYM&&cl.eYM>cl.sYM)?'even':'point';
     }
 
@@ -927,19 +936,20 @@ function renderIS(p){
   const byGL={revenue:[],cogs:[],oprev:[],opex:[],fin:[],gp_budget:[],wip_offset:[]};
   cf.rows.forEach(r=>{const g=r.cl.gl||'cogs';if(byGL[g])byGL[g].push(r);});
 
-  // Sum helpers — three columns (Est, Baseline, Adj) computed separately
+  // Sum helpers — Est, Baseline, Adj, CTD, Actual, BTF columns
   const sE  =arr=>arr.reduce((a,r)=>a+(r.e||0),0);
   const sB  =arr=>arr.reduce((a,r)=>a+(r.b||0),0);
   const sAdj=arr=>arr.reduce((a,r)=>a+(r.adj||0),0);
   const sCTD=arr=>arr.reduce((a,r)=>a+(r.ctd||0),0);
   const sAct=arr=>arr.reduce((a,r)=>a+(r.act||0),0);
+  const sBTF=arr=>arr.reduce((a,r)=>a+(r.btf||0),0);
 
   // Revenue totals (inv + op revenue, gross profit items excluded)
   const revAll=[...byGL.revenue,...byGL.oprev];
-  const totRevE=sE(revAll), totRevB=sB(revAll), totRevAdj=sAdj(revAll);
+  const totRevE=sE(revAll), totRevB=sB(revAll), totRevAdj=sAdj(revAll), totRevBTF=sBTF(revAll);
 
   // COGS totals
-  const totCOGSE=sE(byGL.cogs), totCOGSB=sB(byGL.cogs), totCOGSAdj=sAdj(byGL.cogs);
+  const totCOGSE=sE(byGL.cogs), totCOGSB=sB(byGL.cogs), totCOGSAdj=sAdj(byGL.cogs), totCOGSBTF=sBTF(byGL.cogs);
 
   // Gross profit — when no explicit COGS items, use the GP budget line item directly
   const hasExplicitCOGS=byGL.cogs.length>0;
@@ -947,12 +957,13 @@ function renderIS(p){
   const gpE   =hasExplicitCOGS?(totRevE-totCOGSE||null):null;
   const gpB   =hasExplicitCOGS?(totRevB-totCOGSB):(gpBudgetRef??totRevB-totCOGSB);
   const gpAdj =hasExplicitCOGS?(totRevAdj-totCOGSAdj||null):null;
+  const gpBTF =hasExplicitCOGS?(totRevBTF-totCOGSBTF||null):null;
 
   // OpEx / financing
-  const totOpExB=sB(byGL.opex), totOpExAdj=sAdj(byGL.opex);
+  const totOpExB=sB(byGL.opex), totOpExAdj=sAdj(byGL.opex), totOpExBTF=sBTF(byGL.opex);
   const totFinInB =sB(byGL.fin.filter(r=>r.cl.sign>0));
   const totFinOutB=sB(byGL.fin.filter(r=>r.cl.sign<0));
-  const ebitdaB=gpB-totOpExB, ebitdaAdj=gpAdj-totOpExAdj;
+  const ebitdaB=gpB-totOpExB, ebitdaAdj=gpAdj!=null?(gpAdj-totOpExAdj):null, ebitdaBTF=gpBTF!=null?(gpBTF-totOpExBTF):null;
 
   // Validation warnings
   const allWarns=[...cf.warns];
@@ -987,13 +998,14 @@ function renderIS(p){
     </div>`;
   };
 
-  // gpLine: full-width highlight row showing Est / Baseline / Adj
-  const gpLine=(lbl,eV,bV,aV,sub,bg)=>`<div class="is-grand" style="background:${bg||'var(--green)'}">
+  // gpLine: full-width highlight row showing Est / Baseline / Adj / BTF
+  const gpLine=(lbl,eV,bV,aV,btfV,sub,bg)=>`<div class="is-grand" style="background:${bg||'var(--green)'}">
     <div class="is-grand-lbl">${lbl}${sub?`<span style="font-size:10px;font-weight:400;opacity:.7;margin-left:8px">${sub}</span>`:''}</div>
-    <div class="is-v" style="font-weight:800;color:#fff">${eV?fmt(eV):'—'}</div>
-    <div class="is-v" style="font-weight:800;color:#fff">${bV?fmt(bV):'—'}</div>
-    <div class="is-v" style="font-weight:800;color:#fff">${aV?fmt(aV):'—'}</div>
-    <div></div><div></div><div></div>
+    <div class="is-v" style="font-weight:800;color:#fff">${eV!=null?fmt(eV):'—'}</div>
+    <div class="is-v" style="font-weight:800;color:#fff">${bV!=null?fmt(bV):'—'}</div>
+    <div class="is-v" style="font-weight:800;color:#fff">${aV!=null?fmt(aV):'—'}</div>
+    <div></div><div></div>
+    <div class="is-v" style="font-weight:800;color:#fff">${btfV!=null?fmt(btfV):'—'}</div>
   </div>`;
 
   let html='<div class="is-wrap">';
@@ -1018,7 +1030,7 @@ function renderIS(p){
   // Gross Profit — show budgeted GP as reference annotation if available
   const gpMargin=totRevB>0?(gpB/totRevB*100).toFixed(1):null;
   const gpNote=hasExplicitCOGS&&gpBudgetRef?` · Budgeted GP: ${fmt(gpBudgetRef)}`:'';
-  html+=gpLine('GROSS PROFIT',gpE||null,gpB||null,gpAdj||null,
+  html+=gpLine('GROSS PROFIT',gpE||null,gpB||null,gpAdj,gpBTF,
     (gpMargin?`${gpMargin}% margin`:'')+gpNote,
     gpB>=0?'var(--green)':'var(--red)');
 
@@ -1029,7 +1041,7 @@ function renderIS(p){
       ${byGL.opex.map(rowLine).join('')}
       ${totLine('Total Operating Expenses',null,totOpExB,totOpExAdj,'var(--amber)')}
     </div>`;
-    html+=gpLine('EBITDA',null,ebitdaB||null,ebitdaAdj||null,null,ebitdaB>=0?'var(--green)':'var(--red)');
+    html+=gpLine('EBITDA',null,ebitdaB||null,ebitdaAdj,ebitdaBTF,null,ebitdaB>=0?'var(--green)':'var(--red)');
   }
 
   // Financing Sources & Uses
@@ -1044,7 +1056,7 @@ function renderIS(p){
   }
 
   // Net Project Profit
-  html+=gpLine('NET PROJECT PROFIT',null,ebitdaB||null,ebitdaAdj||null,null,ebitdaB>=0?'var(--ink)':'var(--red)');
+  html+=gpLine('NET PROJECT PROFIT',null,ebitdaB||null,ebitdaAdj,ebitdaBTF,null,ebitdaB>=0?'var(--ink)':'var(--red)');
   html+='</div>';
   document.getElementById('pp-body').innerHTML=html;
 }
@@ -1066,10 +1078,6 @@ function renderCFProject(p){
   // Build date dropdown options from p.dates (sorted chronologically)
   const dateOpts=(p.dates||[]).slice().sort((a,b)=>a.d.localeCompare(b.d))
     .map(d=>`<option value="${d.d}">${d.e} (${d.d})</option>`).join('');
-  const fromVal=(ov&&ov.sYM)?
-    (p.dates||[]).find(d=>toYM(d.d)===ov.sYM)?.d||'':'';
-  const toVal=(ov&&ov.eYM)?
-    (p.dates||[]).find(d=>toYM(d.d)===ov.eYM)?.d||'':'';
   const dateCtrl=`<div style="padding:8px 0 12px;display:flex;align-items:center;gap:8px;font-size:12px">
     <span style="color:var(--ink3);font-size:11px">Override spread:</span>
     <select style="font-size:12px" data-proj-id="${p.id}" data-role="cf-from" onchange="cfOverrideChange(this)">
@@ -1087,7 +1095,7 @@ function renderCFProject(p){
     if(warns.length) wb=`<div class="gaap-warn" style="margin:0 0 12px">${warns.map(w=>`<div>⚠ ${w}</div>`).join('')}</div>`;
     document.getElementById('pp-body').innerHTML=`<div class="pcf-wrap">${dateCtrl}${wb}<div class="no-data" style="padding:16px 0">No dated cash flows — add milestone dates in SmartSuite to generate the spread.</div></div>`;
     // Restore dropdown selections after render
-    _restoreCFDropdowns(p.id, fromVal, toVal);
+    _restoreCFDropdowns(p.id);
     return;
   }
   // Exclude gp_budget items (sign=0) from cash flow — they're reference-only
@@ -1156,14 +1164,15 @@ function renderCFProject(p){
   html+=`<tr><td class="acct" style="color:var(--ink3);font-style:italic">Cumulative CF</td>${cumCells}<td style="color:var(--ink3);font-style:italic">${fmts(Math.round(cum))}</td></tr>`;
   html+='</tbody></table></div></div>';
   document.getElementById('pp-body').innerHTML=html;
-  _restoreCFDropdowns(p.id, fromVal, toVal);
+  _restoreCFDropdowns(p.id);
 }
 
 // ── CF date override helpers ──────────────
-function _restoreCFDropdowns(pid, fromVal, toVal){
+function _restoreCFDropdowns(pid){
+  const ov=CF_DATE_OVERRIDE[pid]||{};
   document.querySelectorAll(`select[data-proj-id="${pid}"]`).forEach(sel=>{
-    if(sel.dataset.role==='cf-from') sel.value=fromVal||'';
-    if(sel.dataset.role==='cf-to')   sel.value=toVal||'';
+    if(sel.dataset.role==='cf-from') sel.value=ov._fromRaw||'';
+    if(sel.dataset.role==='cf-to')   sel.value=ov._toRaw||'';
   });
 }
 function cfOverrideChange(sel){
@@ -1173,8 +1182,14 @@ function cfOverrideChange(sel){
   const toSel  =body.querySelector(`select[data-proj-id="${pid}"][data-role="cf-to"]`);
   const fromDate=fromSel?fromSel.value:'';
   const toDate  =toSel  ?toSel.value  :'';
-  if(fromDate&&toDate){
-    CF_DATE_OVERRIDE[pid]={sYM:toYM(fromDate),eYM:toYM(toDate)};
+  if(fromDate||toDate){
+    // Store raw date strings so dropdowns can be restored after re-render
+    CF_DATE_OVERRIDE[pid]={
+      sYM:fromDate?toYM(fromDate):null,
+      eYM:toDate?toYM(toDate):null,
+      _fromRaw:fromDate,
+      _toRaw:toDate
+    };
   } else {
     delete CF_DATE_OVERRIDE[pid];
   }
