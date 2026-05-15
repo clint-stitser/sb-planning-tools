@@ -494,9 +494,17 @@ function spreadMo(amount,sYM,eYM,type){
 function classifyRow(row,dm){
   const a=row.a||'', s=row.s;
 
-  // Always-first: GP budget reference and WIP offset — excluded from IS and CF
-  if(GP_RE.test(a))  return{gl:'gp_budget', sign:0,sYM:null,eYM:null,type:'point'};
-  if(WIP_RE.test(a)) return{gl:'wip_offset',sign:0,sYM:null,eYM:null,type:'point'};
+  // Always-first: GP budget reference — excluded from all statements (reference line only)
+  if(GP_RE.test(a))  return{gl:'gp_budget',sign:0,sYM:null,eYM:null,type:'point'};
+
+  // WIP Offset / Work-in-Progress: this IS a legitimate investing cash outflow
+  // (capitalizing construction costs to the WIP asset account = money leaving for asset creation)
+  if(WIP_RE.test(a)){
+    const sign=row.cfDir==='Wr0tD'?1:-1; // default outflow if no direction set
+    return{gl:'inv_asset',sign,_cfSec:'inv',
+      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
+      eYM:toYM(dm['Construction End']),type:'even'};
+  }
 
   // ── Account-code-driven classification (primary path) ────────────────────
   // Uses acctSeries (1–6) and cfDir slug from refresh-data.js
@@ -506,8 +514,14 @@ function classifyRow(row,dm){
   const dirSign = cfDir==='Wr0tD' ? 1 : cfDir==='oGjmd' ? -1 : 0;
 
   if(series===1){
-    // 1xxx Assets — balance sheet only; WIP-offset style (excluded from IS and CF)
-    return{gl:'wip_offset',sign:0,sYM:null,eYM:null,type:'point'};
+    // 1xxx Assets — Investing Cash Flow (asset creation = outflow, asset disposition = inflow)
+    const sign=dirSign||-1; // default outflow if no CF direction set
+    return{gl:'inv_asset',sign,_cfSec:'inv',
+      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
+      eYM:toYM(sign>0
+        ? (dm['COE/Lease Commence']||dm['Construction End'])   // inflow: spread to sale/lease
+        : (dm['Construction End'])),                           // outflow: spread through build
+      type:'even'};
   }
 
   if(series===2||series===3){
@@ -619,7 +633,7 @@ function computeProjectCF(p, override){
   const dm=buildDateMap(p), mos=new Set(), warns=[];
   const rows=(p.rows||[]).map(r=>{
     const cl=classifyRow(r,dm);
-    if(cl.gl==='gp_budget'||cl.gl==='wip_offset') return{...r,cl,budMo:{},actMo:{}};
+    if(cl.gl==='gp_budget') return{...r,cl,budMo:{},actMo:{}};
 
     // ── 1. Manual override (UI dropdowns) takes highest priority ──
     if(override){
@@ -972,7 +986,7 @@ function openProject(id){
       </div>
     </div>
     <div class="pp-tabs">
-      <div class="pp-tab active" onclick="ppTab(this,'is')">Income Statement</div>
+      <div class="pp-tab active" onclick="ppTab(this,'is')">Cash Flow Statement</div>
       <div class="pp-tab" onclick="ppTab(this,'cf')">Cash Flow Spread</div>
       <div class="pp-tab" onclick="ppTab(this,'dates')">Dates</div>
     </div>
@@ -999,24 +1013,24 @@ function ppTab(el,tab){
   else renderDates(p);
 }
 
-// ── Income Statement ──────────────────────
+// ── Consolidated Cash Flow Statement ─────────────────────────────────────────
 function renderIS(p){
   const selCo=SELECTED_CO[p.id]||null;
-  // Row filter: rows with no cos assignment always show (project-wide);
-  // rows with a cos only show when their entity matches the selection.
   const hasMultiEntityRows=(p.rows||[]).some(r=>r.cos&&r.cos.length>0);
   const fp={...p, rows:(p.rows||[]).filter(r=>
     !selCo
-      ? true                                                // All Entities: show everything (with warning)
-      : (!r.cos||r.cos.length===0||r.cos.includes(selCo)) // Specific entity: match or unassigned
+      ? true
+      : (!r.cos||r.cos.length===0||r.cos.includes(selCo))
   )};
   const rows=fp.rows||[];
   if(!rows.length){document.getElementById('pp-body').innerHTML='<div class="no-data">No baseline budget data yet — add BBI records in SmartSuite.</div>';return;}
   const cf=(selCo ? computeProjectCF(fp) : (CF_CACHE[p.id]||computeProjectCF(fp)));
-  const byGL={revenue:[],cogs:[],oprev:[],opex:[],fin:[],gp_budget:[],wip_offset:[]};
+
+  // GL buckets — inv_asset = 1xxx investing items (WIP, land, asset purchases/sales)
+  const byGL={revenue:[],cogs:[],oprev:[],opex:[],fin:[],inv_asset:[],gp_budget:[],wip_offset:[]};
   cf.rows.forEach(r=>{const g=r.cl.gl||'cogs';if(byGL[g])byGL[g].push(r);});
 
-  // Sum helpers — Est, Baseline, Adj, CTD, Actual, BTF columns
+  // Sum helpers (raw amounts — signs applied at net calc level)
   const sE  =arr=>arr.reduce((a,r)=>a+(r.e||0),0);
   const sB  =arr=>arr.reduce((a,r)=>a+(r.b||0),0);
   const sAdj=arr=>arr.reduce((a,r)=>a+(r.adj||0),0);
@@ -1024,31 +1038,41 @@ function renderIS(p){
   const sAct=arr=>arr.reduce((a,r)=>a+(r.act||0),0);
   const sBTF=arr=>arr.reduce((a,r)=>a+(r.btf||0),0);
 
-  // Revenue totals (inv + op revenue, gross profit items excluded)
+  // ── OPERATING CASH FLOW ─────────────────────────
   const revAll=[...byGL.revenue,...byGL.oprev];
-  const totRevE=sE(revAll), totRevB=sB(revAll), totRevAdj=sAdj(revAll), totRevBTF=sBTF(revAll);
-
-  // COGS totals
+  const totRevE=sE(revAll),  totRevB=sB(revAll),  totRevAdj=sAdj(revAll),  totRevBTF=sBTF(revAll);
   const totCOGSE=sE(byGL.cogs), totCOGSB=sB(byGL.cogs), totCOGSAdj=sAdj(byGL.cogs), totCOGSBTF=sBTF(byGL.cogs);
+  const totOpExE=sE(byGL.opex), totOpExB=sB(byGL.opex), totOpExAdj=sAdj(byGL.opex), totOpExBTF=sBTF(byGL.opex);
+  // Net Operating = Revenue − COGS − Overhead
+  const netOpE  = totRevE - totCOGSE - totOpExE;
+  const netOpB  = totRevB - totCOGSB - totOpExB;
+  const netOpAdj= (totRevAdj||totCOGSAdj||totOpExAdj) ? (totRevAdj-totCOGSAdj-totOpExAdj) : null;
+  const netOpBTF= (totRevBTF||totCOGSBTF||totOpExBTF) ? (totRevBTF-totCOGSBTF-totOpExBTF) : null;
 
-  // Gross profit — when no explicit COGS items, use the GP budget line item directly
-  const hasExplicitCOGS=byGL.cogs.length>0;
-  const gpBudgetRef=byGL.gp_budget.length?sB(byGL.gp_budget):null;
-  const gpE   =hasExplicitCOGS?(totRevE-totCOGSE||null):null;
-  const gpB   =hasExplicitCOGS?(totRevB-totCOGSB):(gpBudgetRef??totRevB-totCOGSB);
-  const gpAdj =hasExplicitCOGS?(totRevAdj-totCOGSAdj||null):null;
-  const gpBTF =hasExplicitCOGS?(totRevBTF-totCOGSBTF||null):null;
+  // ── INVESTING CASH FLOW ─────────────────────────
+  const invOut=byGL.inv_asset.filter(r=>r.cl.sign<=0);
+  const invIn =byGL.inv_asset.filter(r=>r.cl.sign>0);
+  const totInvOutB=sB(invOut), totInvInB=sB(invIn);
+  const totInvOutBTF=sBTF(invOut), totInvInBTF=sBTF(invIn);
+  const netInvB  = totInvInB - totInvOutB;
+  const netInvBTF= (totInvInBTF||totInvOutBTF) ? (totInvInBTF-totInvOutBTF) : null;
 
-  // OpEx / financing
-  const totOpExB=sB(byGL.opex), totOpExAdj=sAdj(byGL.opex), totOpExBTF=sBTF(byGL.opex);
-  const totFinInB =sB(byGL.fin.filter(r=>r.cl.sign>0));
-  const totFinOutB=sB(byGL.fin.filter(r=>r.cl.sign<0));
-  const ebitdaB=gpB-totOpExB, ebitdaAdj=gpAdj!=null?(gpAdj-totOpExAdj):null, ebitdaBTF=gpBTF!=null?(gpBTF-totOpExBTF):null;
+  // ── FINANCING CASH FLOW ─────────────────────────
+  const finIn =byGL.fin.filter(r=>r.cl.sign>0);
+  const finOut=byGL.fin.filter(r=>r.cl.sign<0);
+  const totFinInB=sB(finIn),  totFinOutB=sB(finOut);
+  const totFinInBTF=sBTF(finIn), totFinOutBTF=sBTF(finOut);
+  const netFinB  = totFinInB - totFinOutB;
+  const netFinBTF= (totFinInBTF||totFinOutBTF) ? (totFinInBTF-totFinOutBTF) : null;
 
-  // Validation warnings
+  // ── NET TOTAL ───────────────────────────────────
+  const netTotalB  = netOpB + netInvB + netFinB;
+  const netTotalBTF= (netOpBTF!=null||netInvBTF!=null||netFinBTF!=null)
+    ? (netOpBTF||0)+(netInvBTF||0)+(netFinBTF||0) : null;
+
   const allWarns=[...cf.warns];
-  if(totRevB===0&&totCOGSB>0) allWarns.push('No revenue accounts identified — verify account names match keywords (revenue/proceeds/sale/income)');
-  if(gpB<0&&totRevB>0) allWarns.push(`Negative gross profit: ${fmt(gpB)}`);
+  if(!selCo&&hasMultiEntityRows) allWarns.unshift('All Entities selected — inter-entity transactions may double-count or offset incorrectly. Use the Entity View selector above to see one entity at a time.');
+  if(totRevB===0&&(totCOGSB>0||totOpExB>0)) allWarns.push('No revenue accounts identified — verify account codes are set (4xxx series = revenue)');
 
   const colH=`<div class="is-col">Est.</div><div class="is-col">Baseline</div><div class="is-col">Adj.</div><div class="is-col">CTD</div><div class="is-col">Actual</div><div class="is-col">BTF / %</div>`;
 
@@ -1066,7 +1090,7 @@ function renderIS(p){
     </div>`;
   };
 
-  // totLine: shows Est / Baseline / Adj with optional highlight color
+  // totLine: subsection subtotal row (Est / Baseline / Adj, BTF empty)
   const totLine=(lbl,eV,bV,aV,color)=>{
     const c=color?`color:${color};`:'';
     return`<div class="is-total">
@@ -1078,8 +1102,8 @@ function renderIS(p){
     </div>`;
   };
 
-  // gpLine: full-width highlight row showing Est / Baseline / Adj / BTF
-  const gpLine=(lbl,eV,bV,aV,btfV,sub,bg)=>`<div class="is-grand" style="background:${bg||'var(--green)'}">
+  // netLine: section net row with Est / Baseline / Adj / BTF highlighted
+  const netLine=(lbl,eV,bV,aV,btfV,sub,bg)=>`<div class="is-grand" style="background:${bg||'var(--green)'}">
     <div class="is-grand-lbl">${lbl}${sub?`<span style="font-size:10px;font-weight:400;opacity:.7;margin-left:8px">${sub}</span>`:''}</div>
     <div class="is-v" style="font-weight:800;color:#fff">${eV!=null?fmt(eV):'—'}</div>
     <div class="is-v" style="font-weight:800;color:#fff">${bV!=null?fmt(bV):'—'}</div>
@@ -1088,56 +1112,98 @@ function renderIS(p){
     <div class="is-v" style="font-weight:800;color:#fff">${btfV!=null?fmt(btfV):'—'}</div>
   </div>`;
 
+  // Section divider label
+  const secDiv=(label,icon,color)=>`<div style="padding:10px 14px 4px;font-family:var(--display);font-size:10px;font-weight:700;letter-spacing:.10em;text-transform:uppercase;color:${color};border-top:2px solid ${color};margin-top:10px">${icon} ${label}</div>`;
+
   let html='<div class="is-wrap">';
-  if(!selCo&&hasMultiEntityRows) allWarns.unshift('All Entities selected — inter-entity transactions may double-count or offset incorrectly. Use the Entity View selector above to see one entity at a time.');
   if(allWarns.length) html+=`<div class="gaap-warn">${allWarns.map(w=>`<div>⚠ ${w}</div>`).join('')}</div>`;
 
-  // Revenue
+  // ══════════════════════════════════════════════
+  // SECTION 1 — OPERATING CASH FLOW
+  // ══════════════════════════════════════════════
+  html+=secDiv('Operating Cash Flow','⚙','var(--green)');
+
+  // Revenue inflows (4xxx)
   html+=`<div class="is-sec"><div class="is-sec-hdr">
-    <div><span class="sec-badge" style="background:var(--green);color:#fff">REVENUE</span></div>${colH}</div>
+    <div><span class="sec-badge" style="background:var(--green);color:#fff">REVENUE · INFLOWS</span></div>${colH}</div>
     ${byGL.revenue.map(rowLine).join('')}
-    ${byGL.oprev.length?`<div class="is-gaap-sub">Operating Revenue</div>${byGL.oprev.map(rowLine).join('')}`:''}
-    ${!revAll.length?'<div class="is-row"><div class="is-acct" style="color:var(--ink3)">No revenue accounts detected</div></div>':''}
-    ${totLine('Total Revenue',totRevE,totRevB,totRevAdj,'var(--green)')}
+    ${byGL.oprev.length?`<div class="is-gaap-sub">Operating / Recurring Revenue</div>${byGL.oprev.map(rowLine).join('')}`:''}
+    ${!revAll.length?'<div class="is-row"><div class="is-acct" style="color:var(--ink3)">No revenue accounts detected (4xxx series)</div></div>':''}
+    ${revAll.length?totLine('Total Revenue Inflows',totRevE,totRevB,totRevAdj,'var(--green)'):''}
   </div>`;
 
-  // COGS
+  // COGS outflows (5xxx)
   if(byGL.cogs.length) html+=`<div class="is-sec"><div class="is-sec-hdr">
-    <div><span class="sec-badge" style="background:var(--red);color:#fff">COST OF REVENUE</span></div>${colH}</div>
+    <div><span class="sec-badge" style="background:var(--red);color:#fff">COST OF REVENUE · OUTFLOWS</span></div>${colH}</div>
     ${byGL.cogs.map(rowLine).join('')}
-    ${totLine('Total Cost of Revenue',totCOGSE,totCOGSB,totCOGSAdj,'var(--red)')}
+    ${totLine('Total Cost of Revenue Outflows',totCOGSE,totCOGSB,totCOGSAdj,'var(--red)')}
   </div>`;
 
-  // Gross Profit — show budgeted GP as reference annotation if available
-  const gpMargin=totRevB>0?(gpB/totRevB*100).toFixed(1):null;
-  const gpNote=hasExplicitCOGS&&gpBudgetRef?` · Budgeted GP: ${fmt(gpBudgetRef)}`:'';
-  html+=gpLine('GROSS PROFIT',gpE||null,gpB||null,gpAdj,gpBTF,
-    (gpMargin?`${gpMargin}% margin`:'')+gpNote,
-    gpB>=0?'var(--green)':'var(--red)');
+  // Overhead outflows (6xxx)
+  if(byGL.opex.length) html+=`<div class="is-sec"><div class="is-sec-hdr">
+    <div><span class="sec-badge" style="background:var(--amber);color:#fff">OVERHEAD · OUTFLOWS</span></div>${colH}</div>
+    ${byGL.opex.map(rowLine).join('')}
+    ${totLine('Total Overhead Outflows',totOpExE,totOpExB,totOpExAdj,'var(--amber)')}
+  </div>`;
 
-  // OpEx
-  if(byGL.opex.length){
-    html+=`<div class="is-sec"><div class="is-sec-hdr">
-      <div><span class="sec-badge" style="background:var(--amber);color:#fff">OPERATING EXPENSES</span></div>${colH}</div>
-      ${byGL.opex.map(rowLine).join('')}
-      ${totLine('Total Operating Expenses',null,totOpExB,totOpExAdj,'var(--amber)')}
-    </div>`;
-    html+=gpLine('EBITDA',null,ebitdaB||null,ebitdaAdj,ebitdaBTF,null,ebitdaB>=0?'var(--green)':'var(--red)');
-  }
+  // Net Operating CF
+  const opMargin=totRevB>0?` · ${(netOpB/totRevB*100).toFixed(1)}% of revenue`:'';
+  html+=netLine('NET OPERATING CASH FLOW',
+    netOpE||null, netOpB||null, netOpAdj, netOpBTF,
+    opMargin, netOpB>=0?'var(--green)':'var(--red)');
 
-  // Financing Sources & Uses
-  if(byGL.fin.length){
-    const finIn=byGL.fin.filter(r=>r.cl.sign>0), finOut=byGL.fin.filter(r=>r.cl.sign<0);
+  // ══════════════════════════════════════════════
+  // SECTION 2 — INVESTING CASH FLOW
+  // ══════════════════════════════════════════════
+  if(byGL.inv_asset.length){
+    html+=secDiv('Investing Cash Flow','🏗','var(--blue)');
     html+=`<div class="is-sec"><div class="is-sec-hdr">
-      <div><span class="sec-badge sb-inv">FINANCING</span></div>${colH}</div>`;
-    if(finIn.length){html+=`<div class="is-gaap-sub">Sources (Inflows)</div>${finIn.map(rowLine).join('')}`;}
-    if(finOut.length){html+=`<div class="is-gaap-sub">Uses (Outflows)</div>${finOut.map(rowLine).join('')}`;}
-    html+=totLine('Net Financing',null,totFinInB-totFinOutB,null,(totFinInB-totFinOutB)>=0?'var(--blue)':'var(--red)');
+      <div><span class="sec-badge" style="background:var(--blue);color:#fff">INVESTING ACTIVITIES · 1xxx</span></div>${colH}</div>`;
+    if(invOut.length){
+      html+=`<div class="is-gaap-sub">Asset Investments / Outflows (Create Assets)</div>`;
+      html+=invOut.map(rowLine).join('');
+      if(invOut.length>1) html+=totLine('Total Investing Outflows',null,totInvOutB,null,'var(--blue)');
+    }
+    if(invIn.length){
+      html+=`<div class="is-gaap-sub">Asset Dispositions / Inflows (Sell Assets)</div>`;
+      html+=invIn.map(rowLine).join('');
+      if(invIn.length>1) html+=totLine('Total Investing Inflows',null,totInvInB,null,'var(--blue)');
+    }
     html+=`</div>`;
+    html+=netLine('NET INVESTING CASH FLOW',
+      null, netInvB||null, null, netInvBTF,
+      null, netInvB>=0?'var(--blue)':'var(--red)');
   }
 
-  // Net Project Profit
-  html+=gpLine('NET PROJECT PROFIT',null,ebitdaB||null,ebitdaAdj,ebitdaBTF,null,ebitdaB>=0?'var(--ink)':'var(--red)');
+  // ══════════════════════════════════════════════
+  // SECTION 3 — FINANCING CASH FLOW
+  // ══════════════════════════════════════════════
+  if(byGL.fin.length){
+    html+=secDiv('Financing Cash Flow','🏦','var(--ink2)');
+    html+=`<div class="is-sec"><div class="is-sec-hdr">
+      <div><span class="sec-badge sb-inv">FINANCING ACTIVITIES · 2xxx / 3xxx</span></div>${colH}</div>`;
+    if(finIn.length){
+      html+=`<div class="is-gaap-sub">Borrowings &amp; Equity Contributions (Inflows)</div>`;
+      html+=finIn.map(rowLine).join('');
+      if(finIn.length>1) html+=totLine('Total Financing Inflows',null,totFinInB,null,'var(--ink)');
+    }
+    if(finOut.length){
+      html+=`<div class="is-gaap-sub">Repayments &amp; Distributions (Outflows)</div>`;
+      html+=finOut.map(rowLine).join('');
+      if(finOut.length>1) html+=totLine('Total Financing Outflows',null,totFinOutB,null,'var(--ink)');
+    }
+    html+=`</div>`;
+    html+=netLine('NET FINANCING CASH FLOW',
+      null, netFinB||null, null, netFinBTF,
+      null, netFinB>=0?'var(--ink)':'var(--red)');
+  }
+
+  // ══════════════════════════════════════════════
+  // TOTAL NET CASH FLOW
+  // ══════════════════════════════════════════════
+  html+=netLine('NET TOTAL PROJECT CASH FLOW',
+    null, netTotalB||null, null, netTotalBTF,
+    null, netTotalB>=0?'#0a2a1a':'#5a0000');
   html+='</div>';
   document.getElementById('pp-body').innerHTML=html;
 }
@@ -1183,8 +1249,8 @@ function renderCFProject(p){
     _restoreCFDropdowns(p.id);
     return;
   }
-  // Exclude gp_budget items (sign=0) from cash flow — they're reference-only
-  const cfRows=rows.filter(r=>r.cl.gl!=='gp_budget'&&r.cl.gl!=='wip_offset');
+  // Exclude gp_budget (reference-only) from cash flow spread; inv_asset items now included
+  const cfRows=rows.filter(r=>r.cl.gl!=='gp_budget'&&r.cl.gl!=='wip_offset'); // wip_offset kept for safety (shouldn't exist post-reclassify)
   const bySec={inv:[],op:[],fin:[]};
   // Use account-code-derived section (_cfSec) if available, else fall back to SmartSuite field (r.s)
   cfRows.forEach(r=>{const bucket=r.cl._cfSec||r.s||'op'; if(bySec[bucket])bySec[bucket].push(r);});
@@ -1305,7 +1371,7 @@ function selectCo(sel, pid){
   const activeTab=document.querySelector('.pp-tab.active');
   if(!activeTab) return;
   const tabText=activeTab.textContent.trim();
-  if(tabText==='Income Statement') renderIS(p);
+  if(tabText==='Cash Flow Statement') renderIS(p);
   else if(tabText==='Cash Flow Spread') renderCFProject(p);
   else renderDates(p);
 }
