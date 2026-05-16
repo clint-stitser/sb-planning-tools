@@ -42,7 +42,15 @@ const STATUS_STAGE = {
 
 const ACTIVE_STAGES = new Set(['WIP', 'Closeout', 'Pipeline', 'New Opportunity', 'Nurture', 'Warm', 'Hot']);
 
+// s40ca9cdee — lookup from Account Code → CF Statement formula field (se39ab97b9)
+// Returns nested array: [["Operating Cash-COGS"]], [["Financing Cash-Liability"]], etc.
 const SECTION_MAP = {
+  'Operating Cash-Income':    'op',
+  'Operating Cash-COGS':      'op',
+  'Investing Cash':           'inv',
+  'Financing Cash-Liability': 'fin',
+  'Financing Cash-Equity':    'fin',
+  // Legacy single-select slugs (s8ee35f579) kept for any rows not yet updated
   'ozQle': 'inv',
   'x0IWR': 'op',
   'wExoS': 'fin',
@@ -265,7 +273,9 @@ async function fetchSmartSuiteData(apiKey) {
     let fin_b = 0, fin_c = 0, fin_x = 0;
 
     for (const br of (budgetByProject[id] || [])) {
-      const secRaw = br.s8ee35f579;
+      // s40ca9cdee = lookup from Account Code → CF Statement (nested array: [["Operating Cash-COGS"]])
+      // Fall back to old manual field s8ee35f579 for rows without an account code assigned
+      const secRaw = (br.s40ca9cdee || [])[0]?.[0] || br.s8ee35f579 || '';
       const s      = SECTION_MAP[secRaw] || 'op';
       const t      = TRACK_MAP[br.sb54d9092a] || '';
       const e      = parseFloat(br.sc507e6b54)  || 0;
