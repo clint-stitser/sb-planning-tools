@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const express = require('express');
 const path    = require('path');
+const fs      = require('fs');
 const { fetchSmartSuiteData } = require('./refresh-data');
 
 const app     = express();
@@ -58,6 +59,60 @@ async function getData(force) {
   await fetchPromise;
   return { projects: cache, lastUpdated: new Date(cacheTime).toISOString(), stale: false };
 }
+
+// ── Entity Reporting store ─────────────────────────────────────────────────
+// Flat JSON file. CFO plugin writes via POST; dashboard reads via GET.
+// Railway note: file persists across restarts but resets on redeploy.
+// The CFO plugin's daily email scan re-populates within 24 h of any reset.
+const REPORTING_PATH = path.join(__dirname, 'entity-reporting.json');
+
+function loadReporting() {
+  try {
+    if (fs.existsSync(REPORTING_PATH))
+      return JSON.parse(fs.readFileSync(REPORTING_PATH, 'utf8'));
+  } catch(e) { console.error('entity-reporting load error:', e.message); }
+  return { config: { entities: [] }, reports: {} };
+}
+
+function saveReporting(data) {
+  try { fs.writeFileSync(REPORTING_PATH, JSON.stringify(data, null, 2), 'utf8'); }
+  catch(e) { console.error('entity-reporting save error:', e.message); }
+}
+
+// GET  /api/entity-reporting          — full data (config + reports)
+app.get('/api/entity-reporting', (_req, res) => {
+  res.json(loadReporting());
+});
+
+// POST /api/entity-reporting          — upsert one report entry
+// Used by CFO plugin AND by the UI (same-origin, no key needed for UI)
+// CFO plugin: set x-api-key: <SMARTSUITE_API_KEY> header
+// Body: { period, entity, status, driveLink, deliveredDate, notes }
+app.post('/api/entity-reporting', express.json(), (req, res) => {
+  const { period, entity, status, driveLink, deliveredDate, notes } = req.body || {};
+  if (!period || !entity) return res.status(400).json({ error: 'period and entity are required' });
+  const data = loadReporting();
+  if (!data.reports[period]) data.reports[period] = {};
+  data.reports[period][entity] = {
+    status:        status        || 'pending',
+    driveLink:     driveLink     || null,
+    deliveredDate: deliveredDate || null,
+    notes:         notes         || '',
+    updatedAt:     new Date().toISOString(),
+  };
+  saveReporting(data);
+  res.json({ ok: true });
+});
+
+// POST /api/entity-reporting/config   — save entity list + due-day settings
+app.post('/api/entity-reporting/config', express.json(), (req, res) => {
+  const { entities } = req.body || {};
+  if (!Array.isArray(entities)) return res.status(400).json({ error: 'entities array required' });
+  const data = loadReporting();
+  data.config.entities = entities;
+  saveReporting(data);
+  res.json({ ok: true });
+});
 
 // ── Routes ─────────────────────────────────────────────────────────────────
 app.get('/api/data', async (req, res) => {

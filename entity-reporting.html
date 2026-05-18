@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Entity Reporting — Stitser BUILT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap">
+<style>
+:root{
+  --ink:#0E0D0B;--ink2:#4A4640;--ink3:#8A847C;
+  --canvas:#F7F4EF;--paper:#FFFFFF;--rule:#E2DDD6;--rule2:#EDE9E2;
+  --gold:#C8961A;--gold-l:#FBF3DE;
+  --blue:#1A3F72;--blue-l:#EAF0F9;
+  --green:#1E5C36;--green-l:#E4F2E9;
+  --teal:#1A6B5A;--teal-l:#E0F2EE;
+  --red:#8C1F1F;--red-l:#F9E8E8;
+  --amber:#9C5A00;--amber-l:#FEF3E2;
+  --mono:'DM Mono',monospace;
+  --display:'Syne',sans-serif;
+  --body:'DM Sans',sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:13px;}
+body{font-family:var(--body);background:var(--canvas);color:var(--ink);min-height:100vh;}
+
+/* ── APP BAR ─── */
+.app-bar{background:var(--paper);border-bottom:1px solid var(--rule);padding:0 20px;display:flex;align-items:center;gap:0;height:44px;flex-shrink:0;position:sticky;top:0;z-index:100;}
+.app-bar-back{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink3);cursor:pointer;padding:0 12px 0 0;border-right:1px solid var(--rule);margin-right:12px;height:100%;transition:color .15s;text-decoration:none;}
+.app-bar-back:hover{color:var(--ink);}
+.app-bar-title{font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.01em;flex:1;}
+.app-bar-actions{display:flex;gap:8px;align-items:center;}
+.btn{padding:5px 12px;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--rule);background:var(--paper);color:var(--ink2);font-family:var(--body);transition:all .15s;}
+.btn:hover{background:var(--canvas);border-color:var(--ink3);}
+.btn.primary{background:var(--teal);color:#fff;border-color:var(--teal);}
+.btn.primary:hover{background:#155248;}
+.btn.ghost{background:transparent;border:none;color:var(--ink3);}
+.btn.ghost:hover{color:var(--ink);background:var(--canvas);}
+
+/* ── SUMMARY BAR ─── */
+.sumbar{background:var(--rule2);border-bottom:1px solid var(--rule);padding:8px 20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.si{display:flex;flex-direction:column;}
+.si-l{font-size:8px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;font-weight:500;}
+.si-v{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);}
+.si-v.green{color:var(--green);}
+.si-v.red{color:var(--red);}
+.si-v.amber{color:var(--amber);}
+.sumbar-spacer{flex:1;}
+
+/* ── PERIOD NAV ─── */
+.period-nav{display:flex;align-items:center;gap:12px;padding:12px 20px;background:var(--paper);border-bottom:1px solid var(--rule);}
+.period-nav-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--rule);background:var(--canvas);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:all .15s;color:var(--ink2);}
+.period-nav-btn:hover{background:var(--rule2);border-color:var(--ink3);}
+.period-label{font-family:var(--display);font-size:16px;font-weight:700;color:var(--ink);min-width:160px;text-align:center;}
+.period-tabs{display:flex;gap:4px;margin-left:24px;}
+.period-tab{padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;color:var(--ink3);border:1px solid transparent;transition:all .12s;}
+.period-tab:hover{background:var(--canvas);}
+.period-tab.active{background:var(--teal);color:#fff;border-color:var(--teal);}
+
+/* ── MAIN CONTENT ─── */
+.content{padding:20px;max-width:1200px;}
+
+/* ── ENTITY TABLE ─── */
+.er-table-wrap{background:var(--paper);border:1px solid var(--rule);border-radius:8px;overflow:hidden;margin-bottom:20px;}
+.er-table-header{display:grid;grid-template-columns:200px 90px 110px 100px 1fr 80px;gap:0;background:var(--canvas);border-bottom:1px solid var(--rule);padding:8px 16px;font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
+.er-row{display:grid;grid-template-columns:200px 90px 110px 100px 1fr 80px;gap:0;padding:10px 16px;border-bottom:1px solid var(--rule2);align-items:center;transition:background .1s;}
+.er-row:last-child{border-bottom:none;}
+.er-row:hover{background:var(--canvas);}
+.er-entity{font-size:12px;font-weight:500;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.er-due{font-family:var(--mono);font-size:11px;color:var(--ink2);}
+.er-days{font-family:var(--mono);font-size:10px;}
+.er-days.overdue{color:var(--red);font-weight:600;}
+.er-days.due-soon{color:var(--amber);font-weight:600;}
+.er-days.ok{color:var(--ink3);}
+.er-days.done{color:var(--green);}
+.status-chip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;white-space:nowrap;}
+.status-chip.complete{background:var(--green-l);color:var(--green);}
+.status-chip.overdue{background:var(--red-l);color:var(--red);}
+.status-chip.due-soon{background:var(--amber-l);color:var(--amber);}
+.status-chip.pending{background:var(--rule2);color:var(--ink3);}
+.er-delivered{font-family:var(--mono);font-size:10px;color:var(--ink3);}
+.er-notes{font-size:10px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:8px;}
+.er-actions{display:flex;gap:4px;justify-content:flex-end;}
+.icon-btn{width:26px;height:26px;border-radius:4px;border:1px solid var(--rule);background:transparent;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;transition:all .12s;color:var(--ink3);}
+.icon-btn:hover{background:var(--canvas);border-color:var(--ink3);color:var(--ink);}
+.icon-btn.link-btn{color:var(--blue);}
+.icon-btn.link-btn:hover{background:var(--blue-l);}
+.er-empty{padding:32px;text-align:center;color:var(--ink3);font-size:12px;}
+
+/* ── EDIT DRAWER ─── */
+.edit-drawer{background:var(--gold-l);border:1px solid var(--gold);border-radius:6px;padding:14px 16px;margin:-1px 0 0;display:none;}
+.edit-drawer.open{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;}
+.ef{display:flex;flex-direction:column;gap:4px;}
+.ef label{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
+.ef input,.ef select,.ef textarea{padding:5px 8px;border:1px solid var(--rule);border-radius:4px;font-size:11px;font-family:var(--mono);background:var(--paper);color:var(--ink);width:100%;}
+.ef input:focus,.ef select:focus{outline:none;border-color:var(--teal);}
+.ef-url{min-width:280px;}
+
+/* ── CFO CONTEXT PANEL ─── */
+.cfo-panel{background:var(--paper);border:1px solid var(--rule);border-radius:8px;overflow:hidden;margin-bottom:20px;}
+.cfo-panel-hdr{background:var(--teal);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;}
+.cfo-panel-hdr-title{font-family:var(--display);font-size:13px;font-weight:700;flex:1;}
+.cfo-panel-body{padding:16px;display:none;}
+.cfo-panel-body.open{display:block;}
+.context-block{background:var(--canvas);border:1px solid var(--rule);border-radius:6px;padding:12px 14px;font-family:var(--mono);font-size:10px;color:var(--ink2);white-space:pre-wrap;line-height:1.7;max-height:280px;overflow-y:auto;}
+.cfo-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;}
+
+/* ── PLUGIN SETUP ─── */
+.setup-panel{background:var(--paper);border:1px solid var(--rule);border-radius:8px;overflow:hidden;margin-bottom:20px;}
+.setup-hdr{background:var(--canvas);padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;border-bottom:1px solid var(--rule);}
+.setup-hdr-title{font-family:var(--display);font-size:12px;font-weight:700;flex:1;}
+.setup-body{padding:16px;display:none;}
+.setup-body.open{display:block;}
+.setup-step{display:flex;gap:12px;margin-bottom:14px;}
+.step-num{width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-body{flex:1;}
+.step-title{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:3px;}
+.step-desc{font-size:11px;color:var(--ink2);line-height:1.6;}
+.code-block{background:var(--canvas);border:1px solid var(--rule);border-radius:4px;padding:10px 12px;font-family:var(--mono);font-size:10px;color:var(--ink2);white-space:pre;overflow-x:auto;margin-top:6px;line-height:1.6;}
+
+/* ── ENTITY CONFIG ─── */
+.config-panel{background:var(--paper);border:1px solid var(--rule);border-radius:8px;overflow:hidden;margin-bottom:20px;}
+.config-hdr{background:var(--canvas);padding:12px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;border-bottom:1px solid var(--rule);}
+.config-hdr-title{font-family:var(--display);font-size:12px;font-weight:700;flex:1;}
+.config-body{padding:16px;display:none;}
+.config-body.open{display:block;}
+.config-entity-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;}
+.config-entity-row input{padding:5px 8px;border:1px solid var(--rule);border-radius:4px;font-size:11px;font-family:var(--body);background:var(--paper);}
+.config-entity-row input.name-f{flex:1;}
+.config-entity-row input.due-f{width:60px;text-align:center;}
+.config-entity-row label{font-size:10px;color:var(--ink3);white-space:nowrap;}
+
+/* ── HISTORY STRIP ─── */
+.history-strip{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px;}
+.hist-card{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:10px 14px;min-width:130px;}
+.hist-period{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:6px;}
+.hist-bar{height:6px;background:var(--rule2);border-radius:3px;overflow:hidden;margin-bottom:6px;}
+.hist-fill{height:100%;border-radius:3px;transition:width .4s var(--ease);}
+.hist-counts{font-family:var(--mono);font-size:10px;color:var(--ink3);}
+
+/* ── TOAST ─── */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:6px;font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;}
+
+select{padding:3px 7px;border:1px solid var(--rule);border-radius:4px;font-size:11px;font-family:var(--body);background:var(--paper);color:var(--ink);}
+</style>
+</head>
+<body>
+
+<div class="app-bar">
+  <a class="app-bar-back" href="/">← Home</a>
+  <div class="app-bar-title">📋 Entity Reporting</div>
+  <div class="app-bar-actions">
+    <span id="last-sync" style="font-size:10px;color:var(--ink3)"></span>
+    <button class="btn" onclick="loadData()">⟳ Refresh</button>
+    <button class="btn primary" onclick="openCFOContext()">▶ CFO Review</button>
+  </div>
+</div>
+
+<div class="sumbar" id="sumbar">
+  <div class="si"><span class="si-l">Period</span><span class="si-v" id="sum-period">—</span></div>
+  <div class="si"><span class="si-l">Complete</span><span class="si-v green" id="sum-complete">—</span></div>
+  <div class="si"><span class="si-l">Overdue</span><span class="si-v red" id="sum-overdue">—</span></div>
+  <div class="si"><span class="si-l">Pending</span><span class="si-v amber" id="sum-pending">—</span></div>
+  <div class="si"><span class="si-l">Entities</span><span class="si-v" id="sum-total">—</span></div>
+  <div class="sumbar-spacer"></div>
+  <div id="sum-last-update" style="font-size:10px;color:var(--ink3)"></div>
+</div>
+
+<div class="period-nav">
+  <button class="period-nav-btn" onclick="shiftPeriod(-1)">‹</button>
+  <div class="period-label" id="period-label">—</div>
+  <button class="period-nav-btn" onclick="shiftPeriod(1)">›</button>
+  <div class="period-tabs" id="period-tabs"></div>
+</div>
+
+<div class="content">
+
+  <!-- Entity table -->
+  <div class="er-table-wrap" id="er-table-wrap">
+    <div class="er-table-header">
+      <div>Entity</div><div>Due Date</div><div>Status</div>
+      <div>Delivered</div><div>Notes / Drive</div><div style="text-align:right">Actions</div>
+    </div>
+    <div id="er-rows"><div class="er-empty">Loading…</div></div>
+  </div>
+
+  <!-- CFO context panel -->
+  <div class="cfo-panel">
+    <div class="cfo-panel-hdr" onclick="togglePanel('cfo-body')">
+      <span style="font-size:16px">🤖</span>
+      <div class="cfo-panel-hdr-title">CFO Review Context</div>
+      <span style="font-size:11px;opacity:.7">Click to expand — copy this into your CFO agent session</span>
+      <span id="cfo-chev" style="margin-left:8px;font-size:10px;opacity:.6">▼</span>
+    </div>
+    <div class="cfo-panel-body" id="cfo-body">
+      <div class="context-block" id="cfo-context-text">Loading…</div>
+      <div class="cfo-actions">
+        <button class="btn primary" onclick="copyContext()">Copy Context</button>
+        <button class="btn" onclick="openCoWork()">Open Co-Work →</button>
+        <span style="font-size:10px;color:var(--ink3);align-self:center">Paste this into your CFO plugin to start a cross-entity financial review</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- History strip -->
+  <div style="font-family:var(--display);font-size:11px;font-weight:700;color:var(--ink2);text-transform:uppercase;letter-spacing:.07em;margin-bottom:8px">Recent Periods</div>
+  <div class="history-strip" id="history-strip"></div>
+
+  <!-- Entity config panel -->
+  <div class="config-panel">
+    <div class="config-hdr" onclick="togglePanel('config-body')">
+      <span style="font-size:14px">⚙</span>
+      <div class="config-hdr-title">Entity Setup — Which companies report and when</div>
+      <span id="config-chev" style="font-size:10px;color:var(--ink3)">▼</span>
+    </div>
+    <div class="config-body" id="config-body">
+      <div id="config-entity-list" style="margin-bottom:12px"></div>
+      <button class="btn" onclick="addConfigRow()" style="margin-right:8px">+ Add Entity</button>
+      <button class="btn primary" onclick="saveConfig()">Save Entity List</button>
+      <div style="font-size:10px;color:var(--ink3);margin-top:8px">
+        "Due Day" = day of the following month when financials are expected. E.g. 15 = 15th of the month after period close.
+      </div>
+    </div>
+  </div>
+
+  <!-- CFO plugin setup instructions -->
+  <div class="setup-panel">
+    <div class="setup-hdr" onclick="togglePanel('setup-body')">
+      <span style="font-size:14px">📡</span>
+      <div class="setup-hdr-title">CFO Agent Setup — How to train your Co-Work plugin to auto-update this dashboard</div>
+      <span id="setup-chev" style="font-size:10px;color:var(--ink3)">▼</span>
+    </div>
+    <div class="setup-body" id="setup-body">
+      <div class="setup-step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Add this instruction to your CFO plugin in Co-Work</div>
+          <div class="step-desc">Tell the plugin to run daily and check for financial report delivery emails. Paste this into the plugin's system prompt or instructions field:</div>
+          <div class="code-block" id="plugin-instruction-block">Loading…</div>
+          <button class="btn" onclick="copyPluginInstructions()" style="margin-top:8px">Copy Instructions</button>
+        </div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">API endpoint the plugin calls to update each report</div>
+          <div class="step-desc">The plugin sends a POST request for each entity it finds financials for:</div>
+          <div class="code-block" id="api-endpoint-block">Loading…</div>
+        </div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Schedule the check in Co-Work</div>
+          <div class="step-desc">Use Co-Work's scheduling feature to run this check every morning at 8 AM. The plugin will scan for any new financial emails since the last check, update statuses, and log a summary. After deploy, manually trigger once to backfill any current-month reports already delivered.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+
+// ── State ─────────────────────────────────────────────────────────────────
+let DATA = { config: { entities: [] }, reports: {} };
+let CUR_YM = todayYM();
+let EDITING = null; // entity name currently open in drawer
+
+// ── Date helpers ──────────────────────────────────────────────────────────
+function todayYM(){ return new Date().toISOString().slice(0,7); }
+function ymToLabel(ym){
+  const [y,m] = ym.split('-');
+  return new Date(+y,+m-1,1).toLocaleString('en',{month:'long',year:'numeric'});
+}
+function ymShift(ym, delta){
+  const [y,m] = ym.split('-').map(Number);
+  let ny = y, nm = m + delta;
+  if(nm < 1){ nm += 12; ny--; } else if(nm > 12){ nm -= 12; ny++; }
+  return `${ny}-${String(nm).padStart(2,'0')}`;
+}
+function dueDate(ym, dueDay){
+  // Due on dueDay of the month following ym
+  const [y,m] = ym.split('-').map(Number);
+  let ny = y, nm = m + 1;
+  if(nm > 12){ nm = 1; ny++; }
+  return `${ny}-${String(nm).padStart(2,'0')}-${String(dueDay).padStart(2,'0')}`;
+}
+function fmtDate(d){
+  if(!d) return '—';
+  const dt = new Date(d+'T12:00:00');
+  return dt.toLocaleString('en',{month:'short',day:'numeric'});
+}
+function daysFromToday(dateStr){
+  const today = new Date(); today.setHours(0,0,0,0);
+  const due   = new Date(dateStr+'T00:00:00');
+  return Math.round((due-today)/(1000*60*60*24));
+}
+
+// ── Status computation ────────────────────────────────────────────────────
+function computeStatus(entity, ym, stored){
+  if(stored && stored.status === 'complete') return 'complete';
+  const dd = dueDate(ym, entity.dueDay || 15);
+  const days = daysFromToday(dd);
+  if(days < 0) return 'overdue';
+  if(days <= 3) return 'due-soon';
+  return 'pending';
+}
+function statusLabel(s){
+  return {complete:'✓ Complete', overdue:'⚠ Overdue', 'due-soon':'⏰ Due Soon', pending:'◷ Pending'}[s] || s;
+}
+
+// ── Load / save ───────────────────────────────────────────────────────────
+async function loadData(){
+  try {
+    const r = await fetch('/api/entity-reporting');
+    DATA = await r.json();
+    const upd = document.getElementById('last-sync');
+    if(upd) upd.textContent = 'Synced ' + new Date().toLocaleTimeString('en',{hour:'numeric',minute:'2-digit'});
+  } catch(e){ console.error(e); }
+  render();
+}
+
+async function postUpdate(payload){
+  const r = await fetch('/api/entity-reporting', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
+  });
+  return r.json();
+}
+
+async function saveConfig(){
+  const rows = document.querySelectorAll('#config-entity-list .config-entity-row');
+  const entities = [];
+  rows.forEach(r=>{
+    const name = r.querySelector('.name-f').value.trim();
+    const due  = parseInt(r.querySelector('.due-f').value) || 15;
+    if(name) entities.push({name, dueDay:due, active:true});
+  });
+  await fetch('/api/entity-reporting/config',{
+    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({entities})
+  });
+  DATA.config.entities = entities;
+  showToast('Entity list saved');
+  render();
+}
+
+// ── Period navigation ─────────────────────────────────────────────────────
+function shiftPeriod(d){ CUR_YM = ymShift(CUR_YM, d); render(); }
+function selectPeriod(ym){ CUR_YM = ym; render(); }
+
+// ── Edit drawer ───────────────────────────────────────────────────────────
+function openEdit(entityName){
+  if(EDITING === entityName){ closeEdit(); return; }
+  EDITING = entityName;
+  render();
+  const drawerId = 'drawer-' + entityName.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+  const el = document.getElementById(drawerId);
+  if(el){ el.scrollIntoView({behavior:'smooth',block:'nearest'}); }
+}
+function closeEdit(){ EDITING = null; render(); }
+
+async function saveEdit(entityName){
+  const drawerId = 'drawer-' + entityName.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+  const el = document.getElementById(drawerId);
+  if(!el) return;
+  const status        = el.querySelector('[data-f="status"]').value;
+  const driveLink     = el.querySelector('[data-f="driveLink"]').value.trim() || null;
+  const deliveredDate = el.querySelector('[data-f="deliveredDate"]').value || null;
+  const notes         = el.querySelector('[data-f="notes"]').value.trim();
+  await postUpdate({ period:CUR_YM, entity:entityName, status, driveLink, deliveredDate, notes });
+  if(!DATA.reports[CUR_YM]) DATA.reports[CUR_YM] = {};
+  DATA.reports[CUR_YM][entityName] = { status, driveLink, deliveredDate, notes, updatedAt:new Date().toISOString() };
+  EDITING = null;
+  render();
+  showToast('Saved');
+}
+
+// ── Render ────────────────────────────────────────────────────────────────
+function render(){
+  renderPeriodNav();
+  renderTable();
+  renderSummary();
+  renderHistory();
+  renderCFOContext();
+  renderConfigPanel();
+  renderSetupInstructions();
+}
+
+function renderPeriodNav(){
+  document.getElementById('period-label').textContent = ymToLabel(CUR_YM);
+  // Show last 6 months as tabs
+  const tabs = document.getElementById('period-tabs');
+  const prev5 = [-5,-4,-3,-2,-1].map(d=>ymShift(CUR_YM,d));
+  const all = [...prev5, CUR_YM];
+  tabs.innerHTML = all.map(ym=>{
+    const [y,m] = ym.split('-');
+    const lbl = new Date(+y,+m-1,1).toLocaleString('en',{month:'short'});
+    const isActive = ym === CUR_YM;
+    return `<div class="period-tab${isActive?' active':''}" onclick="selectPeriod('${ym}')">${lbl} '${y.slice(2)}</div>`;
+  }).join('');
+}
+
+function renderTable(){
+  const entities = DATA.config.entities || [];
+  const reports  = (DATA.reports || {})[CUR_YM] || {};
+
+  if(!entities.length){
+    document.getElementById('er-rows').innerHTML =
+      `<div class="er-empty">No entities configured. Use the Entity Setup panel below to add your reporting companies.</div>`;
+    return;
+  }
+
+  let html = '';
+  entities.filter(e=>e.active!==false).forEach(ent=>{
+    const stored = reports[ent.name] || {};
+    const status = computeStatus(ent, CUR_YM, stored);
+    const dd     = dueDate(CUR_YM, ent.dueDay || 15);
+    const days   = daysFromToday(dd);
+    const drawerId = 'drawer-' + ent.name.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
+    const isEditing = EDITING === ent.name;
+
+    // Days label
+    let daysHtml='', daysClass='ok';
+    if(status==='complete'){
+      daysHtml=`<span class="er-days done">✓ done</span>`;
+    } else if(days<0){
+      daysHtml=`<span class="er-days overdue">${Math.abs(days)}d late</span>`;
+    } else if(days<=3){
+      daysHtml=`<span class="er-days due-soon">${days}d left</span>`;
+    } else {
+      daysHtml=`<span class="er-days ok">${days}d left</span>`;
+    }
+
+    const driveBtn = stored.driveLink
+      ? `<a href="${stored.driveLink}" target="_blank" class="icon-btn link-btn" title="Open Drive">📁</a>`
+      : `<span class="icon-btn" style="opacity:.3;cursor:default" title="No link yet">📁</span>`;
+
+    html += `<div class="er-row">
+      <div class="er-entity" title="${ent.name}">${ent.name}</div>
+      <div class="er-due">${fmtDate(dd)} ${daysHtml}</div>
+      <div><span class="status-chip ${status}">${statusLabel(status)}</span></div>
+      <div class="er-delivered">${fmtDate(stored.deliveredDate)}</div>
+      <div class="er-notes" title="${stored.notes||''}">${stored.notes||'—'}</div>
+      <div class="er-actions">${driveBtn}
+        <button class="icon-btn${isEditing?' active':''}" onclick="openEdit('${ent.name}')" title="Edit">✏</button>
+      </div>
+    </div>`;
+
+    // Inline edit drawer
+    if(isEditing){
+      const s = stored;
+      html += `<div class="edit-drawer open" id="${drawerId}">
+        <div class="ef">
+          <label>Status</label>
+          <select data-f="status">
+            <option value="pending"${(!s.status||s.status==='pending')?' selected':''}>Pending</option>
+            <option value="complete"${s.status==='complete'?' selected':''}>Complete</option>
+            <option value="overdue"${s.status==='overdue'?' selected':''}>Overdue</option>
+          </select>
+        </div>
+        <div class="ef ef-url">
+          <label>Drive Link</label>
+          <input type="url" data-f="driveLink" value="${s.driveLink||''}" placeholder="https://drive.google.com/…">
+        </div>
+        <div class="ef">
+          <label>Delivered Date</label>
+          <input type="date" data-f="deliveredDate" value="${s.deliveredDate||''}">
+        </div>
+        <div class="ef" style="min-width:180px">
+          <label>Notes</label>
+          <input type="text" data-f="notes" value="${s.notes||''}" placeholder="e.g. Delivered by John">
+        </div>
+        <div class="ef" style="padding-top:14px;display:flex;gap:6px">
+          <button class="btn primary" onclick="saveEdit('${ent.name}')">Save</button>
+          <button class="btn" onclick="closeEdit()">Cancel</button>
+        </div>
+      </div>`;
+    }
+  });
+
+  document.getElementById('er-rows').innerHTML = html;
+}
+
+function renderSummary(){
+  const entities = (DATA.config.entities||[]).filter(e=>e.active!==false);
+  const reports  = (DATA.reports||{})[CUR_YM] || {};
+  let complete=0, overdue=0, pending=0;
+  entities.forEach(ent=>{
+    const s = computeStatus(ent, CUR_YM, reports[ent.name]||{});
+    if(s==='complete') complete++;
+    else if(s==='overdue') overdue++;
+    else pending++;
+  });
+  document.getElementById('sum-period').textContent   = ymToLabel(CUR_YM);
+  document.getElementById('sum-complete').textContent = `${complete} of ${entities.length}`;
+  document.getElementById('sum-overdue').textContent  = overdue;
+  document.getElementById('sum-pending').textContent  = pending + (entities.length-complete-overdue-pending>0?` +${entities.length-complete-overdue-pending}`:'');
+  document.getElementById('sum-total').textContent    = entities.length;
+
+  // Find most recent update
+  const allUpdates = Object.values(reports).map(r=>r.updatedAt).filter(Boolean).sort();
+  if(allUpdates.length){
+    const d = new Date(allUpdates[allUpdates.length-1]);
+    document.getElementById('sum-last-update').textContent =
+      'Last updated by agent: ' + d.toLocaleString('en',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
+  }
+}
+
+function renderHistory(){
+  const entities = (DATA.config.entities||[]).filter(e=>e.active!==false);
+  const strip = document.getElementById('history-strip');
+  const months = [-5,-4,-3,-2,-1].map(d=>ymShift(CUR_YM,d));
+  strip.innerHTML = months.map(ym=>{
+    const reports = (DATA.reports||{})[ym] || {};
+    const total = entities.length;
+    let complete = 0;
+    entities.forEach(e=>{ if(computeStatus(e,ym,reports[e.name]||{}) === 'complete') complete++; });
+    const pct = total ? Math.round(complete/total*100) : 0;
+    const [y,m] = ym.split('-');
+    const lbl = new Date(+y,+m-1,1).toLocaleString('en',{month:'short',year:'numeric'});
+    const fillColor = pct===100?'var(--green)':pct>=50?'var(--gold)':'var(--red)';
+    return `<div class="hist-card" style="cursor:pointer" onclick="selectPeriod('${ym}')">
+      <div class="hist-period">${lbl}</div>
+      <div class="hist-bar"><div class="hist-fill" style="width:${pct}%;background:${fillColor}"></div></div>
+      <div class="hist-counts">${complete}/${total} complete</div>
+    </div>`;
+  }).join('');
+}
+
+function renderCFOContext(){
+  const entities = (DATA.config.entities||[]).filter(e=>e.active!==false);
+  const reports  = (DATA.reports||{})[CUR_YM] || {};
+  const period   = ymToLabel(CUR_YM);
+
+  const complete  = entities.filter(e=>computeStatus(e,CUR_YM,reports[e.name]||{})==='complete');
+  const overdue   = entities.filter(e=>computeStatus(e,CUR_YM,reports[e.name]||{})==='overdue');
+  const dueSoon   = entities.filter(e=>computeStatus(e,CUR_YM,reports[e.name]||{})==='due-soon');
+  const pending   = entities.filter(e=>computeStatus(e,CUR_YM,reports[e.name]||{})==='pending');
+
+  const fmtList = arr => arr.map(e=>{
+    const r = reports[e.name]||{};
+    let line = `  • ${e.name}`;
+    if(r.deliveredDate) line += ` — delivered ${fmtDate(r.deliveredDate)}`;
+    if(r.driveLink) line += ` [Drive: ${r.driveLink}]`;
+    if(r.notes) line += ` (${r.notes})`;
+    return line;
+  }).join('\n');
+
+  let ctx = `ENTITY REPORTING STATUS — ${period.toUpperCase()}\n`;
+  ctx += `Generated: ${new Date().toLocaleString('en',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}\n`;
+  ctx += `${'─'.repeat(56)}\n\n`;
+
+  ctx += `✅ COMPLETE (${complete.length}/${entities.length}):\n`;
+  ctx += complete.length ? fmtList(complete)+'\n' : '  (none yet)\n';
+  ctx += '\n';
+
+  if(overdue.length){
+    ctx += `⚠️  OVERDUE (${overdue.length}) — Action needed:\n`;
+    ctx += fmtList(overdue)+'\n\n';
+  }
+  if(dueSoon.length){
+    ctx += `⏰ DUE SOON (${dueSoon.length}):\n`;
+    ctx += fmtList(dueSoon)+'\n\n';
+  }
+  if(pending.length){
+    ctx += `◷ PENDING (${pending.length}):\n`;
+    ctx += fmtList(pending)+'\n\n';
+  }
+
+  ctx += `${'─'.repeat(56)}\n`;
+  ctx += `SUGGESTED REVIEW SEQUENCE:\n`;
+  complete.forEach((e,i)=>{
+    const r = reports[e.name]||{};
+    ctx += `  ${i+1}. Review ${e.name}`;
+    if(r.driveLink) ctx += ` → ${r.driveLink}`;
+    ctx += '\n';
+  });
+  if(complete.length > 1){
+    ctx += `  ${complete.length+1}. Cross-entity synthesis — compare GP margins, overhead rates, and cash positions across all entities\n`;
+  }
+  ctx += `\nBegin with entity-level reviews, then synthesize across the portfolio. Flag any anomalies, variances from prior month, or items requiring owner attention.`;
+
+  document.getElementById('cfo-context-text').textContent = ctx;
+}
+
+function renderConfigPanel(){
+  const entities = DATA.config.entities || [];
+  const list = document.getElementById('config-entity-list');
+  if(!entities.length){
+    list.innerHTML = `<div style="font-size:11px;color:var(--ink3);margin-bottom:8px">No entities yet. Add your reporting companies below.</div>`;
+    return;
+  }
+  list.innerHTML = entities.map((e,i)=>`
+    <div class="config-entity-row">
+      <input class="name-f" type="text" value="${e.name||''}" placeholder="Entity name">
+      <label>Due day</label>
+      <input class="due-f" type="number" min="1" max="31" value="${e.dueDay||15}">
+      <label style="color:var(--ink3)">of following month</label>
+      <button class="btn ghost" onclick="removeConfigRow(this)" style="padding:2px 6px;font-size:11px">✕</button>
+    </div>`).join('');
+}
+
+function addConfigRow(){
+  const list = document.getElementById('config-entity-list');
+  const div = document.createElement('div');
+  div.className = 'config-entity-row';
+  div.innerHTML = `<input class="name-f" type="text" placeholder="Entity name">
+    <label>Due day</label>
+    <input class="due-f" type="number" min="1" max="31" value="15">
+    <label style="color:var(--ink3)">of following month</label>
+    <button class="btn ghost" onclick="removeConfigRow(this)" style="padding:2px 6px;font-size:11px">✕</button>`;
+  list.appendChild(div);
+}
+
+function removeConfigRow(btn){ btn.closest('.config-entity-row').remove(); }
+
+function renderSetupInstructions(){
+  const base = window.location.origin;
+  const instr = `Add these instructions to your CFO plugin's daily task in Co-Work:
+
+---
+DAILY TASK: Entity Reporting Sync
+
+Each morning:
+1. Search Gmail for emails containing month-end financials from the accounting team.
+   Look for subjects like "Month End", "Financial Statements", "Financials", or
+   attachments like P&L, Balance Sheet, Trial Balance.
+
+2. For each email found, identify:
+   - Which entity the financials are for (match to entity names in the API)
+   - The period they cover (YYYY-MM format)
+   - The Google Drive link if referenced, or search Drive for the file
+
+3. For each confirmed delivery, POST to the planning tools API:
+   POST ${base}/api/entity-reporting
+   Content-Type: application/json
+   Body: {
+     "period": "YYYY-MM",
+     "entity": "<exact entity name>",
+     "status": "complete",
+     "driveLink": "<Google Drive URL or null>",
+     "deliveredDate": "YYYY-MM-DD",
+     "notes": "<sender name or other context>"
+   }
+
+4. After all updates, POST a summary to confirm what was synced.
+
+Entity names to look for:
+${(DATA.config.entities||[]).map(e=>`  - ${e.name} (due ${e.dueDay||15}th of following month)`).join('\n')||'  (configure entities first)'}
+---`;
+
+  document.getElementById('plugin-instruction-block').textContent = instr;
+
+  const apiExample = `POST ${base}/api/entity-reporting
+Content-Type: application/json
+
+{
+  "period":        "2026-05",
+  "entity":        "Stitser Built",
+  "status":        "complete",
+  "driveLink":     "https://drive.google.com/drive/folders/…",
+  "deliveredDate": "2026-05-14",
+  "notes":         "Delivered by accounting@stitserbuilt.com"
+}
+
+→ Response: { "ok": true }
+
+Status values: "complete" | "pending"
+Period format: "YYYY-MM"  (e.g. "2026-05" for May 2026)
+Entity names must match exactly (case-sensitive).`;
+
+  document.getElementById('api-endpoint-block').textContent = apiExample;
+}
+
+// ── UI helpers ────────────────────────────────────────────────────────────
+function togglePanel(id){
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+  const chevId = id.replace('-body','') + '-chev';
+  const chev = document.getElementById(chevId);
+  if(chev) chev.textContent = el.classList.contains('open') ? '▲' : '▼';
+}
+
+function openCFOContext(){
+  const body = document.getElementById('cfo-body');
+  body.classList.add('open');
+  document.getElementById('cfo-chev').textContent = '▲';
+  body.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function copyContext(){
+  const txt = document.getElementById('cfo-context-text').textContent;
+  navigator.clipboard.writeText(txt).then(()=>showToast('Context copied to clipboard'));
+}
+
+function copyPluginInstructions(){
+  const txt = document.getElementById('plugin-instruction-block').textContent;
+  navigator.clipboard.writeText(txt).then(()=>showToast('Instructions copied'));
+}
+
+function openCoWork(){
+  // Update this URL to your Co-Work instance
+  window.open('https://cowork.stitserbuilt.com', '_blank');
+}
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ── Boot ─────────────────────────────────────────────────────────────────
+loadData();
+</script>
+</body>
+</html>
