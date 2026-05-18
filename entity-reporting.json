@@ -1,0 +1,34 @@
+{
+  "config": {
+    "entities": [
+      { "name": "1000-Stitser BUILT LLC", "dueDay": 15, "active": true },
+      { "name": "1100-KCS Homes LLC dba BUILT.", "dueDay": 15, "active": true },
+      { "name": "1110-Coldstream Shopping Center LLC", "dueDay": 15, "active": true },
+      { "name": "1115-PC-1 Investments LLC", "dueDay": 15, "active": true },
+      { "name": "1120-Riverside Development LLC", "dueDay": 15, "active": true },
+      { "name": "1125-Assiduity LLC", "dueDay": 15, "active": true },
+      { "name": "1130-Slide Side Junction LLC", "dueDay": 15, "active": true },
+      { "name": "1200-Realm Constructors LLC", "dueDay": 15, "active": true },
+      { "name": "1320-Stitser Properties Inc.", "dueDay": 15, "active": true },
+      { "name": "1325-Clint R Stitser, LLC", "dueDay": 15, "active": true },
+      { "name": "1330-CRF, LLC", "dueDay": 15, "active": true },
+      { "name": "1400-Buckster LLC dba The Eddy", "dueDay": 15, "active": true },
+      { "name": "1500-PC-1 Developers LLC", "dueDay": 15, "active": true },
+      { "name": "1600-BUILT Investment Main", "dueDay": 15, "active": true },
+      { "name": "1605-BUILT Investment Series 1", "dueDay": 15, "active": true },
+      { "name": "1610-BUILT Investment Series 2", "dueDay": 15, "active": true },
+      { "name": "1615-BUILT Investment Series 3", "dueDay": 15, "active": true },
+      { "name": "1620-BUILT Investment Series 4", "dueDay": 15, "active": true },
+      { "name": "1625-BUILT Investment Series 5", "dueDay": 15, "active": true },
+      { "name": "1630-BUILT Investment Series 6", "dueDay": 15, "active": true },
+      { "name": "1635-BUILT Investment Series 7", "dueDay": 15, "active": true },
+      { "name": "1640-Built Investment Series 8", "dueDay": 15, "active": true },
+      { "name": "Mayberry Gardens, LLC", "dueDay": 15, "active": true },
+      { "name": "Cal Ave Studios, LLC", "dueDay": 15, "active": true },
+      { "name": "Canyon's Edge Apartments, LLC", "dueDay": 15, "active": true },
+      { "name": "Granite Perfection, LLC", "dueDay": 15, "active": true },
+      { "name": "V-COLD-Cold Stream Properties LLC", "dueDay": 15, "active": true }
+    ]
+  },
+  "reports": {}
+}
