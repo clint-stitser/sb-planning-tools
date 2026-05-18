@@ -285,7 +285,10 @@ function ymShift(ym, delta){
   return `${ny}-${String(nm).padStart(2,'0')}`;
 }
 function dueDate(ym, dueDay){
-  // Due on dueDay of the month following ym
+  // Check for a one-time period override first
+  const overrides = (DATA.config && DATA.config.periodOverrides) || {};
+  if(overrides[ym]) return overrides[ym];
+  // Default: dueDay of the month following ym
   const [y,m] = ym.split('-').map(Number);
   let ny = y, nm = m + 1;
   if(nm > 12){ nm = 1; ny++; }
@@ -342,7 +345,8 @@ async function saveConfig(){
     if(name) entities.push({name, dueDay:due, active:true});
   });
   await fetch('/api/entity-reporting/config',{
-    method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({entities})
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({entities, periodOverrides: DATA.config.periodOverrides || {}})
   });
   DATA.config.entities = entities;
   showToast('Entity list saved');

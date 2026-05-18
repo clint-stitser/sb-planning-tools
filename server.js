@@ -104,12 +104,14 @@ app.post('/api/entity-reporting', express.json(), (req, res) => {
   res.json({ ok: true });
 });
 
-// POST /api/entity-reporting/config   — save entity list + due-day settings
+// POST /api/entity-reporting/config   — save entity list + due-day settings + period overrides
 app.post('/api/entity-reporting/config', express.json(), (req, res) => {
-  const { entities } = req.body || {};
+  const { entities, periodOverrides } = req.body || {};
   if (!Array.isArray(entities)) return res.status(400).json({ error: 'entities array required' });
   const data = loadReporting();
   data.config.entities = entities;
+  if (periodOverrides && typeof periodOverrides === 'object')
+    data.config.periodOverrides = periodOverrides;
   saveReporting(data);
   res.json({ ok: true });
 });

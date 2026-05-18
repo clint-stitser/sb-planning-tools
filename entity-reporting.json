@@ -1,5 +1,8 @@
 {
   "config": {
+    "periodOverrides": {
+      "2026-04": "2026-05-18"
+    },
     "entities": [
       { "name": "1000-Stitser BUILT LLC", "dueDay": 15, "active": true },
       { "name": "1100-KCS Homes LLC dba BUILT.", "dueDay": 15, "active": true },
