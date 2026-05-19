@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stitser BUILT — Platform Walkthrough</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --black: #0a0a0a;
+  --off-black: #111;
+  --dark: #1a1a1a;
+  --mid: #2a2a2a;
+  --border: #333;
+  --muted: #555;
+  --steel: #888;
+  --light: #ccc;
+  --white: #f4f2ee;
+  --gold: #c9a84c;
+  --gold-light: #e8c96a;
+  --teal: #2d7d6e;
+  --teal-light: #3da891;
+}
+
+html, body { height: 100%; font-size: 14px; }
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 300;
+  overflow: hidden;
+}
+
+/* ── SHELL ── */
+.shell {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── TOP BAR ── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 40px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  gap: 20px;
+}
+.topbar-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: 0.1em;
+  color: var(--white);
+  flex-shrink: 0;
+}
+.topbar-logo span { color: var(--gold); }
+
+/* ── PROGRESS BAR ── */
+.progress-track {
+  flex: 1;
+  max-width: 600px;
+  height: 3px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--gold);
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(.16,1,.3,1);
+}
+
+.step-counter {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.step-counter span { color: var(--gold); }
+
+/* ── SLIDE AREA ── */
+.slides {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 48px 60px 32px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(40px);
+  transition: opacity 0.35s cubic-bezier(.16,1,.3,1), transform 0.35s cubic-bezier(.16,1,.3,1);
+}
+.slide.active {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateX(0);
+}
+.slide.exit-left {
+  opacity: 0;
+  transform: translateX(-40px);
+}
+
+/* ── SLIDE HEADER ── */
+.slide-tier {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+.slide-headline {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  letter-spacing: 0.08em;
+  line-height: 1.05;
+  color: var(--white);
+  margin-bottom: 6px;
+}
+.slide-why {
+  font-size: 0.9rem;
+  color: var(--steel);
+  max-width: 680px;
+  line-height: 1.7;
+  margin-bottom: 32px;
+  font-style: italic;
+}
+
+/* ── CONTENT BLOCKS ── */
+.slide-content {
+  flex: 1;
+  overflow: auto;
+}
+
+/* Strategy banner */
+.banner {
+  background: var(--gold);
+  color: var(--black);
+  padding: 24px 32px;
+  max-width: 780px;
+  margin-bottom: 20px;
+}
+.banner-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  letter-spacing: 0.1em;
+}
+.banner-body {
+  font-size: 0.85rem;
+  font-weight: 500;
+  line-height: 1.65;
+  margin-top: 8px;
+  opacity: 0.85;
+}
+
+/* Two col */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+  background: var(--border);
+  max-width: 780px;
+}
+.cell {
+  background: var(--dark);
+  padding: 20px 24px;
+}
+.cell-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  color: var(--gold-light);
+  margin-bottom: 8px;
+}
+.cell-body {
+  font-size: 0.82rem;
+  color: var(--light);
+  line-height: 1.65;
+}
+
+/* Opportunity box */
+.opp-box {
+  background: var(--dark);
+  border-left: 4px solid var(--teal);
+  padding: 22px 28px;
+  max-width: 780px;
+}
+.opp-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  color: var(--teal-light);
+  margin-bottom: 8px;
+}
+.opp-body {
+  font-size: 0.85rem;
+  color: var(--light);
+  line-height: 1.7;
+}
+
+/* Product grid */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  background: var(--border);
+}
+.product-card {
+  background: var(--dark);
+  padding: 18px 16px 22px;
+  position: relative;
+  overflow: hidden;
+  cursor: default;
+  transition: background 0.2s;
+}
+.product-card:hover { background: var(--mid); }
+.product-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: var(--teal);
+}
+.product-card:last-child::before { background: var(--muted); }
+.product-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  margin-bottom: 8px;
+}
+.product-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  color: var(--white);
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+.product-desc {
+  font-size: 0.72rem;
+  color: var(--steel);
+  line-height: 1.6;
+}
+.product-tag {
+  display: inline-block;
+  margin-top: 10px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--teal-light);
+  border: 1px solid var(--teal);
+  padding: 2px 6px;
+}
+.product-card:last-child .product-tag {
+  color: var(--steel);
+  border-color: var(--muted);
+}
+
+/* Situations */
+.situations-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  background: var(--border);
+  max-width: 900px;
+}
+.situation {
+  background: var(--off-black);
+  padding: 18px 16px;
+  text-align: center;
+  position: relative;
+}
+.situation-num {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+  margin-bottom: 6px;
+}
+.situation-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  color: var(--light);
+}
+.situation-detail {
+  font-size: 0.7rem;
+  color: var(--muted);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+.situation-arrow {
+  position: absolute;
+  right: -1px; top: 50%;
+  transform: translateY(-50%);
+  width: 0; height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-left: 8px solid var(--gold);
+  z-index: 2;
+}
+.situation:last-child .situation-arrow { display: none; }
+
+/* Pillars */
+.pillars-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  background: var(--border);
+  max-width: 900px;
+}
+.pillar {
+  background: var(--mid);
+  padding: 24px 18px;
+  text-align: center;
+}
+.pillar-icon {
+  font-size: 1.6rem;
+  margin-bottom: 10px;
+  display: block;
+}
+.pillar-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.12em;
+  color: var(--gold-light);
+}
+.pillar-desc {
+  font-size: 0.7rem;
+  color: var(--steel);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+/* Reflection slide */
+.reflection-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  max-width: 900px;
+}
+.reflection-card {
+  background: var(--dark);
+  border: 1px solid var(--border);
+  padding: 20px;
+  border-radius: 2px;
+}
+.reflection-q {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  color: var(--gold-light);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+.reflection-hint {
+  font-size: 0.75rem;
+  color: var(--steel);
+  line-height: 1.6;
+}
+
+/* Summary complete */
+.complete-box {
+  background: var(--dark);
+  border: 1px solid var(--gold);
+  padding: 32px 40px;
+  max-width: 600px;
+  margin-bottom: 24px;
+}
+.complete-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  margin-bottom: 12px;
+}
+.complete-body {
+  font-size: 0.85rem;
+  color: var(--light);
+  line-height: 1.7;
+}
+.back-home {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--steel);
+  border: 1px solid var(--border);
+  padding: 10px 20px;
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  transition: all 0.2s;
+}
+.back-home:hover {
+  color: var(--white);
+  border-color: var(--steel);
+}
+
+/* ── NAV FOOTER ── */
+.nav-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 60px;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.step-dots {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.dot.active {
+  background: var(--gold);
+  width: 20px;
+  border-radius: 3px;
+}
+.dot.visited { background: var(--muted); }
+
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--steel);
+  border: 1px solid var(--border);
+  padding: 10px 20px;
+  background: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.nav-btn:hover:not(:disabled) {
+  color: var(--white);
+  border-color: var(--steel);
+}
+.nav-btn:disabled { opacity: 0.25; cursor: default; }
+.nav-btn.primary {
+  color: var(--black);
+  background: var(--gold);
+  border-color: var(--gold);
+}
+.nav-btn.primary:hover {
+  background: var(--gold-light);
+  border-color: var(--gold-light);
+  color: var(--black);
+}
+
+/* Keyboard hint */
+.kb-hint {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--muted);
+  letter-spacing: 0.12em;
+  text-align: center;
+}
+kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  border: 1px solid var(--border);
+  border-radius: 2px;
+  font-size: 0.58rem;
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-logo">Stitser <span>BUILT.</span></div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:0%"></div>
+    </div>
+    <div class="step-counter">Step <span id="stepNum">1</span> of <span id="stepTotal">7</span></div>
+  </div>
+
+  <!-- SLIDES -->
+  <div class="slides" id="slides">
+
+    <!-- SLIDE 0: INTRO -->
+    <div class="slide active" data-index="0">
+      <div class="slide-tier">Platform Walkthrough</div>
+      <div class="slide-headline">How Stitser BUILT Works</div>
+      <div class="slide-why">This walkthrough covers the six tiers of our platform — from core strategy down to project execution. Understanding how these layers connect is what separates someone who works here from someone who gets it.</div>
+      <div class="slide-content">
+        <div style="display:flex;flex-direction:column;gap:12px;max-width:640px;">
+          <div style="background:var(--dark);border-left:3px solid var(--gold);padding:16px 20px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em;color:var(--gold-light);margin-bottom:4px;">What You'll Learn</div>
+            <div style="font-size:0.82rem;color:var(--light);line-height:1.7;">Why we win deals others can't. What we must be great at to stay competitive. Who our market is and why we're right for them. Which product lines we run and how each one works. How a deal moves from prospecting to asset management. What every project must nail to succeed.</div>
+          </div>
+          <div style="background:var(--dark);border-left:3px solid var(--teal);padding:16px 20px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em;color:var(--teal-light);margin-bottom:4px;">How to Use This</div>
+            <div style="font-size:0.82rem;color:var(--light);line-height:1.7;">Use the arrow keys or buttons below to move through each tier. Take a beat on each one — there's a reflection exercise at the end to lock it in.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 1: CORE STRATEGY -->
+    <div class="slide" data-index="1">
+      <div class="slide-tier">Tier 1 — Foundation</div>
+      <div class="slide-headline">Core Strategy</div>
+      <div class="slide-why">This is the "why we win" tier. Our moat isn't capital — it's relationships, local knowledge, and experience in a deal size that bigger players ignore. That combination is hard to replicate fast.</div>
+      <div class="slide-content">
+        <div class="banner">
+          <div class="banner-title">Market Focused. Product Diverse.</div>
+          <div class="banner-body">Long-time operators deeply connected to jurisdictions, the industry, and trade partners — creating deal flow in a category and deal size that is less competitive than others. High barrier to entry. Built-in moat.</div>
+        </div>
+        <div style="margin-top:20px;background:var(--dark);border:1px solid var(--border);padding:16px 20px;max-width:780px;">
+          <div style="font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Why This Matters</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.08em;color:var(--gold-light);margin-bottom:4px;">Relationships</div>
+              <div style="font-size:.75rem;color:var(--steel);line-height:1.6;">We get called first on deals because people know us and trust us. That's not scalable for a newcomer.</div>
+            </div>
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.08em;color:var(--gold-light);margin-bottom:4px;">Deal Size Sweet Spot</div>
+              <div style="font-size:.75rem;color:var(--steel);line-height:1.6;">$500K–$20M transactions are too small for institutional capital but too complex for most local operators. We live here.</div>
+            </div>
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.08em;color:var(--gold-light);margin-bottom:4px;">Jurisdictional Depth</div>
+              <div style="font-size:.75rem;color:var(--steel);line-height:1.6;">We know the regulators, the timelines, the quirks. That's years of earned trust that doesn't transfer to a new entrant.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: OPERATIONAL EXCELLENCE -->
+    <div class="slide" data-index="2">
+      <div class="slide-tier">Tier 2 — Operational Excellence</div>
+      <div class="slide-headline">What We Must Win At</div>
+      <div class="slide-why">Strategy wins deals. Operations keeps them. If our execution or finance varies project-to-project, we erode trust with investors, trades, and clients. Consistency is the product.</div>
+      <div class="slide-content">
+        <div class="two-col">
+          <div class="cell">
+            <div class="cell-title">Execution Consistency</div>
+            <div class="cell-body">Same standard across similar teams, regardless of project type. One professional standard. Pillar-driven delivery every time.<br><br>This means a client on their second project with us should experience <em>identical</em> communication, quality, and process to their first.</div>
+          </div>
+          <div class="cell">
+            <div class="cell-title">Finance Consistency</div>
+            <div class="cell-body">Standardized capital stack structure and yield per product type. Underwriting, origination, investor relationships, optimization — built into the platform.<br><br>Investors need predictability. When our deal structure is standardized, diligence gets faster and capital commits more confidently.</div>
+          </div>
+        </div>
+        <div style="margin-top:16px;background:var(--off-black);border-top:2px solid var(--gold);padding:14px 20px;max-width:780px;">
+          <div style="font-size:.78rem;color:var(--steel);line-height:1.65;"><strong style="color:var(--light);">The test:</strong> Could someone sub in on your project and deliver to the same standard you would? If yes, you've built a system. If no, you've built a dependency.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: MARKET OPPORTUNITY -->
+    <div class="slide" data-index="3">
+      <div class="slide-tier">Tier 3 — Market Opportunity</div>
+      <div class="slide-headline">The Niche We're Pursuing</div>
+      <div class="slide-why">We're not trying to be everything to everyone. This is a specific, underserved buyer — and our product lines are engineered to serve exactly this profile.</div>
+      <div class="slide-content">
+        <div class="opp-box">
+          <div class="opp-title">Fractional Is the Future of Second Home &amp; Investment Ownership</div>
+          <div class="opp-body">Retiring boomers with household net worth of <strong>$1M–$20M</strong> want to quiet the balance sheet, simplify income from now through estate, and structure long-term stability. They don't need more complexity — they need elegant, managed, fractional ownership of quality real estate assets. That's our market. That's our niche.</div>
+        </div>
+        <div style="margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);max-width:780px;">
+          <div style="background:var(--dark);padding:18px 20px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.08em;color:var(--gold-light);margin-bottom:6px;">The Client Profile</div>
+            <div style="font-size:.75rem;color:var(--steel);line-height:1.6;">55–70 years old. Net worth $1M–$20M. Tired of managing rental properties directly. Wants income without complexity. Trusts people, not platforms.</div>
+          </div>
+          <div style="background:var(--dark);padding:18px 20px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.08em;color:var(--gold-light);margin-bottom:6px;">What They Want</div>
+            <div style="font-size:.75rem;color:var(--steel);line-height:1.6;">Passive, managed income. Estate-friendly structure. Quality assets in real places they can see and touch. No surprises. A team they can call.</div>
+          </div>
+          <div style="background:var(--dark);padding:18px 20px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.08em;color:var(--gold-light);margin-bottom:6px;">Why We Win Here</div>
+            <div style="font-size:.75rem;color:var(--steel);line-height:1.6;">We're local operators with a track record, not an app. Our fractional structures let this buyer get the right exposure at the right size. We do the work. They own the outcome.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: PRODUCT LINES -->
+    <div class="slide" data-index="4">
+      <div class="slide-tier">Tier 4 — Product Lines</div>
+      <div class="slide-headline">Where We Execute</div>
+      <div class="slide-why">Each product line solves a distinct problem for a distinct customer. They're not random — they feed each other. Asset disposition clients become fractional investors. Fractional lot portfolios fund entry-level builds. The flywheel is intentional.</div>
+      <div class="slide-content">
+        <div class="product-grid">
+          <div class="product-card">
+            <div class="product-num">01 —</div>
+            <div class="product-name">Asset Disposition</div>
+            <div class="product-desc">Brokerage + construction. Owners of noisy single-family rental portfolios want to trade out. We facilitate the exit cleanly and efficiently.</div>
+            <div class="product-tag">Brokerage · Construction</div>
+          </div>
+          <div class="product-card">
+            <div class="product-num">02 —</div>
+            <div class="product-name">Retail</div>
+            <div class="product-desc">$5M–$15M finished asset values. Disposition clients buy into fractional retail assets incrementally. We create the right-sized vehicle.</div>
+            <div class="product-tag">Development · Fractional</div>
+          </div>
+          <div class="product-card">
+            <div class="product-num">03 —</div>
+            <div class="product-name">Midsize Multifamily</div>
+            <div class="product-desc">Proven infill execution. No heavy amenity burden. Good location, attainable rents. Ideal tenant achieves savings in a quality community.</div>
+            <div class="product-tag">Development · Operations</div>
+          </div>
+          <div class="product-card">
+            <div class="product-num">04 —</div>
+            <div class="product-name">Entry Level Housing</div>
+            <div class="product-desc">Infill subdivision. Rent-to-own on underlying land — buy house + lot, or house only with lot lease. Lot portfolio then sells back to fractional crowd.</div>
+            <div class="product-tag">Development · Fractional</div>
+          </div>
+          <div class="product-card">
+            <div class="product-num">05 —</div>
+            <div class="product-name">Third Party Construction</div>
+            <div class="product-desc">Limited, key-client-driven work. Keeps subs engaged and team rolling while development projects move through the process. Cash flow bridge.</div>
+            <div class="product-tag">Construction · Support</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;background:var(--off-black);padding:12px 18px;max-width:100%;border-left:3px solid var(--muted);">
+          <div style="font-size:.75rem;color:var(--steel);line-height:1.65;"><strong style="color:var(--light);">The flywheel:</strong> Disposition → client has capital → buys fractional in Retail or Entry Level → lot portfolio accumulates → sells fractional to next cohort. Third Party keeps the machine warm in gaps.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: SITUATIONS -->
+    <div class="slide" data-index="5">
+      <div class="slide-tier">Tier 5 — Situations</div>
+      <div class="slide-headline">How We Win Per Product Line</div>
+      <div class="slide-why">Every deal — no matter the product line — passes through the same five situations. Knowing which situation you're in tells you exactly what the job is right now. Most execution failures happen when someone tries to do S3 work in an S1 situation, or ignores S4 entirely.</div>
+      <div class="slide-content">
+        <div class="situations-row">
+          <div class="situation">
+            <div class="situation-num">S1</div>
+            <div class="situation-name">Business Development</div>
+            <div class="situation-detail">Relationships. Prospecting. Getting to the table. The deal doesn't exist yet — your job is to create it.</div>
+            <div class="situation-arrow"></div>
+          </div>
+          <div class="situation">
+            <div class="situation-num">S2</div>
+            <div class="situation-name">Pipeline</div>
+            <div class="situation-detail">Deal is identified. Underwriting. LOI. Feasibility. Structure. Capital stack. Getting to a yes.</div>
+            <div class="situation-arrow"></div>
+          </div>
+          <div class="situation">
+            <div class="situation-num">S3</div>
+            <div class="situation-name">Work in Progress</div>
+            <div class="situation-detail">Execution. Design, permits, construction, leasing. Pillars matter most here. Deliver what you promised.</div>
+            <div class="situation-arrow"></div>
+          </div>
+          <div class="situation">
+            <div class="situation-num">S4</div>
+            <div class="situation-name">Closeout &amp; Warranty</div>
+            <div class="situation-detail">Don't stop at the finish line. Punch lists, warranty work, final accounting. How you close is what clients remember.</div>
+            <div class="situation-arrow"></div>
+          </div>
+          <div class="situation">
+            <div class="situation-num">S5</div>
+            <div class="situation-name">Asset Management</div>
+            <div class="situation-detail">The asset is performing. Ongoing investor reporting, maintenance, optimization. Long-term stewardship.</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;background:var(--off-black);padding:12px 18px;max-width:900px;border-left:3px solid var(--muted);">
+          <div style="font-size:.75rem;color:var(--steel);line-height:1.65;"><strong style="color:var(--light);">Self-check:</strong> For any project you're on right now — which situation is it in? Is your daily work aligned to what that situation actually requires?</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: PROJECT PILLARS -->
+    <div class="slide" data-index="6">
+      <div class="slide-tier">Tier 6 — Project Pillars</div>
+      <div class="slide-headline">One Project, One Pillar at a Time</div>
+      <div class="slide-why">The pillars are how we deliver the same standard every time. They're not aspirational — they're a checklist. If a project is struggling, one of these five is off. Find it, fix it.</div>
+      <div class="slide-content">
+        <div class="pillars-row">
+          <div class="pillar">
+            <span class="pillar-icon">👥</span>
+            <div class="pillar-name">People</div>
+            <div class="pillar-desc">Right people, right roles, right accountability. If the wrong person is in a role, nothing else on this list matters.</div>
+          </div>
+          <div class="pillar">
+            <span class="pillar-icon">🎯</span>
+            <div class="pillar-name">Alignment</div>
+            <div class="pillar-desc">Everyone recruited to the mission and vision. The team needs to know why, not just what. Alignment is earned, not assumed.</div>
+          </div>
+          <div class="pillar">
+            <span class="pillar-icon">📅</span>
+            <div class="pillar-name">Schedule</div>
+            <div class="pillar-desc">Great schedule. No BS. Clear constraints. A real schedule surfaces risk early. A fake schedule surfaces it at the worst time.</div>
+          </div>
+          <div class="pillar">
+            <span class="pillar-icon">💰</span>
+            <div class="pillar-name">Budget</div>
+            <div class="pillar-desc">Great budget. Own the number. No surprises. If you don't control the number, the number controls you.</div>
+          </div>
+          <div class="pillar">
+            <span class="pillar-icon">✅</span>
+            <div class="pillar-name">Checklists</div>
+            <div class="pillar-desc">Finish strong. Don't stop until it's done right. The last 5% is where most teams lose the client's memory of the other 95%.</div>
+          </div>
+        </div>
+        <div style="margin-top:14px;background:var(--off-black);padding:12px 18px;max-width:900px;border-left:3px solid var(--gold);">
+          <div style="font-size:.75rem;color:var(--steel);line-height:1.65;"><strong style="color:var(--light);">Diagnostic:</strong> Pick a current project. Rate each pillar 1–5 in your head. The lowest score is your job right now.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: REFLECTION -->
+    <div class="slide" data-index="7">
+      <div class="slide-tier">Reflection</div>
+      <div class="slide-headline">Lock It In</div>
+      <div class="slide-why">You've seen all six tiers. Now connect them to your actual work. These aren't rhetorical questions — take 5 minutes with each one.</div>
+      <div class="slide-content">
+        <div class="reflection-cards">
+          <div class="reflection-card">
+            <div class="reflection-q">Where does your current work fit in the platform?</div>
+            <div class="reflection-hint">Which product line? Which situation (S1–S5)? Knowing this tells you what success looks like today — not in six months.</div>
+          </div>
+          <div class="reflection-card">
+            <div class="reflection-q">Which pillar is most at risk on your current project?</div>
+            <div class="reflection-hint">People, Alignment, Schedule, Budget, or Checklists? If you're honest, you already know. Name it out loud.</div>
+          </div>
+          <div class="reflection-card">
+            <div class="reflection-q">How does your work connect to the fractional vision?</div>
+            <div class="reflection-hint">Every project we execute is building trust with the investor pool we need for fractional growth. What does your project say about us?</div>
+          </div>
+          <div class="reflection-card">
+            <div class="reflection-q">Where do you personally create moat?</div>
+            <div class="reflection-hint">Our competitive advantage is relationships, jurisdictional depth, and deal-size expertise. How do you contribute to that? Could a stranger replicate it?</div>
+          </div>
+          <div class="reflection-card">
+            <div class="reflection-q">What consistency gap do you see?</div>
+            <div class="reflection-hint">Execution and finance consistency are tier-2 requirements. Is there a gap you can see from where you sit? Name it — then fix it or surface it.</div>
+          </div>
+          <div class="reflection-card">
+            <div class="reflection-q">What would "done right" look like on your current project?</div>
+            <div class="reflection-hint">Not "done." Done right. Closeout &amp; warranty, punch list complete, client would send a referral tomorrow. Are you tracking toward that?</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: COMPLETE -->
+    <div class="slide" data-index="8">
+      <div class="slide-tier">Complete</div>
+      <div class="slide-headline">You're Oriented</div>
+      <div class="slide-why">This is the map. Everything in S-BOS — every project, every deal, every metric — connects back to these six tiers. When in doubt, ask: "Which tier does this live in?"</div>
+      <div class="slide-content">
+        <div class="complete-box">
+          <div class="complete-title">Platform Architecture — Recap</div>
+          <div class="complete-body" style="display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;">
+            <div><strong style="color:var(--gold-light);">Tier 1 — Strategy</strong><br><span style="color:var(--steel);font-size:.8rem;">Market focused. Product diverse. Moat = relationships + deal-size sweet spot.</span></div>
+            <div><strong style="color:var(--gold-light);">Tier 2 — Operations</strong><br><span style="color:var(--steel);font-size:.8rem;">Execution consistency + finance consistency. Same standard, every time.</span></div>
+            <div><strong style="color:var(--gold-light);">Tier 3 — Market</strong><br><span style="color:var(--steel);font-size:.8rem;">Retiring boomers, $1M–$20M net worth, fractional ownership as the product.</span></div>
+            <div><strong style="color:var(--gold-light);">Tier 4 — Products</strong><br><span style="color:var(--steel);font-size:.8rem;">5 lines that feed each other: Disposition → Retail → Multifamily → Entry Level → 3P.</span></div>
+            <div><strong style="color:var(--gold-light);">Tier 5 — Situations</strong><br><span style="color:var(--steel);font-size:.8rem;">S1 Biz Dev → S2 Pipeline → S3 WIP → S4 Closeout → S5 Asset Management.</span></div>
+            <div><strong style="color:var(--gold-light);">Tier 6 — Pillars</strong><br><span style="color:var(--steel);font-size:.8rem;">People · Alignment · Schedule · Budget · Checklists. The lowest score is the job.</span></div>
+          </div>
+        </div>
+        <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--muted);letter-spacing:.12em;margin-bottom:16px;font-style:italic;">"We exist for one simple reason: To create Cool Places for 10,000 People."</div>
+        <a class="back-home" href="index.html">← Back to S-BOS</a>
+      </div>
+    </div>
+
+  </div><!-- /slides -->
+
+  <!-- NAV FOOTER -->
+  <div class="nav-footer">
+    <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>← Prev</button>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+      <div class="step-dots" id="stepDots"></div>
+      <div class="kb-hint"><kbd>←</kbd> <kbd>→</kbd> to navigate</div>
+    </div>
+    <button class="nav-btn primary" id="nextBtn" onclick="navigate(1)">Next →</button>
+  </div>
+
+</div><!-- /shell -->
+
+<script>
+const TOTAL = 9; // 0–8
+let current = 0;
+
+function init() {
+  document.getElementById('stepTotal').textContent = TOTAL - 1;
+  buildDots();
+  render();
+}
+
+function buildDots() {
+  const container = document.getElementById('stepDots');
+  container.innerHTML = '';
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot';
+    d.onclick = () => goTo(i);
+    container.appendChild(d);
+  }
+}
+
+function goTo(idx) {
+  if (idx === current) return;
+  const slides = document.querySelectorAll('.slide');
+  slides[current].classList.remove('active');
+  slides[current].classList.add(idx > current ? 'exit-left' : '');
+  setTimeout(() => slides[current > idx ? current : current].classList.remove('exit-left'), 400);
+  current = idx;
+  render();
+}
+
+function navigate(dir) {
+  const next = current + dir;
+  if (next < 0 || next >= TOTAL) return;
+  const slides = document.querySelectorAll('.slide');
+  slides[current].classList.remove('active');
+  if (dir > 0) slides[current].classList.add('exit-left');
+  setTimeout(() => { slides[current].classList.remove('exit-left'); }, 400);
+  current = next;
+  render();
+}
+
+function render() {
+  const slides = document.querySelectorAll('.slide');
+  slides.forEach((s, i) => {
+    s.classList.toggle('active', i === current);
+  });
+
+  // progress
+  const pct = TOTAL <= 1 ? 100 : (current / (TOTAL - 1)) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+  document.getElementById('stepNum').textContent = current + 1;
+
+  // buttons
+  document.getElementById('prevBtn').disabled = current === 0;
+  const nextBtn = document.getElementById('nextBtn');
+  if (current === TOTAL - 1) {
+    nextBtn.textContent = 'Done ✓';
+    nextBtn.disabled = true;
+  } else {
+    nextBtn.textContent = 'Next →';
+    nextBtn.disabled = false;
+  }
+
+  // dots
+  const dots = document.querySelectorAll('.dot');
+  dots.forEach((d, i) => {
+    d.classList.toggle('active', i === current);
+    d.classList.toggle('visited', i < current);
+  });
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') navigate(-1);
+});
+
+init();
+</script>
+</body>
+</html>
