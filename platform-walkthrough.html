@@ -9,37 +9,32 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --black: #0a0a0a;
-  --off-black: #111;
-  --dark: #1a1a1a;
-  --mid: #2a2a2a;
-  --border: #333;
-  --muted: #555;
-  --steel: #888;
-  --light: #ccc;
-  --white: #f4f2ee;
-  --gold: #c9a84c;
-  --gold-light: #e8c96a;
-  --teal: #2d7d6e;
-  --teal-light: #3da891;
+  --canvas: #F7F4EF;
+  --paper: #FFFFFF;
+  --ink: #1a1a1a;
+  --ink2: #4A4640;
+  --ink3: #7a7570;
+  --rule: #D8D3CB;
+  --rule2: #EDE9E2;
+  --gold: #8C6A10;
+  --gold-bg: #FBF3DE;
+  --gold-accent: #C8961A;
+  --teal: #1A5246;
+  --teal-bg: #E0F0EA;
+  --teal-accent: #2d7d6e;
 }
 
-html, body { height: 100%; font-size: 14px; }
+html, body { height: 100%; font-size: 16px; }
 
 body {
-  background: var(--black);
-  color: var(--white);
+  background: var(--canvas);
+  color: var(--ink);
   font-family: 'DM Sans', sans-serif;
-  font-weight: 300;
+  font-weight: 400;
   overflow: hidden;
 }
 
-/* ── SHELL ── */
-.shell {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+.shell { height: 100vh; display: flex; flex-direction: column; }
 
 /* ── TOP BAR ── */
 .topbar {
@@ -47,168 +42,157 @@ body {
   align-items: center;
   justify-content: space-between;
   padding: 16px 40px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
   flex-shrink: 0;
   gap: 20px;
 }
 .topbar-logo {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.4rem;
+  font-size: 1.5rem;
   letter-spacing: 0.1em;
-  color: var(--white);
+  color: var(--ink);
   flex-shrink: 0;
 }
-.topbar-logo span { color: var(--gold); }
+.topbar-logo span { color: var(--gold-accent); }
 
-/* ── PROGRESS BAR ── */
 .progress-track {
   flex: 1;
   max-width: 600px;
-  height: 3px;
-  background: var(--border);
+  height: 4px;
+  background: var(--rule2);
   border-radius: 2px;
   overflow: hidden;
 }
 .progress-fill {
   height: 100%;
-  background: var(--gold);
+  background: var(--gold-accent);
   border-radius: 2px;
   transition: width 0.4s cubic-bezier(.16,1,.3,1);
 }
 
 .step-counter {
   font-family: 'DM Mono', monospace;
-  font-size: 0.65rem;
-  color: var(--muted);
-  letter-spacing: 0.18em;
+  font-size: 0.7rem;
+  color: var(--ink3);
+  letter-spacing: 0.15em;
   text-transform: uppercase;
   flex-shrink: 0;
 }
-.step-counter span { color: var(--gold); }
+.step-counter span { color: var(--gold-accent); font-weight: 500; }
 
 /* ── SLIDE AREA ── */
-.slides {
-  flex: 1;
-  overflow: hidden;
-  position: relative;
-}
+.slides { flex: 1; overflow: hidden; position: relative; }
 
 .slide {
   position: absolute;
   inset: 0;
   display: flex;
   flex-direction: column;
-  padding: 48px 60px 32px;
+  padding: 44px 60px 28px;
   opacity: 0;
   pointer-events: none;
   transform: translateX(40px);
   transition: opacity 0.35s cubic-bezier(.16,1,.3,1), transform 0.35s cubic-bezier(.16,1,.3,1);
 }
-.slide.active {
-  opacity: 1;
-  pointer-events: all;
-  transform: translateX(0);
-}
-.slide.exit-left {
-  opacity: 0;
-  transform: translateX(-40px);
-}
+.slide.active { opacity: 1; pointer-events: all; transform: translateX(0); }
+.slide.exit-left { opacity: 0; transform: translateX(-40px); }
 
 /* ── SLIDE HEADER ── */
 .slide-tier {
   font-family: 'DM Mono', monospace;
-  font-size: 0.6rem;
-  letter-spacing: 0.28em;
+  font-size: 0.68rem;
+  letter-spacing: 0.26em;
   text-transform: uppercase;
-  color: var(--gold);
-  margin-bottom: 10px;
+  color: var(--gold-accent);
+  margin-bottom: 8px;
 }
 .slide-headline {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(2rem, 4vw, 3.2rem);
-  letter-spacing: 0.08em;
-  line-height: 1.05;
-  color: var(--white);
-  margin-bottom: 6px;
+  font-size: clamp(2.2rem, 4vw, 3.4rem);
+  letter-spacing: 0.06em;
+  line-height: 1.0;
+  color: var(--ink);
+  margin-bottom: 10px;
 }
 .slide-why {
-  font-size: 0.9rem;
-  color: var(--steel);
-  max-width: 680px;
+  font-size: 1rem;
+  color: var(--ink3);
+  max-width: 700px;
   line-height: 1.7;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
   font-style: italic;
 }
 
-/* ── CONTENT BLOCKS ── */
-.slide-content {
-  flex: 1;
-  overflow: auto;
-}
+.slide-content { flex: 1; overflow: auto; }
 
 /* Strategy banner */
 .banner {
-  background: var(--gold);
-  color: var(--black);
+  background: var(--gold-accent);
+  color: #fff;
   padding: 24px 32px;
-  max-width: 780px;
+  max-width: 800px;
   margin-bottom: 20px;
+  border-radius: 2px;
 }
 .banner-title {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   letter-spacing: 0.1em;
 }
 .banner-body {
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 400;
   line-height: 1.65;
   margin-top: 8px;
-  opacity: 0.85;
+  opacity: 0.92;
 }
 
 /* Two col */
 .two-col {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2px;
-  background: var(--border);
-  max-width: 780px;
+  gap: 12px;
+  max-width: 800px;
 }
 .cell {
-  background: var(--dark);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--gold-accent);
   padding: 20px 24px;
+  border-radius: 2px;
 }
 .cell-title {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.1rem;
-  letter-spacing: 0.1em;
-  color: var(--gold-light);
-  margin-bottom: 8px;
+  font-size: 1.2rem;
+  letter-spacing: 0.08em;
+  color: var(--ink);
+  margin-bottom: 10px;
 }
 .cell-body {
-  font-size: 0.82rem;
-  color: var(--light);
-  line-height: 1.65;
+  font-size: 0.92rem;
+  color: var(--ink2);
+  line-height: 1.7;
 }
 
 /* Opportunity box */
 .opp-box {
-  background: var(--dark);
-  border-left: 4px solid var(--teal);
+  background: var(--teal-bg);
+  border-left: 4px solid var(--teal-accent);
   padding: 22px 28px;
-  max-width: 780px;
+  max-width: 800px;
+  border-radius: 2px;
 }
 .opp-title {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.2rem;
-  letter-spacing: 0.1em;
-  color: var(--teal-light);
+  font-size: 1.3rem;
+  letter-spacing: 0.08em;
+  color: var(--teal);
   margin-bottom: 8px;
 }
 .opp-body {
-  font-size: 0.85rem;
-  color: var(--light);
+  font-size: 0.95rem;
+  color: var(--ink2);
   line-height: 1.7;
 }
 
@@ -216,103 +200,101 @@ body {
 .product-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 2px;
-  background: var(--border);
+  gap: 10px;
 }
 .product-card {
-  background: var(--dark);
-  padding: 18px 16px 22px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--teal-accent);
+  padding: 18px 16px 20px;
   position: relative;
-  overflow: hidden;
-  cursor: default;
-  transition: background 0.2s;
+  transition: box-shadow 0.2s;
+  border-radius: 2px;
 }
-.product-card:hover { background: var(--mid); }
-.product-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--teal);
-}
-.product-card:last-child::before { background: var(--muted); }
+.product-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.product-card:last-child { border-top-color: var(--rule); }
 .product-num {
   font-family: 'DM Mono', monospace;
-  font-size: 0.58rem;
-  color: var(--muted);
-  letter-spacing: 0.2em;
+  font-size: 0.62rem;
+  color: var(--ink3);
+  letter-spacing: 0.18em;
   margin-bottom: 8px;
 }
 .product-name {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1rem;
-  letter-spacing: 0.08em;
-  color: var(--white);
+  font-size: 1.1rem;
+  letter-spacing: 0.06em;
+  color: var(--ink);
   line-height: 1.2;
   margin-bottom: 8px;
 }
 .product-desc {
-  font-size: 0.72rem;
-  color: var(--steel);
+  font-size: 0.8rem;
+  color: var(--ink3);
   line-height: 1.6;
 }
 .product-tag {
   display: inline-block;
   margin-top: 10px;
   font-family: 'DM Mono', monospace;
-  font-size: 0.55rem;
-  letter-spacing: 0.16em;
+  font-size: 0.58rem;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--teal-light);
-  border: 1px solid var(--teal);
-  padding: 2px 6px;
+  color: var(--teal);
+  border: 1px solid var(--teal-accent);
+  padding: 2px 7px;
+  border-radius: 2px;
+  background: var(--teal-bg);
 }
 .product-card:last-child .product-tag {
-  color: var(--steel);
-  border-color: var(--muted);
+  color: var(--ink3);
+  border-color: var(--rule);
+  background: var(--rule2);
 }
 
 /* Situations */
 .situations-row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 2px;
-  background: var(--border);
-  max-width: 900px;
+  gap: 10px;
+  max-width: 960px;
 }
 .situation {
-  background: var(--off-black);
-  padding: 18px 16px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 18px 14px;
   text-align: center;
   position: relative;
+  border-radius: 2px;
 }
 .situation-num {
   font-family: 'DM Mono', monospace;
-  font-size: 0.55rem;
-  color: var(--muted);
-  letter-spacing: 0.2em;
+  font-size: 0.62rem;
+  color: var(--gold-accent);
+  font-weight: 500;
+  letter-spacing: 0.18em;
   margin-bottom: 6px;
 }
 .situation-name {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 0.9rem;
-  letter-spacing: 0.1em;
-  color: var(--light);
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  color: var(--ink);
 }
 .situation-detail {
-  font-size: 0.7rem;
-  color: var(--muted);
-  margin-top: 6px;
-  line-height: 1.5;
+  font-size: 0.78rem;
+  color: var(--ink3);
+  margin-top: 8px;
+  line-height: 1.55;
 }
 .situation-arrow {
   position: absolute;
-  right: -1px; top: 50%;
+  right: -7px; top: 50%;
   transform: translateY(-50%);
   width: 0; height: 0;
-  border-top: 10px solid transparent;
-  border-bottom: 10px solid transparent;
-  border-left: 8px solid var(--gold);
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+  border-left: 7px solid var(--gold-accent);
   z-index: 2;
 }
 .situation:last-child .situation-arrow { display: none; }
@@ -321,175 +303,158 @@ body {
 .pillars-row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 2px;
-  background: var(--border);
-  max-width: 900px;
+  gap: 10px;
+  max-width: 960px;
 }
 .pillar {
-  background: var(--mid);
-  padding: 24px 18px;
+  background: var(--gold-bg);
+  border: 1px solid #e8d8a0;
+  padding: 24px 16px;
   text-align: center;
+  border-radius: 2px;
 }
 .pillar-icon {
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   margin-bottom: 10px;
   display: block;
 }
 .pillar-name {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1.1rem;
-  letter-spacing: 0.12em;
-  color: var(--gold-light);
+  font-size: 1.2rem;
+  letter-spacing: 0.1em;
+  color: var(--ink);
 }
 .pillar-desc {
-  font-size: 0.7rem;
-  color: var(--steel);
+  font-size: 0.8rem;
+  color: var(--ink2);
   margin-top: 6px;
-  line-height: 1.5;
+  line-height: 1.55;
 }
 
-/* Reflection slide */
+/* Reflection */
 .reflection-cards {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 12px;
-  max-width: 900px;
+  max-width: 960px;
 }
 .reflection-card {
-  background: var(--dark);
-  border: 1px solid var(--border);
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--gold-accent);
   padding: 20px;
   border-radius: 2px;
 }
 .reflection-q {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 1rem;
-  letter-spacing: 0.08em;
-  color: var(--gold-light);
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  color: var(--ink);
   margin-bottom: 8px;
   line-height: 1.3;
 }
 .reflection-hint {
-  font-size: 0.75rem;
-  color: var(--steel);
-  line-height: 1.6;
+  font-size: 0.85rem;
+  color: var(--ink3);
+  line-height: 1.65;
 }
 
-/* Summary complete */
+/* Complete */
 .complete-box {
-  background: var(--dark);
-  border: 1px solid var(--gold);
+  background: var(--paper);
+  border: 2px solid var(--gold-accent);
   padding: 32px 40px;
-  max-width: 600px;
+  max-width: 640px;
   margin-bottom: 24px;
+  border-radius: 2px;
 }
 .complete-title {
   font-family: 'Bebas Neue', sans-serif;
   font-size: 2rem;
-  letter-spacing: 0.1em;
-  color: var(--gold);
-  margin-bottom: 12px;
-}
-.complete-body {
-  font-size: 0.85rem;
-  color: var(--light);
-  line-height: 1.7;
+  letter-spacing: 0.08em;
+  color: var(--gold-accent);
+  margin-bottom: 16px;
 }
 .back-home {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   font-family: 'DM Mono', monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--steel);
-  border: 1px solid var(--border);
+  color: var(--ink3);
+  border: 1px solid var(--rule);
   padding: 10px 20px;
   text-decoration: none;
-  cursor: pointer;
-  background: none;
+  background: var(--paper);
+  border-radius: 2px;
   transition: all 0.2s;
 }
-.back-home:hover {
-  color: var(--white);
-  border-color: var(--steel);
-}
+.back-home:hover { color: var(--ink); border-color: var(--ink3); }
 
 /* ── NAV FOOTER ── */
 .nav-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 60px;
-  border-top: 1px solid var(--border);
+  padding: 16px 60px;
+  border-top: 1px solid var(--rule);
+  background: var(--paper);
   flex-shrink: 0;
 }
 
-.step-dots {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
+.step-dots { display: flex; gap: 8px; align-items: center; }
 .dot {
-  width: 6px; height: 6px;
+  width: 7px; height: 7px;
   border-radius: 50%;
-  background: var(--border);
+  background: var(--rule);
   cursor: pointer;
   transition: all 0.2s;
 }
-.dot.active {
-  background: var(--gold);
-  width: 20px;
-  border-radius: 3px;
-}
-.dot.visited { background: var(--muted); }
+.dot.active { background: var(--gold-accent); width: 22px; border-radius: 4px; }
+.dot.visited { background: var(--ink3); }
 
 .nav-btn {
   display: flex;
   align-items: center;
   gap: 8px;
   font-family: 'DM Mono', monospace;
-  font-size: 0.68rem;
-  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--steel);
-  border: 1px solid var(--border);
-  padding: 10px 20px;
-  background: none;
+  color: var(--ink2);
+  border: 1px solid var(--rule);
+  padding: 10px 22px;
+  background: var(--paper);
   cursor: pointer;
+  border-radius: 2px;
   transition: all 0.2s;
 }
-.nav-btn:hover:not(:disabled) {
-  color: var(--white);
-  border-color: var(--steel);
-}
-.nav-btn:disabled { opacity: 0.25; cursor: default; }
+.nav-btn:hover:not(:disabled) { color: var(--ink); border-color: var(--ink3); background: var(--canvas); }
+.nav-btn:disabled { opacity: 0.3; cursor: default; }
 .nav-btn.primary {
-  color: var(--black);
-  background: var(--gold);
-  border-color: var(--gold);
+  color: #fff;
+  background: var(--gold-accent);
+  border-color: var(--gold-accent);
+  font-weight: 500;
 }
-.nav-btn.primary:hover {
-  background: var(--gold-light);
-  border-color: var(--gold-light);
-  color: var(--black);
-}
+.nav-btn.primary:hover { background: var(--gold); border-color: var(--gold); color: #fff; }
 
-/* Keyboard hint */
 .kb-hint {
   font-family: 'DM Mono', monospace;
-  font-size: 0.58rem;
-  color: var(--muted);
-  letter-spacing: 0.12em;
+  font-size: 0.62rem;
+  color: var(--ink3);
+  letter-spacing: 0.1em;
   text-align: center;
 }
 kbd {
   display: inline-block;
-  padding: 1px 5px;
-  border: 1px solid var(--border);
-  border-radius: 2px;
-  font-size: 0.58rem;
+  padding: 1px 6px;
+  border: 1px solid var(--rule);
+  border-radius: 3px;
+  font-size: 0.62rem;
+  background: var(--canvas);
 }
 </style>
 </head>
@@ -515,13 +480,13 @@ kbd {
       <div class="slide-why">This walkthrough covers the six tiers of our platform — from core strategy down to project execution. Understanding how these layers connect is what separates someone who works here from someone who gets it.</div>
       <div class="slide-content">
         <div style="display:flex;flex-direction:column;gap:12px;max-width:640px;">
-          <div style="background:var(--dark);border-left:3px solid var(--gold);padding:16px 20px;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em;color:var(--gold-light);margin-bottom:4px;">What You'll Learn</div>
-            <div style="font-size:0.82rem;color:var(--light);line-height:1.7;">Why we win deals others can't. What we must be great at to stay competitive. Who our market is and why we're right for them. Which product lines we run and how each one works. How a deal moves from prospecting to asset management. What every project must nail to succeed.</div>
+          <div style="background:var(--gold-bg);border-left:4px solid var(--gold-accent);padding:18px 22px;border-radius:2px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.1em;color:var(--ink);margin-bottom:8px;">What You'll Learn</div>
+            <div style="font-size:0.95rem;color:var(--ink2);line-height:1.7;">Why we win deals others can't. What we must be great at to stay competitive. Who our market is and why we're right for them. Which product lines we run and how each one works. How a deal moves from prospecting to asset management. What every project must nail to succeed.</div>
           </div>
-          <div style="background:var(--dark);border-left:3px solid var(--teal);padding:16px 20px;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.1em;color:var(--teal-light);margin-bottom:4px;">How to Use This</div>
-            <div style="font-size:0.82rem;color:var(--light);line-height:1.7;">Use the arrow keys or buttons below to move through each tier. Take a beat on each one — there's a reflection exercise at the end to lock it in.</div>
+          <div style="background:var(--teal-bg);border-left:4px solid var(--teal-accent);padding:18px 22px;border-radius:2px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.1em;color:var(--ink);margin-bottom:8px;">How to Use This</div>
+            <div style="font-size:0.95rem;color:var(--ink2);line-height:1.7;">Use the arrow keys or buttons below to move through each tier. Take a beat on each one — there's a reflection exercise at the end to lock it in.</div>
           </div>
         </div>
       </div>
@@ -537,20 +502,20 @@ kbd {
           <div class="banner-title">Market Focused. Product Diverse.</div>
           <div class="banner-body">Long-time operators deeply connected to jurisdictions, the industry, and trade partners — creating deal flow in a category and deal size that is less competitive than others. High barrier to entry. Built-in moat.</div>
         </div>
-        <div style="margin-top:20px;background:var(--dark);border:1px solid var(--border);padding:16px 20px;max-width:780px;">
-          <div style="font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;">Why This Matters</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+        <div style="margin-top:20px;background:var(--paper);border:1px solid var(--rule);border-top:3px solid var(--gold-accent);padding:20px 24px;max-width:800px;border-radius:2px;">
+          <div style="font-family:'DM Mono',monospace;font-size:0.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px;">Why This Matters</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;">
             <div>
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.08em;color:var(--gold-light);margin-bottom:4px;">Relationships</div>
-              <div style="font-size:.75rem;color:var(--steel);line-height:1.6;">We get called first on deals because people know us and trust us. That's not scalable for a newcomer.</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.08em;color:var(--ink);margin-bottom:6px;">Relationships</div>
+              <div style="font-size:0.88rem;color:var(--ink2);line-height:1.65;">We get called first on deals because people know us and trust us. That's not scalable for a newcomer.</div>
             </div>
             <div>
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.08em;color:var(--gold-light);margin-bottom:4px;">Deal Size Sweet Spot</div>
-              <div style="font-size:.75rem;color:var(--steel);line-height:1.6;">$500K–$20M transactions are too small for institutional capital but too complex for most local operators. We live here.</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.08em;color:var(--ink);margin-bottom:6px;">Deal Size Sweet Spot</div>
+              <div style="font-size:0.88rem;color:var(--ink2);line-height:1.65;">$500K–$20M transactions are too small for institutional capital but too complex for most local operators. We live here.</div>
             </div>
             <div>
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.08em;color:var(--gold-light);margin-bottom:4px;">Jurisdictional Depth</div>
-              <div style="font-size:.75rem;color:var(--steel);line-height:1.6;">We know the regulators, the timelines, the quirks. That's years of earned trust that doesn't transfer to a new entrant.</div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.08em;color:var(--ink);margin-bottom:6px;">Jurisdictional Depth</div>
+              <div style="font-size:0.88rem;color:var(--ink2);line-height:1.65;">We know the regulators, the timelines, the quirks. That's years of earned trust that doesn't transfer to a new entrant.</div>
             </div>
           </div>
         </div>
@@ -573,8 +538,8 @@ kbd {
             <div class="cell-body">Standardized capital stack structure and yield per product type. Underwriting, origination, investor relationships, optimization — built into the platform.<br><br>Investors need predictability. When our deal structure is standardized, diligence gets faster and capital commits more confidently.</div>
           </div>
         </div>
-        <div style="margin-top:16px;background:var(--off-black);border-top:2px solid var(--gold);padding:14px 20px;max-width:780px;">
-          <div style="font-size:.78rem;color:var(--steel);line-height:1.65;"><strong style="color:var(--light);">The test:</strong> Could someone sub in on your project and deliver to the same standard you would? If yes, you've built a system. If no, you've built a dependency.</div>
+        <div style="margin-top:16px;background:var(--gold-bg);border-left:4px solid var(--gold-accent);padding:14px 20px;max-width:800px;border-radius:2px;">
+          <div style="font-size:0.9rem;color:var(--ink2);line-height:1.65;"><strong style="color:var(--ink);">The test:</strong> Could someone sub in on your project and deliver to the same standard you would? If yes, you've built a system. If no, you've built a dependency.</div>
         </div>
       </div>
     </div>
@@ -589,18 +554,18 @@ kbd {
           <div class="opp-title">Fractional Is the Future of Second Home &amp; Investment Ownership</div>
           <div class="opp-body">Retiring boomers with household net worth of <strong>$1M–$20M</strong> want to quiet the balance sheet, simplify income from now through estate, and structure long-term stability. They don't need more complexity — they need elegant, managed, fractional ownership of quality real estate assets. That's our market. That's our niche.</div>
         </div>
-        <div style="margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:2px;background:var(--border);max-width:780px;">
-          <div style="background:var(--dark);padding:18px 20px;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.08em;color:var(--gold-light);margin-bottom:6px;">The Client Profile</div>
-            <div style="font-size:.75rem;color:var(--steel);line-height:1.6;">55–70 years old. Net worth $1M–$20M. Tired of managing rental properties directly. Wants income without complexity. Trusts people, not platforms.</div>
+        <div style="margin-top:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:800px;">
+          <div style="background:var(--paper);border:1px solid var(--rule);border-top:3px solid var(--teal-accent);padding:18px 20px;border-radius:2px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.08em;color:var(--ink);margin-bottom:8px;">The Client Profile</div>
+            <div style="font-size:0.88rem;color:var(--ink2);line-height:1.65;">55–70 years old. Net worth $1M–$20M. Tired of managing rental properties directly. Wants income without complexity. Trusts people, not platforms.</div>
           </div>
-          <div style="background:var(--dark);padding:18px 20px;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.08em;color:var(--gold-light);margin-bottom:6px;">What They Want</div>
-            <div style="font-size:.75rem;color:var(--steel);line-height:1.6;">Passive, managed income. Estate-friendly structure. Quality assets in real places they can see and touch. No surprises. A team they can call.</div>
+          <div style="background:var(--paper);border:1px solid var(--rule);border-top:3px solid var(--teal-accent);padding:18px 20px;border-radius:2px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.08em;color:var(--ink);margin-bottom:8px;">What They Want</div>
+            <div style="font-size:0.88rem;color:var(--ink2);line-height:1.65;">Passive, managed income. Estate-friendly structure. Quality assets in real places they can see and touch. No surprises. A team they can call.</div>
           </div>
-          <div style="background:var(--dark);padding:18px 20px;">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:.95rem;letter-spacing:.08em;color:var(--gold-light);margin-bottom:6px;">Why We Win Here</div>
-            <div style="font-size:.75rem;color:var(--steel);line-height:1.6;">We're local operators with a track record, not an app. Our fractional structures let this buyer get the right exposure at the right size. We do the work. They own the outcome.</div>
+          <div style="background:var(--paper);border:1px solid var(--rule);border-top:3px solid var(--teal-accent);padding:18px 20px;border-radius:2px;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.08em;color:var(--ink);margin-bottom:8px;">Why We Win Here</div>
+            <div style="font-size:0.88rem;color:var(--ink2);line-height:1.65;">We're local operators with a track record, not an app. Our fractional structures let this buyer get the right exposure at the right size. We do the work. They own the outcome.</div>
           </div>
         </div>
       </div>
@@ -644,8 +609,8 @@ kbd {
             <div class="product-tag">Construction · Support</div>
           </div>
         </div>
-        <div style="margin-top:14px;background:var(--off-black);padding:12px 18px;max-width:100%;border-left:3px solid var(--muted);">
-          <div style="font-size:.75rem;color:var(--steel);line-height:1.65;"><strong style="color:var(--light);">The flywheel:</strong> Disposition → client has capital → buys fractional in Retail or Entry Level → lot portfolio accumulates → sells fractional to next cohort. Third Party keeps the machine warm in gaps.</div>
+        <div style="margin-top:14px;background:var(--teal-bg);border-left:4px solid var(--teal-accent);padding:14px 20px;max-width:100%;border-radius:2px;">
+          <div style="font-size:0.9rem;color:var(--ink2);line-height:1.65;"><strong style="color:var(--ink);">The flywheel:</strong> Disposition → client has capital → buys fractional in Retail or Entry Level → lot portfolio accumulates → sells fractional to next cohort. Third Party keeps the machine warm in gaps.</div>
         </div>
       </div>
     </div>
@@ -687,8 +652,8 @@ kbd {
             <div class="situation-detail">The asset is performing. Ongoing investor reporting, maintenance, optimization. Long-term stewardship.</div>
           </div>
         </div>
-        <div style="margin-top:14px;background:var(--off-black);padding:12px 18px;max-width:900px;border-left:3px solid var(--muted);">
-          <div style="font-size:.75rem;color:var(--steel);line-height:1.65;"><strong style="color:var(--light);">Self-check:</strong> For any project you're on right now — which situation is it in? Is your daily work aligned to what that situation actually requires?</div>
+        <div style="margin-top:14px;background:var(--gold-bg);border-left:4px solid var(--gold-accent);padding:14px 20px;max-width:960px;border-radius:2px;">
+          <div style="font-size:0.9rem;color:var(--ink2);line-height:1.65;"><strong style="color:var(--ink);">Self-check:</strong> For any project you're on right now — which situation is it in? Is your daily work aligned to what that situation actually requires?</div>
         </div>
       </div>
     </div>
@@ -726,8 +691,8 @@ kbd {
             <div class="pillar-desc">Finish strong. Don't stop until it's done right. The last 5% is where most teams lose the client's memory of the other 95%.</div>
           </div>
         </div>
-        <div style="margin-top:14px;background:var(--off-black);padding:12px 18px;max-width:900px;border-left:3px solid var(--gold);">
-          <div style="font-size:.75rem;color:var(--steel);line-height:1.65;"><strong style="color:var(--light);">Diagnostic:</strong> Pick a current project. Rate each pillar 1–5 in your head. The lowest score is your job right now.</div>
+        <div style="margin-top:14px;background:var(--gold-bg);border-left:4px solid var(--gold-accent);padding:14px 20px;max-width:960px;border-radius:2px;">
+          <div style="font-size:0.9rem;color:var(--ink2);line-height:1.65;"><strong style="color:var(--ink);">Diagnostic:</strong> Pick a current project. Rate each pillar 1–5 in your head. The lowest score is your job right now.</div>
         </div>
       </div>
     </div>
@@ -775,16 +740,16 @@ kbd {
       <div class="slide-content">
         <div class="complete-box">
           <div class="complete-title">Platform Architecture — Recap</div>
-          <div class="complete-body" style="display:grid;grid-template-columns:1fr 1fr;gap:12px 24px;">
-            <div><strong style="color:var(--gold-light);">Tier 1 — Strategy</strong><br><span style="color:var(--steel);font-size:.8rem;">Market focused. Product diverse. Moat = relationships + deal-size sweet spot.</span></div>
-            <div><strong style="color:var(--gold-light);">Tier 2 — Operations</strong><br><span style="color:var(--steel);font-size:.8rem;">Execution consistency + finance consistency. Same standard, every time.</span></div>
-            <div><strong style="color:var(--gold-light);">Tier 3 — Market</strong><br><span style="color:var(--steel);font-size:.8rem;">Retiring boomers, $1M–$20M net worth, fractional ownership as the product.</span></div>
-            <div><strong style="color:var(--gold-light);">Tier 4 — Products</strong><br><span style="color:var(--steel);font-size:.8rem;">5 lines that feed each other: Disposition → Retail → Multifamily → Entry Level → 3P.</span></div>
-            <div><strong style="color:var(--gold-light);">Tier 5 — Situations</strong><br><span style="color:var(--steel);font-size:.8rem;">S1 Biz Dev → S2 Pipeline → S3 WIP → S4 Closeout → S5 Asset Management.</span></div>
-            <div><strong style="color:var(--gold-light);">Tier 6 — Pillars</strong><br><span style="color:var(--steel);font-size:.8rem;">People · Alignment · Schedule · Budget · Checklists. The lowest score is the job.</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px 28px;font-size:0.92rem;">
+            <div><strong style="color:var(--ink);">Tier 1 — Strategy</strong><br><span style="color:var(--ink3);font-size:.88rem;">Market focused. Product diverse. Moat = relationships + deal-size sweet spot.</span></div>
+            <div><strong style="color:var(--ink);">Tier 2 — Operations</strong><br><span style="color:var(--ink3);font-size:.88rem;">Execution consistency + finance consistency. Same standard, every time.</span></div>
+            <div><strong style="color:var(--ink);">Tier 3 — Market</strong><br><span style="color:var(--ink3);font-size:.88rem;">Retiring boomers, $1M–$20M net worth, fractional ownership as the product.</span></div>
+            <div><strong style="color:var(--ink);">Tier 4 — Products</strong><br><span style="color:var(--ink3);font-size:.88rem;">5 lines that feed each other: Disposition → Retail → Multifamily → Entry Level → 3P.</span></div>
+            <div><strong style="color:var(--ink);">Tier 5 — Situations</strong><br><span style="color:var(--ink3);font-size:.88rem;">S1 Biz Dev → S2 Pipeline → S3 WIP → S4 Closeout → S5 Asset Management.</span></div>
+            <div><strong style="color:var(--ink);">Tier 6 — Pillars</strong><br><span style="color:var(--ink3);font-size:.88rem;">People · Alignment · Schedule · Budget · Checklists. The lowest score is the job.</span></div>
           </div>
         </div>
-        <div style="font-family:'DM Mono',monospace;font-size:.72rem;color:var(--muted);letter-spacing:.12em;margin-bottom:16px;font-style:italic;">"We exist for one simple reason: To create Cool Places for 10,000 People."</div>
+        <div style="font-family:'DM Mono',monospace;font-size:.75rem;color:var(--ink3);letter-spacing:.12em;margin-bottom:16px;font-style:italic;">"We exist for one simple reason: To create Cool Places for 10,000 People."</div>
         <a class="back-home" href="index.html">← Back to S-BOS</a>
       </div>
     </div>
