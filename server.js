@@ -27,6 +27,7 @@ const BUDGET_FIELDS = [
   's2ba7b261b',   // Project (linked) — for grouping
   'sb54d9092a',   // Revenue Track (pO6Hh=Track1, UhSZv=Track2)
   's40ca9cdee',   // Cash Flow Lookup → "Operating Cash-Income" / "Operating Cash-COGS"
+  's2f27d033f',   // SB Company Receiving/Paying — used to filter rows on multi-type projects
   'sc507e6b54',   // Estimated Budget — earliest stage manual estimate
   'sed808550d',   // Baseline Budget formula (G702 → manual s818f40f1d → blank)
   'sa1a3abded',   // Change Orders formula (G702 → manual s432af3d33 → blank)
@@ -38,6 +39,11 @@ const BUDGET_FIELDS = [
   's32eed8560',   // Account description (display label)
   's363b6d973',   // Linked G-702(s) — presence indicates billing has started
 ];
+
+// Construction entity IDs — used to filter budget rows on multi-type projects.
+// KCS Homes LLC dba BUILT. (1100) is the GC entity for Construction product line.
+// Realm Constructors (1200) operates under a separate product line — excluded here.
+const KCS_HOMES_ID = '6914fe61e127b5f69fb770da';  // 1100-KCS Homes LLC dba BUILT.
 
 // Product Type record IDs
 const DISPOSITION_TYPE_IDS  = [
@@ -183,11 +189,20 @@ async function fetchAllBudgetRows() {
 }
 
 // Given budget rows for ONE project, compute a revenue summary.
+//
+// companyId (optional): when set, only rows where s2f27d033f contains this company
+//   are used. Applied for multi-type projects so each product line only sees its rows.
+//
 // The three-state model:
 //   'estimate'  → only sc507e6b54 (Estimated Budget) is filled in
 //   'baseline'  → sed808550d / s531f1d6ab are populated (contract signed, no G702 yet)
 //   'billing'   → s0f7c08530 / s160aa943b are populated (G702 pay apps flowing)
-function summariseBudget(rows) {
+function summariseBudget(rows, companyId = null) {
+  // For multi-type projects: restrict to rows assigned to the specified company.
+  // For single-type projects (companyId = null): use all rows.
+  if (companyId) {
+    rows = rows.filter(r => (r.s2f27d033f || []).includes(companyId));
+  }
   const num = v => (v != null && v !== '' && !isNaN(parseFloat(v))) ? parseFloat(v) : null;
   const best = (row, ...fields) => {
     for (const f of fields) { const v = num(row[f]); if (v !== null) return v; }
@@ -289,20 +304,28 @@ async function buildConstructionData() {
 
   // Annotate each project with stage mapping + budget summary
   const annotated = projects.map(p => {
-    const statusVal = p.status?.value || '';
-    // Fall back to showing the raw value so unknown statuses are still visible
-    const stageInfo = CONSTRUCTION_STATUS_MAP[statusVal]
+    const statusVal  = p.status?.value || '';
+    const stageInfo  = CONSTRUCTION_STATUS_MAP[statusVal]
       || { stage: 'BIZ_DEV', label: statusVal || 'Unknown', subLabel: statusVal || 'Unknown' };
     const budgetRows = budgetByProject[p.id] || [];
+
+    // Multi-type logic: if the project is tagged with more than one product type,
+    // restrict budget rows to those assigned to KCS-Homes so each product line
+    // only sees its own revenue/cost. Single-type projects use all their rows.
+    const productTypes = Array.isArray(p.s4687ad08c) ? p.s4687ad08c : (p.s4687ad08c ? [p.s4687ad08c] : []);
+    const isMultiType  = productTypes.length > 1;
+    const companyFilter = isMultiType ? KCS_HOMES_ID : null;
+
     return {
       id:           p.id,
       title:        p.title || p.s937f1d342 || '—',
-      // S-Bos record URL — use the S-Bos Projects list detail page
       sbosUrl:      `https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=${p.id}`,
       statusValue:  statusVal,
-      stage:        stageInfo.stage,    // internal grouping key (BIZ_DEV/PIPELINE/WIP/CLOSEOUT/CLOSED)
-      statusLabel:  stageInfo.label,    // full S-Bos label (e.g. "Biz Dev — Hot", "Active in WIP")
-      subLabel:     stageInfo.subLabel, // short label for chips (e.g. "Hot", "WIP")
+      stage:        stageInfo.stage,
+      statusLabel:  stageInfo.label,
+      subLabel:     stageInfo.subLabel,
+      isMultiType,  // exposed so the dashboard can badge multi-type projects
+      productTypes, // list of product type record IDs
       dates: {
         pipeline:    p.sfa6ec0fec?.date  || null,
         awarded:     p.s8227b8fc4?.date  || null,
@@ -312,7 +335,7 @@ async function buildConstructionData() {
         actClose:    p.s17kv07k?.date    || null,
         estConstEnd: p.scc0298307?.date  || null,
       },
-      budget: summariseBudget(budgetRows),
+      budget: summariseBudget(budgetRows, companyFilter),
     };
   }).filter(p => p.stage !== 'EXCLUDE');
 
