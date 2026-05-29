@@ -248,22 +248,24 @@ function renderAll(projects) {
     if (byStage[p.stage] !== undefined) byStage[p.stage].push(p);
   }
 
-  // Active = PIPELINE + WIP + CLOSEOUT + CLOSED (anything with real work)
-  const activeProjects = [...byStage.PIPELINE, ...byStage.WIP, ...byStage.CLOSEOUT, ...byStage.CLOSED];
+  // Goal projects = formally contracted pipeline only (Pipeline + WIP + Closeout).
+  // Excludes BIZ_DEV estimates and historical CLOSED jobs from goal totals.
+  const goalProjects = [...byStage.PIPELINE, ...byStage.WIP, ...byStage.CLOSEOUT];
 
-  renderTiles(byStage, activeProjects);
+  renderTiles(byStage, goalProjects);
   renderDeadlineBanners();
   renderStageCards(byStage);
   renderLedger(projects, byStage);
-  renderTargets(byStage, activeProjects);
+  renderTargets(byStage, goalProjects);
 }
 
 // ── Section 1: Tiles ─────────────────────────────────────────────────────
-function renderTiles(byStage, activeProjects) {
-  const totalContract = activeProjects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
-  const totalBilled   = [...byStage.WIP, ...byStage.CLOSEOUT, ...byStage.CLOSED]
+function renderTiles(byStage, goalProjects) {
+  // goalProjects = PIPELINE + WIP + CLOSEOUT only (not BIZ_DEV estimates)
+  const totalContract = goalProjects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
+  const totalBilled   = [...byStage.WIP, ...byStage.CLOSEOUT]
     .reduce((s, p) => s + (p.budget.billedRevenue || 0), 0);
-  const totalGP       = activeProjects.reduce((s, p) => s + (p.budget.contractGP || 0), 0);
+  const totalGP       = goalProjects.reduce((s, p) => s + (p.budget.contractGP || 0), 0);
   const activeCount   = byStage.PIPELINE.length + byStage.WIP.length + byStage.CLOSEOUT.length;
 
   const tiles = [
@@ -394,8 +396,10 @@ function renderStageCards(byStage) {
 
 // ── Section 4: Revenue Recognition Ledger ────────────────────────────────
 function renderLedger(projects, byStage) {
-  // Show all non-BIZ_DEV jobs; BIZ_DEV has no revenue yet
-  const relevant = projects.filter(p => p.stage !== 'BIZ_DEV');
+  // Show everything EXCEPT fully-closed historical jobs.
+  // Biz Dev (Hot/Warm/etc.) ARE included — they may have budget estimates.
+  // CLOSED is excluded — old completed jobs from prior years clutter the 2026 view.
+  const relevant = projects.filter(p => p.stage !== 'CLOSED');
 
   if (relevant.length === 0) {
     document.getElementById('ledger-body').innerHTML =
@@ -406,15 +410,19 @@ function renderLedger(projects, byStage) {
     return;
   }
 
+  // Goal totals count only PIPELINE + WIP + CLOSEOUT — not BIZ_DEV estimates,
+  // not CLOSED historical jobs. BIZ_DEV rows are shown for visibility but flagged.
+  const GOAL_STAGES = new Set(['PIPELINE','WIP','CLOSEOUT']);
   let sumContractRev = 0, sumBilled = 0, sumBTF = 0, sumGP = 0;
 
   const tbody = relevant.map(p => {
-    const cfg       = STAGE_CONFIG[p.stage] || STAGE_CONFIG.BIZ_DEV;
-    const chipColor = STATUS_CHIP_COLORS[p.stage] || 'var(--text-secondary)';
-    const b         = p.budget;
+    const cfg         = STAGE_CONFIG[p.stage] || STAGE_CONFIG.BIZ_DEV;
+    const chipColor   = STATUS_CHIP_COLORS[p.stage] || 'var(--text-secondary)';
+    const b           = p.budget;
+    const countsForGoal = GOAL_STAGES.has(p.stage);
 
-    // Only add to totals when there's real data — don't pad with zeros
-    const dispRev  = b.contractRevenue;   // null = no data; shown as —
+    // Only add to goal totals when stage is formally in pipeline (not just Biz Dev estimate)
+    const dispRev  = b.contractRevenue;
     const dispCost = b.contractCost;
     const dispGP   = b.contractGP;
     const dispBill = b.billedRevenue;
@@ -422,10 +430,12 @@ function renderLedger(projects, byStage) {
     const dispPct  = b.pctComplete ?? 0;
     const gpRate   = b.gpRate;
 
-    sumContractRev += dispRev  || 0;
-    sumBilled      += dispBill || 0;
-    sumBTF         += dispBTF  || 0;
-    sumGP          += dispGP   || 0;
+    if (countsForGoal) {
+      sumContractRev += dispRev  || 0;
+      sumBilled      += dispBill || 0;
+      sumBTF         += dispBTF  || 0;
+      sumGP          += dispGP   || 0;
+    }
 
     const gpColor    = gpRate == null ? 'var(--text-muted)'
                      : gpRate >= 0.09 ? 'var(--status-green)'
@@ -438,12 +448,13 @@ function renderLedger(projects, byStage) {
     const fmtD    = d => d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'}) : '—';
 
     return `
-      <tr>
+      <tr style="${!countsForGoal ? 'opacity:0.65;' : ''}">
         <td class="name">
           <a href="${p.sbosUrl}" target="_blank" rel="noopener"
              style="color:var(--text-primary);text-decoration:none"
              onmouseover="this.style.color='var(--sb-gold)'"
              onmouseout="this.style.color='var(--text-primary)'">${p.title} <span style="font-size:10px;opacity:.4">↗</span></a>
+          ${!countsForGoal ? '<span style="font-size:9px;color:var(--text-muted);margin-left:4px">uncontracted</span>' : ''}
         </td>
         <td>
           <span class="chip" style="color:${chipColor};border-color:${chipColor}40;background:${chipColor}12;white-space:nowrap">
@@ -512,9 +523,9 @@ function renderLedger(projects, byStage) {
 }
 
 // ── Section 5: Production Targets ─────────────────────────────────────────
-function renderTargets(byStage, activeProjects) {
-  const totalContract = activeProjects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
-  const totalGP       = activeProjects.reduce((s, p) => s + (p.budget.contractGP  || 0), 0);
+function renderTargets(byStage, goalProjects) {
+  const totalContract = goalProjects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
+  const totalGP       = goalProjects.reduce((s, p) => s + (p.budget.contractGP  || 0), 0);
   const revGap = Math.max(0, GOAL_REVENUE - totalContract);
   const gpGap  = Math.max(0, GOAL_GP - totalGP);
 
