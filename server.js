@@ -49,18 +49,26 @@ const CONSTRUCTION_TYPE_IDS = [
 ];
 
 // Status value → pipeline stage mapping (from live SmartSuite status field options)
+// Stage labels follow S-Bos vocabulary exactly — no invented S1/S2/S3/S4 labels.
+// "stage" is an internal grouping key only; "label" and "subLabel" are displayed.
+//
+// Biz Dev  = New Opportunity + Nurture + Warm + Hot (all relationship/pursuit)
+// Pipeline = Active in Pipeline (formal pipeline entry)
+// WIP      = Active in WIP (construction underway)
+// Closeout = Active in Closeout & Warranty
+// Closed   = Closed Job-Closed Warranty
+// EXCLUDE  = Declined or Job Lost — hidden from dashboard entirely
 const CONSTRUCTION_STATUS_MAP = {
-  'ready_for_review':                          { stage: 'S1', label: 'New Opportunity'    },
-  'complete':                                  { stage: 'S1', label: 'Nurture'             },
-  '21c0705b-0c3b-45cd-9e93-07672fac949d':     { stage: 'S1', label: 'Warm (6-12 mo)'     },
-  'fb5677b7-3e68-4705-86af-abb8745a43f7':     { stage: 'S2', label: 'Hot (0-6 mo)'       },
-  'backlog':                                   { stage: 'S2', label: 'Active Pipeline'     },
-  'zOlNR':                                     { stage: 'S3', label: 'Active in WIP'      },
-  'Swowl':                                     { stage: 'S4', label: 'Closeout & Warranty' },
-  'Dio3d':                                     { stage: 'CLOSED', label: 'Closed'         },
-  // Excluded — omit from dashboard counts
-  '3ae0dcac-d82c-4171-95cd-3f40eed714d7':     { stage: 'EXCLUDE', label: 'Declined'      },
-  '41590c12-77e8-494b-878e-2dbb27012ca4':     { stage: 'EXCLUDE', label: 'Job Lost'       },
+  'ready_for_review':                          { stage: 'BIZ_DEV',  label: 'Biz Dev — New Opportunity',  subLabel: 'New Opportunity'           },
+  'complete':                                  { stage: 'BIZ_DEV',  label: 'Biz Dev — Nurture',           subLabel: 'Nurture'                   },
+  '21c0705b-0c3b-45cd-9e93-07672fac949d':     { stage: 'BIZ_DEV',  label: 'Biz Dev — Warm',             subLabel: 'Warm'                      },
+  'fb5677b7-3e68-4705-86af-abb8745a43f7':     { stage: 'BIZ_DEV',  label: 'Biz Dev — Hot',              subLabel: 'Hot'                       },
+  'backlog':                                   { stage: 'PIPELINE', label: 'Active in Pipeline',          subLabel: 'Active Pipeline'           },
+  'zOlNR':                                     { stage: 'WIP',      label: 'Active in WIP',               subLabel: 'WIP'                       },
+  'Swowl':                                     { stage: 'CLOSEOUT', label: 'Closeout & Warranty',         subLabel: 'Closeout'                  },
+  'Dio3d':                                     { stage: 'CLOSED',   label: 'Closed Job',                  subLabel: 'Closed'                    },
+  '3ae0dcac-d82c-4171-95cd-3f40eed714d7':     { stage: 'EXCLUDE',  label: 'Declined',                    subLabel: 'Declined'                  },
+  '41590c12-77e8-494b-878e-2dbb27012ca4':     { stage: 'EXCLUDE',  label: 'Job Lost',                    subLabel: 'Lost'                      },
 };
 
 const app     = express();
@@ -282,22 +290,27 @@ async function buildConstructionData() {
   // Annotate each project with stage mapping + budget summary
   const annotated = projects.map(p => {
     const statusVal = p.status?.value || '';
-    const stageInfo = CONSTRUCTION_STATUS_MAP[statusVal] || { stage: 'S1', label: statusVal || 'Unknown' };
+    // Fall back to showing the raw value so unknown statuses are still visible
+    const stageInfo = CONSTRUCTION_STATUS_MAP[statusVal]
+      || { stage: 'BIZ_DEV', label: statusVal || 'Unknown', subLabel: statusVal || 'Unknown' };
     const budgetRows = budgetByProject[p.id] || [];
     return {
-      id:         p.id,
-      title:      p.title || p.s937f1d342 || '—',
-      statusValue: statusVal,
-      stage:      stageInfo.stage,
-      stageLabel: stageInfo.label,
+      id:           p.id,
+      title:        p.title || p.s937f1d342 || '—',
+      // S-Bos record URL — use the S-Bos Projects list detail page
+      sbosUrl:      `https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=${p.id}`,
+      statusValue:  statusVal,
+      stage:        stageInfo.stage,    // internal grouping key (BIZ_DEV/PIPELINE/WIP/CLOSEOUT/CLOSED)
+      statusLabel:  stageInfo.label,    // full S-Bos label (e.g. "Biz Dev — Hot", "Active in WIP")
+      subLabel:     stageInfo.subLabel, // short label for chips (e.g. "Hot", "WIP")
       dates: {
-        pipeline:   p.sfa6ec0fec?.date   || null,
-        awarded:    p.s8227b8fc4?.date    || null,
-        wip:        p.s7e23170f2?.date    || null,
-        outOfWip:   p.s695a5c195?.date    || null,
-        estClose:   p.secceac461?.date    || null,
-        actClose:   p.s17kv07k?.date      || null,
-        estConstEnd: p.scc0298307?.date   || null,
+        pipeline:    p.sfa6ec0fec?.date  || null,
+        awarded:     p.s8227b8fc4?.date  || null,
+        wip:         p.s7e23170f2?.date  || null,
+        outOfWip:    p.s695a5c195?.date  || null,
+        estClose:    p.secceac461?.date  || null,
+        actClose:    p.s17kv07k?.date    || null,
+        estConstEnd: p.scc0298307?.date  || null,
       },
       budget: summariseBudget(budgetRows),
     };

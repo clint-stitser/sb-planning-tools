@@ -149,27 +149,63 @@
 'use strict';
 
 // ── Constants ─────────────────────────────────────────────────────────────
-const REVENUE_START = new Date('2026-06-01');
-const YEAR_END_DATE = new Date('2026-12-31T23:59:59');
 const GOAL_REVENUE  = 4_500_000;
 const GOAL_GP       = 405_000;
-const GOAL_GP_RATE  = 0.09;
 const JOBS_NEEDED   = 6;
-const AVG_JOB       = 750_000;
 
 const DEADLINES = {
-  BID_READY:  new Date('2026-07-04'),
-  MOBILIZE:   new Date('2026-09-02'),
-  CLOSEOUT:   new Date('2026-12-01'),
+  BID_READY: new Date('2026-07-04'),
+  MOBILIZE:  new Date('2026-09-02'),
+  CLOSEOUT:  new Date('2026-12-01'),
 };
 
-// Stage display config
+// Stage keys match server CONSTRUCTION_STATUS_MAP stage values.
+// Labels and colors use S-Bos vocabulary — no invented S1/S2/S3/S4 labels shown to user.
 const STAGE_CONFIG = {
-  S1:     { label: 'S1 — Biz Dev',    sublabel: 'Relationship / Nurture', color: 'var(--text-muted)',    deadline: null,              note: 'Building pipeline' },
-  S2:     { label: 'S2 — Bidding',    sublabel: 'Hot / Active Pipeline',  color: 'var(--status-green)',  deadline: DEADLINES.BID_READY, note: 'Bid-ready window closes Jul 4' },
-  S3:     { label: 'S3 — In Progress',sublabel: 'Active in WIP',          color: 'var(--sb-gold)',       deadline: DEADLINES.MOBILIZE,  note: 'Progress billing happening' },
-  S4:     { label: 'S4 — Closeout',   sublabel: 'Closeout & Warranty',    color: 'var(--status-blue)',   deadline: DEADLINES.CLOSEOUT,  note: 'Final billing in progress' },
-  CLOSED: { label: 'Closed',          sublabel: 'Job complete',           color: 'var(--status-gray)',   deadline: null,              note: '' },
+  BIZ_DEV:  {
+    label: 'Biz Dev',
+    sublabel: 'New · Nurture · Warm · Hot',
+    color: 'var(--text-secondary)',
+    deadline: DEADLINES.BID_READY,
+    deadlineNote: 'Hot jobs must enter Pipeline by Jul 4',
+  },
+  PIPELINE: {
+    label: 'Active in Pipeline',
+    sublabel: 'Formally in pipeline',
+    color: 'var(--status-green)',
+    deadline: DEADLINES.MOBILIZE,
+    deadlineNote: 'Must mobilize by Sep 2 to fully bill in 2026',
+  },
+  WIP: {
+    label: 'Active in WIP',
+    sublabel: 'Construction underway',
+    color: 'var(--sb-gold)',
+    deadline: DEADLINES.CLOSEOUT,
+    deadlineNote: 'Must reach closeout by Dec 1',
+  },
+  CLOSEOUT: {
+    label: 'Closeout & Warranty',
+    sublabel: 'Final billing',
+    color: 'var(--status-blue)',
+    deadline: new Date('2026-12-31'),
+    deadlineNote: 'Final billing before year end',
+  },
+  CLOSED: {
+    label: 'Closed Job',
+    sublabel: 'Closed',
+    color: 'var(--status-gray)',
+    deadline: null,
+    deadlineNote: '',
+  },
+};
+
+// Status label colors for chips in the ledger table
+const STATUS_CHIP_COLORS = {
+  BIZ_DEV:  'var(--text-secondary)',
+  PIPELINE: 'var(--status-green)',
+  WIP:      'var(--sb-gold)',
+  CLOSEOUT: 'var(--status-blue)',
+  CLOSED:   'var(--status-gray)',
 };
 
 // ── Data Load ─────────────────────────────────────────────────────────────
@@ -206,14 +242,14 @@ function showError(show, msg = '') {
 
 // ── Render All ────────────────────────────────────────────────────────────
 function renderAll(projects) {
-  // Group by stage (exclude S1 from financial totals but show in stage cards)
-  const byStage = { S1: [], S2: [], S3: [], S4: [], CLOSED: [] };
+  // Group by stage key (BIZ_DEV / PIPELINE / WIP / CLOSEOUT / CLOSED)
+  const byStage = { BIZ_DEV: [], PIPELINE: [], WIP: [], CLOSEOUT: [], CLOSED: [] };
   for (const p of projects) {
     if (byStage[p.stage] !== undefined) byStage[p.stage].push(p);
   }
 
-  // Revenue window: Jun 1 – Dec 31. Billed revenue from S3/S4/CLOSED jobs.
-  const activeProjects = [...byStage.S2, ...byStage.S3, ...byStage.S4, ...byStage.CLOSED];
+  // Active = PIPELINE + WIP + CLOSEOUT + CLOSED (anything with real work)
+  const activeProjects = [...byStage.PIPELINE, ...byStage.WIP, ...byStage.CLOSEOUT, ...byStage.CLOSED];
 
   renderTiles(byStage, activeProjects);
   renderDeadlineBanners();
@@ -224,14 +260,11 @@ function renderAll(projects) {
 
 // ── Section 1: Tiles ─────────────────────────────────────────────────────
 function renderTiles(byStage, activeProjects) {
-  // Contract Revenue = sum of contractRevenue for all active + closed jobs
   const totalContract = activeProjects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
-  // Billed to Date = sum of billedRevenue for S3/S4/CLOSED
-  const totalBilled   = [...byStage.S3, ...byStage.S4, ...byStage.CLOSED]
+  const totalBilled   = [...byStage.WIP, ...byStage.CLOSEOUT, ...byStage.CLOSED]
     .reduce((s, p) => s + (p.budget.billedRevenue || 0), 0);
   const totalGP       = activeProjects.reduce((s, p) => s + (p.budget.contractGP || 0), 0);
-  const totalBTF      = activeProjects.reduce((s, p) => s + (p.budget.btf || 0), 0);
-  const activeCount   = byStage.S2.length + byStage.S3.length + byStage.S4.length;
+  const activeCount   = byStage.PIPELINE.length + byStage.WIP.length + byStage.CLOSEOUT.length;
 
   const tiles = [
     {
@@ -304,23 +337,37 @@ function renderDeadlineBanners() {
 
 // ── Section 3: Stage Cards ────────────────────────────────────────────────
 function renderStageCards(byStage) {
-  const stages = ['S1','S2','S3','S4'];
-  document.getElementById('stage-cards').innerHTML = stages.map(key => {
+  const stageOrder = ['BIZ_DEV', 'PIPELINE', 'WIP', 'CLOSEOUT'];
+  document.getElementById('stage-cards').innerHTML = stageOrder.map(key => {
     const cfg      = STAGE_CONFIG[key];
     const projects = byStage[key] || [];
     const count    = projects.length;
     const totalRev = projects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
     const totalGP  = projects.reduce((s, p) => s + (p.budget.contractGP  || 0), 0);
     const days     = cfg.deadline ? daysRemaining(cfg.deadline) : null;
-    const cls      = cfg.deadline ? urgencyClass(days) : (key === 'S1' ? 'expired' : '');
-    const color    = cfg.deadline ? urgencyColor(days) : cfg.color;
+    const cls      = urgencyClass(days);
+    const color    = urgencyColor(days);
+
+    // Biz Dev card: show sub-breakdown (New / Nurture / Warm / Hot)
+    let subBreakdown = '';
+    if (key === 'BIZ_DEV' && count > 0) {
+      const counts = {};
+      for (const p of projects) {
+        const sub = p.subLabel || 'Unknown';
+        counts[sub] = (counts[sub] || 0) + 1;
+      }
+      subBreakdown = `<div style="font-size:10px;color:var(--text-secondary);margin-top:6px;line-height:1.6">
+        ${Object.entries(counts).map(([k,v]) => `${v} ${k}`).join(' &nbsp;·&nbsp; ')}
+      </div>`;
+    }
 
     return `
       <div class="db-stage-card ${cls}">
         <div class="db-stage-label">${cfg.label}</div>
         <div class="db-stage-sublabel">${cfg.sublabel}</div>
         <div class="db-stage-count">${count}<span class="stage-unit"> jobs</span></div>
-        <div class="db-stage-meta">
+        ${subBreakdown}
+        <div class="db-stage-meta" style="margin-top:${key==='BIZ_DEV'?'4':'10'}px">
           <div class="db-stage-row">
             <span class="k">Contract Rev</span>
             <span class="v">${totalRev ? fmtMoney(totalRev, true) : '<span class="dimmed">—</span>'}</span>
@@ -330,7 +377,7 @@ function renderStageCards(byStage) {
             <span class="v">${totalGP ? fmtMoney(totalGP, true) : '<span class="dimmed">—</span>'}</span>
           </div>
           <div class="db-stage-row" style="margin-top:4px">
-            <span style="font-size:10px;color:var(--text-muted)">${cfg.note}</span>
+            <span style="font-size:10px;color:var(--text-muted)">${cfg.deadlineNote}</span>
           </div>
         </div>
         ${cfg.deadline ? `
@@ -347,13 +394,13 @@ function renderStageCards(byStage) {
 
 // ── Section 4: Revenue Recognition Ledger ────────────────────────────────
 function renderLedger(projects, byStage) {
-  // Show S2–CLOSED jobs; skip S1 (no active revenue yet)
-  const relevant = projects.filter(p => p.stage !== 'S1');
+  // Show all non-BIZ_DEV jobs; BIZ_DEV has no revenue yet
+  const relevant = projects.filter(p => p.stage !== 'BIZ_DEV');
 
   if (relevant.length === 0) {
     document.getElementById('ledger-body').innerHTML =
       `<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--text-muted)">
-        No active or closed construction jobs found. Check that jobs are tagged with the Construction project type.
+        No active or closed construction jobs found in Pipeline, WIP, or Closeout.
       </td></tr>`;
     document.getElementById('ledger-foot').innerHTML = '';
     return;
@@ -362,60 +409,67 @@ function renderLedger(projects, byStage) {
   let sumContractRev = 0, sumBilled = 0, sumBTF = 0, sumGP = 0;
 
   const tbody = relevant.map(p => {
-    const cfg = STAGE_CONFIG[p.stage] || STAGE_CONFIG.S1;
-    const b   = p.budget;
+    const cfg       = STAGE_CONFIG[p.stage] || STAGE_CONFIG.BIZ_DEV;
+    const chipColor = STATUS_CHIP_COLORS[p.stage] || 'var(--text-secondary)';
+    const b         = p.budget;
 
-    // Use contract revenue if available, otherwise show estimated
-    const dispRev  = b.contractRevenue  ?? 0;
-    const dispCost = b.contractCost     ?? 0;
-    const dispGP   = b.contractGP       ?? 0;
-    const dispBill = b.billedRevenue    ?? 0;
-    const dispBTF  = b.btf              ?? 0;
-    const dispPct  = b.pctComplete      ?? 0;
-    const gpRate   = b.gpRate           ?? 0;
+    // Only add to totals when there's real data — don't pad with zeros
+    const dispRev  = b.contractRevenue;   // null = no data; shown as —
+    const dispCost = b.contractCost;
+    const dispGP   = b.contractGP;
+    const dispBill = b.billedRevenue;
+    const dispBTF  = b.btf;
+    const dispPct  = b.pctComplete ?? 0;
+    const gpRate   = b.gpRate;
 
-    sumContractRev += dispRev;
-    sumBilled      += dispBill;
-    sumBTF         += dispBTF;
-    sumGP          += dispGP;
+    sumContractRev += dispRev  || 0;
+    sumBilled      += dispBill || 0;
+    sumBTF         += dispBTF  || 0;
+    sumGP          += dispGP   || 0;
 
-    const gpColor  = gpRate >= 0.09 ? 'var(--status-green)' : gpRate > 0 ? 'var(--status-yellow)' : 'var(--text-muted)';
+    const gpColor    = gpRate == null ? 'var(--text-muted)'
+                     : gpRate >= 0.09 ? 'var(--status-green)'
+                     : 'var(--status-yellow)';
     const stateClass = `bstate-${b.budgetState || 'empty'}`;
     const stateLabel = { billing:'G-702 Live', baseline:'Baseline Set', estimate:'Estimate Only', empty:'No Budget' }[b.budgetState || 'empty'];
-    const stageColor = cfg.color;
 
     const pctFill = Math.min(100, dispPct * 100);
+    const fmt     = v => v != null ? fmtMoney(v, true) : '<span class="dimmed">—</span>';
+    const fmtD    = d => d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'}) : '—';
 
     return `
       <tr>
-        <td class="name">${p.title}</td>
+        <td class="name">
+          <a href="${p.sbosUrl}" target="_blank" rel="noopener"
+             style="color:var(--text-primary);text-decoration:none"
+             onmouseover="this.style.color='var(--sb-gold)'"
+             onmouseout="this.style.color='var(--text-primary)'">${p.title} <span style="font-size:10px;opacity:.4">↗</span></a>
+        </td>
         <td>
-          <span class="chip" style="color:${stageColor};border-color:${stageColor}40;background:${stageColor}12">
-            ${p.stage}
+          <span class="chip" style="color:${chipColor};border-color:${chipColor}40;background:${chipColor}12;white-space:nowrap">
+            ${p.statusLabel}
           </span>
         </td>
         <td><span class="budget-state-chip ${stateClass}">${stateLabel}</span></td>
-        <td class="num">${dispRev ? fmtMoney(dispRev, true) : '<span class="dimmed">—</span>'}</td>
-        <td class="num">${dispCost ? fmtMoney(dispCost, true) : '<span class="dimmed">—</span>'}</td>
-        <td class="num" style="color:${gpColor}">${dispGP ? fmtMoney(dispGP, true) : '<span class="dimmed">—</span>'}</td>
+        <td class="num">${fmt(dispRev)}</td>
+        <td class="num">${fmt(dispCost)}</td>
+        <td class="num" style="color:${gpColor}">${fmt(dispGP)}</td>
         <td class="num" style="color:${gpColor}">
-          ${gpRate ? (gpRate * 100).toFixed(1) + '%' : '<span class="dimmed">—</span>'}
+          ${gpRate != null ? (gpRate * 100).toFixed(1) + '%' : '<span class="dimmed">—</span>'}
         </td>
         <td class="num" style="color:var(--sb-gold-light)">
-          ${dispBill ? fmtMoney(dispBill, true) : '<span class="dimmed">$0</span>'}
+          ${dispBill != null ? fmtMoney(dispBill, true) : '<span class="dimmed">—</span>'}
         </td>
-        <td class="num">${dispBTF ? fmtMoney(dispBTF, true) : '<span class="dimmed">—</span>'}</td>
+        <td class="num">${fmt(dispBTF)}</td>
         <td>
           ${b.hasBudget ? `
           <div class="rev-bar">
             <div class="rev-bar-track"><div class="rev-bar-fill" style="width:${pctFill}%"></div></div>
-            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-secondary)">
-              ${pctFill.toFixed(0)}%
-            </span>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-secondary)">${pctFill.toFixed(0)}%</span>
           </div>` : '<span class="dimmed">—</span>'}
         </td>
-        <td class="mono">${p.dates.wip ? new Date(p.dates.wip).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'}) : '—'}</td>
-        <td class="mono">${(p.dates.estConstEnd || p.dates.estClose) ? new Date(p.dates.estConstEnd || p.dates.estClose).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'}) : '—'}</td>
+        <td class="mono">${fmtD(p.dates.wip)}</td>
+        <td class="mono">${fmtD(p.dates.estConstEnd || p.dates.estClose)}</td>
       </tr>
     `;
   }).join('');
@@ -464,32 +518,32 @@ function renderTargets(byStage, activeProjects) {
   const revGap = Math.max(0, GOAL_REVENUE - totalContract);
   const gpGap  = Math.max(0, GOAL_GP - totalGP);
 
-  const daysBidReady  = daysRemaining(DEADLINES.BID_READY);
-  const daysMobilize  = daysRemaining(DEADLINES.MOBILIZE);
+  const daysBidReady = daysRemaining(DEADLINES.BID_READY);
+  const daysMobilize = daysRemaining(DEADLINES.MOBILIZE);
 
   const rows = [
     {
-      target: 'Bid-Ready Jobs Entering S2',
-      goal:   'Award by July 4, 2026',
-      current: `${byStage.S2.length} in bidding`,
+      target: 'Biz Dev → Active Pipeline (Jul 4 deadline)',
+      goal:   'Hot jobs enter pipeline by July 4',
+      current: `${byStage.PIPELINE.length} Active Pipeline · ${byStage.BIZ_DEV.filter(p=>p.subLabel==='Hot').length} Hot in Biz Dev`,
       gap:    daysBidReady < 0 ? 'Deadline passed' : `${daysBidReady}d remaining`,
-      notes:  'Warm referrals / skip S1. Standard 6-12mo relationship path is closed for 2026.',
+      notes:  'Hot jobs (0-6 mo to bid) must enter Active Pipeline by Jul 4 to execute in 2026.',
       ok:     daysBidReady >= 30,
     },
     {
-      target: 'Jobs Mobilized in S3 (In Progress)',
+      target: 'Active Pipeline → Active in WIP (Sep 2 deadline)',
       goal:   'Mobilize by Sep 2, 2026',
-      current: `${byStage.S3.length} active jobs`,
+      current: `${byStage.WIP.length} Active in WIP`,
       gap:    daysMobilize < 0 ? 'Deadline passed' : `${daysMobilize}d remaining`,
-      notes:  'Must be in WIP by Sep 2 to materially bill in 2026.',
+      notes:  'Pipeline jobs must mobilize by Sep 2 to materially bill in 2026.',
       ok:     daysMobilize >= 30,
     },
     {
-      target: 'Total Contract Revenue in Pipeline',
+      target: 'Total Contract Revenue (Pipeline + WIP + Closeout)',
       goal:   fmtMoney(GOAL_REVENUE, true),
       current: fmtMoney(totalContract, true),
       gap:    revGap > 0 ? `−${fmtMoney(revGap, true)} short` : `✓ +${fmtMoney(-revGap, true)} surplus`,
-      notes:  'Contract values from Baseline Budget Items. Excludes estimate-only jobs not yet awarded.',
+      notes:  'Contract values from Baseline Budget Items. Jobs with "Estimate Only" data are included at estimated value.',
       ok:     revGap === 0,
     },
     {
