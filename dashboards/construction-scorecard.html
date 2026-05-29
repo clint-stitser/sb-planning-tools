@@ -508,12 +508,18 @@ const NC = 12; // column count
 
 const STATE_LABELS = { billing:'G-702 Live', baseline:'Baseline Set', estimate:'Estimate Only', empty:'No Budget' };
 
-// Stage pill metadata (ordered for display)
+// Stage filter pills — broken into individual sub-statuses so Hot/Warm/etc. are filterable.
+// key matches p.subLabel (set by server from CONSTRUCTION_STATUS_MAP).
 const STAGE_PILLS = [
-  { key:'BIZ_DEV',  label:'Biz Dev',            color:'var(--text-secondary)' },
-  { key:'PIPELINE', label:'Active Pipeline',     color:'var(--status-green)'  },
-  { key:'WIP',      label:'Active in WIP',       color:'var(--sb-gold)'       },
-  { key:'CLOSEOUT', label:'Closeout & Warranty', color:'var(--status-blue)'   },
+  // Biz Dev sub-statuses (stage = BIZ_DEV)
+  { key:'New Opportunity', label:'New',     color:'var(--text-muted)',    sep: false },
+  { key:'Nurture',         label:'Nurture', color:'var(--text-muted)',    sep: false },
+  { key:'Warm',            label:'Warm',    color:'var(--status-yellow)', sep: false },
+  { key:'Hot',             label:'Hot',     color:'var(--status-red)',    sep: true  }, // sep after = divider before next group
+  // Main contracted stages
+  { key:'Active Pipeline', label:'Active Pipeline',     color:'var(--status-green)', sep: false },
+  { key:'WIP',             label:'Active in WIP',       color:'var(--sb-gold)',      sep: false },
+  { key:'Closeout',        label:'Closeout & Warranty', color:'var(--status-blue)',  sep: false },
 ];
 const DATA_PILLS = [
   { key:'billing',  label:'G-702 Live'    },
@@ -554,10 +560,14 @@ function initToolbar() {
     <div class="table-toolbar">
       <div class="toolbar-section">
         <span class="toolbar-label">Stage</span>
-        ${STAGE_PILLS.map(s => `
-          <button class="filter-pill" data-ftype="stage" data-fval="${s.key}"
-                  style="--pill-color:${s.color}">${s.label}</button>
-        `).join('')}
+        ${STAGE_PILLS.map((s, i) => {
+          // Insert a subtle divider between Biz Dev sub-statuses and the main contracted stages
+          const divider = (i > 0 && STAGE_PILLS[i-1].sep)
+            ? '<span style="width:1px;height:16px;background:var(--border-subtle);margin:0 4px;display:inline-block;vertical-align:middle"></span>'
+            : '';
+          return `${divider}<button class="filter-pill" data-ftype="stage" data-fval="${s.key}"
+                    style="--pill-color:${s.color}">${s.label}</button>`;
+        }).join('')}
       </div>
       <div class="toolbar-section">
         <span class="toolbar-label">Data</span>
@@ -631,8 +641,9 @@ function applyAndRender() {
   // 1. Base: exclude CLOSED (historical), then apply active filters
   let rows = _projects.filter(p => p.stage !== 'CLOSED');
 
+  // stageFilters matches on p.subLabel ('Hot', 'Warm', 'Active Pipeline', 'WIP', etc.)
   if (tableState.stageFilters.size > 0)
-    rows = rows.filter(p => tableState.stageFilters.has(p.stage));
+    rows = rows.filter(p => tableState.stageFilters.has(p.subLabel));
   if (tableState.stateFilters.size > 0)
     rows = rows.filter(p => tableState.stateFilters.has(p.budget.budgetState || 'empty'));
 
@@ -682,14 +693,13 @@ function buildRow(p) {
   const pctFill     = Math.min(100, (b.pctComplete || 0) * 100);
 
   return `
-    <tr style="${!countsForGoal ? 'opacity:0.65' : ''}">
+    <tr>
       <td class="name">
         <a href="${p.sbosUrl}" target="_blank" rel="noopener"
            style="color:var(--text-primary);text-decoration:none"
            onmouseover="this.style.color='var(--sb-gold)'"
            onmouseout="this.style.color='var(--text-primary)'"
         >${p.title} <span style="font-size:10px;opacity:.4">↗</span></a>
-        ${!countsForGoal ? '<span style="font-size:9px;color:var(--text-muted);margin-left:4px">uncontracted</span>' : ''}
       </td>
       <td>
         <span class="chip" style="color:${chipColor};border-color:${chipColor}40;background:${chipColor}12;white-space:nowrap">
@@ -790,9 +800,13 @@ function renderTableBody(rows) {
 }
 
 function renderFoot(visibleRows) {
-  // Goal totals: only PIPELINE + WIP + CLOSEOUT (contracted work)
+  // Contracted: PIPELINE + WIP + CLOSEOUT
   const goalRows = visibleRows.filter(p => GOAL_STAGES.has(p.stage));
-  const agg = calcAgg(goalRows);
+  const agg      = calcAgg(goalRows);
+  // Uncontracted: BIZ_DEV
+  const bizRows  = visibleRows.filter(p => p.stage === 'BIZ_DEV');
+  const bizAgg   = calcAgg(bizRows);
+
   const revGap = Math.max(0, GOAL_REVENUE - agg.sumRev);
   const gpGap  = Math.max(0, GOAL_GP - agg.sumGP);
   const gc     = revGap > 0 ? 'var(--status-red)' : 'var(--status-green)';
@@ -801,9 +815,9 @@ function renderFoot(visibleRows) {
   document.getElementById('ledger-foot').innerHTML = `
     <tr>
       <td colspan="3" style="color:var(--text-accent)">
-        GOAL TOTAL
+        CONTRACTED TOTAL
         <span style="font-family:var(--font-body);font-size:10px;color:var(--text-muted);margin-left:6px">
-          ${agg.count} contracted job${agg.count !== 1 ? 's' : ''}
+          Pipeline + WIP + Closeout · ${agg.count} job${agg.count !== 1 ? 's' : ''}
         </span>
       </td>
       <td class="num">${fmtMoney(agg.sumRev, true)}</td>
@@ -816,9 +830,27 @@ function renderFoot(visibleRows) {
       <td class="num">${fmtMoney(agg.sumBTF, true)}</td>
       <td colspan="3"></td>
     </tr>
+    ${bizAgg.count > 0 ? `
+    <tr>
+      <td colspan="3" style="color:var(--text-secondary)">
+        BIZ DEV TOTAL
+        <span style="font-family:var(--font-body);font-size:10px;color:var(--text-muted);margin-left:6px">
+          Uncontracted · ${bizAgg.count} job${bizAgg.count !== 1 ? 's' : ''}
+        </span>
+      </td>
+      <td class="num" style="color:var(--text-secondary)">${bizAgg.sumRev ? fmtMoney(bizAgg.sumRev, true) : '—'}</td>
+      <td></td>
+      <td class="num" style="color:var(--text-secondary)">${bizAgg.sumGP ? fmtMoney(bizAgg.sumGP, true) : '—'}</td>
+      <td class="num" style="color:var(--text-secondary)">
+        ${bizAgg.avgGP != null ? (bizAgg.avgGP*100).toFixed(1)+'%' : '—'}
+      </td>
+      <td class="num" style="color:var(--text-secondary)">${bizAgg.sumBill ? fmtMoney(bizAgg.sumBill, true) : '—'}</td>
+      <td class="num" style="color:var(--text-secondary)">${bizAgg.sumBTF ? fmtMoney(bizAgg.sumBTF, true) : '—'}</td>
+      <td colspan="3"></td>
+    </tr>` : ''}
     <tr>
       <td colspan="3" style="color:${gc};font-weight:600">
-        ${revGap > 0 ? '⚠ GAP TO $4.5M GOAL' : '✓ PIPELINE COVERS GOAL'}
+        ${revGap > 0 ? '⚠ GAP TO $4.5M GOAL' : '✓ CONTRACTED PIPELINE COVERS GOAL'}
       </td>
       <td class="num" style="color:${gc}">
         ${revGap > 0 ? '−' + fmtMoney(revGap, true) + ' needed' : '+' + fmtMoney(-revGap, true) + ' surplus'}
