@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Asset Disposition — Year-End Scorecard</title>
+<link rel="stylesheet" href="css/dashboard-shared.css">
+<style>
+/* ── Disposition-specific ── */
+.db-banner.referral-banner {
+  color: #fff;
+  margin-bottom: 0;
+}
+.s5-homes-table .db-tile-value { color: var(--status-green); }
+</style>
+</head>
+<body>
+
+<div class="db-page">
+
+  <!-- ── Header ── -->
+  <div class="db-header">
+    <div class="db-header-left">
+      <div class="db-title">ASSET DISPOSITION</div>
+      <div class="db-subtitle">Year-End Scorecard · Goal: 30 Homes Closed by December 31, 2026 · Owner: <span class="owner-chip">Kaylee</span></div>
+    </div>
+    <div class="db-header-right">
+      <button class="db-refresh-btn" onclick="loadData(true)">↺ Refresh</button>
+      <div class="db-last-updated" id="last-updated">Loading…</div>
+    </div>
+  </div>
+
+  <!-- ── Error Banner ── -->
+  <div id="error-banner" style="display:none;" class="db-error" style="margin-bottom:24px">
+    <span>⚠</span>
+    <span id="error-msg">Unable to load live data.</span>
+  </div>
+
+  <!-- ── Section 1: Goal Scoreboard ── -->
+  <div class="db-section">
+    <div class="db-section-title">🏠 Goal Scoreboard</div>
+    <div class="db-tiles" id="tiles">
+      <div class="skeleton skeleton-tile"></div>
+      <div class="skeleton skeleton-tile"></div>
+      <div class="skeleton skeleton-tile"></div>
+      <div class="skeleton skeleton-tile"></div>
+    </div>
+  </div>
+
+  <!-- ── Section 2: Critical Deadline Banner ── -->
+  <div class="db-section">
+    <div id="deadline-banner" class="db-banner referral-banner">
+      <div class="skeleton skeleton-banner" style="width:100%"></div>
+    </div>
+  </div>
+
+  <!-- ── Section 3: Pipeline Funnel ── -->
+  <div class="db-section">
+    <div class="db-section-title">📊 Pipeline Funnel</div>
+    <div class="db-stages" id="stage-cards">
+      <div class="skeleton skeleton-tile"></div>
+      <div class="skeleton skeleton-tile"></div>
+      <div class="skeleton skeleton-tile"></div>
+      <div class="skeleton skeleton-tile"></div>
+      <div class="skeleton skeleton-tile"></div>
+    </div>
+  </div>
+
+  <!-- ── Section 4: Production Targets ── -->
+  <div class="db-section">
+    <div class="db-section-title">🎯 Production Targets</div>
+    <div class="db-table-wrap">
+      <table class="db-table" id="targets-table">
+        <thead>
+          <tr>
+            <th>Stage</th>
+            <th>Owner</th>
+            <th class="text-right">Currently In Stage</th>
+            <th class="text-right">Needed to Hit 30</th>
+            <th class="text-right">Gap</th>
+            <th>Days to Deadline</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="targets-body">
+          <tr><td colspan="7"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="7"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="7"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="7"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="7"><div class="skeleton skeleton-row"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── Section 5: Active Homes ── -->
+  <div class="db-section">
+    <div class="db-section-title">📋 Active Homes <span style="font-size:12px;color:var(--text-secondary);font-family:var(--font-body)">— click column headers to sort</span></div>
+    <div class="db-table-wrap">
+      <table class="db-table" id="homes-table">
+        <thead>
+          <tr>
+            <th data-col="title" class="sorted">Address / Name <span class="sort-icon">↕</span></th>
+            <th data-col="stage">Stage <span class="sort-icon">↕</span></th>
+            <th data-col="pipelineDate">Pipeline Date <span class="sort-icon">↕</span></th>
+            <th data-col="daysInStage">Days in Stage <span class="sort-icon">↕</span></th>
+            <th class="text-right" data-col="estCloseDate">Est. Close Date <span class="sort-icon">↕</span></th>
+            <th class="text-right" data-col="daysToDeadline">Days to Deadline <span class="sort-icon">↕</span></th>
+            <th class="text-right" data-col="estRevenue">Est. Revenue <span class="sort-icon">↕</span></th>
+            <th class="text-right" data-col="estGP">Est. GP <span class="sort-icon">↕</span></th>
+            <th>Status <span class="sort-icon">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="homes-body">
+          <tr><td colspan="9"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="9"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="9"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="9"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="9"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="9"><div class="skeleton skeleton-row"></div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /db-page -->
+
+<script src="js/dashboard-shared.js"></script>
+<script>
+'use strict';
+
+const DISP_TYPE_IDS = [
+  PRODUCT_TYPE_IDS.DISPOSITION_CM,
+  PRODUCT_TYPE_IDS.DISPOSITION_ONLY,
+];
+
+let _currentSort = { col: 'daysToDeadline', dir: 'asc' };
+let _homeRows = [];
+
+// ── Load Data ─────────────────────────────────────────────────────────────
+async function loadData(force = false) {
+  showError(false);
+  try {
+    const all = await fetchAllProjects(force);
+    const projects = filterByProductType(all, DISP_TYPE_IDS);
+
+    renderAll(projects);
+    setLastUpdated('last-updated');
+    if (force) startAutoRefresh(loadData); // restart timer on manual refresh
+  } catch (err) {
+    console.error('Load error:', err);
+    showError(true, err.message);
+    document.getElementById('last-updated').textContent = 'Error loading data';
+  }
+}
+
+function showError(show, msg = '') {
+  const el = document.getElementById('error-banner');
+  el.style.display = show ? 'flex' : 'none';
+  if (msg) document.getElementById('error-msg').textContent = 'Unable to load live data — ' + msg;
+}
+
+// ── Render All Sections ───────────────────────────────────────────────────
+function renderAll(projects) {
+  // Categorize
+  const byStage = { S1: [], S2: [], S3A: [], S3B: [], S4: [], S5: [] };
+  const rows = [];
+
+  projects.forEach(p => {
+    const stage = inferDispositionStage(p);
+    const key = stage.id.replace('-', '');
+    if (byStage[key] !== undefined) byStage[key].push(p);
+
+    if (stage.id !== 'S1') {
+      const pipeDate = parseDate(p[F.PIPELINE_DATE]);
+      const daysInStage = (() => {
+        // Days since the current stage entry date
+        const entryDate = parseDate(p[F.WIP_DATE]) || parseDate(p[F.AWARD_DATE]) || parseDate(p[F.PIPELINE_DATE]);
+        return entryDate ? Math.floor((new Date() - entryDate) / 86400000) : null;
+      })();
+
+      const deadline = stage.stageDeadline;
+      const dttd = deadline ? daysRemaining(deadline) : null;
+
+      const rev = getRevenue(p) || CONSTANTS.DISPOSITION.REV_PER_HOME;
+      const gp  = getGP(p) || CONSTANTS.DISPOSITION.GP_PER_HOME;
+
+      const estClose = parseDate(p[F.ACT_CLOSE_DATE]) || parseDate(p[F.EST_CLOSE_DATE]);
+
+      rows.push({
+        id: p.id,
+        title: p[F.TITLE] || p.title || '—',
+        stage,
+        pipelineDate: pipeDate,
+        daysInStage,
+        estCloseDate: estClose,
+        daysToDeadline: dttd,
+        estRevenue: rev,
+        estGP: gp,
+        statusLabel: urgencyLabel(dttd),
+      });
+    }
+  });
+
+  _homeRows = rows;
+
+  renderTiles(byStage);
+  renderDeadlineBanner();
+  renderStageCards(byStage);
+  renderTargetsTable(byStage);
+  renderHomesTable();
+}
+
+// ── Section 1: Tiles ─────────────────────────────────────────────────────
+function renderTiles(byStage) {
+  const C = CONSTANTS.DISPOSITION;
+  const closed = byStage.S5.length;
+  const assetsSold = byStage.S5.reduce((sum, p) => sum + (getRevenue(p) || C.ASSET_VALUE_PER_HOME), 0);
+  const revEarned = byStage.S5.reduce((sum, p) => sum + (getRevenue(p) || C.REV_PER_HOME), 0);
+  const gpEarned  = byStage.S5.reduce((sum, p) => sum + (getGP(p) || C.GP_PER_HOME), 0);
+
+  const tiles = [
+    {
+      label: 'Homes Closed',
+      value: `${closed}`,
+      goal: `of ${C.GOAL_HOMES}`,
+      pct: (closed / C.GOAL_HOMES) * 100,
+    },
+    {
+      label: 'Assets Sold',
+      value: fmtMoney(assetsSold, true),
+      goal: `of ${fmtMoney(C.GOAL_ASSETS_SOLD, true)}`,
+      pct: (assetsSold / C.GOAL_ASSETS_SOLD) * 100,
+    },
+    {
+      label: 'Revenue Earned',
+      value: fmtMoney(revEarned, true),
+      goal: `of ${fmtMoney(C.GOAL_REVENUE, true)}`,
+      pct: (revEarned / C.GOAL_REVENUE) * 100,
+    },
+    {
+      label: 'Gross Profit Earned',
+      value: fmtMoney(gpEarned, true),
+      goal: `of ${fmtMoney(C.GOAL_GP, true)}`,
+      pct: (gpEarned / C.GOAL_GP) * 100,
+    },
+  ];
+
+  document.getElementById('tiles').innerHTML = tiles.map(t => `
+    <div class="db-tile">
+      <div class="db-tile-label">${t.label}</div>
+      <div class="db-tile-value">${t.value}</div>
+      <div class="db-tile-goal">of <span class="goal-num">${t.goal.replace('of ','')}</span></div>
+      <div class="db-tile-progress">${renderProgressBar(t.pct, urgencyColor(t.pct > 50 ? 100 : t.pct > 25 ? 50 : 10))}</div>
+    </div>
+  `).join('');
+}
+
+// ── Section 2: Deadline Banner ────────────────────────────────────────────
+function renderDeadlineBanner() {
+  const deadline = CONSTANTS.DISPOSITION.STAGE_DEADLINES.S2;
+  const days = daysRemaining(deadline);
+  const color = urgencyColor(days);
+  const bgColor = days < 0 ? 'rgba(231,76,60,0.2)' :
+                  days <= 30 ? 'rgba(231,76,60,0.15)' :
+                  days <= 60 ? 'rgba(243,156,18,0.12)' : 'rgba(46,204,113,0.08)';
+  const daysDisplay = days < 0 ? 'WINDOW CLOSED' : `${days} days remaining`;
+
+  document.getElementById('deadline-banner').innerHTML = `
+    <div class="db-banner referral-banner" style="background:${bgColor}; border:1px solid ${color}40;">
+      <div class="db-banner-icon">⚡</div>
+      <div class="db-banner-body">
+        <div class="db-banner-headline" style="color:${color}">REFERRAL WINDOW</div>
+        <div class="db-banner-sub">
+          New referrals must be secured by <strong>August 3, 2026</strong> — <strong style="color:${color}">${daysDisplay}</strong><br>
+          Homes referred after this date will not close in 2026.
+        </div>
+      </div>
+      <div class="db-banner-right">
+        ${renderCountdown(deadline, 'DAYS LEFT')}
+      </div>
+    </div>
+  `;
+}
+
+// ── Section 3: Stage Cards ────────────────────────────────────────────────
+function renderStageCards(byStage) {
+  const C = CONSTANTS.DISPOSITION;
+
+  const stages = [
+    { key: 'S1', label: 'S1 — Biz Dev',         sublabel: 'Nurturing',         owner: 'Kaylee',         deadline: null },
+    { key: 'S2', label: 'S2 — Referral Secured', sublabel: 'In Pipeline',       owner: 'Kaylee',         deadline: C.STAGE_DEADLINES.S2 },
+    { key: 'S3A',label: 'S3a — Contract Signed', sublabel: 'Listing Contract',  owner: 'Kaylee + Ops',   deadline: C.STAGE_DEADLINES.S3A },
+    { key: 'S3B',label: 'S3b — Active Listing',  sublabel: 'Listed / In WIP',   owner: 'Kaylee + Ops',   deadline: C.STAGE_DEADLINES.S3B },
+    { key: 'S4', label: 'S4 — Under Contract',   sublabel: 'Pre-Close',         owner: 'Kaylee + Ops',   deadline: C.STAGE_DEADLINES.S4 },
+  ];
+
+  document.getElementById('stage-cards').innerHTML = stages.map(s => {
+    const projects = byStage[s.key] || [];
+    const count = projects.length;
+    const totalRev = projects.reduce((sum, p) => sum + (getRevenue(p) || C.REV_PER_HOME), 0);
+    const totalGP  = projects.reduce((sum, p) => sum + (getGP(p) || C.GP_PER_HOME), 0);
+    const days = s.deadline ? daysRemaining(s.deadline) : null;
+    const cls  = urgencyClass(days);
+    const color = urgencyColor(days);
+
+    return `
+      <div class="db-stage-card ${cls}">
+        <div class="db-stage-label">${s.label}</div>
+        <div class="db-stage-sublabel">${s.sublabel}</div>
+        <div class="db-stage-count">${count}<span class="stage-unit"> homes</span></div>
+        <div class="db-stage-meta">
+          <div class="db-stage-row"><span class="k">Est. Revenue</span><span class="v">${fmtMoney(totalRev, true)}</span></div>
+          <div class="db-stage-row"><span class="k">Est. GP</span><span class="v">${fmtMoney(totalGP, true)}</span></div>
+          <div class="db-stage-row"><span class="k">Owner</span><span class="v" style="font-family:var(--font-body);color:var(--sb-gold-light)">${s.owner}</span></div>
+        </div>
+        ${s.deadline ? `
+        <div class="db-stage-deadline">
+          <div class="db-stage-deadline-label">Deadline</div>
+          <div class="db-stage-deadline-chip" style="color:${color}">
+            ${days != null && days >= 0 ? days + ' days' : 'PAST'}
+          </div>
+        </div>` : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Section 4: Production Targets ────────────────────────────────────────
+function renderTargetsTable(byStage) {
+  const C = CONSTANTS.DISPOSITION;
+  const closedCount = (byStage.S5 || []).length;
+
+  // Homes that will close (working backwards from S4 to S2)
+  const inS4 = byStage.S4.length;
+  const inS3B = byStage.S3B.length;
+  const inS3A = byStage.S3A.length;
+  const inS2 = byStage.S2.length;
+
+  // "Needed" = how many need to be IN this stage right now to hit 30 closes
+  // (no fallout in v1 — all become closes)
+  const alreadyClosed = closedCount;
+  const pipelineTotal = inS4 + inS3B + inS3A + inS2;
+  const projectedTotal = alreadyClosed + pipelineTotal;
+  const gap = C.GOAL_HOMES - projectedTotal;
+
+  const rows = [
+    { stage: 'S2 — Referral Secured', owner: 'Kaylee',       count: inS2,  deadline: C.STAGE_DEADLINES.S2 },
+    { stage: 'S3a — Contract Signed', owner: 'Kaylee + Ops', count: inS3A, deadline: C.STAGE_DEADLINES.S3A },
+    { stage: 'S3b — Active Listing',  owner: 'Kaylee + Ops', count: inS3B, deadline: C.STAGE_DEADLINES.S3B },
+    { stage: 'S4 — Under Contract',   owner: 'Kaylee + Ops', count: inS4,  deadline: C.STAGE_DEADLINES.S4 },
+  ];
+
+  // Pipeline gap distribution — how many MORE are needed across the funnel
+  let remaining = Math.max(0, gap);
+
+  const tbody = rows.map(r => {
+    const days = daysRemaining(r.deadline);
+    const needed = r.count; // v1: no fallout — every home in pipeline is "needed"
+    const gapVal = 0; // v1: all homes count — surplus/shortfall is at total level
+    const chipClass = urgencyChipClass(days);
+
+    return `
+      <tr>
+        <td class="name">${r.stage}</td>
+        <td><span class="owner-chip">${r.owner}</span></td>
+        <td class="num">${r.count}</td>
+        <td class="num dimmed">—</td>
+        <td class="num dimmed">—</td>
+        <td class="mono">${days != null && days >= 0 ? days + ' d' : 'PAST'}</td>
+        <td><span class="${chipClass}">${urgencyLabel(days)}</span></td>
+      </tr>
+    `;
+  }).join('');
+
+  // Summary row
+  const totalColor = projectedTotal >= C.GOAL_HOMES ? 'var(--status-green)' : 'var(--status-red)';
+  const summary = `
+    <tr style="background:var(--surface-2)">
+      <td colspan="2" class="name" style="color:var(--text-accent)">Total Pipeline (Projected Closes)</td>
+      <td class="num" style="color:${totalColor};font-family:var(--font-display);font-size:18px">${projectedTotal}</td>
+      <td class="num" style="color:var(--text-accent)">${C.GOAL_HOMES}</td>
+      <td class="num" style="color:${gap <= 0 ? 'var(--status-green)' : 'var(--status-red)'}">
+        ${gap > 0 ? '−' + gap + ' short' : '✓ ' + Math.abs(gap) + ' surplus'}
+      </td>
+      <td colspan="2" style="color:var(--text-secondary);font-size:11px">
+        ${gap > 0 ? 'Need ' + gap + ' more homes in pipeline' : 'Pipeline is sufficient'}
+      </td>
+    </tr>
+  `;
+
+  const alsoClosedRow = closedCount > 0 ? `
+    <tr>
+      <td class="name" style="color:var(--status-green)">S5 — Closed</td>
+      <td><span class="owner-chip">Done</span></td>
+      <td class="num" style="color:var(--status-green);font-weight:600">${closedCount}</td>
+      <td class="num dimmed">—</td>
+      <td class="num" style="color:var(--status-green)">✓</td>
+      <td class="mono dimmed">—</td>
+      <td><span class="chip chip-green">Closed</span></td>
+    </tr>
+  ` : '';
+
+  document.getElementById('targets-body').innerHTML = alsoClosedRow + tbody + summary;
+}
+
+// ── Section 5: Active Homes Table ────────────────────────────────────────
+function renderHomesTable() {
+  const rows = sortRows([..._homeRows], _currentSort.col, _currentSort.dir);
+
+  if (rows.length === 0) {
+    document.getElementById('homes-body').innerHTML = `
+      <tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted)">
+        No active Disposition homes found
+      </td></tr>
+    `;
+    return;
+  }
+
+  document.getElementById('homes-body').innerHTML = rows.map(r => {
+    const stageColor = r.stage.color;
+    const chipCls = urgencyChipClass(r.daysToDeadline);
+
+    return `
+      <tr>
+        <td class="name">${r.title}</td>
+        <td>
+          <span class="chip" style="color:${stageColor};border-color:${stageColor}40;background:${stageColor}10">
+            ${r.stage.id}
+          </span>
+        </td>
+        <td class="mono">${r.pipelineDate ? r.pipelineDate.toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '—'}</td>
+        <td class="mono">${r.daysInStage != null ? r.daysInStage + 'd' : '—'}</td>
+        <td class="mono text-right">${r.estCloseDate ? r.estCloseDate.toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '—'}</td>
+        <td class="mono text-right" style="color:${urgencyColor(r.daysToDeadline)}">
+          ${r.daysToDeadline != null ? (r.daysToDeadline < 0 ? 'PAST' : r.daysToDeadline + 'd') : '—'}
+        </td>
+        <td class="num">${r.estRevenue ? fmtMoney(r.estRevenue, true) : '<span class="dimmed">—</span>'}</td>
+        <td class="num">${r.estGP ? fmtMoney(r.estGP, true) : '<span class="dimmed">—</span>'}</td>
+        <td><span class="${chipCls}">${r.statusLabel}</span></td>
+      </tr>
+    `;
+  }).join('');
+
+  // Update sort indicators
+  document.querySelectorAll('#homes-table thead th').forEach(th => {
+    th.classList.remove('sorted');
+    if (th.dataset.col === _currentSort.col) th.classList.add('sorted');
+  });
+}
+
+function sortRows(rows, col, dir) {
+  return rows.sort((a, b) => {
+    let av = a[col], bv = b[col];
+    if (av instanceof Date) av = av.getTime();
+    if (bv instanceof Date) bv = bv.getTime();
+    if (col === 'stage') { av = a.stage.id; bv = b.stage.id; }
+    av = av ?? (dir === 'asc' ? Infinity : -Infinity);
+    bv = bv ?? (dir === 'asc' ? Infinity : -Infinity);
+    if (av < bv) return dir === 'asc' ? -1 : 1;
+    if (av > bv) return dir === 'asc' ? 1 : -1;
+    return 0;
+  });
+}
+
+// ── Sort Handler ─────────────────────────────────────────────────────────
+document.querySelectorAll('#homes-table thead th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (_currentSort.col === col) {
+      _currentSort.dir = _currentSort.dir === 'asc' ? 'desc' : 'asc';
+    } else {
+      _currentSort = { col, dir: 'asc' };
+    }
+    renderHomesTable();
+  });
+});
+
+// ── Init ─────────────────────────────────────────────────────────────────
+loadData(false);
+startAutoRefresh(loadData);
+</script>
+</body>
+</html>
