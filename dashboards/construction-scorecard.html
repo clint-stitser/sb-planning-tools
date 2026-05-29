@@ -30,6 +30,112 @@
 .rev-bar { display:flex; align-items:center; gap:5px; min-width:80px; }
 .rev-bar-track { flex:1; height:4px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden; }
 .rev-bar-fill { height:100%; border-radius:2px; background:var(--sb-gold); }
+
+/* ── Table Toolbar ── */
+.table-toolbar {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-lg);
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+}
+.toolbar-section {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.toolbar-section--right {
+  margin-left: auto;
+  gap: 10px;
+}
+.toolbar-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.filter-pill {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s;
+  user-select: none;
+}
+.filter-pill:hover { border-color: var(--sb-gold); color: var(--text-accent); }
+.filter-pill.active {
+  background: rgba(201,168,76,0.15);
+  border-color: var(--sb-gold);
+  color: var(--sb-gold-light);
+}
+.filter-pill[data-stage-color].active {
+  background: color-mix(in srgb, var(--pill-color) 15%, transparent);
+  border-color: var(--pill-color);
+  color: var(--pill-color);
+}
+.toolbar-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  letter-spacing: 0.04em;
+}
+.toolbar-toggle input { accent-color: var(--sb-gold); cursor: pointer; }
+.toolbar-clear {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border-subtle);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: all 0.15s;
+}
+.toolbar-clear:hover { border-color: var(--status-red); color: var(--status-red); }
+.toolbar-results {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-left: auto;
+}
+
+/* Group header row */
+.group-hdr td {
+  background: var(--surface-2);
+  padding: 7px 14px 5px;
+  font-family: var(--font-display);
+  font-size: 13px;
+  letter-spacing: 0.06em;
+  border-top: 2px solid var(--border-subtle);
+}
+/* Aggregate / subtotal row */
+.agg-row td {
+  background: rgba(201,168,76,0.04);
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--text-secondary);
+  padding: 5px 14px;
+}
+.agg-row td.agg-num { text-align: right; }
 </style>
 </head>
 <body>
@@ -89,22 +195,24 @@
         — contract values from Baseline Budget Items · actuals from linked G-702s
       </span>
     </div>
+    <!-- toolbar populated by JS -->
+    <div id="ledger-toolbar"></div>
     <div class="db-table-wrap">
       <table class="db-table ledger-table" id="ledger-table">
         <thead>
           <tr>
-            <th>Job / Project</th>
-            <th>Stage</th>
-            <th>Data State</th>
-            <th class="text-right">Contract Rev</th>
-            <th class="text-right">Contract Cost</th>
-            <th class="text-right">Contract GP</th>
-            <th class="text-right">GP %</th>
-            <th class="text-right">Billed to Date</th>
-            <th class="text-right">Balance to Finish</th>
-            <th>% Complete</th>
-            <th>WIP Start</th>
-            <th>Est. Complete</th>
+            <th data-col="title">Job / Project <span class="sort-icon">↕</span></th>
+            <th data-col="stage">Stage <span class="sort-icon">↕</span></th>
+            <th data-col="dataState">Data State <span class="sort-icon">↕</span></th>
+            <th class="text-right" data-col="contractRev">Contract Rev <span class="sort-icon">↕</span></th>
+            <th class="text-right" data-col="contractCost">Contract Cost <span class="sort-icon">↕</span></th>
+            <th class="text-right" data-col="contractGP">Contract GP <span class="sort-icon">↕</span></th>
+            <th class="text-right" data-col="gpRate">GP % <span class="sort-icon">↕</span></th>
+            <th class="text-right" data-col="billed">Billed to Date <span class="sort-icon">↕</span></th>
+            <th class="text-right" data-col="btf">Balance to Finish <span class="sort-icon">↕</span></th>
+            <th data-col="pctComplete">% Complete <span class="sort-icon">↕</span></th>
+            <th data-col="wipStart">WIP Start <span class="sort-icon">↕</span></th>
+            <th data-col="estComplete">Est. Complete <span class="sort-icon">↕</span></th>
           </tr>
         </thead>
         <tbody id="ledger-body">
@@ -394,132 +502,341 @@ function renderStageCards(byStage) {
   }).join('');
 }
 
-// ── Section 4: Revenue Recognition Ledger ────────────────────────────────
-function renderLedger(projects, byStage) {
-  // Show everything EXCEPT fully-closed historical jobs.
-  // Biz Dev (Hot/Warm/etc.) ARE included — they may have budget estimates.
-  // CLOSED is excluded — old completed jobs from prior years clutter the 2026 view.
-  const relevant = projects.filter(p => p.stage !== 'CLOSED');
+// ── Table State + Toolbar ─────────────────────────────────────────────────
+const GOAL_STAGES = new Set(['PIPELINE','WIP','CLOSEOUT']);
+const NC = 12; // column count
 
-  if (relevant.length === 0) {
+const STATE_LABELS = { billing:'G-702 Live', baseline:'Baseline Set', estimate:'Estimate Only', empty:'No Budget' };
+
+// Stage pill metadata (ordered for display)
+const STAGE_PILLS = [
+  { key:'BIZ_DEV',  label:'Biz Dev',            color:'var(--text-secondary)' },
+  { key:'PIPELINE', label:'Active Pipeline',     color:'var(--status-green)'  },
+  { key:'WIP',      label:'Active in WIP',       color:'var(--sb-gold)'       },
+  { key:'CLOSEOUT', label:'Closeout & Warranty', color:'var(--status-blue)'   },
+];
+const DATA_PILLS = [
+  { key:'billing',  label:'G-702 Live'    },
+  { key:'baseline', label:'Baseline Set'  },
+  { key:'estimate', label:'Estimate Only' },
+  { key:'empty',    label:'No Budget'     },
+];
+
+const SORT_FN = {
+  title:       p => (p.title||'').toLowerCase(),
+  stage:       p => p.stage,
+  dataState:   p => p.budget.budgetState||'empty',
+  contractRev: p => p.budget.contractRevenue  ?? -Infinity,
+  contractCost:p => p.budget.contractCost     ?? -Infinity,
+  contractGP:  p => p.budget.contractGP       ?? -Infinity,
+  gpRate:      p => p.budget.gpRate           ?? -Infinity,
+  billed:      p => p.budget.billedRevenue    ?? -Infinity,
+  btf:         p => p.budget.btf              ?? -Infinity,
+  pctComplete: p => p.budget.pctComplete      ?? -Infinity,
+  wipStart:    p => p.dates.wip               ?? '',
+  estComplete: p => p.dates.estConstEnd || p.dates.estClose || '',
+};
+
+const tableState = {
+  stageFilters: new Set(),
+  stateFilters: new Set(),
+  sort: { col: 'stage', dir: 'asc' },
+  groupByStage: true,
+};
+
+let _toolbarInited = false;
+
+function initToolbar() {
+  if (_toolbarInited) return;
+  _toolbarInited = true;
+
+  document.getElementById('ledger-toolbar').innerHTML = `
+    <div class="table-toolbar">
+      <div class="toolbar-section">
+        <span class="toolbar-label">Stage</span>
+        ${STAGE_PILLS.map(s => `
+          <button class="filter-pill" data-ftype="stage" data-fval="${s.key}"
+                  style="--pill-color:${s.color}">${s.label}</button>
+        `).join('')}
+      </div>
+      <div class="toolbar-section">
+        <span class="toolbar-label">Data</span>
+        ${DATA_PILLS.map(s => `
+          <button class="filter-pill" data-ftype="data" data-fval="${s.key}">${s.label}</button>
+        `).join('')}
+      </div>
+      <div class="toolbar-section toolbar-section--right">
+        <label class="toolbar-toggle">
+          <input type="checkbox" id="toggle-group" ${tableState.groupByStage ? 'checked' : ''}>
+          <span>Group by Stage</span>
+        </label>
+        <button class="toolbar-clear" id="btn-clear">Clear</button>
+        <span class="toolbar-results" id="toolbar-count"></span>
+      </div>
+    </div>
+  `;
+
+  // Filter pills
+  document.querySelectorAll('.filter-pill').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const set = btn.dataset.ftype === 'stage' ? tableState.stageFilters : tableState.stateFilters;
+      const val = btn.dataset.fval;
+      if (set.has(val)) { set.delete(val); btn.classList.remove('active'); }
+      else               { set.add(val);   btn.classList.add('active'); }
+      applyAndRender();
+    });
+  });
+
+  // Group toggle
+  document.getElementById('toggle-group').addEventListener('change', e => {
+    tableState.groupByStage = e.target.checked;
+    applyAndRender();
+  });
+
+  // Clear
+  document.getElementById('btn-clear').addEventListener('click', () => {
+    tableState.stageFilters.clear();
+    tableState.stateFilters.clear();
+    document.querySelectorAll('.filter-pill.active').forEach(p => p.classList.remove('active'));
+    applyAndRender();
+  });
+
+  // Column sort
+  document.querySelectorAll('#ledger-table thead th[data-col]').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      tableState.sort = (tableState.sort.col === col)
+        ? { col, dir: tableState.sort.dir === 'asc' ? 'desc' : 'asc' }
+        : { col, dir: 'asc' };
+      updateSortUI();
+      applyAndRender();
+    });
+  });
+
+  updateSortUI();
+}
+
+function updateSortUI() {
+  document.querySelectorAll('#ledger-table thead th[data-col]').forEach(th => {
+    const icon = th.querySelector('.sort-icon');
+    if (!icon) return;
+    const active = th.dataset.col === tableState.sort.col;
+    icon.textContent = active ? (tableState.sort.dir === 'asc' ? '↑' : '↓') : '↕';
+    th.classList.toggle('sorted', active);
+  });
+}
+
+// ── Filter → Sort → Render ────────────────────────────────────────────────
+function applyAndRender() {
+  // 1. Base: exclude CLOSED (historical), then apply active filters
+  let rows = _projects.filter(p => p.stage !== 'CLOSED');
+
+  if (tableState.stageFilters.size > 0)
+    rows = rows.filter(p => tableState.stageFilters.has(p.stage));
+  if (tableState.stateFilters.size > 0)
+    rows = rows.filter(p => tableState.stateFilters.has(p.budget.budgetState || 'empty'));
+
+  // 2. Sort
+  const { col, dir } = tableState.sort;
+  const fn = SORT_FN[col];
+  if (fn) {
+    const d = dir === 'asc' ? 1 : -1;
+    rows = [...rows].sort((a, b) => {
+      const av = fn(a), bv = fn(b);
+      return av < bv ? -d : av > bv ? d : 0;
+    });
+  }
+
+  // 3. Update count badge
+  const countEl = document.getElementById('toolbar-count');
+  if (countEl) countEl.textContent = `${rows.length} job${rows.length !== 1 ? 's' : ''}`;
+
+  // 4. Render
+  renderTableBody(rows);
+}
+
+// ── Row + Aggregate Helpers ───────────────────────────────────────────────
+const fmt  = v => v != null ? fmtMoney(v, true) : '<span class="dimmed">—</span>';
+const fmtD = d => d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'}) : '—';
+
+function calcAgg(rows) {
+  const count   = rows.length;
+  const sumRev  = rows.reduce((s,p) => s + (p.budget.contractRevenue || 0), 0);
+  const sumCost = rows.reduce((s,p) => s + (p.budget.contractCost    || 0), 0);
+  const sumGP   = rows.reduce((s,p) => s + (p.budget.contractGP      || 0), 0);
+  const sumBill = rows.reduce((s,p) => s + (p.budget.billedRevenue    || 0), 0);
+  const sumBTF  = rows.reduce((s,p) => s + (p.budget.btf             || 0), 0);
+  const avgGP   = sumRev > 0 ? sumGP / sumRev : null;
+  const avgPct  = sumRev > 0 ? sumBill / sumRev : null;
+  return { count, sumRev, sumCost, sumGP, sumBill, sumBTF, avgGP, avgPct };
+}
+
+function buildRow(p) {
+  const chipColor   = STATUS_CHIP_COLORS[p.stage] || 'var(--text-secondary)';
+  const b           = p.budget;
+  const countsForGoal = GOAL_STAGES.has(p.stage);
+  const gpRate      = b.gpRate;
+  const gpColor     = gpRate == null ? 'var(--text-muted)'
+                    : gpRate >= 0.09  ? 'var(--status-green)' : 'var(--status-yellow)';
+  const stateKey    = b.budgetState || 'empty';
+  const pctFill     = Math.min(100, (b.pctComplete || 0) * 100);
+
+  return `
+    <tr style="${!countsForGoal ? 'opacity:0.65' : ''}">
+      <td class="name">
+        <a href="${p.sbosUrl}" target="_blank" rel="noopener"
+           style="color:var(--text-primary);text-decoration:none"
+           onmouseover="this.style.color='var(--sb-gold)'"
+           onmouseout="this.style.color='var(--text-primary)'"
+        >${p.title} <span style="font-size:10px;opacity:.4">↗</span></a>
+        ${!countsForGoal ? '<span style="font-size:9px;color:var(--text-muted);margin-left:4px">uncontracted</span>' : ''}
+      </td>
+      <td>
+        <span class="chip" style="color:${chipColor};border-color:${chipColor}40;background:${chipColor}12;white-space:nowrap">
+          ${p.statusLabel}
+        </span>
+      </td>
+      <td><span class="budget-state-chip bstate-${stateKey}">${STATE_LABELS[stateKey]}</span></td>
+      <td class="num">${fmt(b.contractRevenue)}</td>
+      <td class="num">${fmt(b.contractCost)}</td>
+      <td class="num" style="color:${gpColor}">${fmt(b.contractGP)}</td>
+      <td class="num" style="color:${gpColor}">
+        ${gpRate != null ? (gpRate*100).toFixed(1)+'%' : '<span class="dimmed">—</span>'}
+      </td>
+      <td class="num" style="color:var(--sb-gold-light)">
+        ${b.billedRevenue != null ? fmtMoney(b.billedRevenue, true) : '<span class="dimmed">—</span>'}
+      </td>
+      <td class="num">${fmt(b.btf)}</td>
+      <td>
+        ${b.hasBudget ? `<div class="rev-bar">
+          <div class="rev-bar-track"><div class="rev-bar-fill" style="width:${pctFill}%"></div></div>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-secondary)">${pctFill.toFixed(0)}%</span>
+        </div>` : '<span class="dimmed">—</span>'}
+      </td>
+      <td class="mono">${fmtD(p.dates.wip)}</td>
+      <td class="mono">${fmtD(p.dates.estConstEnd || p.dates.estClose)}</td>
+    </tr>`;
+}
+
+function buildAggRow(agg, stageLabel, color) {
+  const gpColor = agg.avgGP == null ? 'var(--text-muted)'
+                : agg.avgGP >= 0.09  ? 'var(--status-green)' : 'var(--status-yellow)';
+  return `
+    <tr class="agg-row">
+      <td colspan="3" style="color:var(--text-muted)">
+        Subtotal — ${agg.count} job${agg.count !== 1 ? 's' : ''}
+      </td>
+      <td class="agg-num" style="color:var(--text-accent)">${agg.sumRev ? fmtMoney(agg.sumRev, true) : '—'}</td>
+      <td class="agg-num">${agg.sumCost ? fmtMoney(agg.sumCost, true) : '—'}</td>
+      <td class="agg-num" style="color:${gpColor}">${agg.sumGP ? fmtMoney(agg.sumGP, true) : '—'}</td>
+      <td class="agg-num" style="color:${gpColor}">
+        ${agg.avgGP != null ? (agg.avgGP*100).toFixed(1)+'%' : '—'}
+      </td>
+      <td class="agg-num" style="color:var(--sb-gold-light)">${agg.sumBill ? fmtMoney(agg.sumBill, true) : '—'}</td>
+      <td class="agg-num">${agg.sumBTF ? fmtMoney(agg.sumBTF, true) : '—'}</td>
+      <td colspan="3"></td>
+    </tr>`;
+}
+
+// ── Main Table Renderer ────────────────────────────────────────────────────
+function renderTableBody(rows) {
+  if (rows.length === 0) {
     document.getElementById('ledger-body').innerHTML =
-      `<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--text-muted)">
-        No active or closed construction jobs found in Pipeline, WIP, or Closeout.
-      </td></tr>`;
+      `<tr><td colspan="${NC}" style="text-align:center;padding:32px;color:var(--text-muted)">
+         No jobs match the current filters.
+       </td></tr>`;
     document.getElementById('ledger-foot').innerHTML = '';
     return;
   }
 
-  // Goal totals count only PIPELINE + WIP + CLOSEOUT — not BIZ_DEV estimates,
-  // not CLOSED historical jobs. BIZ_DEV rows are shown for visibility but flagged.
-  const GOAL_STAGES = new Set(['PIPELINE','WIP','CLOSEOUT']);
-  let sumContractRev = 0, sumBilled = 0, sumBTF = 0, sumGP = 0;
+  let html = '';
 
-  const tbody = relevant.map(p => {
-    const cfg         = STAGE_CONFIG[p.stage] || STAGE_CONFIG.BIZ_DEV;
-    const chipColor   = STATUS_CHIP_COLORS[p.stage] || 'var(--text-secondary)';
-    const b           = p.budget;
-    const countsForGoal = GOAL_STAGES.has(p.stage);
+  if (tableState.groupByStage) {
+    // Render in stage order; BIZ_DEV last (uncontracted)
+    const stageOrder = ['PIPELINE','WIP','CLOSEOUT','BIZ_DEV'];
+    const grouped = {};
+    for (const p of rows) (grouped[p.stage] = grouped[p.stage] || []).push(p);
 
-    // Only add to goal totals when stage is formally in pipeline (not just Biz Dev estimate)
-    const dispRev  = b.contractRevenue;
-    const dispCost = b.contractCost;
-    const dispGP   = b.contractGP;
-    const dispBill = b.billedRevenue;
-    const dispBTF  = b.btf;
-    const dispPct  = b.pctComplete ?? 0;
-    const gpRate   = b.gpRate;
+    for (const key of stageOrder) {
+      const grp = grouped[key];
+      if (!grp || grp.length === 0) continue;
+      const cfg   = STAGE_CONFIG[key] || { label: key };
+      const color = STATUS_CHIP_COLORS[key] || 'var(--text-secondary)';
+      const agg   = calcAgg(grp);
 
-    if (countsForGoal) {
-      sumContractRev += dispRev  || 0;
-      sumBilled      += dispBill || 0;
-      sumBTF         += dispBTF  || 0;
-      sumGP          += dispGP   || 0;
-    }
-
-    const gpColor    = gpRate == null ? 'var(--text-muted)'
-                     : gpRate >= 0.09 ? 'var(--status-green)'
-                     : 'var(--status-yellow)';
-    const stateClass = `bstate-${b.budgetState || 'empty'}`;
-    const stateLabel = { billing:'G-702 Live', baseline:'Baseline Set', estimate:'Estimate Only', empty:'No Budget' }[b.budgetState || 'empty'];
-
-    const pctFill = Math.min(100, dispPct * 100);
-    const fmt     = v => v != null ? fmtMoney(v, true) : '<span class="dimmed">—</span>';
-    const fmtD    = d => d ? new Date(d).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'}) : '—';
-
-    return `
-      <tr style="${!countsForGoal ? 'opacity:0.65;' : ''}">
-        <td class="name">
-          <a href="${p.sbosUrl}" target="_blank" rel="noopener"
-             style="color:var(--text-primary);text-decoration:none"
-             onmouseover="this.style.color='var(--sb-gold)'"
-             onmouseout="this.style.color='var(--text-primary)'">${p.title} <span style="font-size:10px;opacity:.4">↗</span></a>
-          ${!countsForGoal ? '<span style="font-size:9px;color:var(--text-muted);margin-left:4px">uncontracted</span>' : ''}
-        </td>
-        <td>
-          <span class="chip" style="color:${chipColor};border-color:${chipColor}40;background:${chipColor}12;white-space:nowrap">
-            ${p.statusLabel}
+      // Group header
+      html += `<tr class="group-hdr">
+        <td colspan="${NC}" style="color:${color}">
+          ${cfg.label}
+          <span style="font-family:var(--font-body);font-size:11px;color:var(--text-muted);margin-left:8px">
+            ${grp.length} job${grp.length !== 1 ? 's' : ''}
+            ${agg.sumRev ? `· ${fmtMoney(agg.sumRev, true)}` : ''}
           </span>
         </td>
-        <td><span class="budget-state-chip ${stateClass}">${stateLabel}</span></td>
-        <td class="num">${fmt(dispRev)}</td>
-        <td class="num">${fmt(dispCost)}</td>
-        <td class="num" style="color:${gpColor}">${fmt(dispGP)}</td>
-        <td class="num" style="color:${gpColor}">
-          ${gpRate != null ? (gpRate * 100).toFixed(1) + '%' : '<span class="dimmed">—</span>'}
-        </td>
-        <td class="num" style="color:var(--sb-gold-light)">
-          ${dispBill != null ? fmtMoney(dispBill, true) : '<span class="dimmed">—</span>'}
-        </td>
-        <td class="num">${fmt(dispBTF)}</td>
-        <td>
-          ${b.hasBudget ? `
-          <div class="rev-bar">
-            <div class="rev-bar-track"><div class="rev-bar-fill" style="width:${pctFill}%"></div></div>
-            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-secondary)">${pctFill.toFixed(0)}%</span>
-          </div>` : '<span class="dimmed">—</span>'}
-        </td>
-        <td class="mono">${fmtD(p.dates.wip)}</td>
-        <td class="mono">${fmtD(p.dates.estConstEnd || p.dates.estClose)}</td>
-      </tr>
-    `;
-  }).join('');
+      </tr>`;
 
-  // Summary footer
-  const revGap = Math.max(0, GOAL_REVENUE - sumContractRev);
-  const gpGap  = Math.max(0, GOAL_GP - sumGP);
-  const gapColor = revGap > 0 ? 'var(--status-red)' : 'var(--status-green)';
+      // Data rows
+      for (const p of grp) html += buildRow(p);
 
-  document.getElementById('ledger-body').innerHTML = tbody;
+      // Subtotal row
+      html += buildAggRow(agg, cfg.label, color);
+    }
+  } else {
+    for (const p of rows) html += buildRow(p);
+  }
+
+  document.getElementById('ledger-body').innerHTML = html;
+  renderFoot(rows);
+}
+
+function renderFoot(visibleRows) {
+  // Goal totals: only PIPELINE + WIP + CLOSEOUT (contracted work)
+  const goalRows = visibleRows.filter(p => GOAL_STAGES.has(p.stage));
+  const agg = calcAgg(goalRows);
+  const revGap = Math.max(0, GOAL_REVENUE - agg.sumRev);
+  const gpGap  = Math.max(0, GOAL_GP - agg.sumGP);
+  const gc     = revGap > 0 ? 'var(--status-red)' : 'var(--status-green)';
+  const gcgp   = gpGap  > 0 ? 'var(--status-red)' : 'var(--status-green)';
+
   document.getElementById('ledger-foot').innerHTML = `
     <tr>
-      <td colspan="3" style="color:var(--text-accent)">PIPELINE TOTAL</td>
-      <td class="num">${fmtMoney(sumContractRev, true)}</td>
-      <td></td>
-      <td class="num" style="color:var(--text-accent)">${fmtMoney(sumGP, true)}</td>
-      <td class="num" style="color:var(--text-accent)">
-        ${sumContractRev ? ((sumGP/sumContractRev)*100).toFixed(1)+'%' : '—'}
+      <td colspan="3" style="color:var(--text-accent)">
+        GOAL TOTAL
+        <span style="font-family:var(--font-body);font-size:10px;color:var(--text-muted);margin-left:6px">
+          ${agg.count} contracted job${agg.count !== 1 ? 's' : ''}
+        </span>
       </td>
-      <td class="num" style="color:var(--sb-gold-light)">${fmtMoney(sumBilled, true)}</td>
-      <td class="num">${fmtMoney(sumBTF, true)}</td>
+      <td class="num">${fmtMoney(agg.sumRev, true)}</td>
+      <td></td>
+      <td class="num" style="color:var(--text-accent)">${fmtMoney(agg.sumGP, true)}</td>
+      <td class="num" style="color:var(--text-accent)">
+        ${agg.sumRev ? ((agg.sumGP/agg.sumRev)*100).toFixed(1)+'%' : '—'}
+      </td>
+      <td class="num" style="color:var(--sb-gold-light)">${fmtMoney(agg.sumBill, true)}</td>
+      <td class="num">${fmtMoney(agg.sumBTF, true)}</td>
       <td colspan="3"></td>
     </tr>
     <tr>
-      <td colspan="3" style="color:${gapColor};font-weight:600">
-        ${revGap > 0 ? '⚠ GAP TO $4.5M GOAL' : '✓ CONTRACT PIPELINE COVERS GOAL'}
+      <td colspan="3" style="color:${gc};font-weight:600">
+        ${revGap > 0 ? '⚠ GAP TO $4.5M GOAL' : '✓ PIPELINE COVERS GOAL'}
       </td>
-      <td class="num" style="color:${gapColor}">
+      <td class="num" style="color:${gc}">
         ${revGap > 0 ? '−' + fmtMoney(revGap, true) + ' needed' : '+' + fmtMoney(-revGap, true) + ' surplus'}
       </td>
       <td></td>
-      <td class="num" style="color:${gpGap > 0 ? 'var(--status-red)' : 'var(--status-green)'}">
+      <td class="num" style="color:${gcgp}">
         ${gpGap > 0 ? '−' + fmtMoney(gpGap, true) : '+' + fmtMoney(-gpGap, true)}
       </td>
       <td colspan="6" style="color:var(--text-muted);font-size:10px">
         Contract values: G-702 → Baseline → Estimate · Actuals from G-702 pay apps
       </td>
-    </tr>
-  `;
+    </tr>`;
+}
+
+// ── Section 4 entry point (called from renderAll) ─────────────────────────
+function renderLedger(projects, byStage) {
+  initToolbar();
+  applyAndRender();
 }
 
 // ── Section 5: Production Targets ─────────────────────────────────────────
