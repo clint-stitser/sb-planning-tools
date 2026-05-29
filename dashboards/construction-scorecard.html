@@ -3,47 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>3P Construction — Year-End Scorecard</title>
+<title>Construction — Year-End Scorecard</title>
 <link rel="stylesheet" href="css/dashboard-shared.css">
 <style>
 /* ── Construction-specific ── */
-body { --sb-slate: #182535; }
+.ledger-table td, .ledger-table th { font-size: 11px; }
+.ledger-table td { vertical-align: middle; }
 
-.ledger-table td { font-family: var(--font-mono); font-size: 11px; }
-.ledger-row-s3 { border-left: 3px solid var(--sb-gold); }
-.ledger-row-s4 { border-left: 3px solid var(--status-blue); }
-.ledger-row-s2 { border-left: 3px solid var(--status-green); }
-.ledger-row-closed { border-left: 3px solid var(--status-gray); opacity: 0.6; }
+/* Budget state chip — shows data confidence */
+.budget-state-chip {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid;
+  white-space: nowrap;
+}
+.bstate-billing  { color: var(--status-green);  border-color: rgba(46,204,113,0.4);  background: rgba(46,204,113,0.08); }
+.bstate-baseline { color: var(--sb-gold);        border-color: rgba(201,168,76,0.4);  background: rgba(201,168,76,0.08); }
+.bstate-estimate { color: var(--text-secondary); border-color: rgba(255,255,255,0.15);background: rgba(255,255,255,0.04); }
+.bstate-empty    { color: var(--text-muted);     border-color: rgba(255,255,255,0.08);background: transparent; }
 
-.billing-bar-wrap {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.billing-bar-track {
-  flex: 1;
-  height: 6px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 3px;
-  overflow: hidden;
-}
-.billing-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  background: var(--sb-gold);
-  transition: width 0.6s ease;
-}
+/* Revenue bar inline with table */
+.rev-bar { display:flex; align-items:center; gap:5px; min-width:80px; }
+.rev-bar-track { flex:1; height:4px; background:rgba(255,255,255,0.08); border-radius:2px; overflow:hidden; }
+.rev-bar-fill { height:100%; border-radius:2px; background:var(--sb-gold); }
 </style>
 </head>
 <body>
-
 <div class="db-page">
 
   <!-- ── Header ── -->
   <div class="db-header">
     <div class="db-header-left">
-      <div class="db-title">3P CONSTRUCTION</div>
-      <div class="db-subtitle">Year-End Scorecard · Goal: $4,500,000 Revenue at 9% GP by December 31, 2026 · Owner: <span class="owner-chip">Key Clients / Clint</span></div>
+      <div class="db-title">CONSTRUCTION</div>
+      <div class="db-subtitle">
+        Year-End Scorecard · Goal: $4,500,000 Revenue at 9% GP · June 1 – December 31, 2026
+        · Owner: <span class="owner-chip">Key Clients / Clint</span>
+      </div>
     </div>
     <div class="db-header-right">
       <button class="db-refresh-btn" onclick="loadData(true)">↺ Refresh</button>
@@ -51,20 +50,17 @@ body { --sb-slate: #182535; }
     </div>
   </div>
 
-  <!-- ── Error Banner ── -->
-  <div id="error-banner" style="display:none;" class="db-error" style="margin-bottom:24px">
-    <span>⚠</span>
-    <span id="error-msg">Unable to load live data.</span>
+  <!-- ── Error ── -->
+  <div id="error-banner" style="display:none" class="db-error">
+    <span>⚠</span><span id="error-msg">Unable to load live data.</span>
   </div>
 
   <!-- ── Section 1: Goal Scoreboard ── -->
   <div class="db-section">
     <div class="db-section-title">💰 Goal Scoreboard</div>
     <div class="db-tiles" id="tiles">
-      <div class="skeleton skeleton-tile"></div>
-      <div class="skeleton skeleton-tile"></div>
-      <div class="skeleton skeleton-tile"></div>
-      <div class="skeleton skeleton-tile"></div>
+      <div class="skeleton skeleton-tile"></div><div class="skeleton skeleton-tile"></div>
+      <div class="skeleton skeleton-tile"></div><div class="skeleton skeleton-tile"></div>
     </div>
   </div>
 
@@ -80,39 +76,43 @@ body { --sb-slate: #182535; }
   <div class="db-section">
     <div class="db-section-title">📊 Pipeline by Stage</div>
     <div class="db-stages" id="stage-cards">
-      <div class="skeleton skeleton-tile"></div>
-      <div class="skeleton skeleton-tile"></div>
-      <div class="skeleton skeleton-tile"></div>
-      <div class="skeleton skeleton-tile"></div>
+      <div class="skeleton skeleton-tile"></div><div class="skeleton skeleton-tile"></div>
+      <div class="skeleton skeleton-tile"></div><div class="skeleton skeleton-tile"></div>
     </div>
   </div>
 
-  <!-- ── Section 4: Revenue Recognition Table ── -->
+  <!-- ── Section 4: Revenue Recognition Ledger ── -->
   <div class="db-section">
-    <div class="db-section-title">🧾 Revenue Recognition — 2026 Capture Analysis</div>
+    <div class="db-section-title">
+      🧾 Revenue Recognition Ledger
+      <span style="font-size:11px;color:var(--text-muted);font-family:var(--font-body);font-weight:400;letter-spacing:0">
+        — contract values from Baseline Budget Items · actuals from linked G-702s
+      </span>
+    </div>
     <div class="db-table-wrap">
       <table class="db-table ledger-table" id="ledger-table">
         <thead>
           <tr>
-            <th>Job Name</th>
-            <th>Entry Path</th>
+            <th>Job / Project</th>
             <th>Stage</th>
-            <th class="text-right">Contract Value</th>
-            <th>S3 Start</th>
-            <th class="text-right">Days in S3</th>
-            <th class="text-right">Days Left S3</th>
-            <th class="text-right">Rev Capturable '26</th>
-            <th class="text-right">GP Capturable '26</th>
-            <th>Bills Fully in '26?</th>
-            <th>Status</th>
+            <th>Data State</th>
+            <th class="text-right">Contract Rev</th>
+            <th class="text-right">Contract Cost</th>
+            <th class="text-right">Contract GP</th>
+            <th class="text-right">GP %</th>
+            <th class="text-right">Billed to Date</th>
+            <th class="text-right">Balance to Finish</th>
+            <th>% Complete</th>
+            <th>WIP Start</th>
+            <th>Est. Complete</th>
           </tr>
         </thead>
         <tbody id="ledger-body">
-          <tr><td colspan="11"><div class="skeleton skeleton-row"></div></td></tr>
-          <tr><td colspan="11"><div class="skeleton skeleton-row"></div></td></tr>
-          <tr><td colspan="11"><div class="skeleton skeleton-row"></div></td></tr>
-          <tr><td colspan="11"><div class="skeleton skeleton-row"></div></td></tr>
-          <tr><td colspan="11"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="12"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="12"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="12"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="12"><div class="skeleton skeleton-row"></div></td></tr>
+          <tr><td colspan="12"><div class="skeleton skeleton-row"></div></td></tr>
         </tbody>
         <tfoot id="ledger-foot"></tfoot>
       </table>
@@ -142,22 +142,54 @@ body { --sb-slate: #182535; }
     </div>
   </div>
 
-</div><!-- /db-page -->
+</div>
 
 <script src="js/dashboard-shared.js"></script>
 <script>
 'use strict';
 
-const CONST_TYPE_IDS = [PRODUCT_TYPE_IDS.CONSTRUCTION_3P];
+// ── Constants ─────────────────────────────────────────────────────────────
+const REVENUE_START = new Date('2026-06-01');
+const YEAR_END_DATE = new Date('2026-12-31T23:59:59');
+const GOAL_REVENUE  = 4_500_000;
+const GOAL_GP       = 405_000;
+const GOAL_GP_RATE  = 0.09;
+const JOBS_NEEDED   = 6;
+const AVG_JOB       = 750_000;
 
-// ── Load Data ─────────────────────────────────────────────────────────────
+const DEADLINES = {
+  BID_READY:  new Date('2026-07-04'),
+  MOBILIZE:   new Date('2026-09-02'),
+  CLOSEOUT:   new Date('2026-12-01'),
+};
+
+// Stage display config
+const STAGE_CONFIG = {
+  S1:     { label: 'S1 — Biz Dev',    sublabel: 'Relationship / Nurture', color: 'var(--text-muted)',    deadline: null,              note: 'Building pipeline' },
+  S2:     { label: 'S2 — Bidding',    sublabel: 'Hot / Active Pipeline',  color: 'var(--status-green)',  deadline: DEADLINES.BID_READY, note: 'Bid-ready window closes Jul 4' },
+  S3:     { label: 'S3 — In Progress',sublabel: 'Active in WIP',          color: 'var(--sb-gold)',       deadline: DEADLINES.MOBILIZE,  note: 'Progress billing happening' },
+  S4:     { label: 'S4 — Closeout',   sublabel: 'Closeout & Warranty',    color: 'var(--status-blue)',   deadline: DEADLINES.CLOSEOUT,  note: 'Final billing in progress' },
+  CLOSED: { label: 'Closed',          sublabel: 'Job complete',           color: 'var(--status-gray)',   deadline: null,              note: '' },
+};
+
+// ── Data Load ─────────────────────────────────────────────────────────────
+let _projects = [];
+
 async function loadData(force = false) {
   showError(false);
   try {
-    const projects = await fetchProjectsByType('construction', force);
+    const url = `/api/construction-data${force ? '?force=true' : ''}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`API ${res.status}: ${await res.text()}`);
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
 
-    renderAll(projects);
-    setLastUpdated('last-updated');
+    _projects = data.projects || [];
+    renderAll(_projects);
+
+    const el = document.getElementById('last-updated');
+    el.textContent = `Updated ${new Date(data.lastUpdated).toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'})}${data.stale ? ' (refreshing…)' : ''}`;
+
     if (force) startAutoRefresh(loadData);
   } catch (err) {
     console.error('Load error:', err);
@@ -169,69 +201,62 @@ async function loadData(force = false) {
 function showError(show, msg = '') {
   const el = document.getElementById('error-banner');
   el.style.display = show ? 'flex' : 'none';
-  if (msg) document.getElementById('error-msg').textContent = 'Unable to load live data — ' + msg;
+  if (msg) document.getElementById('error-msg').textContent = `Unable to load live data — ${msg}`;
 }
 
-// ── Render All Sections ───────────────────────────────────────────────────
+// ── Render All ────────────────────────────────────────────────────────────
 function renderAll(projects) {
+  // Group by stage (exclude S1 from financial totals but show in stage cards)
   const byStage = { S1: [], S2: [], S3: [], S4: [], CLOSED: [] };
+  for (const p of projects) {
+    if (byStage[p.stage] !== undefined) byStage[p.stage].push(p);
+  }
 
-  projects.forEach(p => {
-    const stage = inferConstructionStage(p);
-    if (byStage[stage.id] !== undefined) byStage[stage.id].push(p);
-  });
+  // Revenue window: Jun 1 – Dec 31. Billed revenue from S3/S4/CLOSED jobs.
+  const activeProjects = [...byStage.S2, ...byStage.S3, ...byStage.S4, ...byStage.CLOSED];
 
-  renderTiles(projects, byStage);
+  renderTiles(byStage, activeProjects);
   renderDeadlineBanners();
   renderStageCards(byStage);
-  renderLedgerTable(projects, byStage);
-  renderTargetsTable(projects, byStage);
+  renderLedger(projects, byStage);
+  renderTargets(byStage, activeProjects);
 }
 
 // ── Section 1: Tiles ─────────────────────────────────────────────────────
-function renderTiles(projects, byStage) {
-  const C = CONSTANTS.CONSTRUCTION;
-
-  // Revenue billed = sum of BTF-Revenue for S4 + CLOSED jobs
-  const billedProjects = [...byStage.S4, ...byStage.CLOSED];
-  const totalBilled = billedProjects.reduce((sum, p) => sum + (getRevenue(p) || 0), 0);
-  const totalGP = billedProjects.reduce((sum, p) => sum + (getGP(p) || 0), 0);
-
-  // Revenue capturable in 2026 from all active jobs
-  const totalCapturable = projects
-    .filter(p => {
-      const s = inferConstructionStage(p);
-      return s.id !== 'CLOSED';
-    })
-    .reduce((sum, p) => sum + prorateCapturable(p).rev, 0);
-
-  const activeCount = projects.filter(p => inferConstructionStage(p).id !== 'CLOSED').length;
+function renderTiles(byStage, activeProjects) {
+  // Contract Revenue = sum of contractRevenue for all active + closed jobs
+  const totalContract = activeProjects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
+  // Billed to Date = sum of billedRevenue for S3/S4/CLOSED
+  const totalBilled   = [...byStage.S3, ...byStage.S4, ...byStage.CLOSED]
+    .reduce((s, p) => s + (p.budget.billedRevenue || 0), 0);
+  const totalGP       = activeProjects.reduce((s, p) => s + (p.budget.contractGP || 0), 0);
+  const totalBTF      = activeProjects.reduce((s, p) => s + (p.budget.btf || 0), 0);
+  const activeCount   = byStage.S2.length + byStage.S3.length + byStage.S4.length;
 
   const tiles = [
     {
-      label: 'Revenue Capturable in 2026',
-      value: fmtMoney(totalCapturable, true),
-      goal: fmtMoney(C.GOAL_REVENUE, true),
-      pct: (totalCapturable / C.GOAL_REVENUE) * 100,
+      label: 'Contract Revenue in Pipeline',
+      value: fmtMoney(totalContract, true),
+      goal:  `of ${fmtMoney(GOAL_REVENUE, true)}`,
+      pct:   Math.min(100, (totalContract / GOAL_REVENUE) * 100),
     },
     {
-      label: 'Gross Profit (9%)',
-      value: fmtMoney(totalCapturable * C.GP_RATE, true),
-      goal: fmtMoney(C.GOAL_GP, true),
-      pct: ((totalCapturable * C.GP_RATE) / C.GOAL_GP) * 100,
+      label: 'Contract GP in Pipeline',
+      value: fmtMoney(totalGP, true),
+      goal:  `of ${fmtMoney(GOAL_GP, true)}`,
+      pct:   Math.min(100, (totalGP / GOAL_GP) * 100),
     },
     {
       label: 'Jobs in Pipeline',
       value: `${activeCount}`,
-      goal: `${C.JOBS_NEEDED} needed`,
-      pct: (activeCount / C.JOBS_NEEDED) * 100,
+      goal:  `${JOBS_NEEDED} target jobs`,
+      pct:   Math.min(100, (activeCount / JOBS_NEEDED) * 100),
     },
     {
-      label: 'Revenue Remaining to Goal',
-      value: fmtMoney(Math.max(0, C.GOAL_REVENUE - totalCapturable), true),
-      goal: 'to go',
-      pct: Math.min(100, (totalCapturable / C.GOAL_REVENUE) * 100),
-      isRemaining: true,
+      label: 'Billed to Date (Actuals)',
+      value: fmtMoney(totalBilled, true),
+      goal:  totalContract ? `${Math.round((totalBilled/totalContract)*100)}% of contract` : '—',
+      pct:   totalContract ? Math.min(100, (totalBilled / totalContract) * 100) : 0,
     },
   ];
 
@@ -245,85 +270,74 @@ function renderTiles(projects, byStage) {
   `).join('');
 }
 
-// ── Section 2: Dual Deadline Banners ────────────────────────────────────
+// ── Section 2: Deadline Banners ───────────────────────────────────────────
 function renderDeadlineBanners() {
-  const D = CONSTANTS.CONSTRUCTION.STAGE_DEADLINES;
-
-  function makeBanner(icon, headline, sub, deadline, tag) {
-    const days = daysRemaining(deadline);
-    const color = urgencyColor(days);
-    const bg = days < 0 ? 'rgba(231,76,60,0.18)' :
-               days <= 30 ? 'rgba(231,76,60,0.12)' :
-               days <= 60 ? 'rgba(243,156,18,0.1)' : 'rgba(46,204,113,0.07)';
-    const daysDisplay = days < 0 ? 'WINDOW CLOSED' : days + ' days';
-
+  function makeBanner(icon, headline, sub, deadline) {
+    const days   = daysRemaining(deadline);
+    const color  = urgencyColor(days);
+    const bg     = days < 0  ? 'rgba(231,76,60,0.16)' :
+                   days < 30 ? 'rgba(231,76,60,0.10)' :
+                   days < 60 ? 'rgba(243,156,18,0.08)' : 'rgba(46,204,113,0.06)';
+    const dLabel = days < 0 ? 'WINDOW CLOSED' : `${days} days`;
     return `
-      <div class="db-banner" style="background:${bg}; border:1px solid ${color}40;">
+      <div class="db-banner" style="background:${bg};border:1px solid ${color}40">
         <div class="db-banner-icon">${icon}</div>
         <div class="db-banner-body">
           <div class="db-banner-headline" style="color:${color}">${headline}</div>
-          <div class="db-banner-sub">${sub.replace('{{DAYS}}', `<strong style="color:${color}">${daysDisplay}</strong>`)}</div>
+          <div class="db-banner-sub">${sub.replace('{{D}}', `<strong style="color:${color}">${dLabel}</strong>`)}</div>
         </div>
-        <div class="db-banner-right">
-          ${renderCountdown(deadline, tag)}
-        </div>
-      </div>
-    `;
+        <div class="db-banner-right">${renderCountdown(deadline, 'DAYS LEFT')}</div>
+      </div>`;
   }
 
-  document.getElementById('deadline-banners').innerHTML = `
-    ${makeBanner(
-      '🔨',
-      'BID-READY DEADLINE',
-      'Jobs must enter bidding by <strong>July 4, 2026</strong> — {{DAYS}}<br>Standard pipeline path: <em>CLOSED for 2026</em>. Skip S1 — must arrive as warm referral.',
-      D.S2_BID_READY,
-      'BID DEADLINE'
-    )}
-    ${makeBanner(
-      '🏗️',
-      'MOBILIZATION DEADLINE',
-      'Jobs must mobilize by <strong>Sep 2, 2026</strong> — {{DAYS}}<br>Jobs mobilizing after this date cannot fully bill in 2026.',
-      D.S3_MOBILIZE,
-      'MOB DEADLINE'
-    )}
-  `;
+  document.getElementById('deadline-banners').innerHTML = [
+    makeBanner('🔨', 'BID-READY DEADLINE',
+      'Jobs must enter active bidding by <strong>July 4, 2026</strong> — {{D}}<br>'
+    + 'Standard relationship pipeline is <em>closed for 2026</em>. Warm referrals and bid-ready only.',
+      DEADLINES.BID_READY),
+    makeBanner('🏗️', 'MOBILIZATION DEADLINE',
+      'Jobs must mobilize (enter WIP) by <strong>Sep 2, 2026</strong> — {{D}}<br>'
+    + 'Jobs mobilizing after this date will not fully bill before December 31.',
+      DEADLINES.MOBILIZE),
+  ].join('');
 }
 
 // ── Section 3: Stage Cards ────────────────────────────────────────────────
 function renderStageCards(byStage) {
-  const C = CONSTANTS.CONSTRUCTION;
-
-  const stages = [
-    { key: 'S1', label: 'S1 — Biz Dev',     sublabel: 'Relationship Stage', deadline: null,               note: 'Standard path CLOSED for 2026 — warm referrals only', expired: true },
-    { key: 'S2', label: 'S2 — Bidding',      sublabel: 'Bid / Award',        deadline: C.STAGE_DEADLINES.S2_BID_READY, note: 'Must award by July 4 to fully bill in 2026' },
-    { key: 'S3', label: 'S3 — In Progress',  sublabel: 'Construction / WIP', deadline: C.STAGE_DEADLINES.S3_MOBILIZE,  note: 'Progress billing happening now' },
-    { key: 'S4', label: 'S4 — Closeout',     sublabel: 'Final Billing',      deadline: C.STAGE_DEADLINES.S4_CLOSEOUT,  note: 'Final revenue recognition' },
-  ];
-
-  document.getElementById('stage-cards').innerHTML = stages.map(s => {
-    const projects = byStage[s.key] || [];
-    const count = projects.length;
-    const totalContract = projects.reduce((sum, p) => sum + (getRevenue(p) || C.AVG_JOB_SIZE), 0);
-    const totalCapturable = projects.reduce((sum, p) => sum + prorateCapturable(p).rev, 0);
-    const days = s.deadline ? daysRemaining(s.deadline) : null;
-    const cls  = s.expired ? 'expired' : urgencyClass(days);
-    const color = s.expired ? 'var(--text-muted)' : urgencyColor(days);
+  const stages = ['S1','S2','S3','S4'];
+  document.getElementById('stage-cards').innerHTML = stages.map(key => {
+    const cfg      = STAGE_CONFIG[key];
+    const projects = byStage[key] || [];
+    const count    = projects.length;
+    const totalRev = projects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
+    const totalGP  = projects.reduce((s, p) => s + (p.budget.contractGP  || 0), 0);
+    const days     = cfg.deadline ? daysRemaining(cfg.deadline) : null;
+    const cls      = cfg.deadline ? urgencyClass(days) : (key === 'S1' ? 'expired' : '');
+    const color    = cfg.deadline ? urgencyColor(days) : cfg.color;
 
     return `
       <div class="db-stage-card ${cls}">
-        <div class="db-stage-label">${s.label}</div>
-        <div class="db-stage-sublabel">${s.sublabel}</div>
+        <div class="db-stage-label">${cfg.label}</div>
+        <div class="db-stage-sublabel">${cfg.sublabel}</div>
         <div class="db-stage-count">${count}<span class="stage-unit"> jobs</span></div>
         <div class="db-stage-meta">
-          <div class="db-stage-row"><span class="k">Contract Value</span><span class="v">${fmtMoney(totalContract, true)}</span></div>
-          <div class="db-stage-row"><span class="k">Rev Capturable '26</span><span class="v">${fmtMoney(totalCapturable, true)}</span></div>
-          <div class="db-stage-row" style="font-size:10px;margin-top:4px"><span style="color:var(--text-muted)">${s.note}</span></div>
+          <div class="db-stage-row">
+            <span class="k">Contract Rev</span>
+            <span class="v">${totalRev ? fmtMoney(totalRev, true) : '<span class="dimmed">—</span>'}</span>
+          </div>
+          <div class="db-stage-row">
+            <span class="k">Contract GP</span>
+            <span class="v">${totalGP ? fmtMoney(totalGP, true) : '<span class="dimmed">—</span>'}</span>
+          </div>
+          <div class="db-stage-row" style="margin-top:4px">
+            <span style="font-size:10px;color:var(--text-muted)">${cfg.note}</span>
+          </div>
         </div>
-        ${s.deadline ? `
+        ${cfg.deadline ? `
         <div class="db-stage-deadline">
           <div class="db-stage-deadline-label">Deadline</div>
           <div class="db-stage-deadline-chip" style="color:${color}">
-            ${days != null && days >= 0 ? days + ' days' : 'PAST'}
+            ${days !== null && days >= 0 ? days + 'd' : 'PAST'}
           </div>
         </div>` : ''}
       </div>
@@ -331,172 +345,169 @@ function renderStageCards(byStage) {
   }).join('');
 }
 
-// ── Section 4: Ledger / Revenue Recognition Table ────────────────────────
-function renderLedgerTable(projects, byStage) {
-  const C = CONSTANTS.CONSTRUCTION;
-
-  // All active + recently closed jobs
-  const relevant = projects.filter(p => {
-    const s = inferConstructionStage(p);
-    return s.id !== 'S1';
-  });
+// ── Section 4: Revenue Recognition Ledger ────────────────────────────────
+function renderLedger(projects, byStage) {
+  // Show S2–CLOSED jobs; skip S1 (no active revenue yet)
+  const relevant = projects.filter(p => p.stage !== 'S1');
 
   if (relevant.length === 0) {
-    document.getElementById('ledger-body').innerHTML = `
-      <tr><td colspan="11" style="text-align:center;padding:32px;color:var(--text-muted)">
-        No 3P Construction jobs in pipeline
-      </td></tr>
-    `;
+    document.getElementById('ledger-body').innerHTML =
+      `<tr><td colspan="12" style="text-align:center;padding:32px;color:var(--text-muted)">
+        No active or closed construction jobs found. Check that jobs are tagged with the Construction project type.
+      </td></tr>`;
     document.getElementById('ledger-foot').innerHTML = '';
     return;
   }
 
-  let totalContract = 0, totalCapturableRev = 0, totalCapturableGP = 0;
+  let sumContractRev = 0, sumBilled = 0, sumBTF = 0, sumGP = 0;
 
   const tbody = relevant.map(p => {
-    const stage = inferConstructionStage(p);
-    const contractVal = getRevenue(p) || C.AVG_JOB_SIZE;
-    const cap = prorateCapturable(p);
-    const mobilizeDate = parseDate(p[F.WIP_DATE]);
-    const daysInS3 = mobilizeDate ? Math.floor((new Date() - mobilizeDate) / 86400000) : null;
-    const daysRemS3 = daysInS3 != null ? Math.max(0, 90 - daysInS3) : null;
+    const cfg = STAGE_CONFIG[p.stage] || STAGE_CONFIG.S1;
+    const b   = p.budget;
 
-    // Is this a bid-ready entry (no standard S1 — came in as warm referral)?
-    const pipelineDate = parseDate(p[F.PIPELINE_DATE]);
-    const entryPath = pipelineDate && (new Date() - pipelineDate) < (180 * 86400000) ? 'Bid-Ready' : 'Standard';
+    // Use contract revenue if available, otherwise show estimated
+    const dispRev  = b.contractRevenue  ?? 0;
+    const dispCost = b.contractCost     ?? 0;
+    const dispGP   = b.contractGP       ?? 0;
+    const dispBill = b.billedRevenue    ?? 0;
+    const dispBTF  = b.btf              ?? 0;
+    const dispPct  = b.pctComplete      ?? 0;
+    const gpRate   = b.gpRate           ?? 0;
 
-    const chipCls = urgencyChipClass(stage.stageDeadline ? daysRemaining(stage.stageDeadline) : null);
+    sumContractRev += dispRev;
+    sumBilled      += dispBill;
+    sumBTF         += dispBTF;
+    sumGP          += dispGP;
 
-    // Billing bar: what % of contract value is capturable
-    const capturePct = contractVal > 0 ? Math.min(100, (cap.rev / contractVal) * 100) : 0;
+    const gpColor  = gpRate >= 0.09 ? 'var(--status-green)' : gpRate > 0 ? 'var(--status-yellow)' : 'var(--text-muted)';
+    const stateClass = `bstate-${b.budgetState || 'empty'}`;
+    const stateLabel = { billing:'G-702 Live', baseline:'Baseline Set', estimate:'Estimate Only', empty:'No Budget' }[b.budgetState || 'empty'];
+    const stageColor = cfg.color;
 
-    totalContract += contractVal;
-    totalCapturableRev += cap.rev;
-    totalCapturableGP += cap.gp;
-
-    const rowClass = {
-      'S3': 'ledger-row-s3',
-      'S4': 'ledger-row-s4',
-      'S2': 'ledger-row-s2',
-      'CLOSED': 'ledger-row-closed',
-    }[stage.id] || '';
+    const pctFill = Math.min(100, dispPct * 100);
 
     return `
-      <tr class="${rowClass}">
-        <td class="name">${p[F.TITLE] || p.title || '—'}</td>
+      <tr>
+        <td class="name">${p.title}</td>
         <td>
-          <span class="chip ${entryPath === 'Bid-Ready' ? 'chip-green' : 'chip-gray'}">
-            ${entryPath}
+          <span class="chip" style="color:${stageColor};border-color:${stageColor}40;background:${stageColor}12">
+            ${p.stage}
           </span>
         </td>
-        <td>
-          <span class="chip" style="color:${stage.color};border-color:${stage.color}40;background:${stage.color}10">
-            ${stage.id}
-          </span>
+        <td><span class="budget-state-chip ${stateClass}">${stateLabel}</span></td>
+        <td class="num">${dispRev ? fmtMoney(dispRev, true) : '<span class="dimmed">—</span>'}</td>
+        <td class="num">${dispCost ? fmtMoney(dispCost, true) : '<span class="dimmed">—</span>'}</td>
+        <td class="num" style="color:${gpColor}">${dispGP ? fmtMoney(dispGP, true) : '<span class="dimmed">—</span>'}</td>
+        <td class="num" style="color:${gpColor}">
+          ${gpRate ? (gpRate * 100).toFixed(1) + '%' : '<span class="dimmed">—</span>'}
         </td>
-        <td class="num">${fmtMoney(contractVal, true)}</td>
-        <td class="mono">${mobilizeDate ? mobilizeDate.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}) : '—'}</td>
-        <td class="num">${daysInS3 != null ? daysInS3 + 'd' : '—'}</td>
-        <td class="num">${daysRemS3 != null ? daysRemS3 + 'd' : '—'}</td>
         <td class="num" style="color:var(--sb-gold-light)">
-          ${cap.rev > 0 ? fmtMoney(cap.rev, true) : '<span class="dimmed">$0</span>'}
+          ${dispBill ? fmtMoney(dispBill, true) : '<span class="dimmed">$0</span>'}
         </td>
-        <td class="num" style="color:var(--status-green)">
-          ${cap.gp > 0 ? fmtMoney(cap.gp, true) : '<span class="dimmed">$0</span>'}
-        </td>
+        <td class="num">${dispBTF ? fmtMoney(dispBTF, true) : '<span class="dimmed">—</span>'}</td>
         <td>
-          <span class="chip ${cap.fullBills === 'Yes' ? 'chip-green' : cap.fullBills === 'Partial' ? 'chip-yellow' : 'chip-red'}">
-            ${cap.fullBills}
-          </span>
+          ${b.hasBudget ? `
+          <div class="rev-bar">
+            <div class="rev-bar-track"><div class="rev-bar-fill" style="width:${pctFill}%"></div></div>
+            <span style="font-family:var(--font-mono);font-size:10px;color:var(--text-secondary)">
+              ${pctFill.toFixed(0)}%
+            </span>
+          </div>` : '<span class="dimmed">—</span>'}
         </td>
-        <td>
-          <span class="${chipCls}">${urgencyLabel(stage.stageDeadline ? daysRemaining(stage.stageDeadline) : null)}</span>
-        </td>
+        <td class="mono">${p.dates.wip ? new Date(p.dates.wip).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'}) : '—'}</td>
+        <td class="mono">${(p.dates.estConstEnd || p.dates.estClose) ? new Date(p.dates.estConstEnd || p.dates.estClose).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'2-digit'}) : '—'}</td>
       </tr>
     `;
   }).join('');
 
-  // Footer summary
-  const revGap = Math.max(0, C.GOAL_REVENUE - totalCapturableRev);
-  const gpGap  = Math.max(0, C.GOAL_GP - totalCapturableGP);
+  // Summary footer
+  const revGap = Math.max(0, GOAL_REVENUE - sumContractRev);
+  const gpGap  = Math.max(0, GOAL_GP - sumGP);
+  const gapColor = revGap > 0 ? 'var(--status-red)' : 'var(--status-green)';
 
   document.getElementById('ledger-body').innerHTML = tbody;
   document.getElementById('ledger-foot').innerHTML = `
     <tr>
-      <td colspan="3" style="color:var(--text-accent)">TOTAL</td>
-      <td class="num">${fmtMoney(totalContract, true)}</td>
+      <td colspan="3" style="color:var(--text-accent)">PIPELINE TOTAL</td>
+      <td class="num">${fmtMoney(sumContractRev, true)}</td>
+      <td></td>
+      <td class="num" style="color:var(--text-accent)">${fmtMoney(sumGP, true)}</td>
+      <td class="num" style="color:var(--text-accent)">
+        ${sumContractRev ? ((sumGP/sumContractRev)*100).toFixed(1)+'%' : '—'}
+      </td>
+      <td class="num" style="color:var(--sb-gold-light)">${fmtMoney(sumBilled, true)}</td>
+      <td class="num">${fmtMoney(sumBTF, true)}</td>
       <td colspan="3"></td>
-      <td class="num" style="color:var(--sb-gold-light)">${fmtMoney(totalCapturableRev, true)}</td>
-      <td class="num" style="color:var(--status-green)">${fmtMoney(totalCapturableGP, true)}</td>
-      <td colspan="2"></td>
     </tr>
     <tr>
-      <td colspan="3" style="color:${revGap > 0 ? 'var(--status-red)' : 'var(--status-green)'}">
-        ${revGap > 0 ? '⚠ GAP TO GOAL' : '✓ GOAL MET'}
+      <td colspan="3" style="color:${gapColor};font-weight:600">
+        ${revGap > 0 ? '⚠ GAP TO $4.5M GOAL' : '✓ CONTRACT PIPELINE COVERS GOAL'}
       </td>
-      <td colspan="4"></td>
-      <td class="num" style="color:${revGap > 0 ? 'var(--status-red)' : 'var(--status-green)'}">
-        ${revGap > 0 ? '−' + fmtMoney(revGap, true) : '+' + fmtMoney(-revGap, true)}
+      <td class="num" style="color:${gapColor}">
+        ${revGap > 0 ? '−' + fmtMoney(revGap, true) + ' needed' : '+' + fmtMoney(-revGap, true) + ' surplus'}
       </td>
+      <td></td>
       <td class="num" style="color:${gpGap > 0 ? 'var(--status-red)' : 'var(--status-green)'}">
         ${gpGap > 0 ? '−' + fmtMoney(gpGap, true) : '+' + fmtMoney(-gpGap, true)}
       </td>
-      <td colspan="2" style="color:var(--text-secondary);font-size:10px">
-        vs $${(C.GOAL_REVENUE/1e6).toFixed(1)}M / $${(C.GOAL_GP/1000).toFixed(0)}K goal
+      <td colspan="6" style="color:var(--text-muted);font-size:10px">
+        Contract values: G-702 → Baseline → Estimate · Actuals from G-702 pay apps
       </td>
     </tr>
   `;
 }
 
-// ── Section 5: Production Targets ────────────────────────────────────────
-function renderTargetsTable(projects, byStage) {
-  const C = CONSTANTS.CONSTRUCTION;
+// ── Section 5: Production Targets ─────────────────────────────────────────
+function renderTargets(byStage, activeProjects) {
+  const totalContract = activeProjects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
+  const totalGP       = activeProjects.reduce((s, p) => s + (p.budget.contractGP  || 0), 0);
+  const revGap = Math.max(0, GOAL_REVENUE - totalContract);
+  const gpGap  = Math.max(0, GOAL_GP - totalGP);
 
-  const activeJobs = projects.filter(p => {
-    const s = inferConstructionStage(p);
-    return s.id !== 'CLOSED' && s.id !== 'S1';
-  });
-
-  const totalCapturable = activeJobs.reduce((sum, p) => sum + prorateCapturable(p).rev, 0);
-  const revGap = Math.max(0, C.GOAL_REVENUE - totalCapturable);
-
-  const s2Count = byStage.S2.length;
-  const s3Count = byStage.S3.length;
-  const s4Count = byStage.S4.length;
+  const daysBidReady  = daysRemaining(DEADLINES.BID_READY);
+  const daysMobilize  = daysRemaining(DEADLINES.MOBILIZE);
 
   const rows = [
     {
       target: 'Bid-Ready Jobs Entering S2',
-      goal: 'Must award by July 4',
-      current: s2Count + ' in bidding',
-      gap: daysRemaining(C.STAGE_DEADLINES.S2_BID_READY) < 0 ? 'Deadline passed' : 'Window open',
-      notes: 'Warm referrals / skip S1. Standard path CLOSED.',
-      chipCls: urgencyChipClass(daysRemaining(C.STAGE_DEADLINES.S2_BID_READY)),
+      goal:   'Award by July 4, 2026',
+      current: `${byStage.S2.length} in bidding`,
+      gap:    daysBidReady < 0 ? 'Deadline passed' : `${daysBidReady}d remaining`,
+      notes:  'Warm referrals / skip S1. Standard 6-12mo relationship path is closed for 2026.',
+      ok:     daysBidReady >= 30,
     },
     {
-      target: 'Jobs in S3 (In Progress)',
-      goal: 'Mobilize by Sep 2',
-      current: s3Count + ' active jobs',
-      gap: s3Count > 0 ? 'Billing now' : 'None yet',
-      notes: 'Progress billing at ' + fmtMoney(C.BILLING_RATE_PER_MONTH, true) + '/mo per job',
-      chipCls: urgencyChipClass(daysRemaining(C.STAGE_DEADLINES.S3_MOBILIZE)),
+      target: 'Jobs Mobilized in S3 (In Progress)',
+      goal:   'Mobilize by Sep 2, 2026',
+      current: `${byStage.S3.length} active jobs`,
+      gap:    daysMobilize < 0 ? 'Deadline passed' : `${daysMobilize}d remaining`,
+      notes:  'Must be in WIP by Sep 2 to materially bill in 2026.',
+      ok:     daysMobilize >= 30,
     },
     {
-      target: 'Total Revenue Capturable in 2026',
-      goal: fmtMoney(C.GOAL_REVENUE, true),
-      current: fmtMoney(totalCapturable, true),
-      gap: revGap > 0 ? '−' + fmtMoney(revGap, true) + ' SHORT' : '✓ GOAL MET',
-      notes: 'Prorated from in-flight + bid-ready jobs',
-      chipCls: revGap === 0 ? 'chip chip-green' : revGap < 1000000 ? 'chip chip-yellow' : 'chip chip-red',
+      target: 'Total Contract Revenue in Pipeline',
+      goal:   fmtMoney(GOAL_REVENUE, true),
+      current: fmtMoney(totalContract, true),
+      gap:    revGap > 0 ? `−${fmtMoney(revGap, true)} short` : `✓ +${fmtMoney(-revGap, true)} surplus`,
+      notes:  'Contract values from Baseline Budget Items. Excludes estimate-only jobs not yet awarded.',
+      ok:     revGap === 0,
+    },
+    {
+      target: 'Total Contract GP',
+      goal:   `${fmtMoney(GOAL_GP, true)} (9%)`,
+      current: fmtMoney(totalGP, true),
+      gap:    gpGap > 0 ? `−${fmtMoney(gpGap, true)} short` : `✓ +${fmtMoney(-gpGap, true)} surplus`,
+      notes:  'Contract GP from budget rows (Revenue − COGS). Actual GP confirmed once G-702 actuals flow.',
+      ok:     gpGap === 0,
     },
   ];
 
   document.getElementById('targets-body').innerHTML = rows.map(r => `
-    <tr class="${r.gap.includes('SHORT') ? 'target-row-gap' : ''}">
+    <tr class="${!r.ok && r.gap.includes('short') ? 'target-row-gap' : ''}">
       <td class="name">${r.target}</td>
       <td class="num mono">${r.goal}</td>
       <td class="num mono" style="color:var(--sb-gold-light)">${r.current}</td>
-      <td class="num" style="color:${r.gap.includes('SHORT') ? 'var(--status-red)' : r.gap.includes('✓') ? 'var(--status-green)' : 'var(--text-secondary)'}">
+      <td class="num" style="color:${r.ok ? 'var(--status-green)' : r.gap.includes('Deadline passed') ? 'var(--status-red)' : 'var(--status-yellow)'}">
         ${r.gap}
       </td>
       <td style="font-size:11px;color:var(--text-secondary)">${r.notes}</td>
@@ -504,7 +515,7 @@ function renderTargetsTable(projects, byStage) {
   `).join('');
 }
 
-// ── Init ─────────────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────
 loadData(false);
 startAutoRefresh(loadData);
 </script>
