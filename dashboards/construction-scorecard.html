@@ -154,8 +154,7 @@ const CONST_TYPE_IDS = [PRODUCT_TYPE_IDS.CONSTRUCTION_3P];
 async function loadData(force = false) {
   showError(false);
   try {
-    const all = await fetchAllProjects(force);
-    const projects = filterByProductType(all, CONST_TYPE_IDS);
+    const projects = await fetchProjectsByType('construction', force);
 
     renderAll(projects);
     setLastUpdated('last-updated');

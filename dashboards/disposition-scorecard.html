@@ -141,8 +141,7 @@ let _homeRows = [];
 async function loadData(force = false) {
   showError(false);
   try {
-    const all = await fetchAllProjects(force);
-    const projects = filterByProductType(all, DISP_TYPE_IDS);
+    const projects = await fetchProjectsByType('disposition', force);
 
     renderAll(projects);
     setLastUpdated('last-updated');

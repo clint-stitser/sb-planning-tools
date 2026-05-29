@@ -2,8 +2,10 @@
 'use strict';
 
 // ── Constants ──────────────────────────────────────────────────────────────
-const PROXY_URL = 'https://earnest-vitality-production.up.railway.app/smartsuite/';
-const PROJECTS_APP_ID = '68216a706900e8eaf75a05a7';
+// Data comes from the local planning-tools Railway backend (same origin).
+// No external proxy needed — server.js fetches SmartSuite server-side.
+const API_BASE = ''; // same-origin: /api/dashboard-projects
+const PROJECTS_APP_ID = '68216a706900e8eaf75a05a7'; // kept for reference
 
 // Product Type record IDs
 const PRODUCT_TYPE_IDS = {
@@ -290,48 +292,36 @@ function prorateCapturable(p) {
   return { rev: 0, gp: 0, fullBills: 'No' };
 }
 
-// ── SmartSuite Fetch ─────────────────────────────────────────────────────────
-let _projectsCache = null;
-let _cacheTime = null;
-const CACHE_TTL = 5 * 60 * 1000;
+// ── Data Fetch — local Planning Tools backend ────────────────────────────────
+// Server-side SmartSuite proxy at /api/dashboard-projects?type=disposition|construction
+// Returns pre-filtered records; server handles auth + caching.
 
-async function fetchAllProjects(force = false) {
-  const now = Date.now();
-  if (!force && _projectsCache && _cacheTime && (now - _cacheTime) < CACHE_TTL) {
-    return _projectsCache;
+async function fetchProjectsByType(type, force = false) {
+  const url = `/api/dashboard-projects?type=${type}${force ? '&force=true' : ''}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API ${res.status}: ${text.slice(0, 200)}`);
   }
+  const data = await res.json();
+  if (data.error) throw new Error(data.error);
+  return data.items || [];
+}
 
-  const all = [];
-  let offset = 0;
-  const LIMIT = 500;
-
-  while (true) {
-    const res = await fetch(PROXY_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        app_id: PROJECTS_APP_ID,
-        limit: LIMIT,
-        offset,
-      }),
-    });
-
-    if (!res.ok) throw new Error(`Proxy error ${res.status}: ${await res.text()}`);
-    const data = await res.json();
-
-    const items = data.items || data.records || [];
-    all.push(...items);
-
-    if (!data.has_more || items.length < LIMIT) break;
-    offset += LIMIT;
-  }
-
-  _projectsCache = all;
-  _cacheTime = now;
-  return all;
+// Legacy compat — kept so existing dashboard code that calls fetchAllProjects still works
+// Pass type as second arg for filtered fetch; omit for all projects.
+async function fetchAllProjects(force = false, type = null) {
+  if (type) return fetchProjectsByType(type, force);
+  const url = `/api/dashboard-projects${force ? '?force=true' : ''}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`API ${res.status}`);
+  const data = await res.json();
+  return data.items || [];
 }
 
 function filterByProductType(projects, typeIds) {
+  // When using fetchProjectsByType the server already filtered, but keep this
+  // as a safety net in case fetchAllProjects is called without a type.
   return projects.filter(p => {
     const types = p[F.PROJECT_TYPE] || [];
     return typeIds.some(id => types.includes(id));
