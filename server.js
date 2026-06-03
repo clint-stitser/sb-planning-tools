@@ -11,6 +11,16 @@ const SS_ACCOUNT_ID  = 's71hvw05';
 const SS_BASE_URL    = 'https://app.smartsuite.com/api/v1';
 const SS_PROJECTS_ID = '68216a706900e8eaf75a05a7';
 const SS_BUDGET_APP  = '69bb89ebf6a195c2c73a3b3e';
+const SS_G702_APP    = '68a8c3d2bba73ca6e62d0cb5';
+
+// ── Scoring period ─────────────────────────────────────────────────────────
+// TODO: source these from a S-BOS Goals/Targets record instead of hardcoding.
+// Calendar reminder set for June 16, 2026 to activate full pillar gating.
+const SCORING_PERIOD = {
+  start: new Date('2026-06-01T00:00:00Z'),
+  end:   new Date('2026-12-31T23:59:59Z'),
+  label: 'June 1 – December 31, 2026',
+};
 
 // Fields needed by product-line dashboards (lean subset of 173-field schema)
 const DASHBOARD_FIELDS = [
@@ -20,6 +30,13 @@ const DASHBOARD_FIELDS = [
   'scc0298307',                                  // Estimated Construction End Date
   'sacaa33d0f', 's5efff6ee9', 's828d7f9ef',     // owners, sage job ID, SB company
   'sz83pw9x',                                    // Link to Baseline Budget Items (for join)
+  // ── Pillar completeness fields ──────────────────────────────────────────
+  'sfiz2vvh',    // Budget pillar: Link to Pay Application Management (G-702 count)
+  's561f1796b',  // Budget pillar + Checklists: Google Drive folder link
+  'synemrwc',    // Checklists pillar: Link to Check List Tasks
+  's0dm3fca',    // Alignment pillar: Link to GYR Status Reports
+  'sw6mypea',    // Alignment pillar: Link to Project Stakeholders (need ≥4)
+  's4ec74af74',  // Schedule pillar: Smartsheet Schedule ID (text)
 ];
 
 // Budget fields needed to compute per-project revenue summary
@@ -32,12 +49,26 @@ const BUDGET_FIELDS = [
   'sed808550d',   // Baseline Budget formula (G702 → manual s818f40f1d → blank)
   'sa1a3abded',   // Change Orders formula (G702 → manual s432af3d33 → blank)
   's531f1d6ab',   // Adjusted Budget = Baseline + Change Orders
-  's160aa943b',   // Completed to Date formula (G702 → G703 → manual → blank)
-  's0f7c08530',   // Actual Amount formula (same as above, but different fallback field)
+  's160aa943b',   // Completed to Date formula (cumulative — use for project % only)
+  's0f7c08530',   // Actual Amount formula (cumulative — use for project % only)
   's6506ec407',   // Balance to Finish = Adjusted − Completed to Date
   's3636482e0',   // % Complete = Complete to Date / Adjusted
   's32eed8560',   // Account description (display label)
   's363b6d973',   // Linked G-702(s) — presence indicates billing has started
+  's4975ef4d4',   // Budget freshness: date of most recent G-702/G-703/manual update
+];
+
+// G-702 fields for period-specific billing (per PRINCIPLES.md)
+// Revenue this period = SUM(s0592aef02) WHERE s0996cf591 ∈ scoring window
+const G702_FIELDS = [
+  's12698a7c3',   // Project link
+  's0592aef02',   // Amount Due this Period — period-specific billing amount
+  's0996cf591',   // Pay App Date (lookupfield) — filter to scoring window
+  's6ce9e1881',   // Completed & Stored to Date — cumulative, for project progress only
+  's2ce3db8ed',   // Total Retention Held
+  'sf1daf8d5a',   // Balance to Finish (from G-702)
+  's5a0e0a7b0',   // Net Change by Change Orders
+  's338ec3e01',   // SB Company Collecting Revenue
 ];
 
 // Construction entity IDs — used to filter budget rows on multi-type projects.
@@ -263,11 +294,150 @@ function summariseBudget(rows, companyId = null) {
   const hasEstimate = rows.some(r => num(r.sc507e6b54));
   const budgetState = hasG702 ? 'billing' : hasBaseline ? 'baseline' : hasEstimate ? 'estimate' : 'empty';
 
+  // Budget freshness: most recent s4975ef4d4 across all rows (ISO date string or null)
+  let budgetFreshnessDate = null;
+  for (const r of rows) {
+    const v = r.s4975ef4d4;
+    if (v && typeof v === 'string' && (!budgetFreshnessDate || v > budgetFreshnessDate)) {
+      budgetFreshnessDate = v;
+    }
+  }
+
   return {
     contractRevenue, contractCost, contractGP, gpRate,
     billedRevenue, billedCost, billedGP,
-    btf, pctComplete, budgetState, hasBudget: rows.length > 0,
+    btf, pctComplete, budgetState,
+    hasBudget:      rows.length > 0,
+    hasRevenueRows: revenueRows.length > 0,   // for pillar check
+    hasCOGSRows:    cogsRows.length > 0,      // for pillar check
+    budgetFreshnessDate,                       // for Principle 9 dual freshness
   };
+}
+
+// ── G-702 helpers ──────────────────────────────────────────────────────────
+
+// Parse a Pay App Date lookupfield value → Date or null
+// The field returns nested arrays: [["2026-05-15"]] or [[{date:"2026-05-15"}]] or null
+function parsePayAppDate(val) {
+  if (!val || !Array.isArray(val)) return null;
+  const inner = val[0]?.[0];
+  if (!inner) return null;
+  if (typeof inner === 'string' && inner.length >= 8) return new Date(inner);
+  if (inner && typeof inner === 'object' && inner.date) return new Date(inner.date);
+  return null;
+}
+
+// Fetch all G-702 pay applications for a set of project IDs
+async function fetchG702Records(projIdSet) {
+  const headers = {
+    'Authorization': `Token ${API_KEY}`,
+    'ACCOUNT-ID':    SS_ACCOUNT_ID,
+    'Content-Type':  'application/json',
+  };
+  const all = [];
+  let offset = 0;
+  while (true) {
+    const res = await fetch(`${SS_BASE_URL}/applications/${SS_G702_APP}/records/list/`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ limit: 500, offset, fields: G702_FIELDS }),
+    });
+    if (!res.ok) {
+      console.error(`G-702 fetch error ${res.status}:`, (await res.text()).slice(0, 200));
+      break;
+    }
+    const data = await res.json();
+    const items = (data.items || []).filter(r => {
+      const pid = Array.isArray(r.s12698a7c3) ? r.s12698a7c3[0] : r.s12698a7c3;
+      return pid && projIdSet.has(pid);
+    });
+    all.push(...items);
+    offset += (data.items || []).length;
+    if (!data.has_more || (data.items || []).length === 0) break;
+  }
+  return all;
+}
+
+// Summarise G-702s for one project: period-specific and cumulative amounts
+function summariseG702s(g702Records, periodStart, periodEnd) {
+  let periodRevenue  = 0, hasPeriodData = false;
+  let cumulativeBilled = 0, retentionHeld = 0, btfFromG702 = null;
+
+  for (const r of g702Records) {
+    const payAppDate = parsePayAppDate(r.s0996cf591);
+    const amtThisPeriod = parseFloat(r.s0592aef02) || 0;
+    const completedToDate = parseFloat(r.s6ce9e1881) || 0;
+    const retention = parseFloat(r.s2ce3db8ed) || 0;
+    const btf = parseFloat(r.sf1daf8d5a);
+
+    // Period-specific: only count if pay app date falls within scoring window
+    if (payAppDate && payAppDate >= periodStart && payAppDate <= periodEnd) {
+      periodRevenue += amtThisPeriod;
+      hasPeriodData = true;
+    }
+
+    // Cumulative: use most recent G-702's completed-to-date
+    cumulativeBilled = Math.max(cumulativeBilled, completedToDate);
+    retentionHeld    = Math.max(retentionHeld, retention);
+    if (!isNaN(btf)) btfFromG702 = btf;
+  }
+
+  return {
+    periodRevenue:   hasPeriodData ? periodRevenue : null,
+    cumulativeBilled: cumulativeBilled || null,
+    retentionHeld:   retentionHeld || null,
+    btfFromG702,
+    g702Count:       g702Records.length,
+  };
+}
+
+// ── Pillar completeness (Option B: display-only, inclusive scoring) ─────────
+// OPTION B ACTIVE: Incomplete projects are shown with ⚠️ but still score.
+// Calendar reminder June 16, 2026 to switch to Option A (full exclusion).
+// See PRINCIPLES.md → Pillar Completeness section for full check definitions.
+function computePillars(p, budget) {
+  const b = {
+    hasInflow:     budget.hasRevenueRows,
+    hasOutflow:    budget.hasCOGSRows,
+    hasG702orDrive: (p.sfiz2vvh?.length > 0) || !!(p.s561f1796b),
+  };
+  const s = {
+    hasStart:      !!(p.s7e23170f2?.date),
+    hasEnd:        !!(p.scc0298307?.date),
+    hasSmartsheet: !!(p.s4ec74af74 && String(p.s4ec74af74).trim()),
+  };
+  const c = {
+    hasDriveFolder: !!(p.s561f1796b),
+    hasChecklists:  (p.synemrwc?.length || 0) > 0,
+  };
+  const a = {
+    hasGYR:            (p.s0dm3fca?.length || 0) > 0,
+    stakeholderCount:  p.sw6mypea?.length || 0,
+    hasEnoughStakeholders: (p.sw6mypea?.length || 0) >= 4,
+  };
+
+  const checks = [
+    b.hasInflow, b.hasOutflow, b.hasG702orDrive,
+    s.hasStart, s.hasEnd, s.hasSmartsheet,
+    c.hasDriveFolder, c.hasChecklists,
+    a.hasGYR, a.hasEnoughStakeholders,
+  ];
+  const passCount = checks.filter(Boolean).length;
+  const complete  = passCount === checks.length;
+
+  // Missing items for the tooltip / pending setup section
+  const missing = [];
+  if (!b.hasInflow)     missing.push('Budget: no revenue row');
+  if (!b.hasOutflow)    missing.push('Budget: no cost row');
+  if (!b.hasG702orDrive) missing.push('Budget: no G-702 or Drive folder');
+  if (!s.hasStart)      missing.push('Schedule: no Construction Start date');
+  if (!s.hasEnd)        missing.push('Schedule: no Construction End date');
+  if (!s.hasSmartsheet) missing.push('Schedule: Smartsheet not linked');
+  if (!c.hasDriveFolder) missing.push('Checklists: no Drive folder');
+  if (!c.hasChecklists) missing.push('Checklists: none assigned');
+  if (!a.hasGYR)        missing.push('Alignment: no GYR report');
+  if (!a.hasEnoughStakeholders) missing.push(`Alignment: ${a.stakeholderCount}/4 stakeholders`);
+
+  return { budget: b, schedule: s, checklists: c, alignment: a, complete, passCount, total: checks.length, missing };
 }
 
 // ── Construction data cache (projects + budget) ────────────────────────────
@@ -277,7 +447,7 @@ let constPromise   = null;
 const CONST_TTL    = 5 * 60 * 1000;
 
 async function buildConstructionData() {
-  // Fetch projects and all budget rows in parallel
+  // Fetch projects + budget rows in parallel; then G-702s once we have project IDs
   const [allProjects, allBudgetRows] = await Promise.all([
     fetchDashboardProjects(),
     fetchAllBudgetRows(),
@@ -291,7 +461,13 @@ async function buildConstructionData() {
 
   const projIds = new Set(projects.map(p => p.id));
 
-  // Group budget rows by project ID (rows may link to one project)
+  // Fetch G-702s for all construction projects (period-specific billing)
+  const allG702s = await fetchG702Records(projIds).catch(err => {
+    console.error('G-702 fetch failed (non-fatal):', err.message);
+    return [];
+  });
+
+  // Group budget rows by project ID
   const budgetByProject = {};
   for (const row of allBudgetRows) {
     const ids = Array.isArray(row.s2ba7b261b) ? row.s2ba7b261b : (row.s2ba7b261b ? [row.s2ba7b261b] : []);
@@ -302,19 +478,30 @@ async function buildConstructionData() {
     }
   }
 
-  // Annotate each project with stage mapping + budget summary
+  // Group G-702s by project ID
+  const g702ByProject = {};
+  for (const r of allG702s) {
+    const pid = Array.isArray(r.s12698a7c3) ? r.s12698a7c3[0] : r.s12698a7c3;
+    if (pid && projIds.has(pid)) {
+      (g702ByProject[pid] = g702ByProject[pid] || []).push(r);
+    }
+  }
+
+  // Annotate each project
   const annotated = projects.map(p => {
     const statusVal  = p.status?.value || '';
     const stageInfo  = CONSTRUCTION_STATUS_MAP[statusVal]
       || { stage: 'BIZ_DEV', label: statusVal || 'Unknown', subLabel: statusVal || 'Unknown' };
     const budgetRows = budgetByProject[p.id] || [];
 
-    // Multi-type logic: if the project is tagged with more than one product type,
-    // restrict budget rows to those assigned to KCS-Homes so each product line
-    // only sees its own revenue/cost. Single-type projects use all their rows.
-    const productTypes = Array.isArray(p.s4687ad08c) ? p.s4687ad08c : (p.s4687ad08c ? [p.s4687ad08c] : []);
-    const isMultiType  = productTypes.length > 1;
+    // Multi-type: restrict budget to KCS-Homes rows; single-type: use all
+    const productTypes  = Array.isArray(p.s4687ad08c) ? p.s4687ad08c : (p.s4687ad08c ? [p.s4687ad08c] : []);
+    const isMultiType   = productTypes.length > 1;
     const companyFilter = isMultiType ? KCS_HOMES_ID : null;
+
+    const budget  = summariseBudget(budgetRows, companyFilter);
+    const g702    = summariseG702s(g702ByProject[p.id] || [], SCORING_PERIOD.start, SCORING_PERIOD.end);
+    const pillars = computePillars(p, budget);
 
     return {
       id:           p.id,
@@ -324,8 +511,9 @@ async function buildConstructionData() {
       stage:        stageInfo.stage,
       statusLabel:  stageInfo.label,
       subLabel:     stageInfo.subLabel,
-      isMultiType,  // exposed so the dashboard can badge multi-type projects
-      productTypes, // list of product type record IDs
+      isMultiType,
+      productTypes,
+      pillars,       // {complete, passCount, total, missing, budget, schedule, checklists, alignment}
       dates: {
         pipeline:    p.sfa6ec0fec?.date  || null,
         awarded:     p.s8227b8fc4?.date  || null,
@@ -335,12 +523,25 @@ async function buildConstructionData() {
         actClose:    p.s17kv07k?.date    || null,
         estConstEnd: p.scc0298307?.date  || null,
       },
-      budget: summariseBudget(budgetRows, companyFilter),
+      budget,       // contract totals (cumulative)
+      g702,         // period-specific + cumulative from pay apps
+      freshness: {
+        budget:    budget.budgetFreshnessDate,   // from s4975ef4d4
+        schedule:  null,                          // Smartsheet modifiedAt — requires separate API call (deferred)
+      },
     };
   }).filter(p => p.stage !== 'EXCLUDE');
 
-  console.log(`Construction data built — ${annotated.length} projects, ${allBudgetRows.length} budget rows total`);
-  return annotated;
+  const periodRev = annotated
+    .filter(p => ['PIPELINE','WIP','CLOSEOUT'].includes(p.stage))
+    .reduce((s, p) => s + (p.g702.periodRevenue || 0), 0);
+
+  console.log(`Construction data built — ${annotated.length} projects, ${allBudgetRows.length} budget rows, ${allG702s.length} G-702s. Period revenue: $${periodRev.toLocaleString()}`);
+  return {
+    projects:       annotated,
+    scoringPeriod:  { start: SCORING_PERIOD.start.toISOString(), end: SCORING_PERIOD.end.toISOString(), label: SCORING_PERIOD.label },
+    periodRevenue:  periodRev,  // pre-computed for quick header use
+  };
 }
 
 async function getConstructionData(force) {
@@ -348,7 +549,7 @@ async function getConstructionData(force) {
   const fresh = constCache && constCacheTime && (now - constCacheTime) < CONST_TTL;
 
   if (constCache && !force && fresh) {
-    return { projects: constCache, lastUpdated: new Date(constCacheTime).toISOString(), stale: false };
+    return { ...constCache, lastUpdated: new Date(constCacheTime).toISOString(), stale: false };
   }
   if (constCache && !force && !fresh) {
     if (!constPromise) {
@@ -356,7 +557,7 @@ async function getConstructionData(force) {
         constCache = data; constCacheTime = Date.now(); constPromise = null;
       }).catch(err => { constPromise = null; console.error('Construction refresh failed:', err.message); });
     }
-    return { projects: constCache, lastUpdated: new Date(constCacheTime).toISOString(), stale: true };
+    return { ...constCache, lastUpdated: new Date(constCacheTime).toISOString(), stale: true };
   }
   if (!constPromise) {
     constPromise = buildConstructionData().then(data => {
@@ -365,7 +566,7 @@ async function getConstructionData(force) {
     }).catch(err => { constPromise = null; throw err; });
   }
   await constPromise;
-  return { projects: constCache, lastUpdated: new Date(constCacheTime).toISOString(), stale: false };
+  return { ...constCache, lastUpdated: new Date(constCacheTime).toISOString(), stale: false };
 }
 
 // ── Portfolio planner cache ────────────────────────────────────────────────
@@ -467,9 +668,8 @@ app.post('/api/entity-reporting/config', express.json(), (req, res) => {
 // ── Routes ─────────────────────────────────────────────────────────────────
 
 // GET /api/construction-data
-// Returns annotated construction projects with stage (from status field) and
-// budget summary (from Baseline Budget Items rows) per project.
-// Used by construction-scorecard.html.
+// Returns annotated construction projects with stage, budget, G-702 period data,
+// pillar completeness, and scoring period metadata.
 app.get('/api/construction-data', async (req, res) => {
   try {
     const force = req.query.force === 'true';
@@ -477,6 +677,65 @@ app.get('/api/construction-data', async (req, res) => {
     res.json(result);
   } catch (err) {
     console.error('Construction data error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/snapshot
+// Creates Stats records in SmartSuite for the current dashboard state.
+// v1: writes Stats records + returns HTML string for client-side download.
+// TODO v1.1: upload HTML to Google Drive + write link back to Stats record.
+app.post('/api/snapshot', express.json(), async (req, res) => {
+  try {
+    const { dashboardType = 'construction', periodStart, periodEnd, periodCode, metrics = [], htmlContent } = req.body || {};
+    if (!periodStart || !periodEnd) return res.status(400).json({ error: 'periodStart and periodEnd required' });
+
+    const headers = {
+      'Authorization': `Token ${API_KEY}`,
+      'ACCOUNT-ID':    SS_ACCOUNT_ID,
+      'Content-Type':  'application/json',
+    };
+
+    const STATS_APP = '6840927ebcfa2d2bfef039e2';
+    const created   = [];
+
+    for (const m of metrics) {
+      // Each metric: { goalId, priorityId, projectId, amount, periodType }
+      const payload = {
+        sd6cc86075: m.goalId     || null,
+        s38ac950e1: m.priorityId || null,
+        s5e8a7ac82: m.projectId  || null,
+        s793df2063: { date: periodStart },
+        sb5657209d: { date: periodEnd   },
+        sfa08338c5: m.periodType || 'LGtGZ',  // default: Weekly
+        s6471266f2: m.amount,
+      };
+      const r = await fetch(`${SS_BASE_URL}/applications/${STATS_APP}/records/`, {
+        method: 'POST', headers,
+        body: JSON.stringify(payload),
+      });
+      if (r.ok) created.push((await r.json()).id);
+      else console.error('Stats record create failed:', await r.text());
+    }
+
+    // Save HTML to a temp file if provided (client downloads it)
+    // TODO v1.1: upload to Google Drive and write link to Stats record
+    let snapshotFile = null;
+    if (htmlContent) {
+      const fname = `snapshot-${dashboardType}-${periodEnd}-${periodCode || 'snap'}.html`;
+      snapshotFile = path.join(__dirname, 'snapshots', fname);
+      fs.mkdirSync(path.join(__dirname, 'snapshots'), { recursive: true });
+      fs.writeFileSync(snapshotFile, htmlContent, 'utf8');
+    }
+
+    res.json({
+      ok: true,
+      statsRecordsCreated: created.length,
+      snapshotPath: snapshotFile ? `/snapshots/${path.basename(snapshotFile)}` : null,
+      note: 'v1: Download the snapshot HTML from the link above and upload to Google Drive manually. v1.1 will automate Drive upload.',
+    });
+  } catch (err) {
+    console.error('Snapshot error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
@@ -521,6 +780,7 @@ app.get('/api/data', async (req, res) => {
   }
 });
 
+app.use('/snapshots', express.static(path.join(__dirname, 'snapshots')));
 app.use(express.static(path.join(__dirname)));
 
 app.get('/', (req, res) => {
