@@ -547,7 +547,7 @@ async function buildConstructionData() {
     //
     // Only Active Pipeline (stage=PIPELINE) contributes to [C].
     // BIZ_DEV excluded: pre-award, still speculative. Shows in stage card for context.
-    const CONFIDENCE_SCALE   = 5;    // sl14xzgf is a 1-5 star rating
+    const CONFIDENCE_SCALE   = 10;   // sl14xzgf is a 1-10 numeric rating (display_format: numbers)
     const DEFAULT_CONVERSION = 0.30; // conservative default for unrated pipeline jobs
     const DEFAULT_DURATION   = 90;   // typical S3 WIP phase in days
     const MIN_VALID_DURATION = 14;   // filter out clearly wrong values (< 2 weeks)

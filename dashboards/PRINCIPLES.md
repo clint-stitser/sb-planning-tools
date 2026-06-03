@@ -253,6 +253,8 @@ Schedule: [date]    ← Green ≤7d / Yellow 8–21d / Red >21d
 
 **Budget Freshness Source:** `s4975ef4d4` on the Baseline Budget Items app (`69bb89ebf6a195c2c73a3b3e`). This is a formula field labeled "Last 702/703/manual update" — it reflects when the most recent G-702, G-703, or manual budget entry was made.
 
+**Confidence Rating:** `sl14xzgf` on the Projects app. Scale: **1–10** (numeric display format, confirmed June 2, 2026). Conversion rate = `rating / 10`. Threshold for including Hot jobs in [C] projected score: rating ≥ 5 (≥50%). Unrated Hot = 55% default; unrated Pipeline = 30% default.
+
 **Budget Freshness Fallback:** For projects without live G-702 data, use the most recently modified file date in the project's Google Drive folder. `MAX(s4975ef4d4, Drive folder most recent file modifiedTime)`.
 
 **Schedule Freshness Source:** Smartsheet `modifiedAt` via `get_sheet_summary`. Project's Smartsheet sheet ID stored on the Project record (`s4ec74af74` or `sa1de44e85`).
