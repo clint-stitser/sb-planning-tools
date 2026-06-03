@@ -1225,10 +1225,10 @@ async function captureSnapshot() {
     // Build metrics for Stats table
     const goalRows = _projects.filter(p => GOAL_STAGES.has(p.stage));
     const metrics  = [
-      { amount: _periodRevenue, label: 'Period Revenue' },
-      { amount: goalRows.reduce((s,p) => s + (p.budget.contractRevenue || 0), 0), label: 'Contract Revenue' },
-      { amount: goalRows.reduce((s,p) => s + (p.budget.contractGP || 0), 0), label: 'Contract GP' },
-      { amount: goalRows.length, label: 'Jobs in Pipeline' },
+      { label: 'Period-Revenue',    amount: _periodRevenue },
+      { label: 'Contract-Revenue',  amount: goalRows.reduce((s,p) => s + (p.budget.contractRevenue || 0), 0) },
+      { label: 'Contract-GP',       amount: goalRows.reduce((s,p) => s + (p.budget.contractGP || 0), 0) },
+      { label: 'Jobs-Pipeline',     amount: goalRows.length },
     ].map(m => ({ ...m, periodType: 'LGtGZ' })); // Weekly
 
     // Capture HTML snapshot of current dashboard state

@@ -700,15 +700,17 @@ app.post('/api/snapshot', express.json(), async (req, res) => {
     const created   = [];
 
     for (const m of metrics) {
-      // Each metric: { goalId, priorityId, projectId, amount, periodType }
+      // Each metric: { goalId, priorityId, projectId, amount, periodType, label }
+      // title is required (recordtitlefield); linked record fields take arrays of IDs.
       const payload = {
-        sd6cc86075: m.goalId     || null,
-        s38ac950e1: m.priorityId || null,
-        s5e8a7ac82: m.projectId  || null,
-        s793df2063: { date: periodStart },
-        sb5657209d: { date: periodEnd   },
-        sfa08338c5: m.periodType || 'LGtGZ',  // default: Weekly
-        s6471266f2: m.amount,
+        title:      `${periodCode}-${m.label || 'Metric'}`,
+        sd6cc86075: m.goalId     ? [m.goalId]     : [],  // Associated Goal (linkedrecordfield)
+        s38ac950e1: m.priorityId ? [m.priorityId] : [],  // Associated Priority (linkedrecordfield)
+        s5e8a7ac82: m.projectId  ? [m.projectId]  : [],  // Link to Projects (linkedrecordfield)
+        s793df2063: { date: periodStart },                // Begin Date
+        sb5657209d: { date: periodEnd   },                // End Date
+        sfa08338c5: m.periodType || 'LGtGZ',             // Monthly(kwIw9) or Weekly(LGtGZ)
+        s6471266f2: m.amount,                             // Amount for Period (required numberfield)
       };
       const r = await fetch(`${SS_BASE_URL}/applications/${STATS_APP}/records/`, {
         method: 'POST', headers,
