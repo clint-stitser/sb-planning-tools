@@ -37,6 +37,9 @@ const DASHBOARD_FIELDS = [
   's0dm3fca',    // Alignment pillar: Link to GYR Status Reports
   'sw6mypea',    // Alignment pillar: Link to Project Stakeholders (need ≥4)
   's4ec74af74',  // Schedule pillar: Smartsheet Schedule ID (text)
+  // ── Pipeline projection fields ──────────────────────────────────────────
+  'sl14xzgf',    // Confidence Rating (ratingfield, scale 1-5) — conversion probability
+  's399940ae0',  // Estimated Duration in Days — used for progress-billing proration
 ];
 
 // Budget fields needed to compute per-project revenue summary
@@ -527,29 +530,48 @@ async function buildConstructionData() {
     // will land before December 31, 2026
     const capturableBTF = periodCapturableBTF(budget.btf, estConstEnd);
 
-    // Pipeline projected billing:
-    // ONLY Active Pipeline (stage=PIPELINE) jobs count toward [C].
-    // BIZ_DEV is excluded entirely — even Hot (0-6mo to bid) is too speculative:
-    //   with 31 days to the Jul 4 bid-ready deadline, no BizDev job can reliably
-    //   award + mobilize + bill before Dec 31 at a plannable level.
-    // Warm/Nurture/New: definitively out of 2026 scope.
+    // ── Pipeline projected billing (progress-based, no hard deadline cutoff) ──
     //
-    // Active Pipeline gets a 50% conversion discount — they're in the pipeline
-    // but not yet awarded, so half are expected to convert and mobilize in time.
+    // Construction uses PROGRESS-BASED BILLING, not event-based (unlike Disposition
+    // where revenue only lands on a single close event). A job mobilizing Nov 1 can
+    // still bill 2 months before Dec 31. Dec 1 still generates 1 month of billing.
+    // The only true cutoff is Dec 31 itself.
     //
-    // If mobilization deadline (Sep 2) has already passed, $0 for everyone.
-    const MOB_DEADLINE  = new Date('2026-09-02T00:00:00Z');
-    const today         = new Date();
-    const mobWindowOpen = today < MOB_DEADLINE;
+    // Formula: contractRevenue × min(1, daysRemainingInPeriod / estimatedDuration) × conversionRate
+    //   - daysRemainingInPeriod: days from TODAY to Dec 31 (dynamic — shrinks over time)
+    //   - estimatedDuration: per-project (s399940ae0) or default 90 days (typical S3)
+    //   - conversionRate: per-project Confidence Rating (sl14xzgf / 5) or default 0.30
+    //
+    // Sep 2 mobilization deadline remains a VISIBILITY MARKER ("mobilize here for full
+    // billing") but is NOT a formula parameter. Missing it doesn't zero out the projection.
+    //
+    // Only Active Pipeline (stage=PIPELINE) contributes to [C].
+    // BIZ_DEV excluded: pre-award, still speculative. Shows in stage card for context.
+    const CONFIDENCE_SCALE   = 5;    // sl14xzgf is a 1-5 star rating
+    const DEFAULT_CONVERSION = 0.30; // conservative default for unrated pipeline jobs
+    const DEFAULT_DURATION   = 90;   // typical S3 WIP phase in days
+    const MIN_VALID_DURATION = 14;   // filter out clearly wrong values (< 2 weeks)
+
+    const today = new Date();
+    const daysRemainingInPeriod = Math.max(0, (SCORING_PERIOD.end - today) / 86400000);
+
+    // Per-project confidence rating → conversion probability
+    const rawRating = parseFloat(p.sl14xzgf) || 0;
+    const confidenceRating = rawRating > 0 ? rawRating : null; // null = not yet rated
+    const conversionRate = rawRating > 0
+      ? Math.min(1, rawRating / CONFIDENCE_SCALE)
+      : DEFAULT_CONVERSION;
+
+    // Per-project estimated duration (validate > MIN_VALID_DURATION)
+    const rawDuration  = parseFloat(p.s399940ae0) || 0;
+    const estDuration  = rawDuration >= MIN_VALID_DURATION ? rawDuration : DEFAULT_DURATION;
+
     let pipelineProjected = 0;
-    if (stageInfo.stage === 'PIPELINE' && mobWindowOpen && budget.contractRevenue) {
-      const daysAfterMob = Math.max(0, (SCORING_PERIOD.end - MOB_DEADLINE) / 86400000);  // ~120 days
-      const S3_DAYS      = 90;   // typical WIP phase duration
-      const billableFrac = Math.min(1, daysAfterMob / S3_DAYS);
-      const CONVERSION   = 0.50; // 50% of pipeline jobs expected to mobilize in time
-      pipelineProjected  = budget.contractRevenue * billableFrac * CONVERSION;
+    if (stageInfo.stage === 'PIPELINE' && budget.contractRevenue && daysRemainingInPeriod > 0) {
+      const billableFrac = Math.min(1, daysRemainingInPeriod / estDuration);
+      pipelineProjected  = budget.contractRevenue * billableFrac * conversionRate;
     }
-    // BIZ_DEV: $0 in projected score. Still shows in stage card for pipeline visibility.
+    // BIZ_DEV: $0 in projected score. Still visible in stage card for awareness.
 
     return {
       id:           p.id,
@@ -575,11 +597,17 @@ async function buildConstructionData() {
       g702,
       // Period-scope revenue metrics — answer "what will actually land before Dec 31?"
       period: {
-        billedActual:    g702.periodRevenue   || 0,  // [A] G-702 actuals within scoring window
-        capturableBTF,                                // [B] WIP BTF prorated to Dec 31
-        pipelineProjected,                            // [C] Pipeline/BizDev estimated if mobilized
-        // Risk flag: WIP job where completion extends past period end
-        extendsOutOfPeriod: estConstEnd && new Date(estConstEnd) > SCORING_PERIOD.end,
+        billedActual:        g702.periodRevenue || 0, // [A] G-702 actuals within scoring window
+        capturableBTF,                                 // [B] WIP BTF prorated to Dec 31
+        pipelineProjected,                             // [C] Pipeline contribution (continuous, no deadline cutoff)
+        extendsOutOfPeriod:  estConstEnd && new Date(estConstEnd) > SCORING_PERIOD.end, // WIP risk flag
+      },
+      // Conversion metrics — for surfacing in the dashboard
+      conversion: {
+        confidenceRating,    // null = not set, 1-5 = per-project star rating
+        conversionRate,      // 0-1 decimal used in [C] formula
+        estDuration,         // days used for proration
+        isDefaultRating:     rawRating === 0, // flag to prompt team to rate this job
       },
       freshness: {
         budget:    budget.budgetFreshnessDate,

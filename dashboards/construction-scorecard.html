@@ -637,13 +637,13 @@ function renderTiles(byStage, goalProjects) {
       <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${pct(bucketB).toFixed(0)}% of $4.5M goal</div>
     </div>
 
-    <!-- Tile 3: Pipeline projected (Active Pipeline only, 50% conversion) -->
+    <!-- Tile 3: Pipeline projected (Active Pipeline, confidence-weighted, continuous billing) -->
     <div class="db-tile">
-      <div class="db-tile-label">🔵 [C] Pipeline: Projected (50% conversion)</div>
+      <div class="db-tile-label">🔵 [C] Pipeline: Projected (confidence-weighted)</div>
       <div class="db-tile-value" style="color:var(--status-blue)">${fmtMoney(bucketC, true)}</div>
-      <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">Active Pipeline only · ${plCount} jobs · Biz Dev excluded (${bdCount} jobs, too speculative)</div>
+      <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">Active Pipeline only · ${plCount} jobs · Biz Dev excluded (${bdCount} jobs, pre-award)</div>
       <div class="db-tile-progress">${renderProgressBar(pct(bucketC), 'var(--status-blue)')}</div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${pct(bucketC).toFixed(0)}% of $4.5M goal · 50% of pipeline assumed to mobilize by Sep 2</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Progress billing: jobs starting any time still earn partial period revenue · weighted by ★ confidence rating</div>
     </div>
 
     <!-- Tile 4: Total Projected Score -->
@@ -688,9 +688,9 @@ function renderDeadlineBanners() {
       'Jobs must enter active bidding by <strong>July 4, 2026</strong> — {{D}}<br>'
     + 'Standard relationship pipeline is <em>closed for 2026</em>. Warm referrals and bid-ready only.',
       DEADLINES.BID_READY),
-    makeBanner('🏗️', 'MOBILIZATION DEADLINE',
-      'Jobs must mobilize (enter WIP) by <strong>Sep 2, 2026</strong> — {{D}}<br>'
-    + 'Jobs mobilizing after this date will not fully bill before December 31.',
+    makeBanner('🏗️', 'FULL BILLING TARGET',
+      'Mobilize by <strong>Sep 2, 2026</strong> — {{D}} — to fully bill a 90-day job before Dec 31<br>'
+    + 'Jobs mobilizing later still earn partial period revenue (progress billing accrues until Dec 31).',
       DEADLINES.MOBILIZE),
   ].join('');
 }
@@ -817,8 +817,9 @@ const SORT_FN = {
   stage:       p => p.stage,
   pillars:     p => p.pillars?.passCount ?? -1,
   dataState:   p => p.budget.budgetState||'empty',
-  periodRev:   p => p.g702?.periodRevenue     ?? -Infinity,
-  contractRev: p => p.budget.contractRevenue  ?? -Infinity,
+  periodRev:   p => p.g702?.periodRevenue         ?? -Infinity,
+  confidence:  p => p.conversion?.conversionRate  ?? -Infinity,
+  contractRev: p => p.budget.contractRevenue      ?? -Infinity,
   contractGP:  p => p.budget.contractGP       ?? -Infinity,
   gpRate:      p => p.budget.gpRate           ?? -Infinity,
   btf:         p => p.budget.btf              ?? -Infinity,
@@ -966,10 +967,18 @@ function calcAgg(rows) {
   return { count, sumRev, sumGP, sumBTF, sumPeriodRev, avgGP, pillarsPct };
 }
 
+// Confidence star renderer (1-5 scale)
+function renderStars(rating, scale = 5) {
+  if (!rating) return '<span class="dimmed" style="font-size:10px">not rated</span>';
+  const filled = Math.round(rating);
+  return '★'.repeat(filled) + '☆'.repeat(scale - filled);
+}
+
 function buildRow(p) {
   const chipColor   = STATUS_CHIP_COLORS[p.stage] || 'var(--text-secondary)';
   const b           = p.budget;
   const g           = p.g702 || {};
+  const conv        = p.conversion || {};
   const pil         = p.pillars || { complete: null, passCount: '?', total: '?', missing: [] };
   const countsForGoal = GOAL_STAGES.has(p.stage);
   const gpRate      = b.gpRate;
@@ -1001,6 +1010,16 @@ function buildRow(p) {
            onmouseout="this.style.color='var(--text-primary)'"
         >${p.title} <span style="font-size:10px;opacity:.4">↗</span></a>
         ${p.isMultiType ? '<span title="Multi-product-line — KCS-Homes rows only" style="font-size:9px;color:var(--sb-gold);margin-left:5px;opacity:0.7;cursor:help">⬡</span>' : ''}
+        ${(p.stage === 'PIPELINE' || p.stage === 'BIZ_DEV') ? `
+          <div style="margin-top:3px">
+            <span title="Confidence Rating — update in S-BOS to improve projection accuracy${conv.isDefaultRating?' · ⚠ Not yet rated':''}"
+                  style="font-size:10px;color:${conv.isDefaultRating?'var(--status-yellow)':'var(--sb-gold)'}">
+              ${renderStars(conv.confidenceRating)}
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--text-muted);margin-left:3px">
+                ${conv.isDefaultRating ? '— needs rating' : Math.round(conv.conversionRate*100)+'% conv.'}
+              </span>
+            </span>
+          </div>` : ''}
       </td>
       <td>
         <span class="chip" style="color:${chipColor};border-color:${chipColor}40;background:${chipColor}12;white-space:nowrap">
