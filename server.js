@@ -487,6 +487,25 @@ async function buildConstructionData() {
     }
   }
 
+  // Period-capturable BTF: how much of a project's Balance to Finish can
+  // realistically be billed before the scoring period ends (Dec 31)?
+  //
+  // Logic: if the project's estimated completion date falls WITHIN the period,
+  // 100% of BTF is capturable. If it extends PAST the period end, prorate by
+  // (days remaining in period / days remaining in project).
+  //
+  // This answers: "How much WIP revenue will actually land before Dec 31?"
+  function periodCapturableBTF(btf, estConstEnd) {
+    if (!btf || btf <= 0) return 0;
+    const today = new Date();
+    if (!estConstEnd) return btf;  // no date = assume fully capturable
+    const projEnd = new Date(estConstEnd);
+    if (projEnd <= SCORING_PERIOD.end) return btf;  // completes within period → all capturable
+    const daysInPeriod  = Math.max(0, (SCORING_PERIOD.end - today) / 86400000);
+    const daysToComplete = Math.max(1,  (projEnd - today) / 86400000);
+    return btf * Math.min(1, daysInPeriod / daysToComplete);
+  }
+
   // Annotate each project
   const annotated = projects.map(p => {
     const statusVal  = p.status?.value || '';
@@ -502,6 +521,25 @@ async function buildConstructionData() {
     const budget  = summariseBudget(budgetRows, companyFilter);
     const g702    = summariseG702s(g702ByProject[p.id] || [], SCORING_PERIOD.start, SCORING_PERIOD.end);
     const pillars = computePillars(p, budget);
+    const estConstEnd = p.scc0298307?.date || null;
+
+    // Period-capturable BTF: how much of this project's remaining value
+    // will land before December 31, 2026
+    const capturableBTF = periodCapturableBTF(budget.btf, estConstEnd);
+
+    // Pipeline projected billing: for Pipeline/BizDev jobs not yet in WIP,
+    // estimate billings if mobilized before the mobilization deadline (Sep 2).
+    // Conservative: use contract revenue × (days remaining in period after Sep 2 / 90-day S3)
+    // If contract value unknown, $0 projected (don't invent numbers)
+    const MOB_DEADLINE = new Date('2026-09-02T00:00:00Z');
+    const today        = new Date();
+    let pipelineProjected = 0;
+    if (['PIPELINE', 'BIZ_DEV'].includes(stageInfo.stage) && budget.contractRevenue) {
+      const daysAfterMob  = Math.max(0, (SCORING_PERIOD.end - MOB_DEADLINE) / 86400000);  // ~120 days
+      const S3_DAYS       = 90;  // typical WIP phase duration
+      const billableFrac  = Math.min(1, daysAfterMob / S3_DAYS);
+      pipelineProjected   = budget.contractRevenue * billableFrac;
+    }
 
     return {
       id:           p.id,
@@ -513,7 +551,7 @@ async function buildConstructionData() {
       subLabel:     stageInfo.subLabel,
       isMultiType,
       productTypes,
-      pillars,       // {complete, passCount, total, missing, budget, schedule, checklists, alignment}
+      pillars,
       dates: {
         pipeline:    p.sfa6ec0fec?.date  || null,
         awarded:     p.s8227b8fc4?.date  || null,
@@ -521,26 +559,44 @@ async function buildConstructionData() {
         outOfWip:    p.s695a5c195?.date  || null,
         estClose:    p.secceac461?.date  || null,
         actClose:    p.s17kv07k?.date    || null,
-        estConstEnd: p.scc0298307?.date  || null,
+        estConstEnd,
       },
-      budget,       // contract totals (cumulative)
-      g702,         // period-specific + cumulative from pay apps
+      budget,
+      g702,
+      // Period-scope revenue metrics — answer "what will actually land before Dec 31?"
+      period: {
+        billedActual:    g702.periodRevenue   || 0,  // [A] G-702 actuals within scoring window
+        capturableBTF,                                // [B] WIP BTF prorated to Dec 31
+        pipelineProjected,                            // [C] Pipeline/BizDev estimated if mobilized
+        // Risk flag: WIP job where completion extends past period end
+        extendsOutOfPeriod: estConstEnd && new Date(estConstEnd) > SCORING_PERIOD.end,
+      },
       freshness: {
-        budget:    budget.budgetFreshnessDate,   // from s4975ef4d4
-        schedule:  null,                          // Smartsheet modifiedAt — requires separate API call (deferred)
+        budget:    budget.budgetFreshnessDate,
+        schedule:  null,  // Smartsheet modifiedAt deferred
       },
     };
   }).filter(p => p.stage !== 'EXCLUDE');
 
-  const periodRev = annotated
-    .filter(p => ['PIPELINE','WIP','CLOSEOUT'].includes(p.stage))
-    .reduce((s, p) => s + (p.g702.periodRevenue || 0), 0);
+  // ── 3-Bucket Projected Score ───────────────────────────────────────────
+  // [A] Billed this period (actuals from G-702 within scoring window)
+  const bucketA = annotated.reduce((s, p) => s + (p.period.billedActual || 0), 0);
+  // [B] WIP capturable BTF (period-prorated balance to finish for Active in WIP jobs)
+  const bucketB = annotated
+    .filter(p => p.stage === 'WIP' || p.stage === 'CLOSEOUT')
+    .reduce((s, p) => s + (p.period.capturableBTF || 0), 0);
+  // [C] Pipeline projected (jobs in Pipeline/BizDev estimated if mobilized before Sep 2)
+  const bucketC = annotated
+    .filter(p => p.stage === 'PIPELINE' || p.stage === 'BIZ_DEV')
+    .reduce((s, p) => s + (p.period.pipelineProjected || 0), 0);
+  const projectedTotal = bucketA + bucketB + bucketC;
 
-  console.log(`Construction data built — ${annotated.length} projects, ${allBudgetRows.length} budget rows, ${allG702s.length} G-702s. Period revenue: $${periodRev.toLocaleString()}`);
+  console.log(`Construction data built — ${annotated.length} projects, ${allBudgetRows.length} budget rows, ${allG702s.length} G-702s. Projected: $A=${bucketA.toLocaleString()} $B=${bucketB.toLocaleString()} $C=${bucketC.toLocaleString()} Total=$${projectedTotal.toLocaleString()}`);
   return {
-    projects:       annotated,
-    scoringPeriod:  { start: SCORING_PERIOD.start.toISOString(), end: SCORING_PERIOD.end.toISOString(), label: SCORING_PERIOD.label },
-    periodRevenue:  periodRev,  // pre-computed for quick header use
+    projects:      annotated,
+    scoringPeriod: { start: SCORING_PERIOD.start.toISOString(), end: SCORING_PERIOD.end.toISOString(), label: SCORING_PERIOD.label },
+    periodRevenue: bucketA,  // legacy compat
+    score: { bucketA, bucketB, bucketC, projectedTotal },
   };
 }
 

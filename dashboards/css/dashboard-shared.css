@@ -395,6 +395,10 @@ body {
   border-bottom: 1px solid var(--border-subtle);
   cursor: pointer;
   user-select: none;
+  /* Sticky header — stays visible when scrolling past long tables */
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 .db-table thead th:hover { color: var(--text-accent); }
 .db-table thead th.sorted { color: var(--text-accent); }

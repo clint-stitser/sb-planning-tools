@@ -423,6 +423,7 @@ const STATUS_CHIP_COLORS = {
 // ── Data Load ─────────────────────────────────────────────────────────────
 let _projects = [];
 let _periodRevenue = 0;
+let _score = { bucketA: 0, bucketB: 0, bucketC: 0, projectedTotal: 0 };
 
 async function loadData(force = false) {
   showError(false);
@@ -435,6 +436,7 @@ async function loadData(force = false) {
 
     _projects      = data.projects || [];
     _periodRevenue = data.periodRevenue || 0;
+    _score         = data.score || { bucketA: 0, bucketB: 0, bucketC: 0, projectedTotal: 0 };
 
     // Update scoring period from server (authoritative source)
     if (data.scoringPeriod) {
@@ -471,15 +473,16 @@ function renderScoringArc(periodRevenue) {
   const daysElapsed  = Math.floor(elapsedMs / 86400000);
   const daysLeft     = Math.max(0, daysTotal - daysElapsed);
 
-  // Pace: current revenue vs. expected revenue at this point in time
+  // Use projected total (A+B+C) for pace, not just actuals
+  const projectedTotal  = _score.projectedTotal || 0;
   const expectedRevenue = GOAL_REVENUE * (pctElapsed / 100);
-  const paceRatio       = expectedRevenue > 0 ? periodRevenue / expectedRevenue : 0;
+  const paceRatio       = expectedRevenue > 0 ? projectedTotal / expectedRevenue : 0;
   const pacePct         = Math.round(paceRatio * 100);
   const paceColor       = paceRatio >= 1 ? 'var(--status-green)' : paceRatio >= 0.75 ? 'var(--status-yellow)' : 'var(--status-red)';
   const paceLabel       = paceRatio >= 1 ? 'On Pace' : paceRatio >= 0.75 ? 'At Risk' : 'Behind';
 
-  // Run rate: remaining revenue needed per day
-  const remaining   = Math.max(0, GOAL_REVENUE - periodRevenue);
+  // Run rate based on gap from projected total
+  const remaining   = Math.max(0, GOAL_REVENUE - projectedTotal);
   const runRateDay  = daysLeft > 0 ? remaining / daysLeft : 0;
   const runRateWeek = runRateDay * 7;
 
@@ -499,12 +502,12 @@ function renderScoringArc(periodRevenue) {
       </div>
     </div>
     <div class="arc-stat">
-      <div class="arc-stat-value" style="color:var(--sb-gold)">${fmtMoney(periodRevenue, true)}</div>
-      <div class="arc-stat-label">Period Rev</div>
+      <div class="arc-stat-value" style="color:${paceColor}">${fmtMoney(projectedTotal, true)}</div>
+      <div class="arc-stat-label">Projected Score</div>
     </div>
     <div class="arc-stat">
-      <div class="arc-stat-value" style="color:var(--text-secondary)">${fmtMoney(remaining, true)}</div>
-      <div class="arc-stat-label">Remaining</div>
+      <div class="arc-stat-value" style="color:${remaining > 0 ? 'var(--status-red)' : 'var(--status-green)'}">${fmtMoney(remaining, true)}</div>
+      <div class="arc-stat-label">${remaining > 0 ? 'Projected Gap' : 'Surplus'}</div>
     </div>
     <div class="arc-pace" style="border-color:${paceColor}40">
       <div class="arc-pace-value" style="color:${paceColor}">${pacePct}%</div>
@@ -588,68 +591,76 @@ function freshnessLabel(dateStr) {
   return `${days}d ago`;
 }
 
-// ── Section 1: Tiles ─────────────────────────────────────────────────────
+// ── Section 1: Tiles — 3-Bucket Projected Score ───────────────────────────
+// Answers: "How do we win the game?" and "Where does the score come from?"
+//
+// [A] Billed: G-702 actuals in scoring window (hard)
+// [B] WIP Capturable: BTF × (days-to-Dec31 / days-to-completion) (firm estimate)
+// [C] Pipeline Projected: contract rev × billings fraction if mobilized by Sep 2 (soft estimate)
+// Total Projected = A + B + C vs $4.5M goal
 function renderTiles(byStage, goalProjects) {
-  const totalContract = goalProjects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
-  const totalGP       = goalProjects.reduce((s, p) => s + (p.budget.contractGP || 0), 0);
-  const activeCount   = byStage.PIPELINE.length + byStage.WIP.length + byStage.CLOSEOUT.length;
-  const periodRevenue = _periodRevenue;
-  const periodGP      = periodRevenue * (totalGP / (totalContract || 1));  // period GP estimate
+  const { bucketA, bucketB, bucketC, projectedTotal } = _score;
+  const gap       = Math.max(0, GOAL_REVENUE - projectedTotal);
+  const wipCount  = byStage.WIP.length;
+  const plCount   = byStage.PIPELINE.length;
+  const coCount   = byStage.CLOSEOUT.length;
+  const bdCount   = byStage.BIZ_DEV.length;
+  const totalGP   = goalProjects.reduce((s, p) => s + (p.budget.contractGP || 0), 0);
+  const totalRev  = goalProjects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
 
-  // Pace-based color: compare current vs. expected given elapsed time
+  const pct  = v => Math.min(100, (v / GOAL_REVENUE) * 100);
+  const gc   = v => v > 0 ? 'var(--status-red)' : 'var(--status-green)';
+
+  // Pace color for the projected total: are we on track vs. time elapsed?
   const now        = new Date();
   const pctElapsed = Math.min(1, Math.max(0, (now - SCORING_START) / (SCORING_END - SCORING_START)));
-  function paceColor(current, goal) {
-    const expected = goal * pctElapsed;
-    if (expected <= 0) return urgencyColor(100);
-    const pace = current / expected;
-    return pace >= 1 ? 'var(--status-green)' : pace >= 0.75 ? 'var(--status-yellow)' : 'var(--status-red)';
-  }
+  const expected   = GOAL_REVENUE * pctElapsed;
+  const paceRatio  = expected > 0 ? projectedTotal / expected : 1;
+  const paceColor  = paceRatio >= 1 ? 'var(--status-green)' : paceRatio >= 0.75 ? 'var(--status-yellow)' : 'var(--status-red)';
 
-  const tiles = [
-    {
-      label: 'Period Revenue (Jun–Dec)',
-      value: fmtMoney(periodRevenue, true),
-      goal:  `of ${fmtMoney(GOAL_REVENUE, true)}`,
-      pct:   Math.min(100, (periodRevenue / GOAL_REVENUE) * 100),
-      color: paceColor(periodRevenue, GOAL_REVENUE),
-      sub:   'G-702 billings within scoring window',
-    },
-    {
-      label: 'Contract Revenue (Pipeline)',
-      value: fmtMoney(totalContract, true),
-      goal:  `of ${fmtMoney(GOAL_REVENUE, true)}`,
-      pct:   Math.min(100, (totalContract / GOAL_REVENUE) * 100),
-      color: paceColor(totalContract, GOAL_REVENUE),
-      sub:   'Contracted Pipeline + WIP + Closeout',
-    },
-    {
-      label: 'Contract GP',
-      value: fmtMoney(totalGP, true),
-      goal:  `of ${fmtMoney(GOAL_GP, true)}`,
-      pct:   Math.min(100, (totalGP / GOAL_GP) * 100),
-      color: paceColor(totalGP, GOAL_GP),
-      sub:   `${totalContract ? ((totalGP/totalContract)*100).toFixed(1)+'% blended GP rate' : '—'}`,
-    },
-    {
-      label: 'Jobs Active',
-      value: `${activeCount}`,
-      goal:  `${JOBS_NEEDED} target jobs`,
-      pct:   Math.min(100, (activeCount / JOBS_NEEDED) * 100),
-      color: paceColor(activeCount, JOBS_NEEDED),
-      sub:   `${byStage.WIP.length} in WIP · ${byStage.PIPELINE.length} pipeline · ${byStage.CLOSEOUT.length} closeout`,
-    },
-  ];
-
-  document.getElementById('tiles').innerHTML = tiles.map(t => `
+  document.getElementById('tiles').innerHTML = `
+    <!-- Tile 1: Already billed (actuals) -->
     <div class="db-tile">
-      <div class="db-tile-label">${t.label}</div>
-      <div class="db-tile-value">${t.value}</div>
-      <div class="db-tile-goal"><span class="goal-num">${t.goal}</span></div>
-      <div class="db-tile-progress">${renderProgressBar(t.pct, t.color)}</div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${t.sub}</div>
+      <div class="db-tile-label">🟢 [A] Billed This Period</div>
+      <div class="db-tile-value" style="color:var(--status-green)">${fmtMoney(bucketA, true)}</div>
+      <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">G-702 actuals · Jun 1–today</div>
+      <div class="db-tile-progress">${renderProgressBar(pct(bucketA), 'var(--status-green)')}</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${pct(bucketA).toFixed(0)}% of $4.5M goal</div>
     </div>
-  `).join('');
+
+    <!-- Tile 2: WIP capturable BTF -->
+    <div class="db-tile">
+      <div class="db-tile-label">🟡 [B] WIP: Capturable by Dec 31</div>
+      <div class="db-tile-value" style="color:var(--sb-gold)">${fmtMoney(bucketB, true)}</div>
+      <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">BTF × time-proration · ${wipCount} WIP + ${coCount} Closeout jobs</div>
+      <div class="db-tile-progress">${renderProgressBar(pct(bucketB), 'var(--sb-gold)')}</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${pct(bucketB).toFixed(0)}% of $4.5M goal</div>
+    </div>
+
+    <!-- Tile 3: Pipeline projected -->
+    <div class="db-tile">
+      <div class="db-tile-label">🔵 [C] Pipeline: Projected if Mobilized</div>
+      <div class="db-tile-value" style="color:var(--status-blue)">${fmtMoney(bucketC, true)}</div>
+      <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">Est. billings if enter WIP by Sep 2 · ${plCount} pipeline + ${bdCount} biz dev</div>
+      <div class="db-tile-progress">${renderProgressBar(pct(bucketC), 'var(--status-blue)')}</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${pct(bucketC).toFixed(0)}% of $4.5M goal · soft estimate</div>
+    </div>
+
+    <!-- Tile 4: Total Projected Score -->
+    <div class="db-tile" style="border-color:${paceColor}30">
+      <div class="db-tile-label" style="color:${paceColor}">PROJECTED SCORE  (A + B + C)</div>
+      <div class="db-tile-value" style="color:${paceColor}">${fmtMoney(projectedTotal, true)}</div>
+      <div class="db-tile-goal" style="font-size:11px">
+        <span style="color:${gap > 0 ? 'var(--status-red)' : 'var(--status-green)'}">
+          ${gap > 0 ? '⚠ ' + fmtMoney(gap, true) + ' gap to goal' : '✓ Goal covered'}
+        </span>
+      </div>
+      <div class="db-tile-progress">${renderProgressBar(pct(projectedTotal), paceColor)}</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:4px">
+        GP: ${fmtMoney(totalGP, true)} · ${totalRev ? ((totalGP/totalRev)*100).toFixed(1)+'%' : '—'} blended
+      </div>
+    </div>
+  `;
 }
 
 // ── Section 2: Deadline Banners ───────────────────────────────────────────
@@ -685,30 +696,56 @@ function renderDeadlineBanners() {
 }
 
 // ── Section 3: Stage Cards ────────────────────────────────────────────────
+// Each card answers: "What is this situation's contribution to the $4.5M goal?"
+// and "What is the risk level here right now?"
 function renderStageCards(byStage) {
   const stageOrder = ['BIZ_DEV', 'PIPELINE', 'WIP', 'CLOSEOUT'];
+
   document.getElementById('stage-cards').innerHTML = stageOrder.map(key => {
     const cfg      = STAGE_CONFIG[key];
     const projects = byStage[key] || [];
     const count    = projects.length;
-    const totalRev = projects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
-    const totalGP  = projects.reduce((s, p) => s + (p.budget.contractGP  || 0), 0);
     const days     = cfg.deadline ? daysRemaining(cfg.deadline) : null;
     const cls      = urgencyClass(days);
     const color    = urgencyColor(days);
 
-    // Biz Dev card: show sub-breakdown (New / Nurture / Warm / Hot)
+    // Period contribution: what this situation adds to the projected score
+    let periodContrib = 0, periodLabel = '', periodBucketLabel = '';
+    if (key === 'WIP' || key === 'CLOSEOUT') {
+      periodContrib = projects.reduce((s, p) => s + (p.period?.capturableBTF || 0), 0);
+      periodLabel   = 'BTF capturable by Dec 31';
+      periodBucketLabel = '[B]';
+      // Risk: jobs extending past Dec 31
+      const atRisk = projects.filter(p => p.period?.extendsOutOfPeriod).length;
+      if (atRisk > 0) periodLabel += ` · ⚠ ${atRisk} job${atRisk>1?'s':''} extend past Dec 31`;
+    } else {
+      periodContrib = projects.reduce((s, p) => s + (p.period?.pipelineProjected || 0), 0);
+      periodLabel   = 'est. billings if mobilized by Sep 2';
+      periodBucketLabel = '[C]';
+    }
+
+    // Biz Dev sub-breakdown
     let subBreakdown = '';
     if (key === 'BIZ_DEV' && count > 0) {
       const counts = {};
-      for (const p of projects) {
-        const sub = p.subLabel || 'Unknown';
-        counts[sub] = (counts[sub] || 0) + 1;
-      }
+      for (const p of projects) counts[p.subLabel || 'Unknown'] = (counts[p.subLabel || 'Unknown'] || 0) + 1;
       subBreakdown = `<div style="font-size:10px;color:var(--text-secondary);margin-top:6px;line-height:1.6">
-        ${Object.entries(counts).map(([k,v]) => `${v} ${k}`).join(' &nbsp;·&nbsp; ')}
+        ${Object.entries(counts).map(([k,v]) => `${v} ${k}`).join(' · ')}
       </div>`;
     }
+
+    // Aged WIP warning
+    let agedWarn = '';
+    if ((key === 'WIP' || key === 'CLOSEOUT') && projects.length > 0) {
+      const aged = projects.filter(p => {
+        const fresh = p.freshness?.budget;
+        if (!fresh) return false;
+        return Math.floor((Date.now() - new Date(fresh)) / 86400000) > 30;
+      }).length;
+      if (aged > 0) agedWarn = `<div style="font-size:10px;color:var(--status-red);margin-top:4px">⏰ ${aged} aged WIP (>30d no billing)</div>`;
+    }
+
+    const bucketColor = (key === 'WIP' || key === 'CLOSEOUT') ? 'var(--sb-gold)' : 'var(--status-blue)';
 
     return `
       <div class="db-stage-card ${cls}">
@@ -716,19 +753,23 @@ function renderStageCards(byStage) {
         <div class="db-stage-sublabel">${cfg.sublabel}</div>
         <div class="db-stage-count">${count}<span class="stage-unit"> jobs</span></div>
         ${subBreakdown}
-        <div class="db-stage-meta" style="margin-top:${key==='BIZ_DEV'?'4':'10'}px">
+        <div class="db-stage-meta" style="margin-top:8px">
+          <div class="db-stage-row">
+            <span class="k">${periodBucketLabel} Period Contrib.</span>
+            <span class="v" style="color:${periodContrib > 0 ? bucketColor : 'var(--text-muted)'}">
+              ${periodContrib > 0 ? fmtMoney(periodContrib, true) : '—'}
+            </span>
+          </div>
+          <div style="font-size:9px;color:var(--text-muted);margin-top:2px;margin-bottom:6px">${periodLabel}</div>
           <div class="db-stage-row">
             <span class="k">Contract Rev</span>
-            <span class="v">${totalRev ? fmtMoney(totalRev, true) : '<span class="dimmed">—</span>'}</span>
+            <span class="v">${projects.reduce((s,p)=>s+(p.budget.contractRevenue||0),0) ? fmtMoney(projects.reduce((s,p)=>s+(p.budget.contractRevenue||0),0), true) : '<span class="dimmed">—</span>'}</span>
           </div>
-          <div class="db-stage-row">
-            <span class="k">Contract GP</span>
-            <span class="v">${totalGP ? fmtMoney(totalGP, true) : '<span class="dimmed">—</span>'}</span>
-          </div>
-          <div class="db-stage-row" style="margin-top:4px">
+          <div class="db-stage-row" style="margin-top:2px">
             <span style="font-size:10px;color:var(--text-muted)">${cfg.deadlineNote}</span>
           </div>
         </div>
+        ${agedWarn}
         ${cfg.deadline ? `
         <div class="db-stage-deadline">
           <div class="db-stage-deadline-label">Deadline</div>
