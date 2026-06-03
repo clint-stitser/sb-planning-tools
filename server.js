@@ -527,19 +527,29 @@ async function buildConstructionData() {
     // will land before December 31, 2026
     const capturableBTF = periodCapturableBTF(budget.btf, estConstEnd);
 
-    // Pipeline projected billing: for Pipeline/BizDev jobs not yet in WIP,
-    // estimate billings if mobilized before the mobilization deadline (Sep 2).
-    // Conservative: use contract revenue × (days remaining in period after Sep 2 / 90-day S3)
-    // If contract value unknown, $0 projected (don't invent numbers)
-    const MOB_DEADLINE = new Date('2026-09-02T00:00:00Z');
-    const today        = new Date();
+    // Pipeline projected billing:
+    // ONLY Active Pipeline (stage=PIPELINE) jobs count toward [C].
+    // BIZ_DEV is excluded entirely — even Hot (0-6mo to bid) is too speculative:
+    //   with 31 days to the Jul 4 bid-ready deadline, no BizDev job can reliably
+    //   award + mobilize + bill before Dec 31 at a plannable level.
+    // Warm/Nurture/New: definitively out of 2026 scope.
+    //
+    // Active Pipeline gets a 50% conversion discount — they're in the pipeline
+    // but not yet awarded, so half are expected to convert and mobilize in time.
+    //
+    // If mobilization deadline (Sep 2) has already passed, $0 for everyone.
+    const MOB_DEADLINE  = new Date('2026-09-02T00:00:00Z');
+    const today         = new Date();
+    const mobWindowOpen = today < MOB_DEADLINE;
     let pipelineProjected = 0;
-    if (['PIPELINE', 'BIZ_DEV'].includes(stageInfo.stage) && budget.contractRevenue) {
-      const daysAfterMob  = Math.max(0, (SCORING_PERIOD.end - MOB_DEADLINE) / 86400000);  // ~120 days
-      const S3_DAYS       = 90;  // typical WIP phase duration
-      const billableFrac  = Math.min(1, daysAfterMob / S3_DAYS);
-      pipelineProjected   = budget.contractRevenue * billableFrac;
+    if (stageInfo.stage === 'PIPELINE' && mobWindowOpen && budget.contractRevenue) {
+      const daysAfterMob = Math.max(0, (SCORING_PERIOD.end - MOB_DEADLINE) / 86400000);  // ~120 days
+      const S3_DAYS      = 90;   // typical WIP phase duration
+      const billableFrac = Math.min(1, daysAfterMob / S3_DAYS);
+      const CONVERSION   = 0.50; // 50% of pipeline jobs expected to mobilize in time
+      pipelineProjected  = budget.contractRevenue * billableFrac * CONVERSION;
     }
+    // BIZ_DEV: $0 in projected score. Still shows in stage card for pipeline visibility.
 
     return {
       id:           p.id,
@@ -585,9 +595,9 @@ async function buildConstructionData() {
   const bucketB = annotated
     .filter(p => p.stage === 'WIP' || p.stage === 'CLOSEOUT')
     .reduce((s, p) => s + (p.period.capturableBTF || 0), 0);
-  // [C] Pipeline projected (jobs in Pipeline/BizDev estimated if mobilized before Sep 2)
+  // [C] Pipeline projected (Active Pipeline only — BizDev excluded, see pipelineProjected logic)
   const bucketC = annotated
-    .filter(p => p.stage === 'PIPELINE' || p.stage === 'BIZ_DEV')
+    .filter(p => p.stage === 'PIPELINE')
     .reduce((s, p) => s + (p.period.pipelineProjected || 0), 0);
   const projectedTotal = bucketA + bucketB + bucketC;
 

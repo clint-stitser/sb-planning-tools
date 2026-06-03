@@ -637,13 +637,13 @@ function renderTiles(byStage, goalProjects) {
       <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${pct(bucketB).toFixed(0)}% of $4.5M goal</div>
     </div>
 
-    <!-- Tile 3: Pipeline projected -->
+    <!-- Tile 3: Pipeline projected (Active Pipeline only, 50% conversion) -->
     <div class="db-tile">
-      <div class="db-tile-label">🔵 [C] Pipeline: Projected if Mobilized</div>
+      <div class="db-tile-label">🔵 [C] Pipeline: Projected (50% conversion)</div>
       <div class="db-tile-value" style="color:var(--status-blue)">${fmtMoney(bucketC, true)}</div>
-      <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">Est. billings if enter WIP by Sep 2 · ${plCount} pipeline + ${bdCount} biz dev</div>
+      <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">Active Pipeline only · ${plCount} jobs · Biz Dev excluded (${bdCount} jobs, too speculative)</div>
       <div class="db-tile-progress">${renderProgressBar(pct(bucketC), 'var(--status-blue)')}</div>
-      <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${pct(bucketC).toFixed(0)}% of $4.5M goal · soft estimate</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${pct(bucketC).toFixed(0)}% of $4.5M goal · 50% of pipeline assumed to mobilize by Sep 2</div>
     </div>
 
     <!-- Tile 4: Total Projected Score -->
@@ -715,13 +715,17 @@ function renderStageCards(byStage) {
       periodContrib = projects.reduce((s, p) => s + (p.period?.capturableBTF || 0), 0);
       periodLabel   = 'BTF capturable by Dec 31';
       periodBucketLabel = '[B]';
-      // Risk: jobs extending past Dec 31
       const atRisk = projects.filter(p => p.period?.extendsOutOfPeriod).length;
       if (atRisk > 0) periodLabel += ` · ⚠ ${atRisk} job${atRisk>1?'s':''} extend past Dec 31`;
-    } else {
+    } else if (key === 'PIPELINE') {
       periodContrib = projects.reduce((s, p) => s + (p.period?.pipelineProjected || 0), 0);
-      periodLabel   = 'est. billings if mobilized by Sep 2';
+      periodLabel   = '50% conversion · est. billings if mobilized by Sep 2';
       periodBucketLabel = '[C]';
+    } else {
+      // BIZ_DEV: intentionally $0 in projected score
+      periodContrib = 0;
+      periodLabel   = '$0 in projected score — too speculative for 2026 goal';
+      periodBucketLabel = '';
     }
 
     // Biz Dev sub-breakdown

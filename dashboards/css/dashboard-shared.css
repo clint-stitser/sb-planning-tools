@@ -374,6 +374,7 @@ body {
 /* ── Table ── */
 .db-table-wrap {
   overflow-x: auto;
+  overflow-y: clip; /* clip without creating a scroll container — allows thead sticky to work */
   border-radius: var(--r-lg);
   border: 1px solid var(--border-subtle);
 }
