@@ -566,12 +566,33 @@ async function buildConstructionData() {
     const rawDuration  = parseFloat(p.s399940ae0) || 0;
     const estDuration  = rawDuration >= MIN_VALID_DURATION ? rawDuration : DEFAULT_DURATION;
 
+    // Default conversion rates by stage
+    const HOT_DEFAULT_CONVERSION = 0.55; // Hot status justifies higher floor than generic pipeline
+
     let pipelineProjected = 0;
-    if (stageInfo.stage === 'PIPELINE' && budget.contractRevenue && daysRemainingInPeriod > 0) {
-      const billableFrac = Math.min(1, daysRemainingInPeriod / estDuration);
-      pipelineProjected  = budget.contractRevenue * billableFrac * conversionRate;
+    const isHot = stageInfo.stage === 'BIZ_DEV' && stageInfo.subLabel === 'Hot';
+
+    if (budget.contractRevenue && daysRemainingInPeriod > 0) {
+      if (stageInfo.stage === 'PIPELINE') {
+        // Active Pipeline: include at confidence rating (default 30%)
+        const billableFrac = Math.min(1, daysRemainingInPeriod / estDuration);
+        pipelineProjected  = budget.contractRevenue * billableFrac * conversionRate;
+
+      } else if (isHot) {
+        // Hot jobs included if effective conversion ≥ 50%.
+        // Unrated Hot gets 55% default (Hot status justifies higher floor than 30%).
+        // Hot jobs explicitly rated ≤ 2 stars (≤ 40%) are excluded — team said no.
+        const hotConvRate = rawRating > 0
+          ? Math.min(1, rawRating / CONFIDENCE_SCALE)
+          : HOT_DEFAULT_CONVERSION;
+        if (hotConvRate >= 0.50) {
+          const billableFrac = Math.min(1, daysRemainingInPeriod / estDuration);
+          pipelineProjected  = budget.contractRevenue * billableFrac * hotConvRate;
+        }
+      }
     }
-    // BIZ_DEV: $0 in projected score. Still visible in stage card for awareness.
+    // Warm/Nurture/New Opportunity: $0 in projected score.
+    // Visible in Biz Dev stage card for pipeline awareness only.
 
     return {
       id:           p.id,
@@ -623,9 +644,9 @@ async function buildConstructionData() {
   const bucketB = annotated
     .filter(p => p.stage === 'WIP' || p.stage === 'CLOSEOUT')
     .reduce((s, p) => s + (p.period.capturableBTF || 0), 0);
-  // [C] Pipeline projected (Active Pipeline only — BizDev excluded, see pipelineProjected logic)
+  // [C] Pipeline + Hot: Active Pipeline (all) + Biz Dev Hot (≥50% confidence only)
   const bucketC = annotated
-    .filter(p => p.stage === 'PIPELINE')
+    .filter(p => p.stage === 'PIPELINE' || (p.stage === 'BIZ_DEV' && p.subLabel === 'Hot'))
     .reduce((s, p) => s + (p.period.pipelineProjected || 0), 0);
   const projectedTotal = bucketA + bucketB + bucketC;
 

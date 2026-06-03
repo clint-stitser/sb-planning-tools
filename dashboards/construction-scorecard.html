@@ -641,7 +641,7 @@ function renderTiles(byStage, goalProjects) {
     <div class="db-tile">
       <div class="db-tile-label">🔵 [C] Pipeline: Projected (confidence-weighted)</div>
       <div class="db-tile-value" style="color:var(--status-blue)">${fmtMoney(bucketC, true)}</div>
-      <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">Active Pipeline only · ${plCount} jobs · Biz Dev excluded (${bdCount} jobs, pre-award)</div>
+      <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">Active Pipeline + Hot (≥50% conv.) · Warm/Nurture/New excluded</div>
       <div class="db-tile-progress">${renderProgressBar(pct(bucketC), 'var(--status-blue)')}</div>
       <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Progress billing: jobs starting any time still earn partial period revenue · weighted by ★ confidence rating</div>
     </div>
@@ -722,10 +722,22 @@ function renderStageCards(byStage) {
       periodLabel   = '50% conversion · est. billings if mobilized by Sep 2';
       periodBucketLabel = '[C]';
     } else {
-      // BIZ_DEV: intentionally $0 in projected score
-      periodContrib = 0;
-      periodLabel   = '$0 in projected score — too speculative for 2026 goal';
-      periodBucketLabel = '';
+      // BIZ_DEV: Hot jobs ≥50% confidence contribute to [C]; Warm/Nurture/New = $0
+      const hotProj = projects
+        .filter(p => p.subLabel === 'Hot')
+        .reduce((s, p) => s + (p.period?.pipelineProjected || 0), 0);
+      const hotCount = projects.filter(p => p.subLabel === 'Hot').length;
+      const warmCount = projects.length - hotCount;
+
+      if (hotProj > 0) {
+        periodContrib     = hotProj;
+        periodLabel       = `Hot only (≥50% conv.) · ${hotCount} Hot jobs · ${warmCount} Warm/Nurture/New = $0`;
+        periodBucketLabel = '[C]';
+      } else {
+        periodContrib     = 0;
+        periodLabel       = `Hot jobs below 50% conv. or unrated · ${warmCount} Warm/Nurture/New = $0`;
+        periodBucketLabel = '';
+      }
     }
 
     // Biz Dev sub-breakdown
