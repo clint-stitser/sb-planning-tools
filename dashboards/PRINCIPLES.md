@@ -1,11 +1,11 @@
 # Stitser BUILT — Dashboard System: Foundational Principles
-**Version:** 1.5  
-**Date:** June 2, 2026  
+**Version:** 2.0  
+**Date:** June 4, 2026  
 **Author:** Clint Stitser  
 **Location:** `/dashboards/PRINCIPLES.md` in `sb-planning-tools` repo  
 **Purpose:** Define-first specification for all product-line dashboards. Claude Code builds from this. No exceptions.
 
-> **How to use this document:** Before building or modifying any dashboard, read this document in full. Every design decision, data source, and UI pattern is governed here. Deviations require Principal approval.
+> **How to use this document:** Before building or modifying any dashboard, read this document in full. Every design decision, data source, and UI pattern is governed here. The Construction dashboard (`/dashboards/construction-scorecard.html`) is the reference implementation — all new dashboards follow the patterns proven there. Deviations require Principal approval.
 
 ---
 
@@ -15,21 +15,19 @@ A unified set of non-negotiable design principles that govern every scorecard/da
 
 | Priority | Product Line Dashboard | Description | Status |
 |---|---|---|---|
-| ① | **Construction** | Full lifecycle of construction-type projects. Reference implementation at `/dashboards/construction-scorecard.html` | **Live** |
+| ① | **Construction** | Full lifecycle of construction-type projects. Reference at `/dashboards/construction-scorecard.html` | **Live** |
 | ② | **Asset Disposition** | Full lifecycle of disposition-type projects | Planned |
 | ③ | **Asset Management** | Stabilized assets under active management | Planned |
 | ④ | **Development** | Ground-up and value-add development projects | Planned |
 | ⑤ | **Brokerage** | Stand-alone brokerage activity | Planned |
 
-**Key architectural point:** Each dashboard covers its product line **across all lifecycle stages**. The lifecycle stages (Biz Dev, Pipeline, WIP, Closeout) appear as **situations** within the dashboard — they are not separate dashboards. A project's S-BOS status determines which situation it belongs to on a given dashboard.
+**Key architectural point:** Each dashboard covers its product line **across all lifecycle stages**. The lifecycle stages (Biz Dev, Pipeline, WIP, Closeout) appear as **situations** within the dashboard — they are not separate dashboards. A project's S-BOS status determines which situation it belongs to.
 
-Every dashboard shares the same structural DNA: 4 Core Questions, 9 Universal Principles, Pillar Completeness, and Dual Freshness Display.
+Every dashboard shares the same structural DNA: 4 Core Questions, 9 Universal Principles, the 3-Bucket Score Model, Pillar Completeness, Dual Freshness Display, and weekly GYR Integration.
 
 ---
 
 ## The Hierarchy of Data
-
-Every dashboard is organized by this four-level hierarchy. Build the data model and UI to reflect it.
 
 ```
 Product Line (e.g., Construction)
@@ -38,263 +36,293 @@ Product Line (e.g., Construction)
               └── Project Pillars: Budget / Schedule / Checklists / Alignment
 ```
 
-- **Product Line** — the business function being tracked (Construction, Disposition, Asset Management, etc.)
-- **Key Situation** — the S-BOS status stage a project is currently in. Situations are the lifecycle stages of that product line; they appear as cards on the dashboard. Each situation is independently scored.
-- **Projects** — the individual jobs, deals, or assets that belong to that situation
-- **Project Pillars** — the four named infrastructure categories: **Budget, Schedule, Checklists, Alignment**. Each pillar contains specific record-level checks that must be in place before a project contributes to the score.
+- **Product Line** — the business function being tracked
+- **Key Situation** — the S-BOS status stage a project is currently in. Situations appear as cards on the dashboard. Each situation is independently scored. **Use S-BOS vocabulary exactly — no invented stage labels.**
+- **Projects** — the individual jobs, deals, or assets belonging to that situation
+- **Project Pillars** — the four named infrastructure categories: **Budget, Schedule, Checklists, Alignment**. Each contains specific record-level checks that must be in place before a project contributes to the score.
 
-The game score rolls up from Pillars → Projects → Situations → Product Line. Each level is independently visible on the dashboard.
+The game score rolls up from Pillars → Projects → Situations → Product Line.
 
-**Critical:** A dashboard score is only as accurate as the pillars behind it. Before any project contributes to the game score, its pillars must be verified as complete. See **Pillar Completeness** section below.
+**Critical:** A dashboard score is only as accurate as the pillars behind it. See **Pillar Completeness** section.
 
 ---
 
 ## The 4 Core Questions Every Dashboard Must Answer
 
-These are the universal truths. Every dashboard answers all four, always visible, at a glance.
-
 ### 1. How do you win the game?
-Every dashboard must show a single, unambiguous **total target** — the number, outcome, or condition that defines a win for this period. Not a list of goals. One headline game-winning condition.
+A single, unambiguous **total target** — the number that defines a win for this period. Not a list. One headline condition.
 
-> *Construction example:* $4,500,000 Revenue at 9% GP — June 1 through December 31, 2026  
-> *Asset Disposition example:* 30 homes closed — January 1 through December 31, 2026
+> *Construction:* $4,500,000 Revenue at 9% GP — June 1 through December 31, 2026  
+> *Disposition:* 30 homes closed — January 1 through December 31, 2026
 
 ### 2. How much time is left?
-Every dashboard must display **time remaining** in context — not just a date, but a sense of where we are in the arc. Days remaining AND % of scoring period elapsed. The user should be able to feel the urgency without doing math.
+**Days remaining AND % of scoring period elapsed** — side by side. The user must feel urgency without doing math.
 
-- Show: days remaining AND % of period elapsed side by side
-- Calculate from actual scoring period `startDate` and `endDate` — **no hardcoded values**
-- If the start date is in the past and the end date is in the future, the system auto-positions itself correctly
-- Source for scoring period dates: S-BOS Goals/Targets record (not hardcoded in dashboard JS)
+- Calculate from actual `startDate` and `endDate` — **no hardcoded values**
+- Source: S-BOS Goals/Targets record (not hardcoded in dashboard JS — currently hardcoded in `server.js` as a temporary measure; TODO: wire to S-BOS)
+- Show the scoring arc: elapsed bar, days left, projected gap, required run rate per week
 
 ### 3. What is the current score?
-**Progress within the scoring period** expressed in the same unit as the target.
+**The 3-Bucket Projected Score** (see full section below). Not a simple "billed to date" — a model that distinguishes hard actuals, firm estimates, and soft projections.
 
-- Current score is always live (pulled from S-BOS data — not manually entered)
-- **Period-specific, not cumulative:** Score reflects only activity that occurred within the scoring window (start date to end date). A project that billed revenue in Q1 does not contribute that Q1 revenue to a Q2 score. See **Period-Specific Scoring** below.
-- Must show the gap: `Target − Current Score = Remaining`
-- Must show implied run rate: `Remaining ÷ Days Remaining = Daily/Weekly pace required to win`
-- **Only projects with all pillars in place contribute to the aggregate score.** Projects with incomplete pillars are displayed separately as "Pending Setup" and excluded from the game total until resolved.
+- Always period-specific — never cumulative project totals (see Period-Specific Scoring)
+- Shows gap: `Target − Projected Score = Remaining`
+- Shows implied run rate: `Remaining ÷ Days Remaining = weekly commitment needed`
+- Color is **pace-based**: Green ≥ 100% of expected / Yellow 75–99% / Red < 75%
 
 ### 4. How do you win the situations?
-Below the headline game score, each dashboard surfaces **situation-level scores** — the sub-components that, when won together, add up to winning the game. Each situation card displays:
-
+Each situation card surfaces its own score and contribution to the game total:
 - **Target** — what does winning this situation look like?
-- **Current score** — where are we right now?
+- **Current** — count of jobs, period contribution (dollars)
 - **Time** — how much time does this situation have left?
-- **Remaining** — what's still needed?
+- **Delay cost** — for progress-billing: what does waiting one more month cost in additional jobs needed?
 
-Situations are product-line specific (see Product Line Specifications section below).
+---
+
+## The 3-Bucket Projected Score
+
+**This is the core scoring model for all progress-billing dashboards. Event-based dashboards (Disposition) use a simpler model — see product line specs.**
+
+The projected score answers the question the headline metrics never could: *not just what's been billed, but what will realistically land before the period ends.*
+
+```
+Projected Score = [A] + [B] + [C]
+```
+
+| Bucket | Name | Source | Nature |
+|---|---|---|---|
+| **[A]** | Billed Actuals | G-702 pay apps within scoring window | Hard — already happened |
+| **[B]** | WIP Capturable | BTF × time proration to period end | Firm — in-flight, time-adjusted |
+| **[C]** | Pipeline Projected | Contract value × billing fraction × confidence | Soft — probability-weighted |
+
+### [A] — Billed Actuals
+```
+SUM of G-702.s0592aef02 ("Amount Due this Period")
+  WHERE G-702.s0996cf591 ("Pay App Date") ∈ [period.start, period.end]
+```
+This is the only hard number. It requires G-702 pay applications to be linked to budget rows and submitted within the scoring window.
+
+### [B] — WIP Capturable BTF
+```
+For each WIP/Closeout job:
+  capturableBTF = BTF × min(1, daysUntilPeriodEnd / daysUntilProjectComplete)
+```
+If the project finishes before the period ends → 100% of BTF is capturable.  
+If the project extends past the period end → prorate by time remaining in period vs. project.
+
+### [C] — Pipeline Projected
+**Only applies to progress-billing product lines.** For event-based (Disposition), revenue is $0 until the close event.
+
+```
+For each Pipeline or Hot job:
+  pipelineProjected = contractRevenue × billingFraction × conversionRate
+
+  billingFraction = min(1, daysRemainingInPeriod / estimatedDuration)
+  conversionRate  = confidenceRating / 10  (or default: Pipeline=30%, Hot=55%)
+```
+
+**No hard deadline cutoff.** A job mobilizing November 1 still earns billing for November and December. Every day of delay costs jobs, not a hard zero. The Sep 2 mobilization deadline is a **visibility marker** for full billing — not a formula cutoff.
+
+**What is included in [C]:**
+- Active Pipeline jobs (all) — at their confidence-weighted conversion rate
+- Biz Dev — Hot jobs with confidence ≥ 5/10 (≥50%) — at their confidence rate
+- Biz Dev — Warm / Nurture / New Opportunity — **excluded** (too early, too speculative)
+
+### Confidence Rating
+Field: `sl14xzgf` on Projects app. Scale: **1–10** (numeric display, confirmed from live schema June 2026).
+
+| Rating | Conversion Rate | Meaning |
+|---|---|---|
+| 1–4 | 10–40% | Low confidence — unlikely to convert in time |
+| 5–6 | 50–60% | Moderate — include in [C] at face value |
+| 7–8 | 70–80% | High confidence — strong inclusion |
+| 9–10 | 90–100% | Near certain |
+| 0 (unrated) | 30% (Pipeline) / 55% (Hot) default | Prompt team to rate |
+
+**Action implication:** Unrated jobs in Pipeline or Hot stage display a "needs rating" indicator. Updating the confidence rating in S-BOS directly shifts the [C] projection.
+
+### Monthly Ramp Plan
+The production targets section uses this formula to show the **delay cost** of waiting:
+
+```
+For each remaining month M:
+  billingMonths    = min(avgDuration, monthsUntilPeriodEnd from M)
+  revenuePerJob    = avgMonthlyRevenue × billingMonths
+  jobsNeeded       = gap ÷ revenuePerJob   (rounded up)
+  costOfWaiting    = jobsNeeded - jobsNeededIfActingNow
+```
+
+Where `avgMonthlyRevenue = avgContractValue ÷ avgDurationMonths` computed from live job data.
+
+This makes the urgency concrete and quantified: acting in July might require 2 jobs; waiting until October requires 5.
 
 ---
 
 ## Period-Specific Scoring
 
-**This principle governs all revenue and financial metrics on every dashboard.**
+All financial metrics on the scoreboard reflect only activity within the scoring window. Cumulative project-to-date totals are **never used** as the headline score.
 
-A scoring period is a defined date window (e.g., June 1 – December 31, 2026). All financial metrics on the scoreboard reflect only activity that occurred within this window. Cumulative project-to-date totals are **never used** as the headline score unless the project's entire life falls within the scoring period.
-
-### Construction Revenue — How to Calculate
-
-**Wrong:** Using `s160aa943b` (Completed to Date) from Baseline Budget Items. This is a cumulative total from the first day of the project — it includes all prior periods.
-
-**Correct:** Using G-702 pay applications filtered by date.
+### Progress-Based Billing (Construction)
+Revenue accrues daily from mobilization through period end. The correct source is G-702 pay applications:
 
 ```
-Revenue this period = SUM of G-702.s0592aef02 ("Amount Due this Period")
-  WHERE G-702.s0996cf591 ("Pay App Date") ∈ [scoringPeriod.start, scoringPeriod.end]
-  AND G-702 is linked to a Construction-type project
-
-GP this period = Revenue this period × project GP% (from G-703 line items)
-  OR = Revenue this period − COGS this period (if COGS tracked separately by period)
+Revenue this period = SUM of G-702.s0592aef02
+  WHERE G-702.s0996cf591 (Pay App Date) ∈ [period.start, period.end]
 ```
 
-**Key G-702 fields (app: `68a8c3d2bba73ca6e62d0cb5`):**
-| Field | Slug | Use |
-|---|---|---|
-| Amount Due this Period | `s0592aef02` | Revenue billed on THIS pay application |
-| Pay App Date | `s0996cf591` | Date filter — must fall within scoring window |
-| Completed & Stored to Date | `s6ce9e1881` | Cumulative — use for project-level progress % only |
-| Net Change by Change Orders | `s5a0e0a7b0` | Change order delta on this pay app |
-| Total Retention Held | `s2ce3db8ed` | Retention held as of this pay app |
-| Balance to Finish | `sf1daf8d5a` | Remaining contract value from G-702 perspective |
-| Previously Completed | `sc73a3aabe` | Prior-period cumulative — use to understand starting point only |
-| Project (link) | `s12698a7c3` | Join to Projects app |
+**Wrong:** `s160aa943b` (Completed to Date from Budget Items) — cumulative, includes prior periods.
 
-### Cumulative Fields — When to Use Them
-Cumulative totals (`s160aa943b`, `s0f7c08530` from Budget Items, `s6ce9e1881` from G-702) are valid for:
-- Project-level progress % (how far along is this project overall)
+### Event-Based Billing (Asset Disposition)
+Revenue is recognized on a single event (close of sale). A home that closed in Q1 contributes $0 to a Q2 score regardless of prior billing. Score = count of closes + associated revenue within the window only.
+
+### Cumulative Fields — When Valid
+Cumulative totals are valid for:
+- Per-project progress % (how far along overall)
 - Balance to Finish calculations
-- Per-project pillar status checks
+- Pillar status checks
 
-They are **not valid** as the headline game score metric for any period-bound dashboard.
+Never as the headline game score for a period-bound dashboard.
 
 ---
 
 ## 9 Universal Design Principles
 
 ### PRINCIPLE 1 — Time-Aware Progress
-Progress bars and completion percentages must be **anchored to each project's actual start date and end date.** The system reads these dates per project from S-BOS and calculates elapsed/remaining dynamically.
+Progress bars and completion percentages are anchored to each project's actual start and end date — read from S-BOS Project Dates records. No hardcoded dates. No assumptions about calendar year = scoring period.
 
-Projects have independent timelines. A project that started February 1 and ends December 31 is evaluated against its own arc — not the product-line scoring period. The product-line scoring period governs the game header. Individual project timelines govern each project card.
-
-**Implementation requirement:** All date math uses configurable `startDate` and `endDate` sourced from S-BOS Project Dates records (`69bb7d64740e0e696d88c47f`). No hardcoded dates. No assumptions about calendar year = scoring period.
+Individual project timelines govern project cards. The product-line scoring period governs the game header only.
 
 ### PRINCIPLE 2 — Live, Automatic Scoring
-The scoreboard must **update automatically.** No manual data entry to update the score. No friction in counting. A scoreboard that requires human updates will be abandoned.
+The scoreboard updates automatically. No manual data entry.
 
-- Data pulled from S-BOS / SmartSuite via the Railway backend (`/api/construction-data` or equivalent per product line). The Railway server calls SmartSuite server-side using the API key stored in Railway environment variables — never exposed to the browser.
-- Refresh triggers: on page load + configurable polling interval (default: every 5 minutes)
-- Every dashboard shows a "last updated" timestamp at the header level
-- Every project card shows its own **dual data freshness display** — Budget and Schedule freshness shown separately (see Principle 9)
-- If the API is unreachable, show a graceful degraded state with the timestamp of last successful data pull
-
-**Note on API architecture:** The Kompass MCP server (`earnest-vitality-production.up.railway.app`) is Claude's agent tool server — it is not a browser-callable REST API and must not be referenced as a data endpoint in dashboard HTML. All browser-facing data calls go to the Railway planning tools backend (`sb-planning-tools-production.up.railway.app`).
-
-**Handling asynchronous project updates:** Projects update on their own schedules. The dashboard scores each project against its most recent available data. The aggregate score is the honest sum of the most recent data per project — not a stale consolidated total.
+- Data pulled via Railway backend (`sb-planning-tools-production.up.railway.app/api/*`) — SmartSuite API key stays server-side
+- Page load + 5-minute polling interval
+- "Last updated" timestamp always visible in header
+- Graceful degraded state if API is unreachable
+- **Kompass MCP** (`earnest-vitality-production.up.railway.app`) is Claude's agent tool server — **not a browser REST API**. Never reference it in dashboard HTML.
 
 ### PRINCIPLE 3 — Product-Line Relevant Statistics
-Each product line measures what actually matters for **that game** — not a generic financial summary.
+Each product line measures what matters for its game:
+- **Construction:** GP%, WIP aging, billing velocity, retention held, monthly ramp plan
+- **Asset Disposition:** homes closed, commission + repair revenue, days in stage
+- **Asset Management:** occupancy %, NOI, OpEx vs. budget, lease expirations
+- **Brokerage:** property sales volume, commission revenue, pipeline by stage
 
-- Construction measures GP%, WIP aging, billing velocity, retention held
-- Asset Disposition measures homes closed, revenue earned (commission + repair markup), days in stage
-- Asset Management measures occupancy, NOI, OpEx vs. budget, lease expirations
-- Brokerage measures property sales volume, commission revenue, pipeline by stage
+### PRINCIPLE 4 — Snapshot Capture
+Every dashboard supports point-in-time capture. Two independent outputs:
 
-See Product Line Specifications below for the full stat sheet per line.
+**Stats record (numeric ledger):**  
+`POST /api/snapshot` — small JSON payload (metrics only, no HTML). Creates one Stats record per measurable in the Stats app (`6840927ebcfa2d2bfef039e2`). Required fields: `title` (recordtitlefield, required), `s6471266f2` (Amount, required), linked record fields as arrays. Max body: `express.json({ limit: '10mb' })`.
 
-### PRINCIPLE 4 — Snapshot Capture (Point-in-Time Record)
-Every dashboard must support being **frozen at a point in time** via a "Capture Snapshot" button.
+**HTML snapshot (human-readable):**  
+Generated entirely client-side as a Blob and downloaded directly. **Not sent to the server.** This avoids body size limits that would fail on large DOM captures.
 
-**Layer 1 — Stats Table as the Numeric Ledger** (`6840927ebcfa2d2bfef039e2`)  
-The Stats table stores one record per measurable per reporting period. This is the machine-readable time-indexed ledger used to render trend lines in the History view. Do NOT create a separate snapshots table.
-
-**Layer 2 — HTML Snapshot File for Human-Readable History**  
-On "Capture Snapshot," the dashboard also generates a static `.html` file — a complete visual render of the dashboard state at that moment. This file:
-- Is named: `snapshot-[dashboard-type]-[YYYY-MM-DD]-[period-code].html`
-- Is stored in the project's linked Google Drive `/snapshots/` subfolder
-- Can be opened by any team member in a browser — no login, no API dependency
-- The Drive file link is written back to the master Stats record (`sc05da1445` Attachments field)
-
-**Snapshot workflow (on button click):**
-1. Dashboard computes current state across all projects and situations
-2. One Stats record written per measurable per situation
-3. Each Stats record tagged with: period code, begin/end date, amount, measure type, Goal link, Project link (`s5e8a7ac82`)
-4. Static HTML file generated and uploaded to Google Drive
-5. Drive link written back to master Stats record
-6. Dashboard confirms: "Snapshot captured — W22, June 2, 2026 · [View Snapshot]"
-
-**Stats record field map:**
-| Field | Slug |
+| Stats Field | Slug |
 |---|---|
-| Associated Goal | `sd6cc86075` |
-| Associated Priority | `s38ac950e1` |
-| Associated Project | `s5e8a7ac82` |
+| Associated Goal | `sd6cc86075` (array) |
+| Associated Priority | `s38ac950e1` (array) |
+| Associated Project | `s5e8a7ac82` (array) |
 | Begin Date | `s793df2063` |
 | End Date | `sb5657209d` |
-| Period Type | `sfa08338c5` (Monthly=`kwIw9` / Weekly=`LGtGZ`) |
-| Amount for Period | `s6471266f2` |
-| Attachments (Drive link) | `sc05da1445` |
-
-**Stats App ID:** `6840927ebcfa2d2bfef039e2`
+| Period Type | `sfa08338c5` (Weekly=`LGtGZ` / Monthly=`kwIw9`) |
+| Amount for Period | `s6471266f2` (required) |
+| Attachments | `sc05da1445` |
 
 ### PRINCIPLE 5 — Consistent Visual Grammar
-All dashboards use the same layout language.
+All dashboards use the same zone layout:
 
-- **Header zone:** Game target + time remaining (days + % elapsed) + current score + gap + run rate
-- **Situation zone:** Situation cards with their own mini-scorecard, count, revenue, and deadline
-- **Project zone:** Per-project rows/cards with pillars + dual freshness display + pillar completeness indicator
-- **Detail zone:** Revenue Recognition Ledger with filter/sort/group/aggregate toolbar
+- **Scoring arc** — days remaining, % elapsed arc bar, projected score vs. goal, run rate, pace badge
+- **Goal tiles** — 4 tiles: [A] Billed / [B] WIP Capturable / [C] Pipeline Projected / Projected Score
+- **Deadline banners** — key deadline countdowns with urgency color
+- **Situation cards** — one per S-BOS status group (Biz Dev / Pipeline / WIP / Closeout), showing count, period contribution, deadline
+- **Production targets** — monthly ramp plan (progress-billing) or stage-gate targets (event-based)
+- **Revenue Recognition Ledger** — filterable, sortable, groupable table with toolbar and per-group aggregate rows
 
-**Color system (urgency is pace-based, not absolute):**
-- **Green** — on pace or ahead (current ≥ expected progress given elapsed time)
-- **Yellow** — at risk (current = 75–99% of expected progress)
-- **Red** — behind pace (current < 75% of expected progress)
-- **Gray** — pillar incomplete — project excluded from score
+**Shared components (in `dashboards/css/dashboard-shared.css` and `dashboards/js/dashboard-shared.js`):**
+- CSS design tokens, progress bars, countdown badges, stage cards, ledger table, skeleton loaders
+- Tooltip system: `data-tip="..."` attribute on any element + `<span class="explainer">?</span>` for click affordance
+- Universal tooltip JS: **click-only** on `.explainer` badges (not hover). Popup follows cursor, stays in viewport, dismisses on click elsewhere or Escape.
+- Fuzzy title search on ledger
 
-Where `expected progress = Target × (days elapsed ÷ total days in scoring period)`
+**Color system (pace-based, not absolute):**
+- Green — on pace (current ≥ expected given elapsed time)
+- Yellow — at risk (75–99% of expected)
+- Red — behind pace (< 75% of expected)
+- Gray — pillar incomplete, excluded from score
 
 ### PRINCIPLE 6 — Implied Pace Visibility
-At any moment, the dashboard must answer: **"Are we winning the time race?"**
-
 ```
-Pace % = Current Score ÷ Expected Score at this point in time
-Expected Score = Target × (days elapsed ÷ total scoring period days)
+Pace % = Projected Score (A+B+C) ÷ Expected Score at this point
+Expected = Target × (days elapsed ÷ total scoring period days)
 ```
 
-Applied at every level:
-- **Game level:** Is the product line on pace?
-- **Situation level:** Is this situation on pace?
-- **Project level:** Is this project on pace against its own start/end dates?
+Applied at every level: game, situation, project (vs. its own timeline). A job at 60% completion when 80% of its period has elapsed is behind pace — the dashboard says so without the user doing math.
 
-A project at 60% revenue completion when 80% of its period has elapsed is **behind pace** — even though "60% complete" sounds okay in isolation. The dashboard makes this visible without the user doing math.
+### PRINCIPLE 7 — Role-Appropriate Visibility
+Managed through Softr user group controls and separate homepages — not URL parameters or client-side logic.
 
-### PRINCIPLE 7 — Role-Appropriate Visibility (via Softr Access Control)
-Role-based visibility is managed through **Softr user group controls and separate homepages** — not URL parameters or client-side logic.
-
-- **Team homepage:** Construction WIP, Closeout, Pipeline dashboards. No executive financials.
-- **Executive homepage:** All dashboards including Portfolio Planner, Financials, and principal-level views.
-- Railway serves all HTML files; Softr controls which links appear per user group.
-
-**Current status:** Not yet implemented. Next: ① Team Softr homepage ② Executive Softr homepage ③ User group assignment ④ Cross-group control menu. Claude Code builds dashboard pages; Softr navigation is configured in Softr Studio.
+- **Team homepage:** Construction, Closeout, Pipeline dashboards — no executive financials
+- **Executive homepage:** All dashboards + Portfolio Planner + principal-level views
+- **Current status:** Not yet implemented. Next: ① Team homepage ② Executive homepage ③ User groups ④ Control menu. Claude Code builds pages; Softr config done in Softr Studio by Andi.
 
 ### PRINCIPLE 8 — Zero Manual Scoring
-If a metric requires a human to manually enter or update a number for the scoreboard to reflect reality, that metric must either be automated or removed. Exceptions: qualitative notes and snapshot labels.
+If a metric requires a human to manually update a number, it must be automated or removed. Exceptions: qualitative notes, snapshot labels, confidence ratings.
 
-The PM or Super should never have to open SmartSuite to update the scoreboard. Their work in S-BOS (submitting pay apps, updating project status, updating the Smartsheet schedule) **IS** the update.
+The PM or Super never opens SmartSuite to update the scoreboard. Their work in S-BOS (submitting pay apps, changing project status, updating confidence ratings) **is** the update.
 
 ### PRINCIPLE 9 — Data Freshness: Dual-Source Display Per Project
-Every project card/row on every dashboard must display **two separate freshness indicators** — one for Budget activity, one for Schedule activity.
+Every project row displays two independent freshness indicators:
 
 ```
-Budget:   [date]    ← Green ≤7d / Yellow 8–21d / Red >21d
-Schedule: [date]    ← Green ≤7d / Yellow 8–21d / Red >21d
+Budget:   [date / days ago]    ← Green ≤7d / Yellow 8–21d / Red >21d
+Schedule: [date / days ago]    ← Green ≤7d / Yellow 8–21d / Red >21d
 ```
 
-**Budget Freshness Source:** `s4975ef4d4` on the Baseline Budget Items app (`69bb89ebf6a195c2c73a3b3e`). This is a formula field labeled "Last 702/703/manual update" — it reflects when the most recent G-702, G-703, or manual budget entry was made.
+**Budget Freshness:**
+- Primary: `s4975ef4d4` on Baseline Budget Items — formula field "Last 702/703/manual update" (confirmed field #34 in live schema)
+- Fallback: `MAX(last_updated)` across all budget rows for the project (system field, always present — tells you when any budget row was last touched)
 
-**Confidence Rating:** `sl14xzgf` on the Projects app. Scale: **1–10** (numeric display format, confirmed June 2, 2026). Conversion rate = `rating / 10`. Threshold for including Hot jobs in [C] projected score: rating ≥ 5 (≥50%). Unrated Hot = 55% default; unrated Pipeline = 30% default.
-
-**Budget Freshness Fallback:** For projects without live G-702 data, use the most recently modified file date in the project's Google Drive folder. `MAX(s4975ef4d4, Drive folder most recent file modifiedTime)`.
-
-**Schedule Freshness Source:** Smartsheet `modifiedAt` via `get_sheet_summary`. Project's Smartsheet sheet ID stored on the Project record (`s4ec74af74` or `sa1de44e85`).
+**Schedule Freshness:**
+- Source: Smartsheet `modifiedAt` via `get_sheet_summary`
+- Sheet ID stored on Project record: `s4ec74af74` or `sa1de44e85`
+- **Status (June 2026):** Deferred — requires Smartsheet API key in Railway env vars. Column shows `—` until integrated.
 
 ---
 
 ## Pillar Completeness — Project Readiness for Scoring
 
-A project missing critical pillars produces a misleading score. Before any project contributes to the game score, its data infrastructure must be in place.
+**Current status (June 2026): Option B active.** Incomplete projects are displayed with ⚠️ but remain inclusive in scoring. Calendar reminder set for June 16, 2026 to activate full gating (Option A — incomplete projects excluded from score).
 
-**Pillars-In-Place indicator (on every project row/card):**
-- ✅ **Complete** — all required pillars present. Project counts toward game total.
-- ⚠️ **Incomplete** — one or more missing. Project shown in "Pending Setup." Excluded from game score.
+**Pillars-In-Place indicator on every project row:**
+- ✅ All 10 checks pass — project counts toward game total
+- ⚠️ One or more missing — project shown in "Pending Setup" section
 
-The indicator links to the Pillar Matrix (`/pillar-matrix.html`) filtered to that project.
+The Pending Setup section is collapsible, appears above the ledger, lists each incomplete project with its missing items and a link to the S-BOS record.
 
-### Construction — Required Pillars
+### Construction — Required Pillars (10 checks)
 
 | Pillar | Check | S-BOS Field |
 |---|---|---|
-| **Budget — Inflow** | ≥1 Budget Item with CF Direction = Inflow | `s9be09b673` = `Wr0tD` on Baseline Budget Items |
-| **Budget — Outflow** | ≥1 Budget Item with CF Direction = Outflow | `s9be09b673` = `oGjmd` on Baseline Budget Items |
-| **Budget — G-702 or Drive** | G-702 linked OR Google Drive Pay App folder present | `sfiz2vvh` count > 0 OR `s561f1796b` populated |
-| **Schedule — Start** | Construction Start date populated | `s7e23170f2` on Project (Date Formally Transferred to WIP) |
-| **Schedule — End** | Construction End date populated | `scc0298307` on Project (Estimated Construction End Date) |
-| **Schedule — Smartsheet** | Smartsheet schedule linked | `s4ec74af74` or `sa1de44e85` on Project |
-| **Checklists — Drive** | Google Drive folder linked | `s561f1796b` on Project |
-| **Checklists — Assigned** | ≥1 Checklist record linked | `synemrwc` count > 0 on Project |
-| **Alignment — GYR** | GYR Status Report linked | `s0dm3fca` count > 0 on Project |
-| **Alignment — Stakeholders** | ≥4 Stakeholder Bridge records | `sw6mypea` count ≥ 4 on Project |
+| Budget — Inflow | ≥1 Budget Item (Operating Cash-Income) | CF Lookup `s40ca9cdee` = "Operating Cash-Income" |
+| Budget — Outflow | ≥1 Budget Item (Operating Cash-COGS) | CF Lookup `s40ca9cdee` = "Operating Cash-COGS" |
+| Budget — G-702 or Drive | G-702 linked OR Drive folder present | `sfiz2vvh` count > 0 OR `s561f1796b` populated |
+| Schedule — Start | Construction Start date populated | `s7e23170f2` on Project |
+| Schedule — End | Construction End date populated | `scc0298307` on Project |
+| Schedule — Smartsheet | Smartsheet schedule linked | `s4ec74af74` or `sa1de44e85` on Project |
+| Checklists — Drive | Google Drive folder linked | `s561f1796b` on Project |
+| Checklists — Assigned | ≥1 Checklist record linked | `synemrwc` count > 0 |
+| Alignment — GYR | GYR Status Report linked | `s0dm3fca` count > 0 |
+| Alignment — Stakeholders | ≥4 Stakeholder Bridge records | `sw6mypea` count ≥ 4 |
 
-**Rationale for 4-stakeholder floor:** By the time a project enters WIP, the full cast is expected to be in place: vendors, customers, product line leads, investors, lenders, and owner/owner's rep. Four is a minimum floor — not a role prescription.
+**4-stakeholder floor rationale:** By WIP entry, the full cast should be in place: vendors, customers, product line leads, investors, lenders, owner/rep. Four is a minimum floor, not a role prescription.
 
 ### Biz Dev — Required Pillars
 
 | Pillar | Check |
 |---|---|
 | Budget — Estimated Value | ≥1 Baseline Budget Item linked |
-| Schedule — Expected Close | Expected Close date populated on Project Dates |
-| Alignment — Stakeholders | ≥2 Stakeholder Bridge records: one Product Lead + one Decision-Maker/Owner/Owner's Rep |
+| Schedule — Expected Close | Expected Close date populated |
+| Alignment — Stakeholders | ≥2 records: one Product Lead + one Decision-Maker/Owner/Owner's Rep |
 
 ### Pipeline — Required Pillars
 
@@ -303,7 +331,7 @@ The indicator links to the Pillar Matrix (`/pillar-matrix.html`) filtered to tha
 | Budget — Estimated Value | ≥1 Baseline Budget Item linked |
 | Budget — Estimating Package | Estimating document in Google Drive folder |
 | Schedule — Deadline | Due Diligence / Estimating deadline populated |
-| Alignment — Stakeholders | ≥1 Stakeholder Bridge record (Owner/Owner's Rep or Decision-Maker role) |
+| Alignment — Stakeholders | ≥1 record (Owner/Owner's Rep or Decision-Maker role) |
 
 ### Closeout & Warranty — Required Pillars
 
@@ -311,9 +339,9 @@ The indicator links to the Pillar Matrix (`/pillar-matrix.html`) filtered to tha
 |---|---|
 | Budget — Final G-702 | Final G-702 linked |
 | Schedule — Substantial Completion | Substantial Completion date populated |
-| Checklists — Drive | Google Drive closeout folder linked |
+| Checklists — Drive | Closeout Drive folder linked |
 | Checklists — Punch List | Checklist (punch list) assigned |
-| Alignment — Stakeholders | ≥2 Stakeholder Bridge records (Warranty Admin + Occupant/Owner Contact) |
+| Alignment — Stakeholders | ≥2 records (Warranty Admin + Occupant/Owner Contact) |
 
 ### Asset Management — Required Pillars
 
@@ -321,64 +349,123 @@ The indicator links to the Pillar Matrix (`/pillar-matrix.html`) filtered to tha
 |---|---|
 | Budget — NOI Target | Baseline Budget Items (NOI target) linked |
 | Schedule — Lease Dates | Lease term start + end populated |
-| Checklists — Drive | Google Drive asset folder linked |
+| Checklists — Drive | Asset Drive folder linked |
 
-### Pillar Remediation — System-Assisted
+### Pillar Remediation
 
-| Missing Pillar | Claude Action |
+| Missing Pillar | Action |
 |---|---|
 | Baseline Budget Items | Auto-create via `smartsuite_create_record`, patch project link |
-| Project Dates | Auto-create via `smartsuite_create_record` with known dates, patch project link |
+| Project Dates | Auto-create with known dates, patch project link |
 | Stakeholder Bridge | Auto-create bridge record, patch project link |
 | GYR Status Report | Auto-create initial record, patch project link |
 | G-702 | Flag for PM action — cannot auto-create without billing data |
-| Google Drive / Smartsheet link | Flag for PM action — requires human to supply URL/sheet ID |
+| Drive / Smartsheet link | Flag for PM action — human must supply URL/sheet ID |
+
+---
+
+## Weekly GYR Integration
+
+Every product line dashboard connects to the S-BOS goal tracking system via a weekly automated CoWork plugin that creates GYR Status Report records.
+
+**See:** `SBos-Knowledge-Base/workflows/weekly-goal-review-product-line.md` for the full workflow spec.
+
+### How It Works
+Each Monday:
+- **12 PM PT** — Reminder email to product line team: complete S-BOS updates before 2 PM
+- **2 PM PT** — CoWork runs the full GYR workflow:
+  1. Fetch live dashboard data
+  2. Compute GYR status from pace %
+  3. Pull S-BOS activity from past 7 days
+  4. Write Claude narrative (on track / needs attention / critical)
+  5. Generate HTML snapshot
+  6. Upload to Google Drive: `Goal Tracking / {Product Line} / GYR Reports /`
+  7. Create GYR Status Report in SmartSuite linked to goal + priority
+  8. Log to Activity Log
+
+### GYR Status Values (SmartSuite field `s3638e84d5` and `s8ow7due`)
+
+| Pace | Status Value | Label |
+|---|---|---|
+| ≥ 110% | `complete` | Exceeding Target |
+| 90–109% | `backlog` | On Track |
+| 75–89% | `in_progress` | At Risk |
+| < 75% | `ready_for_review` | Critical |
+
+### Construction GYR Records (live)
+- Goal record: `698b7239aac6a0dc52279428` (Goals app `6824d4d1885a8769bd2dfc0d`)
+- Construction priority: `698b72593f3ed73d2981c738` (Priorities app `68216f48f98789b5bb095a4b`)
+- GYR Reports app: `68216f48f98789b5bb095a51`
+
+### Key GYR Report Fields
+| Field | Slug | Content |
+|---|---|---|
+| GYR Status | `s3638e84d5` | G/Y/R status value |
+| System GYR | `s8ow7due` | Same — machine-computed |
+| System GYR Evidence | `s675abeba3` | Claude-written narrative |
+| System GYR Date | `se3873553c` | Today |
+| Link to Goals | `sfwf9528` | Goal record (array) |
+| Current Priority | `s3511304b0` | Priority record (array) |
 
 ---
 
 ## Product Line Specifications
 
 ### ① CONSTRUCTION
-**Game target:** Total construction revenue at target GP% for the scoring period  
-**Scoring period:** Configurable. Current: June 1 – December 31, 2026  
-**Revenue metric:** Period-specific (G-702 `s0592aef02` filtered by `s0996cf591` within scoring window — NOT cumulative `s160aa943b`)
 
-**Situations (S-BOS status stages):**
+**Game target:** $4,500,000 revenue at 9% GP — June 1 through December 31, 2026  
+**Scoring model:** Progress-based billing (revenue accrues daily)  
+**Score:** [A] G-702 actuals + [B] WIP capturable BTF + [C] Pipeline projected
 
-| Situation | S-BOS Status(es) | Dashboard Role |
-|---|---|---|
-| **Biz Dev** | New Opportunity · Nurture · Warm · Hot | Pipeline context only — not counted in game score |
-| **Active Pipeline** | Active in Pipeline | Pre-contract; counts toward pipeline revenue estimate |
-| **Active in WIP** | Active in WIP | Primary scoring situation |
-| **Closeout & Warranty** | Closeout & Warranty | Final billing; counts toward game score |
+**S-BOS Status → Situation Mapping (use exact status slugs):**
 
-**Multi-type project rule:** When a project is tagged with both Construction and another product type (e.g., 2nd Home), filter Baseline Budget Items to rows where `s2f27d033f` (SB Company) = KCS Homes LLC (`6914fe61e127b5f69fb770da`). Single-type Construction projects use all their budget rows.
+| Status Value | S-BOS Label | Dashboard Situation | Score Role |
+|---|---|---|---|
+| `ready_for_review` | New Opportunity | Biz Dev | $0 in [C] |
+| `complete` | Nurture | Biz Dev | $0 in [C] |
+| `21c0705b-0c3b-45cd-9e93-07672fac949d` | Warm | Biz Dev | $0 in [C] |
+| `fb5677b7-3e68-4705-86af-abb8745a43f7` | Hot | Biz Dev | Included in [C] if confidence ≥ 5/10 |
+| `backlog` | Active in Pipeline | Pipeline | Included in [C] |
+| `zOlNR` | Active in WIP | WIP | Included in [B] |
+| `Swowl` | Closeout & Warranty | Closeout | Included in [B] |
+| `Dio3d` | Closed Job | Closed | Historical only |
+| `3ae0dcac-d82c-4171-95cd-3f40eed714d7` | Declined | **Excluded** | Hidden from dashboard |
+| `41590c12-77e8-494b-878e-2dbb27012ca4` | Job Lost | **Excluded** | Hidden from dashboard |
+
+**Multi-type project rule:**  
+When a project is tagged with Construction **and** another product type (e.g., 2nd Home), filter Baseline Budget Items to rows where `s2f27d033f` (SB Company) = KCS Homes LLC (`6914fe61e127b5f69fb770da`). Single-type Construction projects use all their budget rows. Realm Constructors (entity 1200) operates under a separate product line — excluded from Construction.
+
+**Budget data reality:**  
+Financial fields on the Project record (`sce63122c3`, `s2djrcac`) are **not populated** for construction projects. Revenue/cost data lives entirely in Baseline Budget Items rows. The budget rows have a 3-state model:
+- `estimate` — only `sc507e6b54` (Estimated Budget) filled
+- `baseline` — `sed808550d` / `s531f1d6ab` populated (contract signed, no G-702 yet)
+- `billing` — `s0f7c08530` / `s160aa943b` populated (G-702 pay apps flowing)
+
+**Budget row contract value priority:** `s531f1d6ab` (Adjusted) → `sed808550d` (Baseline formula) → `sc507e6b54` (Estimate)
 
 **Sub-views within Active in WIP** (drill-down, not top-level situations):
 - **Billing Velocity** — G-702s submitted this period vs. target cadence
-- **GP% Watch** — jobs where GP% is trending below target (risk flag)
-- **Aged WIP** — jobs where `s4975ef4d4` (last billing action) > 30 days ago
+- **GP% Watch** — jobs trending below 9% GP
+- **Aged WIP** — `s4975ef4d4` (last billing action) > 30 days ago
 
-**Project measurables (period-specific where noted):**
+**Project measurables:**
 
 | Measurable | Source | Period-Specific? |
 |---|---|---|
 | Revenue this period | G-702 `s0592aef02` filtered by pay app date | ✅ Yes |
 | GP this period | Revenue × GP% or G-703 period amounts | ✅ Yes |
-| Contract Revenue (total) | Baseline Budget Items `s531f1d6ab` (Adjusted Budget, Inflow rows) | No — project total |
-| Contract Cost (total) | Baseline Budget Items `s531f1d6ab` (Adjusted Budget, Outflow rows) | No — project total |
-| Billed to Date (cumulative) | G-702 `s6ce9e1881` (Completed & Stored to Date) | No — project total |
-| Balance to Finish | G-702 `sf1daf8d5a` | No — project total |
+| Contract Revenue | Budget Items `s531f1d6ab` (Inflow rows) | No — project total |
+| Contract Cost | Budget Items `s531f1d6ab` (Outflow rows) | No — project total |
+| Billed to Date | G-702 `s6ce9e1881` (Completed & Stored) | No — project total |
+| BTF | G-702 `sf1daf8d5a` | No — project total |
 | GP% | Contract GP ÷ Contract Revenue | No — project total |
 | Retention Held | G-702 `s2ce3db8ed` | No — project total |
 | % Complete | Budget Items `s3636482e0` | No — project total |
-| Days since last billing | Budget Items `s4975ef4d4` | Rolling |
-| Est. Completion Date | Project `scc0298307` | — |
-| Est. Completion vs. Original | Project `scc0298307` vs. Dates app baseline | — |
-| Budget Freshness | Budget Items `s4975ef4d4` | Rolling |
-| Schedule Freshness | Smartsheet `modifiedAt` | Rolling |
-
-**Key stats:** GP%, WIP aging, retention held, change order volume, billing velocity
+| Budget Freshness | Budget Items `s4975ef4d4` (fallback: `last_updated`) | Rolling |
+| Schedule Freshness | Smartsheet `modifiedAt` (deferred) | Rolling |
+| Confidence Rating | Project `sl14xzgf` ÷ 10 | Per project |
+| Est. Duration | Project `s399940ae0` (validate ≥ 14 days, default 90) | Per project |
+| Capturable BTF | BTF × min(1, daysToEnd / daysToProjectComplete) | Derived |
 
 **Primary data sources:**
 - Projects: `68216a706900e8eaf75a05a7`
@@ -391,16 +478,23 @@ The indicator links to the Pillar Matrix (`/pillar-matrix.html`) filtered to tha
 ---
 
 ### ② ASSET DISPOSITION
+
 **Game target:** Total homes closed within scoring period  
-**Situations (S-BOS status stages):** Biz Dev → Referral Secured → Contract Signed → Active Listing → Under Contract → Closed  
-**Revenue metric:** Commission revenue + repair markup, per closed transaction within scoring window
+**Scoring model:** Event-based — revenue recognized on single close event only  
+**Score:** Count of closes + revenue (commission + repair markup) within window
+
+**Key distinction from Construction:** No [B] capturable BTF (progress billing does not apply). [C] pipeline estimate based on probability of close, not billing fraction. A home under contract either closes in the period or it doesn't — no proration.
+
+**Situations:** Biz Dev → Referral Secured → Contract Signed → Active Listing → Under Contract → Closed
 
 *(Full spec to be completed when dashboard is built)*
 
 ---
 
 ### ③ ASSET MANAGEMENT
+
 **Game target:** Portfolio NOI target for the period  
+**Scoring model:** Periodic — NOI recognized monthly  
 **Situations:** Occupancy / Rent Collection / Lease Expirations / CapEx / OpEx
 
 *(Full spec to be completed when dashboard is built)*
@@ -408,11 +502,13 @@ The indicator links to the Pillar Matrix (`/pillar-matrix.html`) filtered to tha
 ---
 
 ### ④ DEVELOPMENT
+
 *(To be specified when dashboard is built)*
 
 ---
 
 ### ⑤ BROKERAGE
+
 *(To be specified when dashboard is built)*
 
 ---
@@ -420,11 +516,31 @@ The indicator links to the Pillar Matrix (`/pillar-matrix.html`) filtered to tha
 ## Data Architecture
 
 ### Server Architecture
-- **Railway planning tools backend** (`sb-planning-tools-production.up.railway.app`) serves all dashboard HTML and provides product-line-specific API endpoints (e.g., `/api/construction-data`, `/api/disposition-data`)
-- **SmartSuite API key** stored in Railway environment variables — never exposed to browser
-- **Server fetches from SmartSuite**, applies filtering/aggregation server-side, returns lean JSON
-- **5-minute stale-while-revalidate cache** per endpoint — dashboard receives data instantly, background refresh keeps it fresh
-- **Kompass MCP** (`earnest-vitality-production.up.railway.app`) is Claude's agent tool server — NOT a browser-callable REST API
+- **Railway planning tools backend** (`sb-planning-tools-production.up.railway.app`) — serves all dashboard HTML + `/api/*` endpoints
+- **SmartSuite API key** in Railway env vars — never exposed to browser
+- **Server fetches from SmartSuite**, applies filtering/aggregation, returns lean JSON
+- **5-minute stale-while-revalidate cache** — dashboard gets data instantly, background refresh keeps it fresh
+- **Kompass MCP** (`earnest-vitality-production.up.railway.app`) — Claude's agent tool server. **Not a browser REST API. Never use in dashboard HTML.**
+
+### Construction API Endpoint
+```
+GET /api/construction-data
+
+Response:
+{
+  projects: [...],                     // annotated project records
+  scoringPeriod: { start, end, label },
+  periodRevenue: number,               // bucketA (legacy compat)
+  score: {
+    bucketA: number,                   // [A] G-702 actuals in period
+    bucketB: number,                   // [B] WIP capturable BTF
+    bucketC: number,                   // [C] Pipeline projected
+    projectedTotal: number             // A + B + C
+  },
+  lastUpdated: ISO string,
+  stale: boolean
+}
+```
 
 ### Data Sources by Dashboard
 | Dashboard | Primary App | Supporting Apps |
@@ -435,36 +551,45 @@ The indicator links to the Pillar Matrix (`/pillar-matrix.html`) filtered to tha
 | Development | Projects | Budget Items, G-702, Project Dates |
 | Brokerage | Projects | Stakeholder Bridge, Budget Items |
 
-### Snapshot Write Pattern
+### Snapshot Architecture (correct implementation)
 ```
-POST /api/snapshot  {dashboardType, periodStart, periodEnd, metrics[]}
-  → Server: create Stats records in SmartSuite (one per measurable)
-  → Server: generate static HTML from current dashboard state
-  → Server: upload HTML to Google Drive /snapshots/ folder
-  → Server: write Drive link back to master Stats record (sc05da1445)
-  → Response: {ok, snapshotUrl, periodCode}
+Client side (no server needed):
+  1. Dashboard computes current state from _projects and _score
+  2. Generates clean HTML string (structured report, not DOM capture)
+  3. Creates Blob → <a download> → file downloads to user's machine
+
+Server side (small POST, no HTML in body):
+  POST /api/snapshot  { dashboardType, periodStart, periodEnd, metrics[] }
+    express.json({ limit: '10mb' })   ← increased from 100KB default
+    → Create Stats records (one per measurable, title field required)
+    → Return: { ok, statsRecordsCreated }
 ```
 
-### Stats Table — Time-Indexed Snapshot Ledger (`6840927ebcfa2d2bfef039e2`)
-| Field | Slug |
-|---|---|
-| Associated Goal | `sd6cc86075` |
-| Associated Priority | `s38ac950e1` |
-| Associated Project | `s5e8a7ac82` |
-| Begin Date | `s793df2063` |
-| End Date | `sb5657209d` |
-| Period Type | `sfa08338c5` |
-| Amount for Period | `s6471266f2` |
-| Attachments (Drive link) | `sc05da1445` |
+**Stats record requirements:**
+- `title` is a required `recordtitlefield` — must be set. Format: `"{periodCode}-{label}"`
+- Linked record fields (`sd6cc86075`, `s38ac950e1`, `s5e8a7ac82`) must be arrays: `["id"]` not `"id"`
+- `s6471266f2` (Amount for Period) is required — never pass null
+
+---
+
+## Scoring Period Configuration
+
+**Current (June 2026):** Hardcoded in `server.js` as `SCORING_PERIOD = { start: 2026-06-01, end: 2026-12-31 }`.
+
+**TODO:** Source from S-BOS Goals/Targets record so non-developers can update it. Calendar reminder set June 16, 2026 to also activate full pillar gating (Option A).
+
+When a new scoring period begins: update the two date constants in `server.js` and redeploy to Railway. All date math in both server and dashboard is dynamic from those constants — no other changes needed.
 
 ---
 
 ## Version History
+
 | Version | Date | Notes |
 |---|---|---|
 | 1.0 | June 1, 2026 | Initial definition |
-| 1.1 | June 1, 2026 | Added: Project hierarchy; async update handling; Stats as snapshot ledger; field map; write/read patterns; Projects link field `s5e8a7ac82` |
-| 1.2 | June 1, 2026 | Added: Principle 9 (Dual-Source Freshness); Pillar Completeness section; gray color state; Pillar Matrix reference; incomplete-pillar projects excluded from score |
-| 1.3 | June 2, 2026 | Pipeline added as separate product line; build priority order established; Pillar categories named; Amber renamed Yellow; Principle 7 updated (Softr homepage architecture); Principle 9 rewritten (dual Budget/Schedule freshness); Snapshot Capture updated (HTML Layer 2); Construction note re: budget item classification; Asset Management OpEx situation |
-| 1.4 | June 2, 2026 | Construction WIP Alignment updated to 4-minimum Stakeholder Bridge records; Biz Dev Alignment updated to two records; Closeout & Warranty Alignment added |
-| 1.5 | June 2, 2026 | **Placed in repo** at `/dashboards/PRINCIPLES.md` as canonical build reference. Fixed dashboard scope: product-line-based (not stage-based) — each dashboard spans all lifecycle stages for its product type; stages are situations within the dashboard. Fixed Construction WIP situations to match implemented framework (Biz Dev / Active Pipeline / Active in WIP / Closeout). Added Period-Specific Scoring section — revenue = G-702 `s0592aef02` filtered by pay app date, NOT cumulative `s160aa943b`. Added period-specific vs. cumulative field distinction table. Fixed API architecture note — Kompass MCP is not a browser REST endpoint. Added sub-views within Active WIP (Billing Velocity, GP% Watch, Aged WIP). Added Construction multi-type project rule (KCS-Homes filter). Field `s4975ef4d4` confirmed in Budget Items schema (field #34). |
+| 1.1 | June 1, 2026 | Project hierarchy; async update handling; Stats ledger; field map; write/read patterns |
+| 1.2 | June 1, 2026 | Principle 9 (Dual-Source Freshness); Pillar Completeness; gray color state; Pillar Matrix reference |
+| 1.3 | June 2, 2026 | Pipeline as separate product line; build priority order; Pillar categories; Yellow color; Principle 7 (Softr); Principle 9 rewritten; Snapshot Layer 2 HTML; Construction budget classification note; Asset Management OpEx |
+| 1.4 | June 2, 2026 | Construction WIP: 4-minimum Stakeholder Bridge; Biz Dev: 2 records; Closeout & Warranty alignment added |
+| 1.5 | June 2, 2026 | Placed in repo. Fixed dashboard scope (product-line-based). Fixed Construction situations (S-BOS labels). Period-Specific Scoring section. API architecture correction. Sub-views within WIP. Multi-type project rule. `s4975ef4d4` confirmed. |
+| 2.0 | June 4, 2026 | **Major update incorporating full Construction dashboard build.** Added: 3-Bucket Projected Score model ([A]/[B]/[C]) as core scoring framework. Progress-based vs. event-based billing distinction. Confidence Rating (`sl14xzgf`, 1–10 scale, confirmed) with inclusion rules for Hot/Pipeline. No hard deadline cutoff — continuous billing proration. Monthly Ramp Plan for production targets. Full S-BOS status slug map for Construction. Budget data reality (project-level financial fields unpopulated; data in Budget rows). Budget 3-state model (estimate/baseline/billing). Pillar Option B active (display-only until June 16). Budget freshness fallback (`last_updated`). Snapshot architecture corrected (HTML = client-side Blob; Stats = separate small POST; `express.json` limit = 10mb; linked fields must be arrays; `title` required). Tooltip system (click-only on `.explainer`). Weekly GYR Integration section. GYR status values, field slugs, Construction goal/priority record IDs. Construction API response shape documented. Scoring period configuration note. Disposition confirmed as event-based (no proration). |
