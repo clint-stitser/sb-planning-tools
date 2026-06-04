@@ -287,7 +287,35 @@
     </div>
   </div>
 
-  <!-- ── Section 4: Revenue Recognition Ledger ── -->
+  <!-- ── Section 4: Production Targets by Key Situation (collapsible, open by default) ── -->
+  <div class="db-section">
+    <div class="collapsible-header" onclick="toggleSection('targets-body-wrap','targets-toggle')">
+      <div class="db-section-title" style="border:none;padding:0;margin:0">🎯 Production Targets by Key Situation</div>
+      <span class="collapsible-toggle open" id="targets-toggle">▲</span>
+    </div>
+    <div class="collapsible-body" id="targets-body-wrap">
+      <div class="db-table-wrap" style="margin-top:12px">
+        <table class="db-table" id="targets-table">
+          <thead>
+            <tr>
+              <th>Target / Situation</th>
+              <th class="text-right">Goal</th>
+              <th class="text-right">Current</th>
+              <th class="text-right">Gap</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="targets-body">
+            <tr><td colspan="5"><div class="skeleton skeleton-row"></div></td></tr>
+            <tr><td colspan="5"><div class="skeleton skeleton-row"></div></td></tr>
+            <tr><td colspan="5"><div class="skeleton skeleton-row"></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Section 5: Revenue Recognition Ledger ── -->
   <div class="db-section">
     <div class="db-section-title">
       🧾 Revenue Recognition Ledger
@@ -297,21 +325,22 @@
     </div>
     <!-- toolbar populated by JS -->
     <div id="ledger-toolbar"></div>
-    <div class="db-table-wrap">
+    <!-- db-table-scroll: fixed-height scroll container — thead sticky works reliably here -->
+    <div class="db-table-scroll">
       <table class="db-table ledger-table" id="ledger-table">
         <thead>
           <tr>
             <th data-col="title">Job / Project <span class="sort-icon">↕</span></th>
             <th data-col="stage">Stage <span class="sort-icon">↕</span></th>
             <th data-col="pillars">Pillars <span class="sort-icon">↕</span></th>
-            <th data-col="dataState">Data State <span class="sort-icon">↕</span></th>
+            <th data-col="dataState">Data <span class="sort-icon">↕</span></th>
             <th class="text-right" data-col="periodRev">Period Rev <span class="sort-icon">↕</span></th>
             <th class="text-right" data-col="contractRev">Contract Rev <span class="sort-icon">↕</span></th>
-            <th class="text-right" data-col="contractGP">Contract GP <span class="sort-icon">↕</span></th>
-            <th class="text-right" data-col="gpRate">GP % <span class="sort-icon">↕</span></th>
-            <th class="text-right" data-col="btf">Bal. to Finish <span class="sort-icon">↕</span></th>
-            <th data-col="pctComplete">% Done <span class="sort-icon">↕</span></th>
-            <th data-col="freshness">Freshness <span class="sort-icon">↕</span></th>
+            <th class="text-right" data-col="contractGP">GP $ <span class="sort-icon">↕</span></th>
+            <th class="text-right" data-col="gpRate">GP% <span class="sort-icon">↕</span></th>
+            <th class="text-right" data-col="btf">BTF <span class="sort-icon">↕</span></th>
+            <th data-col="pctComplete">% <span class="sort-icon">↕</span></th>
+            <th data-col="freshness">Fresh <span class="sort-icon">↕</span></th>
             <th data-col="wipStart">WIP Start <span class="sort-icon">↕</span></th>
           </tr>
         </thead>
@@ -323,29 +352,6 @@
           <tr><td colspan="12"><div class="skeleton skeleton-row"></div></td></tr>
         </tbody>
         <tfoot id="ledger-foot"></tfoot>
-      </table>
-    </div>
-  </div>
-
-  <!-- ── Section 5: Production Targets ── -->
-  <div class="db-section">
-    <div class="db-section-title">🎯 Production Targets</div>
-    <div class="db-table-wrap">
-      <table class="db-table" id="targets-table">
-        <thead>
-          <tr>
-            <th>Target</th>
-            <th class="text-right">Goal</th>
-            <th class="text-right">Current</th>
-            <th class="text-right">Gap</th>
-            <th>Notes</th>
-          </tr>
-        </thead>
-        <tbody id="targets-body">
-          <tr><td colspan="5"><div class="skeleton skeleton-row"></div></td></tr>
-          <tr><td colspan="5"><div class="skeleton skeleton-row"></div></td></tr>
-          <tr><td colspan="5"><div class="skeleton skeleton-row"></div></td></tr>
-        </tbody>
       </table>
     </div>
   </div>
@@ -419,6 +425,19 @@ const STATUS_CHIP_COLORS = {
   CLOSEOUT: 'var(--status-blue)',
   CLOSED:   'var(--status-gray)',
 };
+
+// ── Collapsible sections ──────────────────────────────────────────────────
+function toggleSection(bodyId, toggleId) {
+  const body   = document.getElementById(bodyId);
+  const toggle = document.getElementById(toggleId);
+  if (!body) return;
+  const isOpen = !body.classList.contains('collapsed');
+  body.classList.toggle('collapsed', isOpen);
+  if (toggle) {
+    toggle.textContent = isOpen ? '▼' : '▲';
+    toggle.classList.toggle('open', !isOpen);
+  }
+}
 
 // ── Data Load ─────────────────────────────────────────────────────────────
 let _projects = [];
@@ -509,13 +528,15 @@ function renderScoringArc(periodRevenue) {
       <div class="arc-stat-value" style="color:${remaining > 0 ? 'var(--status-red)' : 'var(--status-green)'}">${fmtMoney(remaining, true)}</div>
       <div class="arc-stat-label">${remaining > 0 ? 'Projected Gap' : 'Surplus'}</div>
     </div>
-    <div class="arc-pace" style="border-color:${paceColor}40">
+    <div class="arc-pace" style="border-color:${paceColor}40"
+         title="On Pace = Projected Score ÷ Expected Score at this point in time.&#10;Expected = $4.5M × % of period elapsed.&#10;Green ≥100%, Yellow 75–99%, Red <75%.&#10;Uses A+B+C projected total, not just actuals.">
       <div class="arc-pace-value" style="color:${paceColor}">${pacePct}%</div>
-      <div class="arc-pace-label">${paceLabel}</div>
+      <div class="arc-pace-label">${paceLabel} <span class="explainer">?</span></div>
     </div>
-    <div class="arc-stat" style="min-width:120px">
+    <div class="arc-stat" style="min-width:120px"
+         title="Required Run Rate = Remaining gap ÷ Days left in scoring period × 7.&#10;This is how much new contract revenue must be committed per week to close the gap by December 31.&#10;Based on projected total (A+B+C), not just billed actuals.">
       <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-primary)">${fmtMoney(runRateWeek, true)}<span style="font-size:9px;color:var(--text-muted)">/wk</span></div>
-      <div class="arc-stat-label">Required Run Rate</div>
+      <div class="arc-stat-label">Run Rate Needed <span class="explainer">?</span></div>
     </div>
   `;
 }
@@ -845,7 +866,20 @@ const tableState = {
   stateFilters: new Set(),
   sort: { col: 'stage', dir: 'asc' },
   groupByStage: true,
+  searchQuery:  '',
 };
+
+// Fuzzy title match: every character in query appears in order in title
+function fuzzyMatch(query, title) {
+  if (!query) return true;
+  const q = query.toLowerCase();
+  const t = (title || '').toLowerCase();
+  let qi = 0;
+  for (let i = 0; i < t.length && qi < q.length; i++) {
+    if (t[i] === q[qi]) qi++;
+  }
+  return qi === q.length;
+}
 
 let _toolbarInited = false;
 
@@ -873,9 +907,12 @@ function initToolbar() {
         `).join('')}
       </div>
       <div class="toolbar-section toolbar-section--right">
+        <input type="text" class="search-input" id="ledger-search"
+               placeholder="Search jobs…" autocomplete="off"
+               oninput="tableState.searchQuery=this.value;applyAndRender()">
         <label class="toolbar-toggle">
           <input type="checkbox" id="toggle-group" ${tableState.groupByStage ? 'checked' : ''}>
-          <span>Group by Stage</span>
+          <span>Group</span>
         </label>
         <button class="toolbar-clear" id="btn-clear">Clear</button>
         <span class="toolbar-results" id="toolbar-count"></span>
@@ -904,7 +941,10 @@ function initToolbar() {
   document.getElementById('btn-clear').addEventListener('click', () => {
     tableState.stageFilters.clear();
     tableState.stateFilters.clear();
+    tableState.searchQuery = '';
     document.querySelectorAll('.filter-pill.active').forEach(p => p.classList.remove('active'));
+    const searchEl = document.getElementById('ledger-search');
+    if (searchEl) searchEl.value = '';
     applyAndRender();
   });
 
@@ -938,11 +978,12 @@ function applyAndRender() {
   // 1. Base: exclude CLOSED (historical), then apply active filters
   let rows = _projects.filter(p => p.stage !== 'CLOSED');
 
-  // stageFilters matches on p.subLabel ('Hot', 'Warm', 'Active Pipeline', 'WIP', etc.)
   if (tableState.stageFilters.size > 0)
     rows = rows.filter(p => tableState.stageFilters.has(p.subLabel));
   if (tableState.stateFilters.size > 0)
     rows = rows.filter(p => tableState.stateFilters.has(p.budget.budgetState || 'empty'));
+  if (tableState.searchQuery)
+    rows = rows.filter(p => fuzzyMatch(tableState.searchQuery, p.title));
 
   // 2. Sort
   const { col, dir } = tableState.sort;
@@ -1035,9 +1076,10 @@ function buildRow(p) {
             </span>
           </div>` : ''}
       </td>
-      <td>
-        <span class="chip" style="color:${chipColor};border-color:${chipColor}40;background:${chipColor}12;white-space:nowrap">
-          ${p.statusLabel}
+      <td style="max-width:90px">
+        <span class="chip" title="${p.statusLabel}"
+              style="color:${chipColor};border-color:${chipColor}40;background:${chipColor}12;white-space:normal;font-size:9px;line-height:1.3">
+          ${p.subLabel}
         </span>
       </td>
       <td>
@@ -1289,73 +1331,108 @@ function renderTargets(byStage, goalProjects) {
 }
 
 // ── Snapshot Capture ──────────────────────────────────────────────────────
+// Architecture: HTML download is 100% client-side (no server round-trip needed).
+// Stats record creation is a separate small POST (metrics only, no HTML in body).
+// This avoids the express.json() 100KB body size limit that was causing "Snapshot failed".
 async function captureSnapshot() {
   const btn = document.getElementById('snapshot-btn');
   btn.disabled = true;
   btn.textContent = '⏳ Capturing…';
 
   try {
-    const now       = new Date();
-    const periodEnd = now.toISOString().slice(0,10);
-    const weekNum   = Math.ceil(((now - new Date(now.getFullYear(), 0, 1)) / 86400000 + 1) / 7);
+    const now        = new Date();
+    const periodEnd  = now.toISOString().slice(0,10);
+    const weekNum    = Math.ceil(((now - new Date(now.getFullYear(), 0, 1)) / 86400000 + 1) / 7);
     const periodCode = `W${weekNum}`;
 
-    // Build metrics for Stats table
     const goalRows = _projects.filter(p => GOAL_STAGES.has(p.stage));
-    const metrics  = [
-      { label: 'Period-Revenue',    amount: _periodRevenue },
-      { label: 'Contract-Revenue',  amount: goalRows.reduce((s,p) => s + (p.budget.contractRevenue || 0), 0) },
-      { label: 'Contract-GP',       amount: goalRows.reduce((s,p) => s + (p.budget.contractGP || 0), 0) },
-      { label: 'Jobs-Pipeline',     amount: goalRows.length },
-    ].map(m => ({ ...m, periodType: 'LGtGZ' })); // Weekly
 
-    // Capture HTML snapshot of current dashboard state
+    // ── Step 1: POST metrics only to server (small body) ──────────────────
+    const metrics = [
+      { label: 'Period-Revenue',   amount: _score.bucketA || 0 },
+      { label: 'WIP-Capturable',   amount: _score.bucketB || 0 },
+      { label: 'Pipeline-Proj',    amount: _score.bucketC || 0 },
+      { label: 'Projected-Total',  amount: _score.projectedTotal || 0 },
+      { label: 'Contract-Revenue', amount: goalRows.reduce((s,p) => s + (p.budget.contractRevenue || 0), 0) },
+      { label: 'Contract-GP',      amount: goalRows.reduce((s,p) => s + (p.budget.contractGP || 0), 0) },
+      { label: 'Jobs-Active',      amount: goalRows.length },
+    ].map(m => ({ ...m, periodType: 'LGtGZ' }));
+
+    let statsMsg = '';
+    try {
+      const res  = await fetch('/api/snapshot', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          dashboardType: 'construction',
+          periodStart:   SCORING_START.toISOString().slice(0,10),
+          periodEnd, periodCode, metrics,
+          // htmlContent intentionally omitted — downloaded client-side below
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      statsMsg = `${data.statsRecordsCreated || 0} stats records written · `;
+    } catch (statsErr) {
+      console.warn('Stats record creation failed (non-fatal):', statsErr.message);
+      statsMsg = '⚠ Stats write failed · ';
+    }
+
+    // ── Step 2: Generate clean HTML and download client-side ──────────────
+    const score    = _score;
+    const gap      = Math.max(0, GOAL_REVENUE - score.projectedTotal);
     const html = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><title>Construction Snapshot — ${periodCode} ${periodEnd}</title>
-<style>body{font-family:sans-serif;padding:20px;background:#0D1B2A;color:#F0EDE4}</style></head>
-<body>
-<h2>Construction Dashboard Snapshot</h2>
-<p>Period: ${periodCode} · Captured: ${now.toLocaleString()}</p>
-<hr>
-<h3>Scoring Arc</h3>
-${document.getElementById('scoring-arc')?.innerHTML || ''}
-<h3>Goal Tiles</h3>
-${document.getElementById('tiles')?.innerHTML || ''}
-<h3>Pipeline by Stage</h3>
-${document.getElementById('stage-cards')?.innerHTML || ''}
-<h3>Revenue Recognition Ledger</h3>
-${document.querySelector('.db-table-wrap')?.innerHTML || ''}
+<html lang="en"><head><meta charset="UTF-8">
+<title>Construction Snapshot — ${periodCode} ${periodEnd}</title>
+<style>
+  body{font-family:system-ui,sans-serif;background:#0D1B2A;color:#F0EDE4;padding:24px;max-width:960px;margin:0 auto}
+  h1{font-size:24px;color:#C9A84C;margin-bottom:4px}
+  .meta{font-size:12px;color:#8A9BAD;margin-bottom:24px}
+  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+  .tile{background:#1E2D3D;border-radius:8px;padding:14px}
+  .tile-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#8A9BAD;margin-bottom:6px}
+  .tile-value{font-size:28px;font-weight:700;color:#F0EDE4}
+  table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:24px}
+  th{background:#2A3F54;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#8A9BAD}
+  td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.05)}
+  .green{color:#2ECC71}.red{color:#E74C3C}.gold{color:#C9A84C}
+</style></head><body>
+<h1>🏗️ Construction Dashboard Snapshot</h1>
+<div class="meta">${periodCode} · Captured ${now.toLocaleString()} · Scoring period: Jun 1 – Dec 31, 2026</div>
+<div class="grid">
+  <div class="tile"><div class="tile-label">[A] Billed Actuals</div><div class="tile-value gold">$${(score.bucketA/1000).toFixed(0)}K</div></div>
+  <div class="tile"><div class="tile-label">[B] WIP Capturable</div><div class="tile-value gold">$${(score.bucketB/1000).toFixed(0)}K</div></div>
+  <div class="tile"><div class="tile-label">[C] Pipeline Proj.</div><div class="tile-value gold">$${(score.bucketC/1000).toFixed(0)}K</div></div>
+  <div class="tile"><div class="tile-label">Projected Score</div><div class="tile-value ${gap===0?'green':'red'}">$${(score.projectedTotal/1000).toFixed(0)}K</div></div>
+</div>
+<h2 style="color:#C9A84C;font-size:16px;margin-bottom:12px">Active Jobs</h2>
+<table>
+  <tr><th>Job</th><th>Stage</th><th>Contract Rev</th><th>BTF</th><th>Capturable</th><th>Confidence</th></tr>
+  ${_projects.filter(p=>p.stage!=='CLOSED').map(p=>`
+  <tr>
+    <td>${p.title}</td>
+    <td>${p.subLabel}</td>
+    <td class="gold">${p.budget.contractRevenue ? '$'+(p.budget.contractRevenue/1000).toFixed(0)+'K' : '—'}</td>
+    <td>${p.budget.btf ? '$'+(p.budget.btf/1000).toFixed(0)+'K' : '—'}</td>
+    <td class="green">${p.period.capturableBTF > 0 ? '$'+(p.period.capturableBTF/1000).toFixed(0)+'K' : p.period.pipelineProjected > 0 ? '$'+(p.period.pipelineProjected/1000).toFixed(0)+'K proj.' : '—'}</td>
+    <td>${p.conversion.confidenceRating ? p.conversion.confidenceRating+'/10' : '—'}</td>
+  </tr>`).join('')}
+</table>
 </body></html>`;
 
-    const res = await fetch('/api/snapshot', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        dashboardType: 'construction',
-        periodStart:   SCORING_START.toISOString().slice(0,10),
-        periodEnd,
-        periodCode,
-        metrics,
-        htmlContent: html,
-      }),
-    });
-    const data = await res.json();
-
-    // Trigger client-side HTML download
     const blob = new Blob([html], { type: 'text/html' });
     const url  = URL.createObjectURL(blob);
-    const a    = document.createElement('a');
-    a.href     = url;
-    a.download = `snapshot-construction-${periodEnd}-${periodCode}.html`;
+    const a    = Object.assign(document.createElement('a'), { href: url, download: `snapshot-construction-${periodEnd}-${periodCode}.html` });
     a.click();
     URL.revokeObjectURL(url);
 
-    btn.textContent = `✅ Snapshot ${periodCode} captured`;
-    setTimeout(() => { btn.disabled = false; btn.textContent = '📸 Capture Snapshot'; }, 4000);
+    btn.textContent = `✅ ${statsMsg}${periodCode} downloaded`;
+    setTimeout(() => { btn.disabled = false; btn.textContent = '📸 Capture Snapshot'; }, 5000);
+
   } catch (err) {
     console.error('Snapshot error:', err);
-    btn.textContent = '⚠ Snapshot failed';
-    btn.disabled = false;
+    btn.textContent = `⚠ ${err.message}`;
+    setTimeout(() => { btn.disabled = false; btn.textContent = '📸 Capture Snapshot'; }, 4000);
   }
 }
 

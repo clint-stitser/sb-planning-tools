@@ -59,6 +59,7 @@ const BUDGET_FIELDS = [
   's32eed8560',   // Account description (display label)
   's363b6d973',   // Linked G-702(s) — presence indicates billing has started
   's4975ef4d4',   // Budget freshness: date of most recent G-702/G-703/manual update
+  'last_updated', // Fallback freshness when s4975ef4d4 is null (system field, always present)
 ];
 
 // G-702 fields for period-specific billing (per PRINCIPLES.md)
@@ -297,14 +298,24 @@ function summariseBudget(rows, companyId = null) {
   const hasEstimate = rows.some(r => num(r.sc507e6b54));
   const budgetState = hasG702 ? 'billing' : hasBaseline ? 'baseline' : hasEstimate ? 'estimate' : 'empty';
 
-  // Budget freshness: most recent s4975ef4d4 across all rows (ISO date string or null)
+  // Budget freshness: most recent s4975ef4d4 (G-702/G-703/manual update formula).
+  // Fallback: most recent last_updated on any budget row (system timestamp always present).
+  // s4975ef4d4 is preferred — it reflects meaningful billing activity.
+  // last_updated fires on any row edit, so it's a coarser but always-available signal.
   let budgetFreshnessDate = null;
+  let lastUpdatedFallback = null;
   for (const r of rows) {
-    const v = r.s4975ef4d4;
-    if (v && typeof v === 'string' && (!budgetFreshnessDate || v > budgetFreshnessDate)) {
-      budgetFreshnessDate = v;
+    const formula = r.s4975ef4d4;
+    if (formula && typeof formula === 'string' && (!budgetFreshnessDate || formula > budgetFreshnessDate)) {
+      budgetFreshnessDate = formula;
+    }
+    const lu = r.last_updated?.on || (typeof r.last_updated === 'string' ? r.last_updated : null);
+    if (lu && (!lastUpdatedFallback || lu > lastUpdatedFallback)) {
+      lastUpdatedFallback = lu;
     }
   }
+  // Use formula if available; fall back to last_updated (still useful — tells us row was edited)
+  budgetFreshnessDate = budgetFreshnessDate || lastUpdatedFallback;
 
   return {
     contractRevenue, contractCost, contractGP, gpRate,
@@ -800,7 +811,8 @@ app.get('/api/construction-data', async (req, res) => {
 // Creates Stats records in SmartSuite for the current dashboard state.
 // v1: writes Stats records + returns HTML string for client-side download.
 // TODO v1.1: upload HTML to Google Drive + write link back to Stats record.
-app.post('/api/snapshot', express.json(), async (req, res) => {
+// Increased limit: htmlContent can be 200-500KB; default 100KB limit causes 413 errors
+app.post('/api/snapshot', express.json({ limit: '10mb' }), async (req, res) => {
   try {
     const { dashboardType = 'construction', periodStart, periodEnd, periodCode, metrics = [], htmlContent } = req.body || {};
     if (!periodStart || !periodEnd) return res.status(400).json({ error: 'periodStart and periodEnd required' });
@@ -831,8 +843,12 @@ app.post('/api/snapshot', express.json(), async (req, res) => {
         method: 'POST', headers,
         body: JSON.stringify(payload),
       });
-      if (r.ok) created.push((await r.json()).id);
-      else console.error('Stats record create failed:', await r.text());
+      const rBody = await r.text();
+      if (r.ok) {
+        try { created.push(JSON.parse(rBody).id); } catch(e) {}
+      } else {
+        console.error(`Stats record create failed [${r.status}]:`, rBody.slice(0, 300));
+      }
     }
 
     // Save HTML to a temp file if provided (client downloads it)

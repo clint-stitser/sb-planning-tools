@@ -374,9 +374,23 @@ body {
 /* ── Table ── */
 .db-table-wrap {
   overflow-x: auto;
-  overflow-y: clip; /* clip without creating a scroll container — allows thead sticky to work */
+  overflow-y: clip;
   border-radius: var(--r-lg);
   border: 1px solid var(--border-subtle);
+}
+/* Scrollable table container — use on long tables (ledger).
+   thead position:sticky works reliably within a defined scroll container. */
+.db-table-scroll {
+  max-height: 65vh;
+  overflow: auto;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border-subtle);
+}
+.db-table-scroll .db-table-wrap {
+  border: none;
+  border-radius: 0;
+  overflow-x: visible;
+  overflow-y: visible;
 }
 .db-table {
   width: 100%;
@@ -498,6 +512,39 @@ body {
   .db-stages { grid-template-columns: 1fr; }
   .db-table td, .db-table th { padding: 8px 10px; }
 }
+
+/* ── Explainer tooltip ── */
+.explainer {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: rgba(255,255,255,0.1); color: var(--text-muted);
+  font-size: 9px; font-family: var(--font-mono);
+  cursor: help; margin-left: 4px; vertical-align: middle; flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.15); transition: background 0.15s;
+}
+.explainer:hover { background: rgba(201,168,76,0.2); color: var(--sb-gold); }
+
+/* ── Search bar ── */
+.search-input {
+  font-family: var(--font-mono); font-size: 10px;
+  background: var(--surface-0); border: 1px solid var(--border-subtle);
+  border-radius: var(--r-sm); color: var(--text-primary);
+  padding: 4px 10px; outline: none; width: 180px;
+  transition: border-color 0.15s; letter-spacing: 0.02em;
+}
+.search-input:focus { border-color: var(--sb-gold); }
+.search-input::placeholder { color: var(--text-muted); }
+
+/* ── Collapsible section ── */
+.collapsible-header {
+  display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; user-select: none;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border); margin-bottom: 0;
+}
+.collapsible-toggle { font-family:var(--font-mono); font-size:11px; color:var(--text-muted); transition:transform 0.2s; }
+.collapsible-toggle.open { transform: rotate(180deg); }
+.collapsible-body { margin-top: 16px; }
+.collapsible-body.collapsed { display: none; }
 
 /* ── Util ── */
 .text-right { text-align: right; }
