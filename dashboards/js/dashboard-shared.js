@@ -349,3 +349,56 @@ function setLastUpdated(elementId) {
 function startAutoRefresh(refreshFn, intervalMs = 5 * 60 * 1000) {
   setInterval(() => refreshFn(true), intervalMs);
 }
+
+// ── Universal Tooltip System ──────────────────────────────────────────────────
+// Usage: add data-tip="Explanation text\nSecond line" to any element.
+// Add <span class="explainer">?</span> inside for a visible affordance.
+// Works on every element — tiles, table cells, arc stats, stage cards, etc.
+//
+// Initialised once on DOMContentLoaded. Safe to call from multiple dashboards
+// since it guards against double-init.
+(function initTooltips() {
+  if (window.__tipsInited) return;
+  window.__tipsInited = true;
+
+  const tip = document.createElement('div');
+  tip.className = 'tip-popup';
+  tip.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(tip);
+
+  let activeEl = null;
+
+  function show(el, text) {
+    tip.innerHTML = text.replace(/\n/g, '<br>');
+    tip.style.display = 'block';
+    activeEl = el;
+  }
+  function hide() {
+    tip.style.display = 'none';
+    activeEl = null;
+  }
+  function position(x, y) {
+    const w = tip.offsetWidth  || 260;
+    const h = tip.offsetHeight || 60;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    // Keep within viewport
+    const left = Math.min(x + 14, vw - w - 16);
+    const top  = (y + h + 24 > vh) ? y - h - 8 : y + 14;
+    tip.style.left = Math.max(8, left) + 'px';
+    tip.style.top  = Math.max(8, top)  + 'px';
+  }
+
+  document.addEventListener('mouseover', e => {
+    const el = e.target.closest('[data-tip]');
+    if (el && el !== activeEl) show(el, el.dataset.tip);
+    else if (!el && activeEl) hide();
+  });
+  document.addEventListener('mousemove', e => {
+    if (activeEl) position(e.clientX, e.clientY);
+  });
+  document.addEventListener('mouseout', e => {
+    if (activeEl && !e.relatedTarget?.closest('[data-tip]')) hide();
+  });
+  document.addEventListener('touchstart', hide, { passive: true });
+})();

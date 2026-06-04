@@ -529,12 +529,12 @@ function renderScoringArc(periodRevenue) {
       <div class="arc-stat-label">${remaining > 0 ? 'Projected Gap' : 'Surplus'}</div>
     </div>
     <div class="arc-pace" style="border-color:${paceColor}40"
-         title="On Pace = Projected Score ÷ Expected Score at this point in time.&#10;Expected = $4.5M × % of period elapsed.&#10;Green ≥100%, Yellow 75–99%, Red <75%.&#10;Uses A+B+C projected total, not just actuals.">
+         data-tip="On Pace = Projected Score ÷ Expected Score at this point in time.\nExpected = $4.5M × % of period elapsed.\nGreen ≥100% · Yellow 75–99% · Red &lt;75%.\nUses A+B+C projected total, not just billed actuals.">
       <div class="arc-pace-value" style="color:${paceColor}">${pacePct}%</div>
       <div class="arc-pace-label">${paceLabel} <span class="explainer">?</span></div>
     </div>
     <div class="arc-stat" style="min-width:120px"
-         title="Required Run Rate = Remaining gap ÷ Days left in scoring period × 7.&#10;This is how much new contract revenue must be committed per week to close the gap by December 31.&#10;Based on projected total (A+B+C), not just billed actuals.">
+         data-tip="Required Run Rate = How much new contract revenue must be committed each week to close the projected gap by December 31.\nFormula: (Goal − Projected Total) ÷ Days Remaining × 7\nBased on A+B+C projected total, not just billed actuals.">
       <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-primary)">${fmtMoney(runRateWeek, true)}<span style="font-size:9px;color:var(--text-muted)">/wk</span></div>
       <div class="arc-stat-label">Run Rate Needed <span class="explainer">?</span></div>
     </div>
@@ -641,8 +641,8 @@ function renderTiles(byStage, goalProjects) {
 
   document.getElementById('tiles').innerHTML = `
     <!-- Tile 1: Already billed (actuals) -->
-    <div class="db-tile">
-      <div class="db-tile-label">🟢 [A] Billed This Period</div>
+    <div class="db-tile" data-tip="[A] Hard actuals only.\nG-702 pay applications submitted within the scoring window (Jun 1–Dec 31).\nThis is money already earned — no estimates involved.">
+      <div class="db-tile-label">🟢 [A] Billed This Period <span class="explainer">?</span></div>
       <div class="db-tile-value" style="color:var(--status-green)">${fmtMoney(bucketA, true)}</div>
       <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">G-702 actuals · Jun 1–today</div>
       <div class="db-tile-progress">${renderProgressBar(pct(bucketA), 'var(--status-green)')}</div>
@@ -650,17 +650,17 @@ function renderTiles(byStage, goalProjects) {
     </div>
 
     <!-- Tile 2: WIP capturable BTF -->
-    <div class="db-tile">
-      <div class="db-tile-label">🟡 [B] WIP: Capturable by Dec 31</div>
+    <div class="db-tile" data-tip="[B] Firm estimate from in-progress jobs.\nBalance to Finish (BTF) for each WIP + Closeout job, prorated by:\nBTF × min(1, Days until Dec 31 ÷ Days until project completion)\nJobs finishing before Dec 31 = 100% capturable.\nJobs extending into 2027 = partial capture only.">
+      <div class="db-tile-label">🟡 [B] WIP: Capturable by Dec 31 <span class="explainer">?</span></div>
       <div class="db-tile-value" style="color:var(--sb-gold)">${fmtMoney(bucketB, true)}</div>
       <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">BTF × time-proration · ${wipCount} WIP + ${coCount} Closeout jobs</div>
       <div class="db-tile-progress">${renderProgressBar(pct(bucketB), 'var(--sb-gold)')}</div>
       <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${pct(bucketB).toFixed(0)}% of $4.5M goal</div>
     </div>
 
-    <!-- Tile 3: Pipeline projected (Active Pipeline, confidence-weighted, continuous billing) -->
-    <div class="db-tile">
-      <div class="db-tile-label">🔵 [C] Pipeline: Projected (confidence-weighted)</div>
+    <!-- Tile 3: Pipeline projected -->
+    <div class="db-tile" data-tip="[C] Soft estimate — pipeline conversion.\nActive Pipeline: Contract Rev × billing fraction × conversion rate\nHot Biz Dev (≥50% confidence): same formula\nWarm / Nurture / New: excluded (too far out)\n\nBilling fraction = Days remaining ÷ Estimated job duration\nConversion rate = Confidence Rating ÷ 10 (set per job in S-BOS)\nUnrated Pipeline = 30% default · Unrated Hot = 55% default">
+      <div class="db-tile-label">🔵 [C] Pipeline: Projected <span class="explainer">?</span></div>
       <div class="db-tile-value" style="color:var(--status-blue)">${fmtMoney(bucketC, true)}</div>
       <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">Active Pipeline + Hot (≥50% conv.) · Warm/Nurture/New excluded</div>
       <div class="db-tile-progress">${renderProgressBar(pct(bucketC), 'var(--status-blue)')}</div>
@@ -668,8 +668,9 @@ function renderTiles(byStage, goalProjects) {
     </div>
 
     <!-- Tile 4: Total Projected Score -->
-    <div class="db-tile" style="border-color:${paceColor}30">
-      <div class="db-tile-label" style="color:${paceColor}">PROJECTED SCORE  (A + B + C)</div>
+    <div class="db-tile" style="border-color:${paceColor}30"
+         data-tip="Projected Score = [A] + [B] + [C]\n[A] Hard actuals: G-702 billings this period\n[B] WIP capturable: BTF prorated to Dec 31\n[C] Pipeline: confidence-weighted conversion estimate\n\nThis is the honest projected outcome if all current pipeline converts at rated confidence and all WIP completes on schedule.\nPace color: Green = projected covers goal given time elapsed.\nYellow = behind but catchable. Red = significant gap.">
+      <div class="db-tile-label" style="color:${paceColor}">PROJECTED SCORE (A+B+C) <span class="explainer">?</span></div>
       <div class="db-tile-value" style="color:${paceColor}">${fmtMoney(projectedTotal, true)}</div>
       <div class="db-tile-goal" style="font-size:11px">
         <span style="color:${gap > 0 ? 'var(--status-red)' : 'var(--status-green)'}">
@@ -890,6 +891,11 @@ function initToolbar() {
   document.getElementById('ledger-toolbar').innerHTML = `
     <div class="table-toolbar">
       <div class="toolbar-section">
+        <input type="text" class="search-input" id="ledger-search"
+               placeholder="Search jobs…" autocomplete="off" style="width:240px"
+               oninput="tableState.searchQuery=this.value;applyAndRender()">
+      </div>
+      <div class="toolbar-section">
         <span class="toolbar-label">Stage</span>
         ${STAGE_PILLS.map((s, i) => {
           // Insert a subtle divider between Biz Dev sub-statuses and the main contracted stages
@@ -907,9 +913,6 @@ function initToolbar() {
         `).join('')}
       </div>
       <div class="toolbar-section toolbar-section--right">
-        <input type="text" class="search-input" id="ledger-search"
-               placeholder="Search jobs…" autocomplete="off"
-               oninput="tableState.searchQuery=this.value;applyAndRender()">
         <label class="toolbar-toggle">
           <input type="checkbox" id="toggle-group" ${tableState.groupByStage ? 'checked' : ''}>
           <span>Group</span>
@@ -1272,62 +1275,119 @@ function renderLedger(projects, byStage) {
   applyAndRender();
 }
 
-// ── Section 5: Production Targets ─────────────────────────────────────────
+// ── Production Targets: time-based AND production-based per situation ─────────
+// Each row covers ONE key situation. Both the DEADLINE (time) and the
+// PRODUCTION COUNT/REVENUE needed (quantity) are shown together so the
+// team can answer: "Do we have enough AND will it arrive in time?"
 function renderTargets(byStage, goalProjects) {
-  const totalContract = goalProjects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
-  const totalGP       = goalProjects.reduce((s, p) => s + (p.budget.contractGP  || 0), 0);
-  const revGap = Math.max(0, GOAL_REVENUE - totalContract);
-  const gpGap  = Math.max(0, GOAL_GP - totalGP);
+  const totalContract  = goalProjects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
+  const totalGP        = goalProjects.reduce((s, p) => s + (p.budget.contractGP  || 0), 0);
+  const projectedTotal = _score.projectedTotal || 0;
+  const revGap         = Math.max(0, GOAL_REVENUE - projectedTotal);
+  const gpGap          = Math.max(0, GOAL_GP - totalGP);
 
-  const daysBidReady = daysRemaining(DEADLINES.BID_READY);
-  const daysMobilize = daysRemaining(DEADLINES.MOBILIZE);
+  const daysBidReady   = daysRemaining(DEADLINES.BID_READY);
+  const daysMobilize   = daysRemaining(DEADLINES.MOBILIZE);
 
-  const rows = [
-    {
-      target: 'Biz Dev → Active Pipeline (Jul 4 deadline)',
-      goal:   'Hot jobs enter pipeline by July 4',
-      current: `${byStage.PIPELINE.length} Active Pipeline · ${byStage.BIZ_DEV.filter(p=>p.subLabel==='Hot').length} Hot in Biz Dev`,
-      gap:    daysBidReady < 0 ? 'Deadline passed' : `${daysBidReady}d remaining`,
-      notes:  'Hot jobs (0-6 mo to bid) must enter Active Pipeline by Jul 4 to execute in 2026.',
-      ok:     daysBidReady >= 30,
-    },
-    {
-      target: 'Active Pipeline → Active in WIP (Sep 2 deadline)',
-      goal:   'Mobilize by Sep 2, 2026',
-      current: `${byStage.WIP.length} Active in WIP`,
-      gap:    daysMobilize < 0 ? 'Deadline passed' : `${daysMobilize}d remaining`,
-      notes:  'Pipeline jobs must mobilize by Sep 2 to materially bill in 2026.',
-      ok:     daysMobilize >= 30,
-    },
-    {
-      target: 'Total Contract Revenue (Pipeline + WIP + Closeout)',
-      goal:   fmtMoney(GOAL_REVENUE, true),
-      current: fmtMoney(totalContract, true),
-      gap:    revGap > 0 ? `−${fmtMoney(revGap, true)} short` : `✓ +${fmtMoney(-revGap, true)} surplus`,
-      notes:  'Contract values from Baseline Budget Items. Jobs with "Estimate Only" data are included at estimated value.',
-      ok:     revGap === 0,
-    },
-    {
-      target: 'Total Contract GP',
-      goal:   `${fmtMoney(GOAL_GP, true)} (9%)`,
-      current: fmtMoney(totalGP, true),
-      gap:    gpGap > 0 ? `−${fmtMoney(gpGap, true)} short` : `✓ +${fmtMoney(-gpGap, true)} surplus`,
-      notes:  'Contract GP from budget rows (Revenue − COGS). Actual GP confirmed once G-702 actuals flow.',
-      ok:     gpGap === 0,
-    },
-  ];
+  const hotCount       = byStage.BIZ_DEV.filter(p => p.subLabel === 'Hot').length;
+  const plCount        = byStage.PIPELINE.length;
+  const wipCount       = byStage.WIP.length;
+  const coCount        = byStage.CLOSEOUT.length;
 
-  document.getElementById('targets-body').innerHTML = rows.map(r => `
-    <tr class="${!r.ok && r.gap.includes('short') ? 'target-row-gap' : ''}">
-      <td class="name">${r.target}</td>
-      <td class="num mono">${r.goal}</td>
-      <td class="num mono" style="color:var(--sb-gold-light)">${r.current}</td>
-      <td class="num" style="color:${r.ok ? 'var(--status-green)' : r.gap.includes('Deadline passed') ? 'var(--status-red)' : 'var(--status-yellow)'}">
-        ${r.gap}
+  // How many more jobs need to enter WIP to close the revenue gap?
+  // Rough estimate: if average pipeline job = $750K contracted, how many needed
+  const avgJobRev      = totalContract > 0 && plCount > 0 ? totalContract / plCount : 750000;
+  const jobsNeededForGap = revGap > 0 && avgJobRev > 0 ? Math.ceil(revGap / avgJobRev) : 0;
+
+  // Situation rows — each shows: situation, production target (count), production current, revenue target, revenue current, deadline, status
+  const sectionHdr = (label, color) =>
+    `<tr style="background:var(--surface-2)">
+       <td colspan="6" style="font-family:var(--font-display);font-size:12px;letter-spacing:.06em;color:${color};padding:6px 14px">${label}</td>
+     </tr>`;
+
+  const row = (situation, prodGoal, prodCurrent, revGoal, revCurrent, deadline, daysLeft, notes, ok) => {
+    const dc = daysLeft < 0 ? 'var(--status-red)' : daysLeft < 30 ? 'var(--status-red)' : daysLeft < 60 ? 'var(--status-yellow)' : 'var(--status-green)';
+    const rc = revCurrent >= revGoal ? 'var(--status-green)' : 'var(--status-yellow)';
+    const pc = ok === false ? 'var(--status-red)' : ok === true ? 'var(--status-green)' : 'var(--status-yellow)';
+    return `<tr>
+      <td class="name" style="font-size:11px">${situation}</td>
+      <td class="mono" style="color:var(--text-muted);font-size:10px">${prodGoal}</td>
+      <td class="mono" style="color:${pc}">${prodCurrent}</td>
+      <td class="mono" style="color:var(--text-muted);font-size:10px">${revGoal}</td>
+      <td class="mono" style="color:${rc}">${revCurrent}</td>
+      <td style="font-family:var(--font-mono);font-size:10px;color:${dc}">
+        ${daysLeft < 0 ? 'PAST' : daysLeft + 'd'} · ${deadline}
+        ${notes ? `<div style="font-size:9px;color:var(--text-muted);margin-top:2px">${notes}</div>` : ''}
       </td>
-      <td style="font-size:11px;color:var(--text-secondary)">${r.notes}</td>
-    </tr>
-  `).join('');
+    </tr>`;
+  };
+
+  // Header row
+  const thead = `<tr style="background:var(--surface-2)">
+    <th style="font-size:10px">Situation</th>
+    <th style="font-size:10px">Job Goal</th>
+    <th style="font-size:10px">Current</th>
+    <th style="font-size:10px">Rev Target</th>
+    <th style="font-size:10px">Rev Current</th>
+    <th style="font-size:10px">Deadline</th>
+  </tr>`;
+
+  const bizDevProj  = byStage.BIZ_DEV.filter(p=>p.subLabel==='Hot').reduce((s,p)=>s+(p.period.pipelineProjected||0),0);
+  const plProj      = byStage.PIPELINE.reduce((s,p)=>s+(p.period.pipelineProjected||0),0);
+  const wipCapt     = [...byStage.WIP,...byStage.CLOSEOUT].reduce((s,p)=>s+(p.period.capturableBTF||0),0);
+
+  const tbody = [
+    sectionHdr('BIZ DEV → PIPELINE', 'var(--text-secondary)'),
+    row(
+      'Hot → Enter Active Pipeline',
+      `≥${Math.max(1, jobsNeededForGap)} jobs needed`,
+      `${hotCount} Hot · ${plCount} in Pipeline`,
+      `—`,
+      `${fmtMoney(bizDevProj, true)} projected`,
+      'Jul 4', daysBidReady,
+      'Hot jobs must enter Pipeline by Jul 4 to have time to bid, award, and mobilize before Dec 31.',
+      daysBidReady >= 30
+    ),
+    sectionHdr('PIPELINE → WIP', 'var(--status-green)'),
+    row(
+      'Pipeline → Mobilize (enter WIP)',
+      `Mobilize by Sep 2 for full billing`,
+      `${wipCount} Active in WIP · ${plCount} awaiting mobilization`,
+      fmtMoney(GOAL_REVENUE * 0.5, true) + ' from new WIP',
+      fmtMoney(plProj, true) + ' projected',
+      'Sep 2', daysMobilize,
+      'Jobs mobilizing after Sep 2 still earn partial revenue — every day earlier = more billings before Dec 31.',
+      daysMobilize >= 30
+    ),
+    sectionHdr('WIP + CLOSEOUT → BILLED', 'var(--sb-gold)'),
+    row(
+      'Active WIP + Closeout: Capturable BTF',
+      `${fmtMoney(GOAL_REVENUE, true)} total goal`,
+      `${wipCount + coCount} active jobs`,
+      fmtMoney(GOAL_REVENUE * 0.6, true) + ' from WIP/Closeout',
+      fmtMoney(wipCapt, true) + ' capturable',
+      'Dec 31', daysRemaining(new Date('2026-12-31')),
+      'BTF prorated by time remaining in project vs. time remaining in scoring period.',
+      wipCapt >= GOAL_REVENUE * 0.4
+    ),
+    sectionHdr('PROJECTED TOTAL vs. $4.5M GOAL', revGap > 0 ? 'var(--status-red)' : 'var(--status-green)'),
+    row(
+      revGap > 0 ? `⚠ Gap: ${fmtMoney(revGap, true)} short of $4.5M` : `✓ Projected to cover $4.5M goal`,
+      '$4,500,000',
+      fmtMoney(projectedTotal, true),
+      fmtMoney(GOAL_GP, true) + ' GP (9%)',
+      fmtMoney(totalGP, true),
+      'Dec 31', daysRemaining(new Date('2026-12-31')),
+      revGap > 0 ? `Need ${jobsNeededForGap} more job${jobsNeededForGap!==1?'s':''} in pipeline at avg. ${fmtMoney(avgJobRev,true)}/job to close gap.` : '',
+      revGap === 0
+    ),
+  ].join('');
+
+  // Rebuild table with dynamic headers since structure changed
+  document.getElementById('targets-table').innerHTML = `
+    <thead>${thead}</thead>
+    <tbody>${tbody}</tbody>
+  `;
 }
 
 // ── Snapshot Capture ──────────────────────────────────────────────────────
@@ -1381,41 +1441,82 @@ async function captureSnapshot() {
     // ── Step 2: Generate clean HTML and download client-side ──────────────
     const score    = _score;
     const gap      = Math.max(0, GOAL_REVENUE - score.projectedTotal);
+    const contractRev = goalRows.reduce((s,p) => s + (p.budget.contractRevenue||0), 0);
+    const contractGP  = goalRows.reduce((s,p) => s + (p.budget.contractGP||0), 0);
     const html = `<!DOCTYPE html>
 <html lang="en"><head><meta charset="UTF-8">
 <title>Construction Snapshot — ${periodCode} ${periodEnd}</title>
 <style>
-  body{font-family:system-ui,sans-serif;background:#0D1B2A;color:#F0EDE4;padding:24px;max-width:960px;margin:0 auto}
+  *{box-sizing:border-box}
+  body{font-family:system-ui,sans-serif;background:#0D1B2A;color:#F0EDE4;padding:24px;max-width:1000px;margin:0 auto}
   h1{font-size:24px;color:#C9A84C;margin-bottom:4px}
-  .meta{font-size:12px;color:#8A9BAD;margin-bottom:24px}
-  .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
-  .tile{background:#1E2D3D;border-radius:8px;padding:14px}
+  h2{font-size:14px;color:#C9A84C;margin:20px 0 10px;text-transform:uppercase;letter-spacing:.08em}
+  .meta{font-size:12px;color:#8A9BAD;margin-bottom:20px}
+  .scorecard{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+  .tile{background:#1E2D3D;border-radius:8px;padding:14px;border:1px solid rgba(255,255,255,.06)}
   .tile-label{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#8A9BAD;margin-bottom:6px}
-  .tile-value{font-size:28px;font-weight:700;color:#F0EDE4}
-  table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:24px}
-  th{background:#2A3F54;padding:8px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#8A9BAD}
-  td{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,.05)}
-  .green{color:#2ECC71}.red{color:#E74C3C}.gold{color:#C9A84C}
+  .tile-value{font-size:26px;font-weight:700}
+  .tile-goal{font-size:11px;color:#8A9BAD;margin-top:4px}
+  .tile-gap{font-size:11px;margin-top:2px}
+  .goals{background:#1E2D3D;border-radius:8px;padding:14px;margin-bottom:20px}
+  .goals-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.05);font-size:12px}
+  .goals-row:last-child{border-bottom:none}
+  .lbl{color:#8A9BAD}
+  table{width:100%;border-collapse:collapse;font-size:11px;margin-bottom:20px}
+  th{background:#2A3F54;padding:7px 10px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.06em;color:#8A9BAD}
+  td{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.04)}
+  .green{color:#2ECC71}.yellow{color:#F39C12}.red{color:#E74C3C}.gold{color:#C9A84C}.muted{color:#8A9BAD}
 </style></head><body>
 <h1>🏗️ Construction Dashboard Snapshot</h1>
 <div class="meta">${periodCode} · Captured ${now.toLocaleString()} · Scoring period: Jun 1 – Dec 31, 2026</div>
-<div class="grid">
-  <div class="tile"><div class="tile-label">[A] Billed Actuals</div><div class="tile-value gold">$${(score.bucketA/1000).toFixed(0)}K</div></div>
-  <div class="tile"><div class="tile-label">[B] WIP Capturable</div><div class="tile-value gold">$${(score.bucketB/1000).toFixed(0)}K</div></div>
-  <div class="tile"><div class="tile-label">[C] Pipeline Proj.</div><div class="tile-value gold">$${(score.bucketC/1000).toFixed(0)}K</div></div>
-  <div class="tile"><div class="tile-label">Projected Score</div><div class="tile-value ${gap===0?'green':'red'}">$${(score.projectedTotal/1000).toFixed(0)}K</div></div>
+
+<h2>Actuals vs. Goals</h2>
+<div class="goals">
+  <div class="goals-row">
+    <span class="lbl">[A] Billed This Period (G-702 actuals)</span>
+    <span>${score.bucketA>0?'$'+(score.bucketA/1000).toFixed(0)+'K':'$0'} <span class="muted">of $4,500K</span> → <span class="${score.bucketA/4500000>=1?'green':'red'}">${(score.bucketA/45000).toFixed(1)}% of goal</span></span>
+  </div>
+  <div class="goals-row">
+    <span class="lbl">[B] WIP Capturable by Dec 31</span>
+    <span class="gold">$${(score.bucketB/1000).toFixed(0)}K <span class="muted">of $4,500K</span> → ${(score.bucketB/45000).toFixed(1)}%</span>
+  </div>
+  <div class="goals-row">
+    <span class="lbl">[C] Pipeline Projected (confidence-weighted)</span>
+    <span class="gold">$${(score.bucketC/1000).toFixed(0)}K <span class="muted">of $4,500K</span> → ${(score.bucketC/45000).toFixed(1)}%</span>
+  </div>
+  <div class="goals-row" style="font-weight:700">
+    <span>PROJECTED TOTAL (A+B+C)</span>
+    <span class="${gap===0?'green':'red'}">$${(score.projectedTotal/1000).toFixed(0)}K ${gap>0?'↓ $'+(gap/1000).toFixed(0)+'K short':'↑ surplus'}</span>
+  </div>
+  <div class="goals-row">
+    <span class="lbl">Contract Revenue (total contracted pipeline)</span>
+    <span class="gold">$${(contractRev/1000).toFixed(0)}K <span class="muted">of $4,500K</span></span>
+  </div>
+  <div class="goals-row">
+    <span class="lbl">Contract GP</span>
+    <span class="${contractGP>=405000?'green':'yellow'}">$${(contractGP/1000).toFixed(0)}K <span class="muted">of $405K goal · ${contractRev>0?((contractGP/contractRev)*100).toFixed(1)+'% GP rate':'—'}</span></span>
+  </div>
 </div>
-<h2 style="color:#C9A84C;font-size:16px;margin-bottom:12px">Active Jobs</h2>
+
+<div class="scorecard">
+  <div class="tile"><div class="tile-label">Goal</div><div class="tile-value gold">$4.5M</div><div class="tile-goal">Jun 1 – Dec 31, 2026</div></div>
+  <div class="tile"><div class="tile-label">Projected Score</div><div class="tile-value ${gap===0?'green':'red'}">$${(score.projectedTotal/1000).toFixed(0)}K</div><div class="tile-gap ${gap===0?'green':'red'}">${gap===0?'✓ Goal covered':'−$'+(gap/1000).toFixed(0)+'K gap'}</div></div>
+  <div class="tile"><div class="tile-label">GP Target</div><div class="tile-value gold">$405K</div><div class="tile-goal">at 9% blended</div></div>
+  <div class="tile"><div class="tile-label">GP Projected</div><div class="tile-value ${contractGP>=405000?'green':'yellow'}">$${(contractGP/1000).toFixed(0)}K</div><div class="tile-goal">${contractRev>0?((contractGP/contractRev)*100).toFixed(1)+'% rate':'—'}</div></div>
+</div>
+
+<h2>Active Jobs</h2>
 <table>
-  <tr><th>Job</th><th>Stage</th><th>Contract Rev</th><th>BTF</th><th>Capturable</th><th>Confidence</th></tr>
-  ${_projects.filter(p=>p.stage!=='CLOSED').map(p=>`
+  <tr><th>Job</th><th>Stage</th><th>Contract Rev</th><th>BTF</th><th>Capturable / Projected</th><th>Confidence</th><th>Pillars</th></tr>
+  ${_projects.filter(p=>p.stage!=='CLOSED').sort((a,b)=>(b.period.capturableBTF||0)+(b.period.pipelineProjected||0)-(a.period.capturableBTF||0)-(a.period.pipelineProjected||0)).map(p=>`
   <tr>
     <td>${p.title}</td>
-    <td>${p.subLabel}</td>
-    <td class="gold">${p.budget.contractRevenue ? '$'+(p.budget.contractRevenue/1000).toFixed(0)+'K' : '—'}</td>
-    <td>${p.budget.btf ? '$'+(p.budget.btf/1000).toFixed(0)+'K' : '—'}</td>
-    <td class="green">${p.period.capturableBTF > 0 ? '$'+(p.period.capturableBTF/1000).toFixed(0)+'K' : p.period.pipelineProjected > 0 ? '$'+(p.period.pipelineProjected/1000).toFixed(0)+'K proj.' : '—'}</td>
-    <td>${p.conversion.confidenceRating ? p.conversion.confidenceRating+'/10' : '—'}</td>
+    <td class="muted">${p.subLabel}</td>
+    <td class="gold">${p.budget.contractRevenue?'$'+(p.budget.contractRevenue/1000).toFixed(0)+'K':'—'}</td>
+    <td class="muted">${p.budget.btf?'$'+(p.budget.btf/1000).toFixed(0)+'K':'—'}</td>
+    <td class="green">${p.period.capturableBTF>0?'$'+(p.period.capturableBTF/1000).toFixed(0)+'K capt.':p.period.pipelineProjected>0?'$'+(p.period.pipelineProjected/1000).toFixed(0)+'K proj.':'—'}</td>
+    <td>${p.conversion.confidenceRating?p.conversion.confidenceRating+'/10 ('+Math.round(p.conversion.conversionRate*100)+'%)':'<span class="muted">—</span>'}</td>
+    <td class="${p.pillars.complete?'green':'yellow'}">${p.pillars.passCount}/${p.pillars.total}</td>
   </tr>`).join('')}
 </table>
 </body></html>`;

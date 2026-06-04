@@ -513,7 +513,26 @@ body {
   .db-table td, .db-table th { padding: 8px 10px; }
 }
 
-/* ── Explainer tooltip ── */
+/* ── Tooltip popup (JS-driven, data-tip attribute) ── */
+.tip-popup {
+  position: fixed;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  max-width: 280px;
+  min-width: 160px;
+  z-index: 9999;
+  pointer-events: none;
+  display: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+/* ── Explainer badge (? affordance) ── */
 .explainer {
   display: inline-flex; align-items: center; justify-content: center;
   width: 14px; height: 14px; border-radius: 50%;
