@@ -1,1 +1,1386 @@
-<!-- test save ping -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Buyer Escrow Process — S-BOS Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+/* ══════════════════════════════════════════════════════════════
+   VALUE CHAIN TEMPLATE — reusable styles
+   To duplicate for a new process: copy this file, swap PROCESS
+   data object at bottom of script, update page title / hero.
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── ACTOR LEGEND ─────────────────────────────────────────── */
+.vc-legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+.vc-legend-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-family: var(--font-sub);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  border: 2px solid transparent;
+}
+.vc-legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.vc-legend-chip.people  { background:#2A4E63; color:#fff; }
+.vc-legend-chip.people  .vc-legend-dot { background:rgba(255,255,255,.6); }
+.vc-legend-chip.sbos    { background:#FEF4E8; color:#2A4E63; border-color:#F8991D; }
+.vc-legend-chip.sbos    .vc-legend-dot { background:#F8991D; }
+.vc-legend-chip.claude  { background:#E8EEF2; color:#2A4E63; border-color:#3D6E87; }
+.vc-legend-chip.claude  .vc-legend-dot { background:#3D6E87; }
+
+/* ── PROCESS MAP ──────────────────────────────────────────── */
+.vc-map-wrap {
+  overflow-x: auto;
+  padding: 24px 0 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #BCBEC0 transparent;
+}
+.vc-map {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  min-width: max-content;
+  padding: 0 2px;
+}
+.vc-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 14px 18px;
+  min-width: 120px;
+  text-align: center;
+  background: var(--light);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  transition: background .15s, border-color .15s;
+  position: relative;
+}
+.vc-chip:hover { background:#FEF4E8; border-color:#F8991D; }
+.vc-chip.active { background:#FEF4E8; border-color:#F8991D; }
+.vc-chip.active .vc-chip-num { color:#F8991D; }
+.vc-chip.active .vc-chip-name { color:#2A4E63; }
+.vc-chip-num {
+  font-family: var(--font-head);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color:#BCBEC0;
+}
+.vc-chip-name {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dark);
+  line-height: 1.25;
+}
+.vc-chip-audit {
+  font-family: var(--font-head);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #fff;
+  background: #F8991D;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-top: 2px;
+}
+.vc-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  flex-shrink: 0;
+  color: #BCBEC0;
+  font-size: 18px;
+  font-weight: 300;
+}
+
+/* ── STAGE DETAIL PANEL ───────────────────────────────────── */
+.vc-detail {
+  margin-top: 20px;
+  border: 2px solid #BCBEC0;
+  border-radius: 12px;
+  overflow: hidden;
+  display: none; /* shown when a stage is selected */
+}
+.vc-detail.visible { display: block; }
+
+.vc-detail-header {
+  background: #2A4E63;
+  color: #fff;
+  padding: 22px 32px;
+}
+.vc-detail-header-top {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+.vc-detail-tag {
+  font-family: var(--font-head);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  opacity: .55;
+}
+.vc-detail-title {
+  font-family: var(--font-head);
+  font-size: 24px;
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.1;
+}
+.vc-detail-desc {
+  font-family: var(--font-sub);
+  font-size: 15px;
+  opacity: .75;
+  margin-top: 6px;
+}
+
+/* ── THREE-COLUMN PEOPLE FLOW ─────────────────────────────── */
+.vc-flow {
+  display: grid;
+  grid-template-columns: 1fr 180px 1fr;
+}
+.vc-supply {
+  background: var(--light);
+  padding: 28px 28px;
+  border-right: 1px solid #BCBEC0;
+}
+.vc-xfer {
+  background: #fff;
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  border-right: 1px solid #BCBEC0;
+}
+.vc-receive {
+  background: var(--light);
+  padding: 28px 28px;
+}
+.vc-col-label {
+  font-family: var(--font-head);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #BCBEC0;
+  margin-bottom: 18px;
+}
+.vc-role-block { margin-bottom: 22px; }
+.vc-role-block:last-child { margin-bottom: 0; }
+.vc-role-name {
+  font-family: var(--font-sub);
+  font-size: 15px;
+  font-weight: 700;
+  color: #2A4E63;
+  display: inline-block;
+  padding-bottom: 4px;
+  border-bottom: 2px solid #3D6E87;
+  margin-bottom: 10px;
+}
+.vc-role-actions {
+  list-style: none;
+  padding: 0; margin: 0;
+}
+.vc-role-actions li {
+  font-family: var(--font-sub);
+  font-size: 14px;
+  color: var(--dark);
+  padding: 4px 0 4px 16px;
+  position: relative;
+  line-height: 1.45;
+}
+.vc-role-actions li::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  color: #BCBEC0;
+  font-size: 16px;
+  top: 3px;
+}
+
+/* ── TRANSFER COLUMN ──────────────────────────────────────── */
+.vc-xfer-cv {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  border: 2px dashed #BCBEC0;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-head);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  color: #BCBEC0;
+  line-height: 1.3;
+  text-align: center;
+  flex-shrink: 0;
+}
+.vc-xfer-arrow {
+  width: 100%;
+  height: 20px;
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.vc-xfer-arrow-line {
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(to right, #2A4E63, #F8991D);
+  border-radius: 1px;
+}
+.vc-xfer-arrow-head {
+  position: absolute;
+  right: -1px;
+  font-size: 12px;
+  color: #F8991D;
+  line-height: 1;
+}
+.vc-xfer-label {
+  font-family: var(--font-head);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #BCBEC0;
+  text-align: center;
+  margin-top: 2px;
+}
+.vc-xfer-items {
+  width: 100%;
+  margin-top: 4px;
+}
+.vc-xfer-item {
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--dark);
+  padding: 5px 8px 5px 10px;
+  background: var(--light);
+  border-radius: 4px;
+  border-left: 3px solid #F8991D;
+  margin-bottom: 4px;
+  line-height: 1.35;
+}
+
+/* ── S-BOS BAND ───────────────────────────────────────────── */
+.vc-sbos-band {
+  background: #FEF4E8;
+  border-top: 3px solid #F8991D;
+  padding: 20px 28px;
+  display: grid;
+  grid-template-columns: 140px 1fr 1fr 1fr;
+  gap: 0 24px;
+  align-items: start;
+}
+.vc-band-id {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-right: 20px;
+  border-right: 1px solid rgba(248,153,29,.35);
+}
+.vc-band-id-icon {
+  font-size: 22px;
+}
+.vc-band-id-name {
+  font-family: var(--font-head);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: #2A4E63;
+}
+.vc-band-id-sub {
+  font-family: var(--font-sub);
+  font-size: 12px;
+  color: #BCBEC0;
+  line-height: 1.3;
+}
+.vc-band-col h4 {
+  font-family: var(--font-head);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: #F8991D;
+  margin: 0 0 8px;
+}
+.vc-band-col ul {
+  list-style: none;
+  padding: 0; margin: 0;
+}
+.vc-band-col ul li {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  color: var(--dark);
+  padding: 3px 0 3px 12px;
+  position: relative;
+  line-height: 1.4;
+}
+.vc-band-col ul li::before {
+  content: '·';
+  position: absolute;
+  left: 0;
+  color: #F8991D;
+  font-weight: 700;
+  font-size: 16px;
+  top: 0px;
+  line-height: 1.4;
+}
+
+/* ── CLAUDE BAND ──────────────────────────────────────────── */
+.vc-claude-band {
+  background: #E8EEF2;
+  border-top: 3px solid #3D6E87;
+  padding: 20px 28px;
+  display: grid;
+  grid-template-columns: 140px 1fr 1fr 1fr;
+  gap: 0 24px;
+  align-items: start;
+}
+.vc-claude-band .vc-band-id { border-right-color: rgba(61,110,135,.35); }
+.vc-claude-band .vc-band-id-name { color: #3D6E87; }
+.vc-claude-band .vc-band-col h4 { color: #3D6E87; }
+.vc-claude-band .vc-band-col ul li::before { color: #3D6E87; }
+
+/* ── ASYNC EVENTS ─────────────────────────────────────────── */
+.vc-async-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+.vc-async-card {
+  background: #fff;
+  border: 2px solid #BCBEC0;
+  border-top: 4px solid #2A4E63;
+  border-radius: 8px;
+  padding: 20px 20px;
+}
+.vc-async-card.alert { border-top-color: #C0392B; }
+.vc-async-name {
+  font-family: var(--font-head);
+  font-size: 14px;
+  font-weight: 900;
+  color: #2A4E63;
+  margin-bottom: 6px;
+}
+.vc-async-card.alert .vc-async-name { color: #C0392B; }
+.vc-async-body {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  color: var(--dark);
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+.vc-async-roles {
+  list-style: none;
+  padding: 0; margin: 0;
+}
+.vc-async-roles li {
+  font-family: var(--font-sub);
+  font-size: 12px;
+  color: #58595B;
+  padding: 3px 0 3px 14px;
+  position: relative;
+}
+.vc-async-roles li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: #BCBEC0;
+  font-size: 10px;
+  top: 4px;
+}
+
+/* ── EXPECTATIONS ─────────────────────────────────────────── */
+.vc-expect {
+  background: #2A4E63;
+  color: #fff;
+  border-radius: 10px;
+  padding: 32px 40px;
+}
+.vc-expect-title {
+  font-family: var(--font-head);
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  opacity: .55;
+  margin-bottom: 8px;
+}
+.vc-expect-heading {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 900;
+  margin: 0 0 20px;
+}
+.vc-expect-list {
+  list-style: none;
+  padding: 0; margin: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 40px;
+}
+.vc-expect-list li {
+  font-family: var(--font-sub);
+  font-size: 15px;
+  padding-left: 20px;
+  position: relative;
+  opacity: .85;
+  line-height: 1.5;
+}
+.vc-expect-list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: #F8991D;
+}
+
+/* ── EMPTY STATE ──────────────────────────────────────────── */
+.vc-empty {
+  padding: 48px 32px;
+  text-align: center;
+  color: #BCBEC0;
+  font-family: var(--font-sub);
+  font-size: 15px;
+  border: 2px dashed #BCBEC0;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+.vc-empty strong {
+  display: block;
+  font-family: var(--font-head);
+  font-size: 13px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  color: #BCBEC0;
+}
+
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+@media (max-width: 860px) {
+  .vc-flow { grid-template-columns: 1fr; }
+  .vc-supply { border-right: none; border-bottom: 1px solid #BCBEC0; }
+  .vc-xfer   { border-right: none; border-bottom: 1px solid #BCBEC0; flex-direction: row; flex-wrap: wrap; padding: 16px 20px; }
+  .vc-sbos-band, .vc-claude-band { grid-template-columns: 1fr 1fr; }
+  .vc-band-id { grid-column: 1/-1; border-right: none; border-bottom: 1px solid rgba(248,153,29,.25); padding-bottom: 12px; margin-bottom: 4px; }
+  .vc-expect-list { grid-template-columns: 1fr; }
+  .vc-detail-header { padding: 18px 20px; }
+}
+@media (max-width: 520px) {
+  .vc-sbos-band, .vc-claude-band { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body data-section="workflows">
+
+<header>
+  <a class="logo-lockup" href="../">
+    <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+      <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+    </svg>
+    <div class="logo-text">
+      <span class="brand">Stitser Built</span>
+      <span class="sub">S-BOS Knowledge Base</span>
+    </div>
+  </a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+
+<div class="nav-overlay">
+  <div class="nav-overlay-header">
+    <a class="logo-lockup" href="../">
+      <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+        <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Stitser Built</span>
+        <span class="sub">S-BOS Knowledge Base</span>
+      </div>
+    </a>
+    <button class="nav-overlay-close" aria-label="Close menu">&#10005;</button>
+  </div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-eyebrow">Workflows — Value Chain</div>
+  <h1 class="page-hero-title">Buyer Escrow Process</h1>
+  <p class="page-hero-subtitle">How People, S-BOS, and Claude collaborate through every stage — from contract to keys. Click any stage to see who does what and how the system supports them.</p>
+</div>
+
+<div class="orange-bar"></div>
+
+<div class="breadcrumb-bar">
+  <div class="breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">→</span>
+    <a href="../workflows/">Workflows</a>
+    <span class="sep">→</span>
+    <span class="cur">Buyer Escrow Process</span>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<section>
+  <div class="section-label">How to Read This</div>
+  <div class="section-title">Three Layers, Every Stage</div>
+  <div class="prose">
+    <p>Every stage in this process is built on the same structure: someone <strong>Supplies</strong> their value and hands it forward. Something transfers — a document, a decision, a notification. Someone <strong>Receives</strong> it, clarifies, and verifies before acting. That's the human layer.</p>
+    <p>Beneath it, two more layers operate. <strong>S-BOS</strong> holds the record of what happened — the deal file, documents, dates, and status. <strong>Claude</strong> reads that live data and can assist with audits, drafts, summaries, and flags — at the moment the team needs it, without switching tools. All three layers work together at every stage.</p>
+    <p>The <strong>IREN-MD framework</strong> guides every handoff: Information · Request · Emotions · Needs · Materials · Decisions. When you receive something from a team member or external party, run it through IREN-MD before responding. "Clarify and Verify" is not optional — it is the quality gate that keeps the chain intact.</p>
+  </div>
+  <div class="vc-legend">
+    <div class="vc-legend-chip people"><div class="vc-legend-dot"></div>People — Roles &amp; Responsibilities</div>
+    <div class="vc-legend-chip sbos"><div class="vc-legend-dot"></div>S-BOS — Records &amp; Data</div>
+    <div class="vc-legend-chip claude"><div class="vc-legend-dot"></div>Claude — Reads, Assists, Writes</div>
+  </div>
+</section>
+
+<!-- PROCESS MAP + INTERACTIVE STAGE DETAIL -->
+<section style="padding-top:0">
+  <div class="section-label">Click a Stage</div>
+  <div class="section-title">Process Flow</div>
+  <div class="vc-map-wrap">
+    <div class="vc-map" id="vcMap"></div>
+  </div>
+  <div class="vc-empty" id="vcEmpty">
+    <strong>Select a Stage Above</strong>
+    Click any stage chip to see the full breakdown — people, S-BOS records, and Claude actions for that step.
+  </div>
+  <div class="vc-detail" id="vcDetail"></div>
+</section>
+
+<!-- ASYNC EVENTS -->
+<section style="background:var(--light); padding:64px 40px">
+  <div class="section-label">Any Time</div>
+  <div class="section-title">Parallel Value Chains</div>
+  <p class="prose" style="margin-bottom:0">These four situations can arise at any stage. They don't fit neatly into the linear flow — handle them as they arise, always with Clarify &amp; Verify applied, always logging back to S-BOS.</p>
+  <div class="vc-async-grid" id="vcAsync"></div>
+</section>
+
+<!-- EXPECTATIONS -->
+<section>
+  <div class="section-label">Standards</div>
+  <div class="section-title">Team Expectations</div>
+  <div class="vc-expect" id="vcExpect"></div>
+</section>
+
+<footer>
+  <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
+  <div class="footer-version">v1.0 · Internal Use Only</div>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/article-editor.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════
+   PROCESS DATA
+   ─ To duplicate this template for a new process:
+     1. Copy this file to a new name (e.g. listing-process.html)
+     2. Replace the PROCESS object below with your process data
+     3. Update the <title>, page-hero, and breadcrumb above
+   ════════════════════════════════════════════════════════════ */
+const PROCESS = {
+  name: 'Buyer Escrow Process',
+  entity: 'Stitser Properties',
+
+  stages: [
+    {
+      id: 'file-setup',
+      tag: 'Stage 01',
+      name: 'File & Project Set Up',
+      desc: 'Contract entered, documents assembled in Drive, Production MGR notified and introduced to all parties.',
+      audit: true,
+      supply: [
+        {
+          role: 'Practitioner',
+          actions: [
+            'Enter executed contract into S-BOS (New Escrow link from dashboard)',
+            'Assemble all relevant documents and upload to Google Drive client folder',
+            'Notify Production MGR of new escrow',
+            'Introduce Production MGR to Buyer and Partner Agent'
+          ]
+        }
+      ],
+      transfer: [
+        'S-BOS transaction record — all property/contract facts and dates',
+        'Google Drive client file — all documents in correct folder',
+        'FUB client notes — background, contact info, property details, potential pitfalls'
+      ],
+      receive: [
+        {
+          role: 'Production Manager',
+          actions: [
+            'Key Notes added to deal record for quick reference',
+            'Action Plan launched in FUB for reminders',
+            'Transaction calendar set up',
+            'Required documents list configured for this transaction'
+          ]
+        },
+        {
+          role: 'Ops Manager',
+          actions: [
+            'Links to deal record added to Master DB for Practitioner dashboard access'
+          ]
+        }
+      ],
+      sbos: {
+        records: ['New deal record created', 'Property details, contract dates, all parties entered', 'Drive folder linked to deal record', 'FUB contact linked'],
+        updates: ['Required documents list configured', 'Transaction calendar populated', 'Deal status set to Active'],
+        status: 'New → Active Setup'
+      },
+      claude: {
+        reads: ['New deal record fields', 'Required documents checklist', 'FUB contact completeness'],
+        does: ['Confirms all required fields are populated', 'Flags missing party contact info', 'Suggests Drive folder structure based on deal type'],
+        writes: ['Setup audit note added to deal record', 'Incomplete field list surfaced for Production MGR']
+      }
+    },
+
+    {
+      id: 'escrow-open',
+      tag: 'Stage 02',
+      name: 'Escrow Open',
+      desc: 'Escrow formally opened, all parties notified, commissions verified, communication preferences confirmed.',
+      audit: false,
+      supply: [
+        {
+          role: 'Production Manager',
+          actions: [
+            'Open escrow with Title company',
+            'Notify all parties of key information and key parties to the contract',
+            'Verify commission structure',
+            'Confirm client contact info and best communication methods'
+          ]
+        }
+      ],
+      transfer: [
+        'Contracts and disclosures (key documents)',
+        'Full party list — Clients, Agents, Title, Mortgage, and all team members'
+      ],
+      receive: [
+        {
+          role: 'Title & Lender',
+          actions: [
+            'Receive information and set up internal workflow to perform their role',
+            'Reach out to clients for next steps'
+          ]
+        },
+        {
+          role: 'Partner Agent',
+          actions: [
+            'Receive party contact info',
+            'Confirm receipt and next steps with their client'
+          ]
+        }
+      ],
+      sbos: {
+        records: ['Escrow number entered on deal record', 'All external parties added — Title officer, Escrow team, Lender, Partner Agent', 'Commission structure entered and verified'],
+        updates: ['Deal status → Escrow Open', 'Escrow open date recorded'],
+        status: 'Active Setup → Escrow Open'
+      },
+      claude: {
+        reads: ['Commission structure vs. contract terms', 'All party contact records in FUB', 'Escrow timeline milestones'],
+        does: ['Drafts escrow intro communication for Production MGR to send', 'Cross-checks commission figures against executed contract', 'Flags any party contact info missing from FUB'],
+        writes: ['Commission verification note added to deal record', 'Escrow open event logged with date and escrow number']
+      }
+    },
+
+    {
+      id: 'execute-diligence',
+      tag: 'Stage 03',
+      name: 'Execute Diligence & Contingencies',
+      desc: 'Diligence documents requested, contingency timelines initiated, inspections ordered and confirmed.',
+      audit: true,
+      supply: [
+        {
+          role: 'Production Manager',
+          actions: [
+            'Audit required documents list and escrow timeline',
+            'Request necessary documents from Title and Partner Agent',
+            'Request updates on all timeline items',
+            'Add notes from Practitioner to deal record'
+          ]
+        },
+        {
+          role: 'Practitioner',
+          actions: [
+            'Confirm client strategy for inspection timing and vendor selection',
+            'Confirm client payment type and utility status at property',
+            'Order inspections; check all calendars before scheduling',
+            'Confirm client comfort with selected vendors'
+          ]
+        }
+      ],
+      transfer: [
+        'Document requests (sent to Title, Partner Agent, Lender)',
+        'Inspection confirmations — vendor names, timeframes, payment details',
+        'Notes updated in both FUB and S-BOS'
+      ],
+      receive: [
+        {
+          role: 'Title & Escrow',
+          actions: ['Prelim, HOA, CCRs, Settlement Statements, and other title documents']
+        },
+        {
+          role: 'Partner Agent',
+          actions: ['Disclosures, reports, and confirmation of property availability for inspections']
+        },
+        {
+          role: 'Lender',
+          actions: ['Pre-qual / pre-approval, 1003 loan application, initial loan disclosure update, loan status']
+        },
+        {
+          role: 'Production Manager',
+          actions: ['Updates action plan in FUB for inspection reminders', 'Notes in FUB']
+        }
+      ],
+      sbos: {
+        records: ['Contingency deadlines entered in transaction calendar', 'Inspection orders logged with vendor and date', 'Document request log started'],
+        updates: ['Required documents list updated with receipt status', 'Contingency milestone dates populated'],
+        status: 'Escrow Open → Diligence Active'
+      },
+      claude: {
+        reads: ['Contingency deadlines from transaction calendar', 'Document checklist against what has been received', 'Inspection order confirmations'],
+        does: ['Generates contingency deadline summary for team', 'Alerts on approaching deadlines (within 3 days)', 'Tracks document receipt against required list'],
+        writes: ['Deadline alert logged to deal record', 'Document gap report surfaced for Production MGR']
+      }
+    },
+
+    {
+      id: 'assemble-respond',
+      tag: 'Stage 04',
+      name: 'Assemble Diligence & Respond',
+      desc: 'Diligence documents received and delivered to client; objections crafted and submitted with substantiation.',
+      audit: false,
+      supply: [
+        {
+          role: 'Production Manager',
+          actions: [
+            'Receive all inspection reports and invoices',
+            'Update S-BOS to track what has been received',
+            'File documents in Google Drive — no signature needed',
+            'If signature needed: upload to Disclosures & Reports in S-BOS and alert Practitioner'
+          ]
+        },
+        {
+          role: 'Buyer & Practitioner',
+          actions: [
+            'Review NORR and inspection reports with client',
+            'Provide substantiation for any required repairs or changes',
+            'Educate and prepare client before signing'
+          ]
+        }
+      ],
+      transfer: [
+        'Agent alerts client of what each document means before delivery',
+        'NORR (Notice of Repair Request) — written explanation and substantiation',
+        'Authentisign package sent for client signatures'
+      ],
+      receive: [
+        {
+          role: 'Practitioner',
+          actions: [
+            'Review diligence documents with client',
+            'NORR created and presented',
+            'Authentisign NORR and inspection reports executed'
+          ]
+        },
+        {
+          role: 'Buyer',
+          actions: [
+            'Signs off on needs, clarifications, and required fixes'
+          ]
+        },
+        {
+          role: 'Partner Agent',
+          actions: [
+            'Works with their client to provide formal response to objections'
+          ]
+        }
+      ],
+      sbos: {
+        records: ['All diligence documents filed in Drive and tracked in checklist', 'NORR drafted and linked', 'Signature status tracked per document'],
+        updates: ['Document receipt status updated in required docs list', 'NORR submission logged with date'],
+        status: 'Diligence Active → Responding'
+      },
+      claude: {
+        reads: ['Received documents vs. required documents checklist', 'NORR templates', 'Existing notes from Practitioner on client concerns'],
+        does: ['Identifies gap between what was received and what is still needed', 'Drafts NORR outline based on inspection findings for Practitioner review', 'Tracks response deadlines against contingency calendar'],
+        writes: ['NORR draft saved as note in deal record', 'Response deadline reminder added to transaction calendar']
+      }
+    },
+
+    {
+      id: 'reinspections',
+      tag: 'Stage 05',
+      name: 'Re-Inspections & Walk Through',
+      desc: 'Repairs confirmed, re-inspections coordinated, walkthrough executed, and buyer makes final approval decision.',
+      audit: false,
+      supply: [
+        {
+          role: 'Partner Agent',
+          actions: [
+            'Confirm all agreed repairs have been completed',
+            'Provide documentation and receipts for completed repairs',
+            'Confirm and coordinate move-out timing'
+          ]
+        },
+        {
+          role: 'Escrow',
+          actions: [
+            'Provide title department response to any outstanding items'
+          ]
+        },
+        {
+          role: 'Production Manager',
+          actions: [
+            'Assemble all responses and documentation for the deal file'
+          ]
+        }
+      ],
+      transfer: [
+        'Confirmation of timing for review',
+        'Reminder to all parties of personal property staying or going',
+        'Repair completion proof and any outstanding items'
+      ],
+      receive: [
+        {
+          role: 'Practitioner',
+          actions: [
+            'Review all new documents',
+            'Coordinate and execute re-inspections and walkthroughs',
+            'Add re-inspection report to deal file'
+          ]
+        },
+        {
+          role: 'Buyer',
+          actions: [
+            'Approves, accepts, or rejects based on walkthrough and repair review'
+          ]
+        }
+      ],
+      sbos: {
+        records: ['Re-inspection results filed in Drive and linked to deal record', 'Repair checklist updated with completion status', 'Walkthrough date and result logged'],
+        updates: ['Reinspection milestone marked complete', 'Repair sign-off status updated per item'],
+        status: 'Responding → Re-Inspection Complete'
+      },
+      claude: {
+        reads: ['Original NORR repair requests', 'Completed repair documentation received', 'Walkthrough scheduling and checklist'],
+        does: ['Compares original repair list to completed repairs — flags any gaps', 'Generates walkthrough checklist from deal details', 'Confirms all items from NORR have been addressed'],
+        writes: ['Repair completion comparison logged to deal record', 'Outstanding items flagged for Practitioner attention']
+      }
+    },
+
+    {
+      id: 'pre-closing',
+      tag: 'Stage 06',
+      name: 'Pre-Closing',
+      desc: 'All parties coordinated for signing, commission instructions issued, settlement statement reviewed, compliance audit completed.',
+      audit: true,
+      supply: [
+        {
+          role: 'Production Manager',
+          actions: [
+            'Coordinate all pre-closing requirements: Lender (CDs), Partner Agent (home ready), Escrow (signing schedule, settlement statement, commission instructions)',
+            'Send Commission Instructions for signature',
+            'Remind Practitioner to review Settlement Statement',
+            'Instruct Title on where and how to send commission and Closing Package'
+          ]
+        }
+      ],
+      transfer: [
+        'Settlement Statement — for Practitioner and Client review',
+        'Commission Instructions — sent for signature',
+        'Signing scheduled and all parties confirmed'
+      ],
+      receive: [
+        {
+          role: 'Practitioner',
+          actions: [
+            'Review Settlement Statement for accuracy',
+            'Complete Confirmation Loop with Client',
+            'Review and initial Commission Instructions'
+          ]
+        },
+        {
+          role: 'Broker',
+          actions: [
+            'Review and sign Commission Instructions'
+          ]
+        },
+        {
+          role: 'Ops Manager',
+          actions: [
+            'Conduct Compliance Audit — file must pass before proceeding to Closing'
+          ]
+        }
+      ],
+      sbos: {
+        records: ['Settlement statement figures entered and linked', 'Commission instructions filed and signature tracked', 'Pre-closing compliance audit checklist completed'],
+        updates: ['All contingencies removed and confirmed in deal record', 'Pre-closing milestone marked ready'],
+        status: 'Re-Inspection Complete → Pre-Close Cleared'
+      },
+      claude: {
+        reads: ['Full compliance checklist status', 'Commission instructions vs. original contract terms', 'Settlement statement figures', 'All contingency removal confirmations'],
+        does: ['Runs pre-closing compliance audit — flags missing documents', 'Verifies settlement statement commission figures match deal record', 'Confirms all contingencies are removed and recorded'],
+        writes: ['Pre-closing audit report added to deal record', 'Any outstanding compliance items surfaced to Ops MGR']
+      }
+    },
+
+    {
+      id: 'closing',
+      tag: 'Stage 07',
+      name: 'Closing',
+      desc: 'Funding and recording confirmed, home delivered, MLS updated, post-closing action plan activated.',
+      audit: false,
+      supply: [
+        {
+          role: 'Practitioner',
+          actions: [
+            'Coordinate and confirm all closing items: Lender (funding), Escrow (recording and closing documents), Partner Agent (delivery of home)',
+            'Coordinate walkthrough',
+            'Receive and deliver keys to client'
+          ]
+        }
+      ],
+      transfer: [
+        'Keys, remotes, lockbox removed, sign removed',
+        'Final walkthrough completed by Practitioner',
+        'Closing documents delivered to Client'
+      ],
+      receive: [
+        {
+          role: 'Practitioner',
+          actions: [
+            'New Home Delivery — keys and photos',
+            '"Woohoo" call with client',
+            'Update MLS to reflect closed status'
+          ]
+        },
+        {
+          role: 'Production Manager',
+          actions: [
+            'Confirm MLS is updated',
+            'Activate Post-Closing Action Set in FUB'
+          ]
+        },
+        {
+          role: 'Ops Manager',
+          actions: [
+            'Update Master Database with closed deal data',
+            'Final File Audit'
+          ]
+        }
+      ],
+      sbos: {
+        records: ['Deal status → Closed', 'Closing date and recording date entered', 'All closing documents filed in Drive', 'Post-closing action plan triggered in FUB'],
+        updates: ['MLS status confirmed updated', 'Master Database updated with sale price, commission, close date'],
+        status: 'Pre-Close Cleared → Closed'
+      },
+      claude: {
+        reads: ['Complete deal file for final audit', 'Required documents checklist — all items', 'MLS status', 'Post-closing action plan in FUB'],
+        does: ['Runs final file audit — confirms all closing documents are filed', 'Flags any missing items before file is considered complete', 'Generates closing summary for team records'],
+        writes: ['Final audit report logged to deal record', 'Closing summary note added with date, sale price, and commission details']
+      }
+    },
+
+    {
+      id: 'commission',
+      tag: 'Stage 08',
+      name: 'Commission Distribution',
+      desc: 'Commission checks deposited, compliance verified, funds disbursed, and all tracking records updated.',
+      audit: false,
+      supply: [
+        {
+          role: 'Ops Manager',
+          actions: [
+            'Review all deal documents',
+            'Verify file compliance is complete'
+          ]
+        },
+        {
+          role: 'Broker',
+          actions: [
+            'Verify accuracy of Commission Disbursement amounts'
+          ]
+        },
+        {
+          role: 'Accountant',
+          actions: [
+            'Deposit commission checks received from Title'
+          ]
+        }
+      ],
+      transfer: [
+        'Commission Disbursement — confirmed and released',
+        'Receipt of Deposit — check cleared confirmation'
+      ],
+      receive: [
+        {
+          role: 'Accountant',
+          actions: [
+            'Verify check has cleared the bank',
+            'Disburse commissions to appropriate parties',
+            'Update Commission Tracking records',
+            'Update Insurance Tracking records'
+          ]
+        }
+      ],
+      sbos: {
+        records: ['Commission record finalized — amounts, splits, and recipients', 'Insurance tracking updated for this transaction', 'Payment confirmation logged with date and check number'],
+        updates: ['Commission disbursement status → Complete', 'Year-end tracking figures updated'],
+        status: 'Closed → Commission Distributed'
+      },
+      claude: {
+        reads: ['Commission instructions from deal record', 'Disbursement amounts from Accountant', 'Insurance tracking fields'],
+        does: ['Verifies disbursement amounts match original commission instructions', 'Flags any discrepancy between contracted and disbursed amounts', 'Confirms insurance tracking entry is complete'],
+        writes: ['Commission verification note added to deal record', 'Any discrepancy flagged to Broker and Ops MGR immediately']
+      }
+    },
+
+    {
+      id: 'nesting',
+      tag: 'Stage 09',
+      name: 'Nesting & Client Feedback',
+      desc: 'Post-closing support delivered, vendor list sent, anniversary reminders set, and Zillow/Google reviews requested.',
+      audit: false,
+      supply: [
+        {
+          role: 'Practitioner',
+          actions: [
+            'Execute Post-Closing Action Set in FUB',
+            'Deliver vendor list and any requested documents',
+            'Follow up on review request status'
+          ]
+        },
+        {
+          role: 'Ops Manager',
+          actions: [
+            'Claim sale on Zillow',
+            'Send or confirm review request to client on Zillow and Google',
+            'Review feedback received and ask follow-up questions'
+          ]
+        }
+      ],
+      transfer: [
+        'Vendor list and requested post-close documents',
+        'Anniversary reminder cadence — 6 months and 1 year',
+        'Review request — Zillow and Google'
+      ],
+      receive: [
+        {
+          role: 'Buyer',
+          actions: [
+            'Continued post-close support and relationship',
+            'Tax documents and year-end materials',
+            'Anniversary check-ins and vendor resources'
+          ]
+        }
+      ],
+      sbos: {
+        records: ['Post-closing action plan active and tracked in FUB', 'Client record updated with new home address and details', 'Review status tracked — requested, received, or pending'],
+        updates: ['Anniversary reminder dates set in FUB action plan', 'Review receipt logged when completed'],
+        status: 'Commission Distributed → Nesting Active'
+      },
+      claude: {
+        reads: ['Post-closing action plan completion status', 'Review request status', 'Client satisfaction notes from FUB'],
+        does: ['Monitors action plan completion — flags overdue tasks', 'Drafts personalized review request message based on client notes', 'Tracks survey response and logs outcome'],
+        writes: ['Review request sent date logged to deal record', 'Client feedback summary added to FUB contact notes']
+      }
+    }
+  ],
+
+  asyncEvents: [
+    {
+      name: 'Failed Contract',
+      alert: true,
+      body: 'Deal falls out of escrow at any stage. File must be properly closed, all parties notified, and deal record updated immediately.',
+      roles: [
+        'Practitioner — notify all parties; close FUB action plan',
+        'Production MGR — close deal record in S-BOS; file all documents',
+        'Ops MGR — compliance review; archive file'
+      ]
+    },
+    {
+      name: 'Contract Addenda',
+      alert: false,
+      body: 'New terms, timeline changes, or repairs negotiated at any point during escrow. Fully executed addendum must be in file before terms take effect.',
+      roles: [
+        'Practitioner — negotiate and draft; educate client',
+        'Production MGR — pursue full execution; update FUB and S-BOS dates',
+        'Partner Agent — execute and deliver'
+      ]
+    },
+    {
+      name: 'Deal Help / Problem Solving',
+      alert: false,
+      body: 'Complex situation arises requiring collaborative problem solving — legal question, inspection dispute, financing issue, or negotiation breakdown.',
+      roles: [
+        'Practitioner — bring issue to Production MGR with IREN-MD context',
+        'Production MGR — coordinate with Broker if needed',
+        'Broker — case study guidance and resolution strategy'
+      ]
+    },
+    {
+      name: 'Timeline Changes',
+      alert: false,
+      body: 'Close of escrow date, contingency deadline, or signing date changes. All downstream milestones must be updated simultaneously.',
+      roles: [
+        'Practitioner — confirm change is agreed with all parties',
+        'Production MGR — update all dates in S-BOS and notify Title, Lender',
+        'Claude — recalculates all dependent milestones and flags conflicts'
+      ]
+    }
+  ],
+
+  expectations: [
+    'Guide clear and confident decisions — clients must believe in and trust the process',
+    'Clarify and Verify at every handoff — do not proceed on assumptions',
+    'Follow the value chain — each role does their part, in order',
+    'Great teamwork — support is okay; systemic chain-breaking is not',
+    'Log everything to S-BOS — if it isn\'t in the system, it didn\'t happen',
+    'If there\'s a disagreement, reference the value chain first',
+    'If the chain is missing detail, schedule a face-to-face — no blow-up calls'
+  ]
+};
+
+/* ════════════════════════════════════════════════════════════
+   RENDER ENGINE — do not modify when duplicating
+   ════════════════════════════════════════════════════════════ */
+let activeIdx = -1;
+
+function init() {
+  buildMap();
+  buildAsync();
+  buildExpectations();
+}
+
+function buildMap() {
+  const wrap = document.getElementById('vcMap');
+  PROCESS.stages.forEach((s, i) => {
+    if (i > 0) {
+      const arr = document.createElement('div');
+      arr.className = 'vc-arrow';
+      arr.textContent = '›';
+      wrap.appendChild(arr);
+    }
+    const chip = document.createElement('div');
+    chip.className = 'vc-chip';
+    chip.dataset.idx = i;
+    chip.innerHTML = `
+      <div class="vc-chip-num">${s.tag}</div>
+      <div class="vc-chip-name">${s.name}</div>
+      ${s.audit ? '<div class="vc-chip-audit">Audit</div>' : ''}
+    `;
+    chip.addEventListener('click', () => selectStage(i));
+    wrap.appendChild(chip);
+  });
+}
+
+function selectStage(idx) {
+  // toggle off if clicking same
+  if (activeIdx === idx) {
+    activeIdx = -1;
+    document.querySelectorAll('.vc-chip').forEach(c => c.classList.remove('active'));
+    document.getElementById('vcDetail').classList.remove('visible');
+    document.getElementById('vcEmpty').style.display = '';
+    return;
+  }
+  activeIdx = idx;
+  document.querySelectorAll('.vc-chip').forEach((c, i) => {
+    c.classList.toggle('active', i === idx);
+  });
+  renderStage(idx);
+  document.getElementById('vcDetail').classList.add('visible');
+  document.getElementById('vcEmpty').style.display = 'none';
+  // scroll detail into view
+  setTimeout(() => {
+    document.getElementById('vcDetail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+}
+
+function renderStage(idx) {
+  const s = PROCESS.stages[idx];
+  const detail = document.getElementById('vcDetail');
+
+  const supplyHTML = s.supply.map(r => `
+    <div class="vc-role-block">
+      <div class="vc-role-name">${r.role}</div>
+      <ul class="vc-role-actions">
+        ${r.actions.map(a => `<li>${a}</li>`).join('')}
+      </ul>
+    </div>
+  `).join('');
+
+  const receiveHTML = s.receive.map(r => `
+    <div class="vc-role-block">
+      <div class="vc-role-name">${r.role}</div>
+      <ul class="vc-role-actions">
+        ${r.actions.map(a => `<li>${a}</li>`).join('')}
+      </ul>
+    </div>
+  `).join('');
+
+  const xferHTML = s.transfer.map(t => `<div class="vc-xfer-item">${t}</div>`).join('');
+
+  const sbosBandCols = `
+    <div class="vc-band-col">
+      <h4>Records</h4>
+      <ul>${s.sbos.records.map(r => `<li>${r}</li>`).join('')}</ul>
+    </div>
+    <div class="vc-band-col">
+      <h4>Updates at This Stage</h4>
+      <ul>${s.sbos.updates.map(u => `<li>${u}</li>`).join('')}</ul>
+    </div>
+    <div class="vc-band-col">
+      <h4>Status Change</h4>
+      <ul><li>${s.sbos.status}</li></ul>
+    </div>
+  `;
+
+  const claudeBandCols = `
+    <div class="vc-band-col">
+      <h4>Reads from S-BOS</h4>
+      <ul>${s.claude.reads.map(r => `<li>${r}</li>`).join('')}</ul>
+    </div>
+    <div class="vc-band-col">
+      <h4>Assists With</h4>
+      <ul>${s.claude.does.map(d => `<li>${d}</li>`).join('')}</ul>
+    </div>
+    <div class="vc-band-col">
+      <h4>Writes Back</h4>
+      <ul>${s.claude.writes.map(w => `<li>${w}</li>`).join('')}</ul>
+    </div>
+  `;
+
+  detail.innerHTML = `
+    <div class="vc-detail-header">
+      <div class="vc-detail-header-top">
+        <div class="vc-detail-tag">${s.tag}${s.audit ? ' · Audit Required' : ''}</div>
+      </div>
+      <div class="vc-detail-title">${s.name}</div>
+      <div class="vc-detail-desc">${s.desc}</div>
+    </div>
+
+    <div class="vc-flow">
+      <div class="vc-supply">
+        <div class="vc-col-label">Supplies</div>
+        ${supplyHTML}
+      </div>
+      <div class="vc-xfer">
+        <div class="vc-xfer-label">Clarify &amp; Verify</div>
+        <div class="vc-xfer-cv">Clarify<br>&amp;<br>Verify</div>
+        <div class="vc-xfer-arrow">
+          <div class="vc-xfer-arrow-line"></div>
+          <div class="vc-xfer-arrow-head">▶</div>
+        </div>
+        <div class="vc-xfer-items">${xferHTML}</div>
+      </div>
+      <div class="vc-receive">
+        <div class="vc-col-label">Receives</div>
+        ${receiveHTML}
+      </div>
+    </div>
+
+    <div class="vc-sbos-band">
+      <div class="vc-band-id">
+        <div class="vc-band-id-icon">🗄️</div>
+        <div class="vc-band-id-name">S-BOS</div>
+        <div class="vc-band-id-sub">Records &amp; Data Layer</div>
+      </div>
+      ${sbosBandCols}
+    </div>
+
+    <div class="vc-claude-band">
+      <div class="vc-band-id">
+        <div class="vc-band-id-icon">⚡</div>
+        <div class="vc-band-id-name">Claude</div>
+        <div class="vc-band-id-sub">AI Assistance Layer</div>
+      </div>
+      ${claudeBandCols}
+    </div>
+  `;
+}
+
+function buildAsync() {
+  const grid = document.getElementById('vcAsync');
+  PROCESS.asyncEvents.forEach(e => {
+    const card = document.createElement('div');
+    card.className = 'vc-async-card' + (e.alert ? ' alert' : '');
+    card.innerHTML = `
+      <div class="vc-async-name">${e.name}</div>
+      <div class="vc-async-body">${e.body}</div>
+      <ul class="vc-async-roles">
+        ${e.roles.map(r => `<li>${r}</li>`).join('')}
+      </ul>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function buildExpectations() {
+  const box = document.getElementById('vcExpect');
+  box.innerHTML = `
+    <div class="vc-expect-title">Team Standards</div>
+    <div class="vc-expect-heading">What We Expect from Everyone</div>
+    <ul class="vc-expect-list">
+      ${PROCESS.expectations.map(e => `<li>${e}</li>`).join('')}
+    </ul>
+  `;
+}
+
+init();
+</script>
+</body>
+</html>
