@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Investor Portal — Stitser BUILT</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+body { background: #F8F8F6; }
+
+.portal-hero {
+  background: var(--dark);
+  padding: 56px 56px 48px;
+}
+.portal-eyebrow {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 12px;
+}
+.portal-title {
+  font-family: var(--font-head);
+  font-size: 2.6rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 0 0 12px;
+  line-height: 1.05;
+}
+.portal-sub {
+  font-family: var(--font-sub);
+  font-size: 15px;
+  color: rgba(255,255,255,.5);
+  margin: 0;
+  max-width: 560px;
+  line-height: 1.65;
+}
+.portal-divider {
+  height: 3px;
+  background: linear-gradient(90deg, var(--orange) 0%, transparent 60%);
+}
+
+.portal-body {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 56px 48px 96px;
+}
+
+.portal-intro {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.75;
+  max-width: 680px;
+  margin: 0 0 48px;
+}
+
+.portal-section-label {
+  font-family: var(--font-sub);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin: 0 0 6px;
+}
+.portal-section-title {
+  font-family: var(--font-head);
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 0 0 20px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  margin-bottom: 48px;
+}
+.card-grid.three-col { grid-template-columns: repeat(3, 1fr); }
+
+.portal-card {
+  background: #fff;
+  border: 1px solid #E8E8E6;
+  border-left: 4px solid var(--orange);
+  border-radius: 0 6px 6px 0;
+  padding: 28px 24px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow .15s, transform .15s;
+}
+.portal-card:hover { box-shadow: 0 4px 24px rgba(0,0,0,.08); transform: translateX(2px); }
+.portal-card.blue  { border-left-color: var(--blue); }
+.portal-card.gray  { border-left-color: #BCBEC0; }
+
+.portal-card-label {
+  font-family: var(--font-sub);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--orange);
+}
+.portal-card.blue .portal-card-label { color: var(--blue); }
+.portal-card.gray .portal-card-label { color: #888; }
+
+.portal-card-title {
+  font-family: var(--font-head);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 0;
+  line-height: 1.2;
+}
+.portal-card-desc {
+  font-size: 0.83rem;
+  color: #666;
+  line-height: 1.55;
+  margin: 0;
+}
+.portal-card-cta {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-top: 4px;
+}
+.portal-card.blue .portal-card-cta { color: var(--blue); }
+
+/* Contact block */
+.contact-block {
+  background: var(--dark);
+  border-radius: 8px;
+  padding: 32px;
+  color: #fff;
+  margin-top: 8px;
+}
+.contact-block-title {
+  font-family: var(--font-head);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 12px;
+}
+.contact-block p {
+  font-size: 0.88rem;
+  color: rgba(255,255,255,.6);
+  line-height: 1.6;
+  margin: 0 0 16px;
+}
+.contact-block a {
+  color: var(--orange);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .card-grid, .card-grid.three-col { grid-template-columns: 1fr; }
+  .portal-hero, .portal-body { padding-left: 24px; padding-right: 24px; }
+  .portal-title { font-size: 2rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="portal-hero">
+  <div class="portal-eyebrow">Stitser BUILT · Investor Relations</div>
+  <h1 class="portal-title">Investor Portal</h1>
+  <p class="portal-sub">Portfolio updates, project status, and strategic reference materials for Stitser BUILT investors and capital partners.</p>
+</div>
+<div class="portal-divider"></div>
+
+<div class="portal-body">
+
+  <p class="portal-intro">
+    Stitser BUILT operates across four product lines — Construction, Disposition, Brokerage, and Property Management — coordinated through S-BOS, our proprietary operating system. This portal provides read-only access to key project, financial, and strategic resources.
+  </p>
+
+  <div class="portal-section-label">Portfolio</div>
+  <div class="portal-section-title">Active Projects & Pipeline</div>
+  <div class="card-grid three-col">
+    <a class="portal-card" href="../dashboards/construction-scorecard.html">
+      <div class="portal-card-label">Construction</div>
+      <div class="portal-card-title">Construction Pipeline</div>
+      <div class="portal-card-desc">Active WIP, pipeline, and revenue projections for construction projects.</div>
+      <div class="portal-card-cta">View →</div>
+    </a>
+    <a class="portal-card blue" href="../dashboards/disposition-scorecard.html">
+      <div class="portal-card-label">Disposition</div>
+      <div class="portal-card-title">Disposition Pipeline</div>
+      <div class="portal-card-desc">Brokerage and turnkey disposition deals — status and projected closings.</div>
+      <div class="portal-card-cta">View →</div>
+    </a>
+    <a class="portal-card gray" href="../pillar-matrix.html">
+      <div class="portal-card-label">All Projects</div>
+      <div class="portal-card-title">Project Health Matrix</div>
+      <div class="portal-card-desc">Cross-project status view across all active Stitser BUILT deals.</div>
+      <div class="portal-card-cta">View →</div>
+    </a>
+  </div>
+
+  <div class="portal-section-label">Financial</div>
+  <div class="portal-section-title">Financial Summaries</div>
+  <div class="card-grid">
+    <a class="portal-card" href="../financials.html">
+      <div class="portal-card-label">Financials</div>
+      <div class="portal-card-title">Entity Financial Overview</div>
+      <div class="portal-card-desc">Revenue, margin, and cost summaries across Stitser BUILT legal entities.</div>
+      <div class="portal-card-cta">View →</div>
+    </a>
+    <a class="portal-card blue" href="../entity-reporting.html">
+      <div class="portal-card-label">Reporting</div>
+      <div class="portal-card-title">Reporting Status</div>
+      <div class="portal-card-desc">Monthly and quarterly report delivery status by entity.</div>
+      <div class="portal-card-cta">View →</div>
+    </a>
+  </div>
+
+  <div class="portal-section-label">Strategy</div>
+  <div class="portal-section-title">Strategic Documents</div>
+  <div class="card-grid">
+    <a class="portal-card" href="../system/platform-walkthrough.html">
+      <div class="portal-card-label">Platform</div>
+      <div class="portal-card-title">S-BOS Platform Overview</div>
+      <div class="portal-card-desc">How the operating system works — technology, structure, and ownership model.</div>
+      <div class="portal-card-cta">View →</div>
+    </a>
+    <a class="portal-card blue" href="../system/playbook.html">
+      <div class="portal-card-label">Playbook</div>
+      <div class="portal-card-title">Project & Org Playbook</div>
+      <div class="portal-card-desc">Execution standards, team structure, and organizational alignment framework.</div>
+      <div class="portal-card-cta">View →</div>
+    </a>
+  </div>
+
+  <div class="contact-block">
+    <div class="contact-block-title">Questions or updates?</div>
+    <p>Contact the Stitser BUILT team directly for any questions about specific projects, financials, or investment matters not reflected here.</p>
+    <a href="mailto:clint@stitserbuilt.com">clint@stitserbuilt.com</a>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-brand">Stitser <span>Built</span> · Investor Portal</div>
+  <div class="footer-version">Confidential · Not for Distribution</div>
+</footer>
+
+</body>
+</html>

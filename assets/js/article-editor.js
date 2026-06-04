@@ -1,79 +1,132 @@
 /* ═══════════════════════════════════════════════════════════════
    ARTICLE EDITOR — S-BOS Knowledge Base
-   Inline text editing with save-to-GitHub and edit history panel.
-
-   Usage: include this script in any article page AFTER LESSON_CONFIG
-   is defined. Requires LESSON_CONFIG.filePath (path relative to repo
-   root, e.g. "lessons/welcome-to-sbos.html").
+   Inline text editing → save to GitHub via Railway proxy.
+   Works on article pages and workflow/value-chain pages.
    ═══════════════════════════════════════════════════════════════ */
-
 (function () {
   'use strict';
 
-  // Same-origin when served from Railway; cross-origin fallback for GitHub Pages dev
   const PROXY = window.location.hostname === 'clint-stitser.github.io'
     ? 'https://sb-planning-tools-production.up.railway.app'
     : '';
 
-  /* ── Editable element selector ──────────────────────────────── */
-  // Article pages: targets text inside #articleBody
-  // Workflow/value-chain pages: targets rendered text in the step/stage cards
-  const EDITABLE_SEL = [
-    // Article template
-    '#articleBody p', '#articleBody h2', '#articleBody h3',
-    '#articleBody li', '#articleBody td', '#articleBody th',
-    '#articleBody blockquote > p', '#articleBody cite',
+  /* ── Selectors: every text node that should be editable ─────── */
+  // Uses actual class names from the KB templates.
+  // Targets block-level containers to avoid double-editing nested spans.
+  const SELECTORS = [
+    // ── Article template (#articleBody) ──
+    '#articleBody p',
+    '#articleBody h2',
+    '#articleBody h3',
+    '#articleBody li',
+    '#articleBody td',
+    '#articleBody th',
+    '#articleBody cite',
+    '#articleBody blockquote > p',
     '#articleBody .callout-box > p',
-    '#articleBody .layer-detail > p', '#articleBody .layer-detail > strong',
-    '#articleBody .pillar-card-name', '#articleBody .pillar-card-desc',
-    // Workflow / value-chain template (JS-rendered)
-    '.vc-step-title', '.vc-step-who', '.vc-step-what',
-    '.vc-step-tool', '.vc-step-output', '.vc-step-note',
-    '.async-card h3', '.async-card p', '.async-card li',
-    '.expectation-block li', '.expectation-block p',
-    '.page-hero-title', '.page-hero-subtitle',
-  ].join(', ');
+    '#articleBody .callout-box-label',
+    '#articleBody .layer-detail > p',
+    '#articleBody .layer-detail > strong',
+    '#articleBody .pillar-card-name',
+    '#articleBody .pillar-card-desc',
+    // ── Page hero (all page types) ──
+    '.page-hero-title',
+    '.page-hero-subtitle',
+    '.page-hero-eyebrow',
+    // ── Workflow / value-chain pages ──
+    // Static elements (in HTML, not JS-rendered)
+    '.section-title',
+    '.section-label',
+    '.prose',
+    // JS-rendered by buildAsync()
+    '.vc-async-name',
+    '.vc-async-body',
+    '.vc-async-roles li',
+    // JS-rendered by buildExpectations()
+    '.vc-expect-title',
+    '.vc-expect-heading',
+    '.vc-expect-list li',
+    // Stage detail panel (rendered on chip click)
+    '.vc-detail-title',
+    '.vc-detail-desc',
+    '.vc-role-name',
+    '.vc-role-actions li',
+    '.vc-xfer-item',
+  ];
 
-  let editMode    = false;
-  let savedHtml   = null; // snapshot for Cancel
+  let editMode  = false;
+  let savedHtml = null;
+  let observer  = null; // MutationObserver for JS-rendered content
 
-  /* ── Inject editor chrome ────────────────────────────────────── */
+  /* ── Make a single element editable ─────────────────────────── */
+  function makeEditable(el) {
+    if (el.closest('#editor-toolbar, #editor-modal, #history-toggle-bar, #history-panel')) return;
+    el.setAttribute('contenteditable', 'true');
+    el.setAttribute('spellcheck', 'true');
+  }
+
+  /* ── Make all matching elements editable ─────────────────────── */
+  function applyEditableToAll() {
+    const sel = SELECTORS.join(', ');
+    document.querySelectorAll(sel).forEach(makeEditable);
+  }
+
+  /* ── Watch for dynamically-added content (workflow stage panels) */
+  function startObserver() {
+    if (observer) return;
+    observer = new MutationObserver(mutations => {
+      if (!editMode) return;
+      const sel = SELECTORS.join(', ');
+      mutations.forEach(m => {
+        m.addedNodes.forEach(node => {
+          if (node.nodeType !== 1) return;
+          // Make the node itself editable if it matches
+          if (node.matches && node.matches(sel)) makeEditable(node);
+          // Also check descendants
+          node.querySelectorAll && node.querySelectorAll(sel).forEach(makeEditable);
+        });
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  /* ── Inject all editor chrome into the page ─────────────────── */
   function injectChrome() {
     const style = document.createElement('style');
     style.textContent = `
-      /* Edit mode visual cues */
+      /* ── Edit mode: editable element highlight ── */
       body.edit-mode [contenteditable] {
-        outline: none;
-        border-bottom: 1.5px dashed #F5A623;
+        outline: 2px dashed rgba(245,166,35,0.6) !important;
+        outline-offset: 2px;
+        background: rgba(255,248,224,0.5) !important;
         cursor: text;
-        border-radius: 1px;
+        border-radius: 3px;
+        min-height: 1em;
       }
       body.edit-mode [contenteditable]:focus {
-        border-bottom-color: var(--blue, #0070C0);
-        background: #FAFEFF;
+        outline: 2px solid #0070C0 !important;
+        background: #EFF6FF !important;
       }
-      body.edit-mode [contenteditable]:empty:before {
-        content: attr(data-placeholder);
-        color: #BCBEC0;
-        font-style: italic;
+      body.edit-mode [contenteditable]:hover:not(:focus) {
+        outline-color: rgba(245,166,35,0.9) !important;
       }
-
-      /* Edit mode badge in meta bar */
-      .edit-mode-badge {
+      /* Edit mode announcement banner */
+      #edit-mode-banner {
         display: none;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 12px;
-        background: #FFF8E1;
-        border: 1px solid #F5A623;
-        border-radius: 20px;
+        position: sticky;
+        top: 0;
+        z-index: 800;
+        background: #FFFBEB;
+        border-bottom: 2px solid #F5A623;
+        padding: 8px 24px;
         font-family: var(--font-sub, sans-serif);
-        font-size: 12px;
+        font-size: 13px;
         font-weight: 700;
         color: #D97706;
-        flex-shrink: 0;
+        text-align: center;
+        letter-spacing: 0.02em;
       }
-      body.edit-mode .edit-mode-badge { display: flex; }
+      body.edit-mode #edit-mode-banner { display: block; }
 
       /* Floating edit toolbar */
       #editor-toolbar {
@@ -90,7 +143,7 @@
         display: flex;
         align-items: center;
         gap: 8px;
-        padding: 10px 20px;
+        padding: 11px 22px;
         background: var(--dark, #231F20);
         color: #fff;
         border: none;
@@ -100,8 +153,9 @@
         font-weight: 700;
         letter-spacing: 0.04em;
         cursor: pointer;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25);
         transition: background 0.2s, transform 0.1s;
+        white-space: nowrap;
       }
       #btn-edit-toggle:hover { background: #444; transform: translateY(-1px); }
       body.edit-mode #btn-edit-toggle { background: #27ae60; }
@@ -109,16 +163,16 @@
 
       #btn-cancel-edit {
         display: none;
-        padding: 8px 16px;
+        padding: 8px 18px;
         background: #fff;
-        color: #888;
+        color: #666;
         border: 1px solid #BCBEC0;
         border-radius: 30px;
         font-family: var(--font-sub, sans-serif);
         font-size: 12px;
         font-weight: 700;
         cursor: pointer;
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
       }
       body.edit-mode #btn-cancel-edit { display: block; }
 
@@ -127,7 +181,7 @@
         display: none;
         position: fixed;
         inset: 0;
-        background: rgba(0,0,0,0.45);
+        background: rgba(0,0,0,0.5);
         z-index: 1000;
         align-items: center;
         justify-content: center;
@@ -135,49 +189,45 @@
       #editor-modal.open { display: flex; }
       .editor-modal-box {
         background: #fff;
-        border-radius: 12px;
+        border-radius: 14px;
         padding: 32px;
-        width: 380px;
-        max-width: 90vw;
-        box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        width: 400px;
+        max-width: 92vw;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.3);
       }
       .editor-modal-title {
         font-family: var(--font-head, sans-serif);
         font-size: 1.3rem;
         font-weight: 900;
         color: var(--dark, #231F20);
-        margin: 0 0 8px;
+        margin: 0 0 6px;
       }
       .editor-modal-sub {
-        font-size: 0.88rem;
+        font-size: 0.875rem;
         color: #888;
         margin: 0 0 20px;
         line-height: 1.5;
       }
       .editor-modal-input {
         width: 100%;
-        padding: 10px 14px;
+        padding: 11px 14px;
         border: 1.5px solid #BCBEC0;
         border-radius: 8px;
         font-family: var(--font-sub, sans-serif);
-        font-size: 14px;
+        font-size: 15px;
         color: var(--dark, #231F20);
         outline: none;
         box-sizing: border-box;
         margin-bottom: 16px;
-        transition: border-color 0.2s;
+        transition: border-color 0.15s;
       }
-      .editor-modal-input:focus { border-color: var(--blue, #0070C0); }
-      .editor-modal-actions {
-        display: flex;
-        gap: 10px;
-        justify-content: flex-end;
-      }
+      .editor-modal-input:focus { border-color: #0070C0; }
+      .editor-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
       .btn-modal-cancel {
-        padding: 9px 18px;
+        padding: 10px 20px;
         background: none;
         border: 1px solid #BCBEC0;
-        border-radius: 6px;
+        border-radius: 8px;
         font-family: var(--font-sub, sans-serif);
         font-size: 13px;
         font-weight: 700;
@@ -185,11 +235,11 @@
         cursor: pointer;
       }
       .btn-modal-save {
-        padding: 9px 22px;
+        padding: 10px 24px;
         background: #27ae60;
         color: #fff;
         border: none;
-        border-radius: 6px;
+        border-radius: 8px;
         font-family: var(--font-sub, sans-serif);
         font-size: 13px;
         font-weight: 700;
@@ -204,15 +254,13 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 24px 40px 0;
-        max-width: 1100px;
-        margin: 0 auto;
+        padding: 32px 40px 0;
       }
       #btn-history-toggle {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 6px 16px;
+        padding: 7px 18px;
         background: none;
         border: 1px solid #BCBEC0;
         border-radius: 20px;
@@ -220,15 +268,14 @@
         font-size: 12px;
         color: #888;
         cursor: pointer;
-        transition: border-color 0.2s, color 0.2s;
+        transition: border-color 0.15s, color 0.15s;
       }
-      #btn-history-toggle:hover { border-color: var(--blue, #0070C0); color: var(--blue, #0070C0); }
+      #btn-history-toggle:hover { border-color: #0070C0; color: #0070C0; }
       #history-panel {
         display: none;
-        max-width: 760px;
-        margin: 16px auto 0;
-        padding: 0 40px 40px;
-        border-top: 1px solid #BCBEC0;
+        max-width: 700px;
+        margin: 20px auto 0;
+        padding: 0 40px 48px;
       }
       #history-panel.open { display: block; }
       .history-panel-title {
@@ -239,175 +286,124 @@
         text-transform: uppercase;
         color: #BCBEC0;
         padding: 20px 0 12px;
+        border-top: 1px solid #EAEAEA;
       }
       .history-item {
         display: flex;
-        align-items: baseline;
-        gap: 12px;
-        padding: 10px 0;
+        align-items: center;
+        gap: 14px;
+        padding: 11px 0;
         border-bottom: 1px solid #F2F2F2;
       }
       .history-item:last-child { border-bottom: none; }
-      .history-author {
-        font-family: var(--font-sub, sans-serif);
-        font-size: 13px;
-        font-weight: 700;
-        color: var(--dark, #231F20);
-        white-space: nowrap;
-      }
-      .history-date {
-        font-family: var(--font-sub, sans-serif);
-        font-size: 12px;
-        color: #BCBEC0;
-        white-space: nowrap;
-      }
-      .history-msg {
-        font-size: 12px;
-        color: #888;
-        flex: 1;
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-      }
-      .history-loading {
-        font-size: 13px;
-        color: #BCBEC0;
-        padding: 16px 0;
-        text-align: center;
-      }
-      .history-sha {
-        font-family: monospace;
-        font-size: 11px;
-        color: #BCBEC0;
-        background: #F7F7F7;
-        padding: 2px 6px;
-        border-radius: 4px;
-        white-space: nowrap;
-      }
+      .history-author { font-family: var(--font-sub, sans-serif); font-size: 13px; font-weight: 700; color: var(--dark, #231F20); white-space: nowrap; }
+      .history-date   { font-family: var(--font-sub, sans-serif); font-size: 12px; color: #BCBEC0; white-space: nowrap; flex: 1; }
+      .history-sha    { font-family: monospace; font-size: 11px; color: #BCBEC0; background: #F5F5F5; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+      .history-empty  { font-size: 13px; color: #BCBEC0; padding: 16px 0; text-align: center; }
     `;
     document.head.appendChild(style);
 
-    /* ── Edit mode badge in meta bar ── */
-    const metaBar = document.querySelector('.lesson-meta-bar');
-    if (metaBar) {
-      const badge = document.createElement('span');
-      badge.className = 'edit-mode-badge';
-      badge.innerHTML = '✏ Editing';
-      metaBar.insertBefore(badge, metaBar.querySelector('.btn-complete'));
-    }
+    /* Sticky edit mode banner */
+    const banner = document.createElement('div');
+    banner.id = 'edit-mode-banner';
+    banner.textContent = '✏  Edit mode — click any highlighted text to edit it. Click "Save changes" when done.';
+    document.body.insertBefore(banner, document.body.firstChild);
 
-    /* ── Floating toolbar ── */
+    /* Floating toolbar */
     const toolbar = document.createElement('div');
     toolbar.id = 'editor-toolbar';
     toolbar.innerHTML = `
-      <button id="btn-cancel-edit">✕ Cancel</button>
-      <button id="btn-edit-toggle">✏ Edit Article</button>
+      <button id="btn-cancel-edit">✕ Discard</button>
+      <button id="btn-edit-toggle">✏ Edit page</button>
     `;
     document.body.appendChild(toolbar);
 
-    /* ── Save modal ── */
+    /* Save modal */
     const modal = document.createElement('div');
     modal.id = 'editor-modal';
     modal.innerHTML = `
       <div class="editor-modal-box">
         <div class="editor-modal-title">Save your changes</div>
-        <div class="editor-modal-sub">Enter your name so it appears in the edit history for this article.</div>
+        <div class="editor-modal-sub">Your name appears in the edit history for this page.</div>
         <input class="editor-modal-input" id="editor-name-input" type="text" placeholder="Your name" maxlength="80" autocomplete="name" />
         <div class="editor-modal-actions">
           <button class="btn-modal-cancel" id="btn-modal-cancel">Cancel</button>
-          <button class="btn-modal-save" id="btn-modal-save">Save changes</button>
+          <button class="btn-modal-save"   id="btn-modal-save">Save changes</button>
         </div>
       </div>
     `;
     document.body.appendChild(modal);
 
-    /* ── History panel (injected before <footer>) ── */
-    const footer = document.querySelector('footer');
-    const historySection = document.createElement('div');
-    historySection.innerHTML = `
+    /* History panel */
+    const histSection = document.createElement('div');
+    histSection.innerHTML = `
       <div id="history-toggle-bar">
         <button id="btn-history-toggle">🕐 Edit history</button>
       </div>
       <div id="history-panel">
         <div class="history-panel-title">Edit History</div>
-        <div id="history-list"><p class="history-loading">Loading…</p></div>
+        <div id="history-list"><p class="history-empty">Loading…</p></div>
       </div>
     `;
-    if (footer) {
-      document.body.insertBefore(historySection, footer);
-    } else {
-      document.body.appendChild(historySection);
-    }
+    const footer = document.querySelector('footer');
+    footer ? document.body.insertBefore(histSection, footer) : document.body.appendChild(histSection);
 
     bindEvents();
   }
 
-  /* ── Detect page type ───────────────────────────────────────── */
-  function isWorkflowPage() {
-    // Workflow pages render content from a JS PROCESS object and live in /workflows/
-    return window.location.pathname.includes('/workflows/') &&
-      document.getElementById('articleBody') === null;
-  }
-
-  /* ── Enable edit mode ────────────────────────────────────────── */
+  /* ── Enter edit mode ─────────────────────────────────────────── */
   function enterEditMode() {
     if (editMode) return;
     editMode = true;
-    savedHtml = document.documentElement.outerHTML; // snapshot for cancel
+    savedHtml = document.documentElement.outerHTML;
 
-    const found = document.querySelectorAll(EDITABLE_SEL);
-    found.forEach(el => {
-      el.setAttribute('contenteditable', 'true');
-      el.setAttribute('spellcheck', 'true');
-    });
+    applyEditableToAll();
+    startObserver();
+
     document.body.classList.add('edit-mode');
     document.getElementById('btn-edit-toggle').textContent = '💾 Save changes';
 
-    if (isWorkflowPage()) {
-      showToast('Editing hero text & card text. Step navigation stays interactive — save to commit changes.', false);
-    }
+    const count = document.querySelectorAll('[contenteditable]').length;
+    showToast(`✏ ${count} text block${count !== 1 ? 's' : ''} are now editable — click any highlighted area to start typing.`);
   }
 
   /* ── Exit edit mode ──────────────────────────────────────────── */
   function exitEditMode(revert) {
     if (!editMode) return;
+    if (observer) { observer.disconnect(); observer = null; }
+
     if (revert && savedHtml) {
-      document.open();
-      document.write(savedHtml);
-      document.close();
-      return; // page reloads its own scripts
+      document.open(); document.write(savedHtml); document.close();
+      return;
     }
-    document.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
+    document.querySelectorAll('[contenteditable]').forEach(el => {
+      el.removeAttribute('contenteditable');
+      el.removeAttribute('spellcheck');
+    });
     document.body.classList.remove('edit-mode');
-    document.getElementById('btn-edit-toggle').textContent = '✏ Edit Article';
+    document.getElementById('btn-edit-toggle').textContent = '✏ Edit page';
     editMode = false;
     savedHtml = null;
   }
 
-  /* ── Collect clean HTML for commit ──────────────────────────── */
+  /* ── Build clean HTML snapshot for commit ────────────────────── */
   function getCleanHtml() {
-    // Remove contenteditable attrs from a serialised copy
     return document.documentElement.outerHTML
       .replace(/\s*contenteditable="[^"]*"/g, '')
       .replace(/\s*spellcheck="[^"]*"/g, '');
   }
 
-  /* ── Resolve file path for this page ────────────────────────── */
+  /* ── Infer repo-relative file path ───────────────────────────── */
   function getFilePath() {
     if (typeof LESSON_CONFIG !== 'undefined' && LESSON_CONFIG.filePath) {
       return LESSON_CONFIG.filePath;
     }
-    // Infer from URL for pages without LESSON_CONFIG (e.g. workflow pages)
-    // pathname = "/workflows/escrow-process.html" → "workflows/escrow-process.html"
     return window.location.pathname.replace(/^\//, '').replace(/\/$/, '') || 'index.html';
   }
 
-  /* ── Persist to GitHub via Railway proxy ─────────────────────── */
+  /* ── Commit via Railway proxy ────────────────────────────────── */
   async function saveToGithub(editorName) {
     const filePath = getFilePath();
-    if (!filePath) throw new Error('Could not determine file path for this page.');
-
     const res = await fetch(`${PROXY}/api/article/save`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -418,35 +414,30 @@
     return data;
   }
 
-  /* ── Load history from GitHub commits ───────────────────────── */
+  /* ── Load commit history ─────────────────────────────────────── */
   async function loadHistory() {
-    const filePath = getFilePath();
     const list = document.getElementById('history-list');
     try {
-      const res  = await fetch(`${PROXY}/api/article/history?path=${encodeURIComponent(filePath)}`);
+      const res  = await fetch(`${PROXY}/api/article/history?path=${encodeURIComponent(getFilePath())}`);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       if (!data.history.length) {
-        list.innerHTML = '<p class="history-loading">No edits recorded yet.</p>';
+        list.innerHTML = '<p class="history-empty">No edits recorded yet.</p>';
         return;
       }
       list.innerHTML = data.history.map(h => {
-        const d = new Date(h.date);
+        const d       = new Date(h.date);
         const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        const timeStr = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-        // Extract human editor name from commit message if it matches our pattern
-        const match = h.message.match(/^(.+?) edited .+ — /);
-        const displayName = match ? match[1] : h.author;
-        return `
-          <div class="history-item">
-            <span class="history-author">${esc(displayName)}</span>
-            <span class="history-date">${dateStr} at ${timeStr}</span>
-            <span class="history-sha">${esc(h.sha)}</span>
-          </div>
-        `;
+        const match   = h.message.match(/^(.+?) edited /);
+        const name    = match ? match[1] : h.author;
+        return `<div class="history-item">
+          <span class="history-author">${esc(name)}</span>
+          <span class="history-date">${dateStr}</span>
+          <span class="history-sha">${esc(h.sha)}</span>
+        </div>`;
       }).join('');
     } catch (err) {
-      list.innerHTML = `<p class="history-loading">Couldn't load history: ${esc(err.message)}</p>`;
+      list.innerHTML = `<p class="history-empty">Couldn't load history: ${esc(err.message)}</p>`;
     }
   }
 
@@ -454,7 +445,7 @@
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  /* ── Event wiring ────────────────────────────────────────────── */
+  /* ── Bind all events ─────────────────────────────────────────── */
   function bindEvents() {
     const btnToggle  = document.getElementById('btn-edit-toggle');
     const btnCancel  = document.getElementById('btn-cancel-edit');
@@ -465,36 +456,30 @@
     const btnHistory = document.getElementById('btn-history-toggle');
     const histPanel  = document.getElementById('history-panel');
 
-    /* Edit / Save toggle */
     btnToggle.addEventListener('click', () => {
       if (!editMode) {
         enterEditMode();
       } else {
-        // Open save modal
         nameInput.value = '';
+        nameInput.style.borderColor = '';
         modal.classList.add('open');
-        nameInput.focus();
+        setTimeout(() => nameInput.focus(), 50);
       }
     });
 
-    /* Cancel edit */
     btnCancel.addEventListener('click', () => {
-      if (confirm('Discard all changes and return to read mode?')) {
-        exitEditMode(true);
-      }
+      if (confirm('Discard all changes?')) exitEditMode(true);
     });
 
-    /* Modal cancel */
     btnModalX.addEventListener('click', () => modal.classList.remove('open'));
     modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
 
-    /* Modal save */
-    btnSave.addEventListener('click', () => doSave());
+    btnSave.addEventListener('click', doSave);
     nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') doSave(); });
 
     async function doSave() {
       const name = nameInput.value.trim();
-      if (!name) { nameInput.focus(); nameInput.style.borderColor = '#e74c3c'; return; }
+      if (!name) { nameInput.style.borderColor = '#e74c3c'; nameInput.focus(); return; }
       nameInput.style.borderColor = '';
       btnSave.disabled = true;
       btnSave.textContent = 'Saving…';
@@ -502,44 +487,37 @@
         await saveToGithub(name);
         modal.classList.remove('open');
         exitEditMode(false);
-        showToast(`✓ Saved — changes by ${name} are live in ~30 seconds.`);
-        // Refresh history if panel is open
+        showToast(`✓ Saved by ${name} — live in ~30 sec`);
         if (histPanel.classList.contains('open')) loadHistory();
       } catch (err) {
         btnSave.disabled = false;
         btnSave.textContent = 'Save changes';
-        showToast(`Error: ${err.message}`, true);
+        showToast(`Save failed: ${err.message}`, true);
       }
     }
 
-    /* History panel toggle */
     let historyLoaded = false;
     btnHistory.addEventListener('click', () => {
       const open = histPanel.classList.toggle('open');
       btnHistory.textContent = open ? '🕐 Hide history' : '🕐 Edit history';
-      if (open && !historyLoaded) {
-        historyLoaded = true;
-        loadHistory();
-      }
+      if (open && !historyLoaded) { historyLoaded = true; loadHistory(); }
     });
   }
 
-  /* ── Toast notification ──────────────────────────────────────── */
+  /* ── Toast ───────────────────────────────────────────────────── */
   function showToast(msg, isError = false) {
     const t = document.createElement('div');
-    t.style.cssText = `
-      position:fixed; bottom:90px; right:28px; z-index:9999;
-      padding:12px 20px; border-radius:8px; max-width:340px;
-      font-family:var(--font-sub,sans-serif); font-size:13px; font-weight:700;
-      box-shadow:0 4px 16px rgba(0,0,0,0.18); animation:fadeInUp .2s ease;
-      background:${isError ? '#e74c3c' : '#27ae60'}; color:#fff;
-    `;
+    t.style.cssText = `position:fixed;bottom:90px;right:28px;z-index:9999;
+      padding:12px 20px;border-radius:8px;max-width:360px;line-height:1.4;
+      font-family:var(--font-sub,sans-serif);font-size:13px;font-weight:700;
+      box-shadow:0 4px 20px rgba(0,0,0,0.2);
+      background:${isError ? '#e74c3c' : '#231F20'};color:#fff;`;
     t.textContent = msg;
     document.body.appendChild(t);
-    setTimeout(() => t.remove(), 4000);
+    setTimeout(() => t.remove(), 5000);
   }
 
-  /* ── Init on DOMContentLoaded ────────────────────────────────── */
+  /* ── Boot ────────────────────────────────────────────────────── */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', injectChrome);
   } else {

@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Executive View — Stitser BUILT</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+body { background: #F5F5F5; }
+
+.portal-hero {
+  background: var(--dark);
+  padding: 48px 48px 40px;
+  border-bottom: 4px solid var(--orange);
+}
+.portal-eyebrow {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 10px;
+}
+.portal-title {
+  font-family: var(--font-head);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 0 0 8px;
+  line-height: 1.1;
+}
+.portal-sub {
+  font-family: var(--font-sub);
+  font-size: 14px;
+  color: rgba(255,255,255,.55);
+  margin: 0;
+  max-width: 520px;
+  line-height: 1.6;
+}
+
+.portal-body {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 40px 80px;
+}
+
+.portal-section-label {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin: 0 0 6px;
+}
+.portal-section-title {
+  font-family: var(--font-head);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 0 0 20px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 48px;
+}
+.card-grid.two-col { grid-template-columns: repeat(2, 1fr); }
+
+.portal-card {
+  background: #fff;
+  border: 1px solid #E5E5E5;
+  border-top: 3px solid var(--orange);
+  border-radius: 6px;
+  padding: 24px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow .15s, transform .15s;
+}
+.portal-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.1); transform: translateY(-2px); }
+.portal-card.blue { border-top-color: var(--blue); }
+.portal-card.teal { border-top-color: #2A9D8F; }
+.portal-card.gray { border-top-color: #888; }
+
+.portal-card-icon { font-size: 1.5rem; line-height: 1; }
+.portal-card-title {
+  font-family: var(--font-head);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 0;
+  line-height: 1.2;
+}
+.portal-card-desc {
+  font-size: 0.82rem;
+  color: #666;
+  line-height: 1.5;
+  margin: 0;
+}
+.portal-card-cta {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-top: auto;
+  padding-top: 8px;
+}
+.portal-card.blue .portal-card-cta { color: var(--blue); }
+.portal-card.teal .portal-card-cta { color: #2A9D8F; }
+.portal-card.gray .portal-card-cta { color: #888; }
+
+@media (max-width: 760px) {
+  .card-grid, .card-grid.two-col { grid-template-columns: 1fr; }
+  .portal-hero, .portal-body { padding-left: 20px; padding-right: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="portal-hero">
+  <div class="portal-eyebrow">Stitser BUILT · Executive View</div>
+  <h1 class="portal-title">Executive Dashboard</h1>
+  <p class="portal-sub">Performance data, pipeline, and strategic resources for leadership. All live from S-BOS.</p>
+</div>
+
+<div class="portal-body">
+
+  <div class="portal-section-label">Performance</div>
+  <div class="portal-section-title">Live Scorecards & Dashboards</div>
+  <div class="card-grid">
+    <a class="portal-card" href="../dashboards/construction-scorecard.html">
+      <div class="portal-card-icon">🏗</div>
+      <div class="portal-card-title">Construction Scorecard</div>
+      <div class="portal-card-desc">Pipeline, WIP, and revenue projections for the Construction product line.</div>
+      <div class="portal-card-cta">Open →</div>
+    </a>
+    <a class="portal-card blue" href="../dashboards/disposition-scorecard.html">
+      <div class="portal-card-icon">🏠</div>
+      <div class="portal-card-title">Disposition Scorecard</div>
+      <div class="portal-card-desc">Brokerage and turnkey disposition pipeline, closings, and revenue.</div>
+      <div class="portal-card-cta">Open →</div>
+    </a>
+    <a class="portal-card teal" href="../pillar-matrix.html">
+      <div class="portal-card-icon">📊</div>
+      <div class="portal-card-title">Pillar Matrix</div>
+      <div class="portal-card-desc">Cross-project health across all five S-BOS pillars at a glance.</div>
+      <div class="portal-card-cta">Open →</div>
+    </a>
+  </div>
+
+  <div class="portal-section-label">Finance</div>
+  <div class="portal-section-title">Financial Intelligence</div>
+  <div class="card-grid">
+    <a class="portal-card" href="../financials.html">
+      <div class="portal-card-icon">💰</div>
+      <div class="portal-card-title">Entity Financials</div>
+      <div class="portal-card-desc">Revenue, margin, and cost data across Stitser BUILT entities.</div>
+      <div class="portal-card-cta">Open →</div>
+    </a>
+    <a class="portal-card blue" href="../entity-reporting.html">
+      <div class="portal-card-icon">📋</div>
+      <div class="portal-card-title">Entity Reporting</div>
+      <div class="portal-card-desc">Monthly and quarterly reporting status per entity. Tracks delivery.</div>
+      <div class="portal-card-cta">Open →</div>
+    </a>
+    <a class="portal-card gray" href="../manpower.html">
+      <div class="portal-card-icon">👥</div>
+      <div class="portal-card-title">Manpower & Capacity</div>
+      <div class="portal-card-desc">Team capacity, utilization, and resource allocation planning.</div>
+      <div class="portal-card-cta">Open →</div>
+    </a>
+  </div>
+
+  <div class="portal-section-label">Strategy</div>
+  <div class="portal-section-title">Strategic Reference</div>
+  <div class="card-grid two-col">
+    <a class="portal-card" href="../system/playbook.html">
+      <div class="portal-card-icon">📖</div>
+      <div class="portal-card-title">Project Playbook</div>
+      <div class="portal-card-desc">Organizational alignment framework and project execution standards.</div>
+      <div class="portal-card-cta">Open →</div>
+    </a>
+    <a class="portal-card blue" href="../system/platform-walkthrough.html">
+      <div class="portal-card-icon">🗺</div>
+      <div class="portal-card-title">Platform Overview</div>
+      <div class="portal-card-desc">How S-BOS works — architecture, ownership model, and strategic vision.</div>
+      <div class="portal-card-cta">Open →</div>
+    </a>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-brand">Stitser <span>Built</span> · Executive View</div>
+  <div class="footer-version">S-BOS · Internal Use Only</div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Hub — Stitser BUILT</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+body { background: #F5F5F5; }
+
+.portal-hero {
+  background: var(--blue);
+  padding: 48px 48px 40px;
+  border-bottom: 4px solid #fff;
+}
+.portal-eyebrow {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.7);
+  margin-bottom: 10px;
+}
+.portal-title {
+  font-family: var(--font-head);
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: #fff;
+  margin: 0 0 8px;
+  line-height: 1.1;
+}
+.portal-sub {
+  font-family: var(--font-sub);
+  font-size: 14px;
+  color: rgba(255,255,255,.65);
+  margin: 0;
+  max-width: 520px;
+  line-height: 1.6;
+}
+
+.portal-body {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 40px 40px 80px;
+}
+
+.portal-section-label {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin: 0 0 6px;
+}
+.portal-section-title {
+  font-family: var(--font-head);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 0 0 20px;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 48px;
+}
+.card-grid.two-col { grid-template-columns: repeat(2, 1fr); }
+.card-grid.four-col { grid-template-columns: repeat(4, 1fr); }
+
+.portal-card {
+  background: #fff;
+  border: 1px solid #E5E5E5;
+  border-top: 3px solid var(--blue);
+  border-radius: 6px;
+  padding: 24px;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: box-shadow .15s, transform .15s;
+}
+.portal-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.1); transform: translateY(-2px); }
+.portal-card.orange { border-top-color: var(--orange); }
+.portal-card.teal   { border-top-color: #2A9D8F; }
+.portal-card.gray   { border-top-color: #888; }
+
+.portal-card-icon  { font-size: 1.5rem; line-height: 1; }
+.portal-card-title {
+  font-family: var(--font-head);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 0;
+  line-height: 1.2;
+}
+.portal-card-desc {
+  font-size: 0.82rem;
+  color: #666;
+  line-height: 1.5;
+  margin: 0;
+}
+.portal-card-cta {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--blue);
+  margin-top: auto;
+  padding-top: 8px;
+}
+.portal-card.orange .portal-card-cta { color: var(--orange); }
+.portal-card.teal   .portal-card-cta { color: #2A9D8F; }
+.portal-card.gray   .portal-card-cta { color: #888; }
+
+@media (max-width: 900px) {
+  .card-grid.four-col { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 760px) {
+  .card-grid, .card-grid.two-col, .card-grid.four-col { grid-template-columns: 1fr; }
+  .portal-hero, .portal-body { padding-left: 20px; padding-right: 20px; }
+}
+</style>
+</head>
+<body>
+
+<div class="portal-hero">
+  <div class="portal-eyebrow">Stitser BUILT · Team Hub</div>
+  <h1 class="portal-title">Welcome to S-BOS</h1>
+  <p class="portal-sub">Your workflows, training, and system reference — everything you need to execute at a high level.</p>
+</div>
+
+<div class="portal-body">
+
+  <div class="portal-section-label">Workflows</div>
+  <div class="portal-section-title">Value Chain Processes</div>
+  <div class="card-grid">
+    <a class="portal-card orange" href="../workflows/escrow-process.html">
+      <div class="portal-card-icon">📝</div>
+      <div class="portal-card-title">Buyer Escrow Process</div>
+      <div class="portal-card-desc">Full value chain from contract to keys — every role, every stage.</div>
+      <div class="portal-card-cta">Open →</div>
+    </a>
+    <a class="portal-card" href="../workflows/file-setup.html">
+      <div class="portal-card-icon">📁</div>
+      <div class="portal-card-title">File Setup</div>
+      <div class="portal-card-desc">How to open and configure a new deal file from day one.</div>
+      <div class="portal-card-cta">Open →</div>
+    </a>
+    <a class="portal-card" href="../workflows/execute-diligence.html">
+      <div class="portal-card-icon">🔍</div>
+      <div class="portal-card-title">Execute Diligence</div>
+      <div class="portal-card-desc">Inspection, due diligence, and contingency removal process.</div>
+      <div class="portal-card-cta">Open →</div>
+    </a>
+    <a class="portal-card" href="../workflows/closing.html">
+      <div class="portal-card-icon">🔑</div>
+      <div class="portal-card-title">Closing</div>
+      <div class="portal-card-desc">Final steps from pre-closing through keys and record close.</div>
+      <div class="portal-card-cta">Open →</div>
+    </a>
+    <a class="portal-card" href="../workflows/assemble-respond.html">
+      <div class="portal-card-icon">📨</div>
+      <div class="portal-card-title">Assemble & Respond</div>
+      <div class="portal-card-desc">Offer assembly, submission, and response workflow.</div>
+      <div class="portal-card-cta">Open →</div>
+    </a>
+    <a class="portal-card" href="../workflows/">
+      <div class="portal-card-icon">📋</div>
+      <div class="portal-card-title">All Workflows</div>
+      <div class="portal-card-desc">Browse every value chain workflow in the system.</div>
+      <div class="portal-card-cta">Browse all →</div>
+    </a>
+  </div>
+
+  <div class="portal-section-label">Roles</div>
+  <div class="portal-section-title">Your Role in S-BOS</div>
+  <div class="card-grid four-col">
+    <a class="portal-card teal" href="../roles/practitioner.html">
+      <div class="portal-card-icon">🤝</div>
+      <div class="portal-card-title">Practitioner</div>
+      <div class="portal-card-desc">Client-facing agent role — owns the relationship and the deal experience.</div>
+      <div class="portal-card-cta">My role →</div>
+    </a>
+    <a class="portal-card teal" href="../roles/production-manager.html">
+      <div class="portal-card-icon">⚙️</div>
+      <div class="portal-card-title">Production Mgr</div>
+      <div class="portal-card-desc">Runs the deal engine — coordinates all parties, drives to close.</div>
+      <div class="portal-card-cta">My role →</div>
+    </a>
+    <a class="portal-card teal" href="../roles/ops-manager.html">
+      <div class="portal-card-icon">🧩</div>
+      <div class="portal-card-title">Ops Manager</div>
+      <div class="portal-card-desc">System steward — compliance, data quality, and process integrity.</div>
+      <div class="portal-card-cta">My role →</div>
+    </a>
+    <a class="portal-card teal" href="../roles/broker.html">
+      <div class="portal-card-icon">📜</div>
+      <div class="portal-card-title">Broker</div>
+      <div class="portal-card-desc">License authority and escalation owner for compliance decisions.</div>
+      <div class="portal-card-cta">My role →</div>
+    </a>
+  </div>
+
+  <div class="portal-section-label">Training</div>
+  <div class="portal-section-title">Learning & Orientation</div>
+  <div class="card-grid two-col">
+    <a class="portal-card orange" href="../lessons/welcome-to-sbos.html">
+      <div class="portal-card-icon">🎓</div>
+      <div class="portal-card-title">Welcome to S-BOS</div>
+      <div class="portal-card-desc">Start here — what S-BOS is, how it works, and what's expected of every team member.</div>
+      <div class="portal-card-cta">Start lesson →</div>
+    </a>
+    <a class="portal-card" href="../system/kompass.html">
+      <div class="portal-card-icon">🧭</div>
+      <div class="portal-card-title">Using Kompass</div>
+      <div class="portal-card-desc">How to use the AI agent — what to ask, how to get the best answers.</div>
+      <div class="portal-card-cta">Open →</div>
+    </a>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-brand">Stitser <span>Built</span> · Team Hub</div>
+  <div class="footer-version">S-BOS · Internal Use Only</div>
+</footer>
+
+</body>
+</html>
