@@ -1275,118 +1275,159 @@ function renderLedger(projects, byStage) {
   applyAndRender();
 }
 
-// ── Production Targets: time-based AND production-based per situation ─────────
-// Each row covers ONE key situation. Both the DEADLINE (time) and the
-// PRODUCTION COUNT/REVENUE needed (quantity) are shown together so the
-// team can answer: "Do we have enough AND will it arrive in time?"
+// ── Production Targets — Monthly Ramp Plan ────────────────────────────────────
+//
+// For progress-based billing, the key insight is:
+//   A job entering WIP in month M earns: avgMonthlyRevenue × months(M → Dec 31)
+//   A December start earns 1 month. A July start earns 6 months.
+//   The same revenue gap costs progressively more jobs the later you start.
+//
+// This table answers: "How many new jobs need to enter WIP THIS month to close
+// the gap? And what does it cost to wait?"
+//
+// Inputs derived from live data: avg contract value, avg duration.
+// Gap = GOAL − projected total (A+B+C). Ramp shows cost of delay.
 function renderTargets(byStage, goalProjects) {
   const totalContract  = goalProjects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
   const totalGP        = goalProjects.reduce((s, p) => s + (p.budget.contractGP  || 0), 0);
   const projectedTotal = _score.projectedTotal || 0;
-  const revGap         = Math.max(0, GOAL_REVENUE - projectedTotal);
+  const gap            = Math.max(0, GOAL_REVENUE - projectedTotal);
   const gpGap          = Math.max(0, GOAL_GP - totalGP);
+  const today          = new Date();
+  const daysToDec31    = Math.max(0, (SCORING_END - today) / 86400000);
 
-  const daysBidReady   = daysRemaining(DEADLINES.BID_READY);
-  const daysMobilize   = daysRemaining(DEADLINES.MOBILIZE);
+  // ── Compute averages from live data ──────────────────────────────────────
+  const jobsWithRevData = _projects.filter(p =>
+    (p.budget.contractRevenue || 0) > 0 && p.stage !== 'CLOSED');
+  const avgContractValue = jobsWithRevData.length > 0
+    ? jobsWithRevData.reduce((s, p) => s + p.budget.contractRevenue, 0) / jobsWithRevData.length
+    : 750_000;
 
-  const hotCount       = byStage.BIZ_DEV.filter(p => p.subLabel === 'Hot').length;
-  const plCount        = byStage.PIPELINE.length;
-  const wipCount       = byStage.WIP.length;
-  const coCount        = byStage.CLOSEOUT.length;
+  const jobsWithDuration = _projects.filter(p => (p.conversion?.estDuration || 0) >= 14);
+  const avgDurationDays  = jobsWithDuration.length > 0
+    ? jobsWithDuration.reduce((s, p) => s + p.conversion.estDuration, 0) / jobsWithDuration.length
+    : 90;
+  const avgDurationMonths = avgDurationDays / 30;          // e.g. 3.0 months
+  const avgMonthlyRevenue = avgContractValue / avgDurationMonths; // e.g. $250K/month
 
-  // How many more jobs need to enter WIP to close the revenue gap?
-  // Rough estimate: if average pipeline job = $750K contracted, how many needed
-  const avgJobRev      = totalContract > 0 && plCount > 0 ? totalContract / plCount : 750000;
-  const jobsNeededForGap = revGap > 0 && avgJobRev > 0 ? Math.ceil(revGap / avgJobRev) : 0;
+  // ── Monthly Ramp Table ────────────────────────────────────────────────────
+  // For each remaining month, compute:
+  //   billing months = min(avgDuration, months from start to Dec 31)
+  //   revenue per job = avgMonthlyRevenue × billing months
+  //   jobs needed to close gap = gap ÷ revenue per job (rounded up)
+  const rampRows = [];
+  const baseYear  = today.getFullYear();
+  const baseMonth = today.getMonth(); // 0-indexed
 
-  // Situation rows — each shows: situation, production target (count), production current, revenue target, revenue current, deadline, status
-  const sectionHdr = (label, color) =>
-    `<tr style="background:var(--surface-2)">
-       <td colspan="6" style="font-family:var(--font-display);font-size:12px;letter-spacing:.06em;color:${color};padding:6px 14px">${label}</td>
-     </tr>`;
+  for (let offset = 0; offset <= 6; offset++) {
+    const d = new Date(baseYear, baseMonth + offset, 1);
+    if (d > SCORING_END) break;
+    const monthsToEnd      = Math.max(0, (SCORING_END - d) / (30 * 86400000));
+    const billingMonths    = Math.min(avgDurationMonths, monthsToEnd);
+    const revPerJob        = avgMonthlyRevenue * billingMonths;
+    const jobsNeeded       = (gap > 0 && revPerJob > 0) ? Math.ceil(gap / revPerJob) : 0;
+    const extraVsNow       = offset === 0 ? null : jobsNeeded - rampRows[0]?.jobsNeeded;
+    rampRows.push({
+      label:         d.toLocaleString('default', { month: 'long' }) + ' ' + d.getFullYear(),
+      shortLabel:    d.toLocaleString('default', { month: 'short' }),
+      isNow:         offset === 0,
+      isPast:        false,
+      billingMonths: billingMonths.toFixed(1),
+      revPerJob,
+      jobsNeeded,
+      extraVsNow,
+    });
+  }
 
-  const row = (situation, prodGoal, prodCurrent, revGoal, revCurrent, deadline, daysLeft, notes, ok) => {
-    const dc = daysLeft < 0 ? 'var(--status-red)' : daysLeft < 30 ? 'var(--status-red)' : daysLeft < 60 ? 'var(--status-yellow)' : 'var(--status-green)';
-    const rc = revCurrent >= revGoal ? 'var(--status-green)' : 'var(--status-yellow)';
-    const pc = ok === false ? 'var(--status-red)' : ok === true ? 'var(--status-green)' : 'var(--status-yellow)';
-    return `<tr>
-      <td class="name" style="font-size:11px">${situation}</td>
-      <td class="mono" style="color:var(--text-muted);font-size:10px">${prodGoal}</td>
-      <td class="mono" style="color:${pc}">${prodCurrent}</td>
-      <td class="mono" style="color:var(--text-muted);font-size:10px">${revGoal}</td>
-      <td class="mono" style="color:${rc}">${revCurrent}</td>
-      <td style="font-family:var(--font-mono);font-size:10px;color:${dc}">
-        ${daysLeft < 0 ? 'PAST' : daysLeft + 'd'} · ${deadline}
-        ${notes ? `<div style="font-size:9px;color:var(--text-muted);margin-top:2px">${notes}</div>` : ''}
+  // ── Section: current state summary ───────────────────────────────────────
+  const stateColor = gap === 0 ? 'var(--status-green)' : gap < GOAL_REVENUE * 0.25 ? 'var(--status-yellow)' : 'var(--status-red)';
+
+  const summaryRows = `
+    <tr style="background:var(--surface-2)">
+      <td colspan="6" style="font-family:var(--font-display);font-size:12px;letter-spacing:.06em;color:var(--text-accent);padding:6px 14px">
+        CURRENT STATE — Where we are today
+      </td>
+    </tr>
+    <tr>
+      <td class="name">Projected Score (A+B+C)</td>
+      <td class="mono" style="color:var(--text-muted)">Goal: ${fmtMoney(GOAL_REVENUE, true)}</td>
+      <td class="mono" style="color:${stateColor}">${fmtMoney(projectedTotal, true)}</td>
+      <td class="mono" style="color:${stateColor};font-weight:600">
+        ${gap === 0 ? '✓ Covered' : '−' + fmtMoney(gap, true) + ' gap'}
+      </td>
+      <td class="mono" style="color:var(--text-muted)">GP: ${fmtMoney(totalGP,true)} ${totalContract?'('+((totalGP/totalContract)*100).toFixed(1)+'%)':''}</td>
+      <td class="mono" style="color:${gpGap>0?'var(--status-yellow)':'var(--status-green)'}">
+        GP ${gpGap > 0 ? '−' + fmtMoney(gpGap,true) + ' short' : '✓ ok'}
+      </td>
+    </tr>
+    <tr>
+      <td class="name" style="color:var(--text-secondary)">Avg job: ${fmtMoney(avgContractValue,true)} over ${avgDurationMonths.toFixed(1)} mo = ${fmtMoney(avgMonthlyRevenue,true)}/mo</td>
+      <td colspan="5" style="font-size:10px;color:var(--text-muted)">
+        Computed from ${jobsWithRevData.length} job${jobsWithRevData.length!==1?'s':''} with contract data · Duration avg from ${jobsWithDuration.length} job${jobsWithDuration.length!==1?'s':''} · Defaults: $750K / 90 days if no data
       </td>
     </tr>`;
-  };
 
-  // Header row
-  const thead = `<tr style="background:var(--surface-2)">
-    <th style="font-size:10px">Situation</th>
-    <th style="font-size:10px">Job Goal</th>
-    <th style="font-size:10px">Current</th>
-    <th style="font-size:10px">Rev Target</th>
-    <th style="font-size:10px">Rev Current</th>
-    <th style="font-size:10px">Deadline</th>
-  </tr>`;
+  // ── Section: monthly ramp ─────────────────────────────────────────────────
+  const rampHeader = `
+    <tr style="background:var(--surface-2)">
+      <td colspan="6" style="font-family:var(--font-display);font-size:12px;letter-spacing:.06em;color:var(--sb-gold);padding:6px 14px">
+        DELAY COST — Jobs needed to close the ${fmtMoney(gap, true)} gap by when they start
+        <span class="explainer" data-tip="Progress billing: jobs earn revenue from their first day of WIP through Dec 31.\nA job starting July earns 6 months of revenue.\nA job starting December earns 1 month.\nSame gap costs more jobs the later you start.\n\nFormula: revenue per job = avg_monthly_revenue × min(avg_duration, months_to_Dec31)\nJobs needed = gap ÷ revenue per job">?</span>
+      </td>
+    </tr>
+    <tr style="background:var(--surface-2)">
+      <th>If jobs enter WIP in…</th>
+      <th class="text-right">Months of Billing</th>
+      <th class="text-right">Revenue / Job</th>
+      <th class="text-right">Jobs Needed</th>
+      <th class="text-right">Cost of Waiting</th>
+      <th>Signal</th>
+    </tr>`;
 
-  const bizDevProj  = byStage.BIZ_DEV.filter(p=>p.subLabel==='Hot').reduce((s,p)=>s+(p.period.pipelineProjected||0),0);
-  const plProj      = byStage.PIPELINE.reduce((s,p)=>s+(p.period.pipelineProjected||0),0);
-  const wipCapt     = [...byStage.WIP,...byStage.CLOSEOUT].reduce((s,p)=>s+(p.period.capturableBTF||0),0);
+  const rampBody = gap === 0
+    ? `<tr><td colspan="6" style="text-align:center;padding:16px;color:var(--status-green)">
+        ✓ No additional jobs needed — current pipeline projects to cover the goal.
+       </td></tr>`
+    : rampRows.map((r, i) => {
+        const urgency = i === 0 ? 'var(--status-green)'
+                      : i <= 2  ? 'var(--status-yellow)'
+                      : 'var(--status-red)';
+        const extra = r.extraVsNow !== null
+          ? (r.extraVsNow > 0 ? `+${r.extraVsNow} more` : 'same')
+          : '—';
+        const extraColor = r.extraVsNow > 0 ? 'var(--status-red)' : 'var(--status-green)';
+        return `<tr style="${r.isNow ? 'background:rgba(201,168,76,0.06)' : ''}">
+          <td class="name" style="color:${urgency}">
+            ${r.isNow ? '▶ ' : ''}${r.label}${r.isNow ? ' (now)' : ''}
+          </td>
+          <td class="num mono">${r.billingMonths} mo</td>
+          <td class="num mono">${fmtMoney(r.revPerJob, true)}</td>
+          <td class="num" style="color:${urgency};font-family:var(--font-display);font-size:18px">
+            ${r.jobsNeeded}
+          </td>
+          <td class="num" style="color:${extraColor};font-family:var(--font-mono);font-size:11px">
+            ${extra}
+          </td>
+          <td style="font-size:10px;color:var(--text-muted)">
+            ${i === 0 ? 'Act now for best leverage' : i === 1 ? 'Still manageable' : i <= 3 ? 'Getting costly' : 'High cost — urgency critical'}
+          </td>
+        </tr>`;
+      }).join('');
 
-  const tbody = [
-    sectionHdr('BIZ DEV → PIPELINE', 'var(--text-secondary)'),
-    row(
-      'Hot → Enter Active Pipeline',
-      `≥${Math.max(1, jobsNeededForGap)} jobs needed`,
-      `${hotCount} Hot · ${plCount} in Pipeline`,
-      `—`,
-      `${fmtMoney(bizDevProj, true)} projected`,
-      'Jul 4', daysBidReady,
-      'Hot jobs must enter Pipeline by Jul 4 to have time to bid, award, and mobilize before Dec 31.',
-      daysBidReady >= 30
-    ),
-    sectionHdr('PIPELINE → WIP', 'var(--status-green)'),
-    row(
-      'Pipeline → Mobilize (enter WIP)',
-      `Mobilize by Sep 2 for full billing`,
-      `${wipCount} Active in WIP · ${plCount} awaiting mobilization`,
-      fmtMoney(GOAL_REVENUE * 0.5, true) + ' from new WIP',
-      fmtMoney(plProj, true) + ' projected',
-      'Sep 2', daysMobilize,
-      'Jobs mobilizing after Sep 2 still earn partial revenue — every day earlier = more billings before Dec 31.',
-      daysMobilize >= 30
-    ),
-    sectionHdr('WIP + CLOSEOUT → BILLED', 'var(--sb-gold)'),
-    row(
-      'Active WIP + Closeout: Capturable BTF',
-      `${fmtMoney(GOAL_REVENUE, true)} total goal`,
-      `${wipCount + coCount} active jobs`,
-      fmtMoney(GOAL_REVENUE * 0.6, true) + ' from WIP/Closeout',
-      fmtMoney(wipCapt, true) + ' capturable',
-      'Dec 31', daysRemaining(new Date('2026-12-31')),
-      'BTF prorated by time remaining in project vs. time remaining in scoring period.',
-      wipCapt >= GOAL_REVENUE * 0.4
-    ),
-    sectionHdr('PROJECTED TOTAL vs. $4.5M GOAL', revGap > 0 ? 'var(--status-red)' : 'var(--status-green)'),
-    row(
-      revGap > 0 ? `⚠ Gap: ${fmtMoney(revGap, true)} short of $4.5M` : `✓ Projected to cover $4.5M goal`,
-      '$4,500,000',
-      fmtMoney(projectedTotal, true),
-      fmtMoney(GOAL_GP, true) + ' GP (9%)',
-      fmtMoney(totalGP, true),
-      'Dec 31', daysRemaining(new Date('2026-12-31')),
-      revGap > 0 ? `Need ${jobsNeededForGap} more job${jobsNeededForGap!==1?'s':''} in pipeline at avg. ${fmtMoney(avgJobRev,true)}/job to close gap.` : '',
-      revGap === 0
-    ),
-  ].join('');
-
-  // Rebuild table with dynamic headers since structure changed
+  // ── Rebuild table ─────────────────────────────────────────────────────────
   document.getElementById('targets-table').innerHTML = `
-    <thead>${thead}</thead>
-    <tbody>${tbody}</tbody>
+    <thead>
+      <tr style="background:var(--surface-2)">
+        <th colspan="6" style="font-size:10px;color:var(--text-muted);letter-spacing:.04em">
+          PRODUCTION TARGETS · Based on progress billing — jobs earn revenue every month they are active
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      ${summaryRows}
+      ${rampHeader}
+      ${rampBody}
+    </tbody>
   `;
 }
 

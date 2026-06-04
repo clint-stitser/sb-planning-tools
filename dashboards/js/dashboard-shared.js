@@ -351,12 +351,15 @@ function startAutoRefresh(refreshFn, intervalMs = 5 * 60 * 1000) {
 }
 
 // ── Universal Tooltip System ──────────────────────────────────────────────────
-// Usage: add data-tip="Explanation text\nSecond line" to any element.
-// Add <span class="explainer">?</span> inside for a visible affordance.
-// Works on every element — tiles, table cells, arc stats, stage cards, etc.
+// Tooltips are CLICK-triggered on .explainer (?) badge elements only.
+// Click the ? to show — click ? again or anywhere else to dismiss.
+// No hover sensitivity.
 //
-// Initialised once on DOMContentLoaded. Safe to call from multiple dashboards
-// since it guards against double-init.
+// Usage: add data-tip="Explanation\nLine 2" to any ancestor element,
+// then place <span class="explainer">?</span> inside it as the click target.
+// The popup reads data-tip from the nearest ancestor with that attribute.
+//
+// Safe to call from multiple dashboards — guards against double-init.
 (function initTooltips() {
   if (window.__tipsInited) return;
   window.__tipsInited = true;
@@ -366,39 +369,55 @@ function startAutoRefresh(refreshFn, intervalMs = 5 * 60 * 1000) {
   tip.setAttribute('aria-hidden', 'true');
   document.body.appendChild(tip);
 
-  let activeEl = null;
+  let activeExplainer = null;
 
-  function show(el, text) {
+  function showAt(explainerEl, clientX, clientY) {
+    const container = explainerEl.closest('[data-tip]');
+    const text = container?.dataset.tip || explainerEl.dataset.tip || '';
+    if (!text) return;
+
     tip.innerHTML = text.replace(/\n/g, '<br>');
     tip.style.display = 'block';
-    activeEl = el;
-  }
-  function hide() {
-    tip.style.display = 'none';
-    activeEl = null;
-  }
-  function position(x, y) {
-    const w = tip.offsetWidth  || 260;
-    const h = tip.offsetHeight || 60;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    // Keep within viewport
-    const left = Math.min(x + 14, vw - w - 16);
-    const top  = (y + h + 24 > vh) ? y - h - 8 : y + 14;
-    tip.style.left = Math.max(8, left) + 'px';
-    tip.style.top  = Math.max(8, top)  + 'px';
+    activeExplainer = explainerEl;
+
+    // Position: avoid viewport edges; flip above cursor if near bottom
+    requestAnimationFrame(() => {
+      const w  = tip.offsetWidth  || 280;
+      const h  = tip.offsetHeight || 60;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const left = Math.min(clientX + 12, vw - w - 12);
+      const top  = (clientY + h + 20 > vh) ? clientY - h - 8 : clientY + 14;
+      tip.style.left = Math.max(8, left) + 'px';
+      tip.style.top  = Math.max(8, top)  + 'px';
+    });
   }
 
-  document.addEventListener('mouseover', e => {
-    const el = e.target.closest('[data-tip]');
-    if (el && el !== activeEl) show(el, el.dataset.tip);
-    else if (!el && activeEl) hide();
+  function hide() {
+    tip.style.display = 'none';
+    activeExplainer = null;
+  }
+
+  // Click on .explainer → toggle
+  document.addEventListener('click', e => {
+    const explainer = e.target.closest('.explainer');
+    if (explainer) {
+      e.stopPropagation();
+      if (activeExplainer === explainer) {
+        hide();
+      } else {
+        showAt(explainer, e.clientX, e.clientY);
+      }
+      return;
+    }
+    // Click anywhere else (not inside the tip itself) → dismiss
+    if (activeExplainer && !e.target.closest('.tip-popup')) {
+      hide();
+    }
   });
-  document.addEventListener('mousemove', e => {
-    if (activeEl) position(e.clientX, e.clientY);
+
+  // Escape key dismisses
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') hide();
   });
-  document.addEventListener('mouseout', e => {
-    if (activeEl && !e.relatedTarget?.closest('[data-tip]')) hide();
-  });
-  document.addEventListener('touchstart', hide, { passive: true });
 })();
