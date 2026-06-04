@@ -1,10 +1,8 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
+<html lang="en"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Buyer Escrow Process — S-BOS Knowledge Base</title>
-<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&amp;family=Rajdhani:wght@400;600;700&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/global.css">
 <style>
 /* ══════════════════════════════════════════════════════════════
@@ -503,13 +501,220 @@
   .vc-sbos-band, .vc-claude-band { grid-template-columns: 1fr; }
 }
 </style>
-</head>
-<body data-section="workflows">
+<style>
+      /* ── Edit mode: editable element highlight ── */
+      body.edit-mode [contenteditable] {
+        outline: 2px dashed rgba(245,166,35,0.6) !important;
+        outline-offset: 2px;
+        background: rgba(255,248,224,0.5) !important;
+        cursor: text;
+        border-radius: 3px;
+        min-height: 1em;
+      }
+      body.edit-mode [contenteditable]:focus {
+        outline: 2px solid #0070C0 !important;
+        background: #EFF6FF !important;
+      }
+      body.edit-mode [contenteditable]:hover:not(:focus) {
+        outline-color: rgba(245,166,35,0.9) !important;
+      }
+      /* Edit mode announcement banner */
+      #edit-mode-banner {
+        display: none;
+        position: sticky;
+        top: 0;
+        z-index: 800;
+        background: #FFFBEB;
+        border-bottom: 2px solid #F5A623;
+        padding: 8px 24px;
+        font-family: var(--font-sub, sans-serif);
+        font-size: 13px;
+        font-weight: 700;
+        color: #D97706;
+        text-align: center;
+        letter-spacing: 0.02em;
+      }
+      body.edit-mode #edit-mode-banner { display: block; }
+
+      /* Floating edit toolbar */
+      #editor-toolbar {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 10px;
+        z-index: 900;
+      }
+      #btn-edit-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 22px;
+        background: var(--dark, #231F20);
+        color: #fff;
+        border: none;
+        border-radius: 30px;
+        font-family: var(--font-sub, sans-serif);
+        font-size: 13px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+        transition: background 0.2s, transform 0.1s;
+        white-space: nowrap;
+      }
+      #btn-edit-toggle:hover { background: #444; transform: translateY(-1px); }
+      body.edit-mode #btn-edit-toggle { background: #27ae60; }
+      body.edit-mode #btn-edit-toggle:hover { background: #1e9150; }
+
+      #btn-cancel-edit {
+        display: none;
+        padding: 8px 18px;
+        background: #fff;
+        color: #666;
+        border: 1px solid #BCBEC0;
+        border-radius: 30px;
+        font-family: var(--font-sub, sans-serif);
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      }
+      body.edit-mode #btn-cancel-edit { display: block; }
+
+      /* Save modal */
+      #editor-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      }
+      #editor-modal.open { display: flex; }
+      .editor-modal-box {
+        background: #fff;
+        border-radius: 14px;
+        padding: 32px;
+        width: 400px;
+        max-width: 92vw;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+      }
+      .editor-modal-title {
+        font-family: var(--font-head, sans-serif);
+        font-size: 1.3rem;
+        font-weight: 900;
+        color: var(--dark, #231F20);
+        margin: 0 0 6px;
+      }
+      .editor-modal-sub {
+        font-size: 0.875rem;
+        color: #888;
+        margin: 0 0 20px;
+        line-height: 1.5;
+      }
+      .editor-modal-input {
+        width: 100%;
+        padding: 11px 14px;
+        border: 1.5px solid #BCBEC0;
+        border-radius: 8px;
+        font-family: var(--font-sub, sans-serif);
+        font-size: 15px;
+        color: var(--dark, #231F20);
+        outline: none;
+        box-sizing: border-box;
+        margin-bottom: 16px;
+        transition: border-color 0.15s;
+      }
+      .editor-modal-input:focus { border-color: #0070C0; }
+      .editor-modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
+      .btn-modal-cancel {
+        padding: 10px 20px;
+        background: none;
+        border: 1px solid #BCBEC0;
+        border-radius: 8px;
+        font-family: var(--font-sub, sans-serif);
+        font-size: 13px;
+        font-weight: 700;
+        color: #888;
+        cursor: pointer;
+      }
+      .btn-modal-save {
+        padding: 10px 24px;
+        background: #27ae60;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-family: var(--font-sub, sans-serif);
+        font-size: 13px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+      .btn-modal-save:hover { background: #1e9150; }
+      .btn-modal-save:disabled { background: #aaa; cursor: not-allowed; }
+
+      /* Edit history panel */
+      #history-toggle-bar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 40px 0;
+      }
+      #btn-history-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 18px;
+        background: none;
+        border: 1px solid #BCBEC0;
+        border-radius: 20px;
+        font-family: var(--font-sub, sans-serif);
+        font-size: 12px;
+        color: #888;
+        cursor: pointer;
+        transition: border-color 0.15s, color 0.15s;
+      }
+      #btn-history-toggle:hover { border-color: #0070C0; color: #0070C0; }
+      #history-panel {
+        display: none;
+        max-width: 700px;
+        margin: 20px auto 0;
+        padding: 0 40px 48px;
+      }
+      #history-panel.open { display: block; }
+      .history-panel-title {
+        font-family: var(--font-sub, sans-serif);
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #BCBEC0;
+        padding: 20px 0 12px;
+        border-top: 1px solid #EAEAEA;
+      }
+      .history-item {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 11px 0;
+        border-bottom: 1px solid #F2F2F2;
+      }
+      .history-item:last-child { border-bottom: none; }
+      .history-author { font-family: var(--font-sub, sans-serif); font-size: 13px; font-weight: 700; color: var(--dark, #231F20); white-space: nowrap; }
+      .history-date   { font-family: var(--font-sub, sans-serif); font-size: 12px; color: #BCBEC0; white-space: nowrap; flex: 1; }
+      .history-sha    { font-family: monospace; font-size: 11px; color: #BCBEC0; background: #F5F5F5; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+      .history-empty  { font-size: 13px; color: #BCBEC0; padding: 16px 0; text-align: center; }
+    </style><script src="chrome-extension://liecbddmkiiihnedobmlmillhodjkdmb/js/recordConsoleEvents.js"></script></head>
+<body data-section="workflows" class="edit-mode"><div id="edit-mode-banner">✏  Edit mode — click any highlighted text to edit it. Click "Save changes" when done.</div>
 
 <header>
   <a class="logo-lockup" href="../">
     <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+      <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"></circle>
       <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
     </svg>
     <div class="logo-text">
@@ -518,14 +723,14 @@
     </div>
   </a>
   <nav class="header-nav">
-    <a class="nav-link" data-section="system"    href="../system/">System</a>
-    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
-    <a class="nav-link" data-section="agents"    href="../agents/">Agents</a>
-    <a class="nav-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-link" data-section="system" href="../system/">System</a>
+    <a class="nav-link active" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents" href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles" href="../roles/">Roles</a>
     <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
-    <a class="nav-link" data-section="glossary"  href="../glossary/">Glossary</a>
+    <a class="nav-link" data-section="glossary" href="../glossary/">Glossary</a>
   </nav>
-  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <button class="nav-hamburger" aria-label="Open menu">☰</button>
   <div class="header-badge">Team Resource</div>
 </header>
 
@@ -533,7 +738,7 @@
   <div class="nav-overlay-header">
     <a class="logo-lockup" href="../">
       <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+        <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"></circle>
         <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
       </svg>
       <div class="logo-text">
@@ -541,15 +746,15 @@
         <span class="sub">S-BOS Knowledge Base</span>
       </div>
     </a>
-    <button class="nav-overlay-close" aria-label="Close menu">&#10005;</button>
+    <button class="nav-overlay-close" aria-label="Close menu">✕</button>
   </div>
   <nav class="nav-overlay-links">
-    <a class="nav-overlay-link" data-section="system"    href="../system/">System</a>
-    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
-    <a class="nav-overlay-link" data-section="agents"    href="../agents/">Agents</a>
-    <a class="nav-overlay-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="system" href="../system/">System</a>
+    <a class="nav-overlay-link active" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents" href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles" href="../roles/">Roles</a>
     <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
-    <a class="nav-overlay-link" data-section="glossary"  href="../glossary/">Glossary</a>
+    <a class="nav-overlay-link" data-section="glossary" href="../glossary/">Glossary</a>
   </nav>
 </div>
 
@@ -592,13 +797,156 @@
   <div class="section-label">Click a Stage</div>
   <div class="section-title">Process Flow</div>
   <div class="vc-map-wrap">
-    <div class="vc-map" id="vcMap"></div>
+    <div class="vc-map" id="vcMap"><div class="vc-chip" data-idx="0">
+      <div class="vc-chip-num">Stage 01</div>
+      <div class="vc-chip-name">File &amp; Project Set Up</div>
+      <div class="vc-chip-audit">Audit</div>
+    </div><div class="vc-arrow">›</div><div class="vc-chip" data-idx="1">
+      <div class="vc-chip-num">Stage 02</div>
+      <div class="vc-chip-name">Escrow Open</div>
+      
+    </div><div class="vc-arrow">›</div><div class="vc-chip" data-idx="2">
+      <div class="vc-chip-num">Stage 03</div>
+      <div class="vc-chip-name">Execute Diligence &amp; Contingencies</div>
+      <div class="vc-chip-audit">Audit</div>
+    </div><div class="vc-arrow">›</div><div class="vc-chip" data-idx="3">
+      <div class="vc-chip-num">Stage 04</div>
+      <div class="vc-chip-name">Assemble Diligence &amp; Respond</div>
+      
+    </div><div class="vc-arrow">›</div><div class="vc-chip active" data-idx="4">
+      <div class="vc-chip-num">Stage 05</div>
+      <div class="vc-chip-name">Re-Inspections &amp; Walk Through</div>
+      
+    </div><div class="vc-arrow">›</div><div class="vc-chip" data-idx="5">
+      <div class="vc-chip-num">Stage 06</div>
+      <div class="vc-chip-name">Pre-Closing</div>
+      <div class="vc-chip-audit">Audit</div>
+    </div><div class="vc-arrow">›</div><div class="vc-chip" data-idx="6">
+      <div class="vc-chip-num">Stage 07</div>
+      <div class="vc-chip-name">Closing</div>
+      
+    </div><div class="vc-arrow">›</div><div class="vc-chip" data-idx="7">
+      <div class="vc-chip-num">Stage 08</div>
+      <div class="vc-chip-name">Commission Distribution</div>
+      
+    </div><div class="vc-arrow">›</div><div class="vc-chip" data-idx="8">
+      <div class="vc-chip-num">Stage 09</div>
+      <div class="vc-chip-name">Nesting &amp; Client Feedback</div>
+      
+    </div></div>
   </div>
-  <div class="vc-empty" id="vcEmpty">
+  <div class="vc-empty" id="vcEmpty" style="display: none;">
     <strong>Select a Stage Above</strong>
     Click any stage chip to see the full breakdown — people, S-BOS records, and Claude actions for that step.
   </div>
-  <div class="vc-detail" id="vcDetail"></div>
+  <div class="vc-detail visible" id="vcDetail">
+    <div class="vc-detail-header">
+      <div class="vc-detail-header-top">
+        <div class="vc-detail-tag">Stage 05</div>
+      </div>
+      <div class="vc-detail-title">Re-Inspections &amp; Walk Through</div>
+      <div class="vc-detail-desc">Repairs confirmed, re-inspections coordinated, walkthrough executed, and buyer makes final approval decision.</div>
+    </div>
+
+    <div class="vc-flow">
+      <div class="vc-supply">
+        <div class="vc-col-label">Supplies</div>
+        
+    <div class="vc-role-block">
+      <div class="vc-role-name">Partner Agent</div>
+      <ul class="vc-role-actions">
+        <li>Confirm all agreed repairs have been completed</li><li>Provide documentation and receipts for completed repairs</li><li>Confirm and coordinate move-out timing</li>
+      </ul>
+    </div>
+  
+    <div class="vc-role-block">
+      <div class="vc-role-name">Escrow</div>
+      <ul class="vc-role-actions">
+        <li>Provide title department response to any outstanding items on prelim</li>
+      </ul>
+    </div>
+  
+    <div class="vc-role-block">
+      <div class="vc-role-name">Production Manager</div>
+      <ul class="vc-role-actions">
+        <li>Assemble all responses and documentation for the deal file</li>
+      </ul>
+    </div>
+  
+      </div>
+      <div class="vc-xfer">
+        <div class="vc-xfer-label">Clarify &amp; Verify</div>
+        <div class="vc-xfer-cv">Clarify<br>&amp;<br>Verify</div>
+        <div class="vc-xfer-arrow">
+          <div class="vc-xfer-arrow-line"></div>
+          <div class="vc-xfer-arrow-head">▶</div>
+        </div>
+        <div class="vc-xfer-items"><div class="vc-xfer-item">Confirmation of timing for review</div><div class="vc-xfer-item">Reminder to all parties of personal property staying or going</div><div class="vc-xfer-item">Repair completion proof and any outstanding items</div></div>
+      </div>
+      <div class="vc-receive">
+        <div class="vc-col-label">Receives</div>
+        
+    <div class="vc-role-block">
+      <div class="vc-role-name">Practitioner</div>
+      <ul class="vc-role-actions">
+        <li>Review all new documents</li><li>Coordinate and execute re-inspections and walkthroughs</li><li>Add re-inspection report to deal file</li>
+      </ul>
+    </div>
+  
+    <div class="vc-role-block">
+      <div class="vc-role-name">Buyer</div>
+      <ul class="vc-role-actions">
+        <li>Approves, accepts, or rejects based on walkthrough and repair review</li>
+      </ul>
+    </div>
+  
+      </div>
+    </div>
+
+    <div class="vc-sbos-band">
+      <div class="vc-band-id">
+        <div class="vc-band-id-icon">🗄️</div>
+        <div class="vc-band-id-name">S-BOS</div>
+        <div class="vc-band-id-sub">Records &amp; Data Layer</div>
+      </div>
+      
+    <div class="vc-band-col">
+      <h4>Records</h4>
+      <ul><li>Re-inspection results filed in Drive and linked to deal record</li><li>Repair checklist updated with completion status</li><li>Walkthrough date and result logged</li></ul>
+    </div>
+    <div class="vc-band-col">
+      <h4>Updates at This Stage</h4>
+      <ul><li>Reinspection milestone marked complete</li><li>Repair sign-off status updated per item</li></ul>
+    </div>
+    <div class="vc-band-col">
+      <h4>Status Change</h4>
+      <ul><li>Responding → Re-Inspection Complete</li></ul>
+    </div>
+  
+    </div>
+
+    <div class="vc-claude-band">
+      <div class="vc-band-id">
+        <div class="vc-band-id-icon">⚡</div>
+        <div class="vc-band-id-name">Claude</div>
+        <div class="vc-band-id-sub">AI Assistance Layer</div>
+      </div>
+      
+    <div class="vc-band-col">
+      <h4>Reads from S-BOS</h4>
+      <ul><li>Original NORR repair requests</li><li>Completed repair documentation received</li><li>Walkthrough scheduling and checklist</li></ul>
+    </div>
+    <div class="vc-band-col">
+      <h4>Assists With</h4>
+      <ul><li>Compares original repair list to completed repairs — flags any gaps</li><li>Generates walkthrough checklist from deal details</li><li>Confirms all items from NORR have been addressed</li></ul>
+    </div>
+    <div class="vc-band-col">
+      <h4>Writes Back</h4>
+      <ul><li>Repair completion comparison logged to deal record</li><li>Outstanding items flagged for Practitioner attention</li></ul>
+    </div>
+  
+    </div>
+  </div>
 </section>
 
 <!-- ASYNC EVENTS -->
@@ -606,17 +954,55 @@
   <div class="section-label">Any Time</div>
   <div class="section-title">Parallel Value Chains</div>
   <p class="prose" style="margin-bottom:0">These four situations can arise at any stage. They don't fit neatly into the linear flow — handle them as they arise, always with Clarify &amp; Verify applied, always logging back to S-BOS.</p>
-  <div class="vc-async-grid" id="vcAsync"></div>
+  <div class="vc-async-grid" id="vcAsync"><div class="vc-async-card alert">
+      <div class="vc-async-name">Failed Contract</div>
+      <div class="vc-async-body">Deal falls out of escrow at any stage. File must be properly closed, all parties notified, and deal record updated immediately.</div>
+      <ul class="vc-async-roles">
+        <li>Practitioner — notify all parties; close FUB action plan</li><li>Production MGR — close deal record in S-BOS; file all documents</li><li>Ops MGR — compliance review; archive file</li>
+      </ul>
+    </div><div class="vc-async-card">
+      <div class="vc-async-name">Contract Addenda</div>
+      <div class="vc-async-body">New terms, timeline changes, or repairs negotiated at any point during escrow. Fully executed addendum must be in file before terms take effect.</div>
+      <ul class="vc-async-roles">
+        <li>Practitioner — negotiate and draft; educate client</li><li>Production MGR — pursue full execution; update FUB and S-BOS dates</li><li>Partner Agent — execute and deliver</li>
+      </ul>
+    </div><div class="vc-async-card">
+      <div class="vc-async-name">Deal Help / Problem Solving</div>
+      <div class="vc-async-body">Complex situation arises requiring collaborative problem solving — legal question, inspection dispute, financing issue, or negotiation breakdown.</div>
+      <ul class="vc-async-roles">
+        <li>Practitioner — bring issue to Production MGR with IREN-MD context</li><li>Production MGR — coordinate with Broker if needed</li><li>Broker — case study guidance and resolution strategy</li>
+      </ul>
+    </div><div class="vc-async-card">
+      <div class="vc-async-name">Timeline Changes</div>
+      <div class="vc-async-body">Close of escrow date, contingency deadline, or signing date changes. All downstream milestones must be updated simultaneously.</div>
+      <ul class="vc-async-roles">
+        <li>Practitioner — confirm change is agreed with all parties</li><li>Production MGR — update all dates in S-BOS and notify Title, Lender</li><li>Claude — recalculates all dependent milestones and flags conflicts</li>
+      </ul>
+    </div></div>
 </section>
 
 <!-- EXPECTATIONS -->
 <section>
   <div class="section-label">Standards</div>
   <div class="section-title">Team Expectations</div>
-  <div class="vc-expect" id="vcExpect"></div>
+  <div class="vc-expect" id="vcExpect">
+    <div class="vc-expect-title">Team Standards</div>
+    <div class="vc-expect-heading">What We Expect from Everyone</div>
+    <ul class="vc-expect-list">
+      <li>Guide clear and confident decisions — clients must believe in and trust the process</li><li>Clarify and Verify at every handoff — do not proceed on assumptions</li><li>Follow the value chain — each role does their part, in order</li><li>Great teamwork — support is okay; systemic chain-breaking is not</li><li>Log everything to S-BOS — if it isn't in the system, it didn't happen</li><li>If there's a disagreement, reference the value chain first</li><li>If the chain is missing detail, schedule a face-to-face — no blow-up calls</li>
+    </ul>
+  </div>
 </section>
 
-<footer>
+<div>
+      <div id="history-toggle-bar">
+        <button id="btn-history-toggle">🕐 Edit history</button>
+      </div>
+      <div id="history-panel">
+        <div class="history-panel-title">Edit History</div>
+        <div id="history-list"><p class="history-empty">Loading…</p></div>
+      </div>
+    </div><footer>
   <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
   <div class="footer-version">v1.0 · Internal Use Only</div>
 </footer>
@@ -1382,5 +1768,19 @@ function buildExpectations() {
 
 init();
 </script>
-</body>
-</html>
+
+
+<div id="editor-toolbar">
+      <button id="btn-cancel-edit">✕ Discard</button>
+      <button id="btn-edit-toggle">💾 Save changes</button>
+    </div><div id="editor-modal" class="open">
+      <div class="editor-modal-box">
+        <div class="editor-modal-title">Save your changes</div>
+        <div class="editor-modal-sub">Your name appears in the edit history for this page.</div>
+        <input class="editor-modal-input" id="editor-name-input" type="text" placeholder="Your name" maxlength="80" autocomplete="name">
+        <div class="editor-modal-actions">
+          <button class="btn-modal-cancel" id="btn-modal-cancel">Cancel</button>
+          <button class="btn-modal-save" id="btn-modal-save" disabled="">Saving…</button>
+        </div>
+      </div>
+    </div></body></html>
