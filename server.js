@@ -791,6 +791,102 @@ app.post('/api/entity-reporting/config', express.json(), (req, res) => {
   res.json({ ok: true });
 });
 
+// ── Article Editor (SBos-Knowledge-Base GitHub Pages) ─────────────────────
+// Two endpoints: save (PUT via GitHub Contents API) and history (commit log).
+// No auth — anyone who can see the page can submit an edit with their name.
+// CORS is open to GitHub Pages origin + localhost for local dev.
+
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const GH_REPO      = 'clint-stitser/SBos-Knowledge-Base';
+const GH_API       = 'https://api.github.com';
+
+function articleCors(req, res, next) {
+  const allowed = [
+    'https://clint-stitser.github.io',
+    'http://localhost:3000',
+    'http://127.0.0.1:5500',
+    'http://localhost:5500',
+  ];
+  const origin = req.headers.origin;
+  if (allowed.includes(origin)) res.setHeader('Access-Control-Allow-Origin', origin);
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.sendStatus(204);
+  next();
+}
+
+// GET /api/article/history?path=lessons/welcome-to-sbos.html
+app.get('/api/article/history', articleCors, async (req, res) => {
+  const filePath = req.query.path;
+  if (!filePath) return res.status(400).json({ error: 'path required' });
+  if (!GITHUB_TOKEN) return res.status(500).json({ error: 'GITHUB_TOKEN not set' });
+  try {
+    const r = await fetch(
+      `${GH_API}/repos/${GH_REPO}/commits?path=${encodeURIComponent(filePath)}&per_page=25`,
+      { headers: { 'Authorization': `token ${GITHUB_TOKEN}`, 'Accept': 'application/vnd.github.v3+json' } }
+    );
+    if (!r.ok) throw new Error(`GitHub ${r.status}`);
+    const commits = await r.json();
+    res.json({ history: commits.map(c => ({
+      sha:     c.sha.slice(0, 7),
+      message: c.commit.message,
+      author:  c.commit.author.name,
+      date:    c.commit.author.date,
+    }))});
+  } catch (err) {
+    console.error('Article history error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/article/save
+// Body: { filePath, html, editorName }
+// html = full document HTML; server strips contenteditable attrs before committing.
+app.post('/api/article/save', articleCors, express.json({ limit: '4mb' }), async (req, res) => {
+  const { filePath, html, editorName } = req.body || {};
+  if (!filePath || !html || !editorName) {
+    return res.status(400).json({ error: 'filePath, html, and editorName are required' });
+  }
+  if (!GITHUB_TOKEN) return res.status(500).json({ error: 'GITHUB_TOKEN not set' });
+
+  const ghHeaders = {
+    'Authorization': `token ${GITHUB_TOKEN}`,
+    'Accept':        'application/vnd.github.v3+json',
+    'Content-Type':  'application/json',
+  };
+  const fileUrl = `${GH_API}/repos/${GH_REPO}/contents/${filePath}`;
+
+  try {
+    // Strip browser-injected contenteditable attributes before saving
+    const cleanHtml = html.replace(/\s*contenteditable="[^"]*"/g, '');
+
+    // Get current SHA (GitHub requires it for updates)
+    const current = await fetch(fileUrl, { headers: ghHeaders });
+    if (!current.ok) throw new Error(`GitHub GET ${current.status}`);
+    const { sha } = await current.json();
+
+    // Build commit message and commit
+    const now     = new Date();
+    const dateStr = now.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    const label   = filePath.split('/').pop().replace('.html', '').replace(/-/g, ' ');
+    const message = `${editorName} edited ${label} — ${dateStr}`;
+    const content = Buffer.from(cleanHtml).toString('base64');
+
+    const update = await fetch(fileUrl, {
+      method:  'PUT',
+      headers: ghHeaders,
+      body:    JSON.stringify({ message, content, sha }),
+    });
+    if (!update.ok) throw new Error(`GitHub PUT ${update.status}: ${(await update.text()).slice(0, 200)}`);
+    const result = await update.json();
+    console.log(`Article saved: ${message}`);
+    res.json({ ok: true, sha: result.content?.sha?.slice(0, 7), message });
+  } catch (err) {
+    console.error('Article save error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // ── Routes ─────────────────────────────────────────────────────────────────
 
 // GET /api/construction-data
