@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Slide Template — S-BOS Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --canvas: #F2F4F5;
+  --paper: #FFFFFF;
+  --ink:   #1a1a1a;
+  --ink2:  #4A4640;
+  --ink3:  #7a7570;
+  --rule:  #BCBEC0;
+  --rule2: #D5D7DA;
+  --gold:         #C07A10;
+  --gold-bg:      #FEF4E8;
+  --gold-accent:  #F8991D;
+  --teal:         #2A4E63;
+  --teal-bg:      #E8EEF2;
+  --teal-accent:  #3D6E87;
+}
+
+/* Full-height layout */
+body {
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: 'Rajdhani', sans-serif;
+  font-weight: 400;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Lesson meta bar */
+.lesson-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 40px;
+  height: 48px;
+  background: var(--paper);
+  border-bottom: 1px solid var(--rule);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.lesson-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  color: var(--rule);
+  flex: 1;
+  min-width: 0;
+}
+.breadcrumb-track   { color: var(--rule); }
+.breadcrumb-sep     { color: var(--rule); font-size: 14px; }
+.breadcrumb-course  { color: var(--ink2); }
+.breadcrumb-lesson  { color: var(--teal-accent); font-weight: 700; }
+
+.lesson-chips {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+.chip-pillar   { background: #3D6E87; color: #fff; }
+.chip-type     { background: #F8991D; color: #fff; }
+.chip-time     { background: var(--canvas); color: var(--ink2); border: 1px solid var(--rule); }
+.chip-audience { background: var(--canvas); color: var(--ink2); border: 1px solid var(--rule); }
+
+.btn-complete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: #F8991D;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  flex-shrink: 0;
+}
+.btn-complete:hover:not(:disabled) { background: #e08810; }
+.btn-complete:disabled { opacity: 0.7; cursor: not-allowed; }
+.btn-complete.completed { background: #27ae60; }
+.btn-complete.completed:hover { background: #219a52; }
+
+/* Shell: fills everything below meta bar */
+.shell { flex: 1; overflow: hidden; min-height: 0; display: flex; flex-direction: column; }
+
+/* Progress bar */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 10px 40px;
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+  flex-shrink: 0;
+  gap: 20px;
+}
+.progress-track {
+  flex: 1;
+  max-width: 600px;
+  height: 4px;
+  background: var(--rule2);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: var(--gold-accent);
+  border-radius: 2px;
+  transition: width 0.4s cubic-bezier(.16,1,.3,1);
+}
+.step-counter {
+  font-family: 'Courier New', monospace;
+  font-size: 0.7rem;
+  color: var(--ink3);
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.step-counter span { color: var(--gold-accent); font-weight: 500; }
+
+/* Slide area */
+.slides { flex: 1; overflow: hidden; position: relative; min-height: 0; }
+
+.slide {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 44px 60px 28px;
+  max-width: 1200px;
+  margin: 0 auto;
+  left: 0; right: 0;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(40px);
+  transition: opacity 0.35s cubic-bezier(.16,1,.3,1), transform 0.35s cubic-bezier(.16,1,.3,1);
+  overflow-y: auto;
+}
+.slide.active { opacity: 1; pointer-events: all; transform: translateX(0); }
+.slide.exit-left { opacity: 0; transform: translateX(-40px); }
+
+/* Slide header */
+.slide-tier {
+  font-family: 'Courier New', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--gold-accent);
+  margin-bottom: 8px;
+}
+.slide-headline {
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1.05;
+  color: var(--ink);
+  margin-bottom: 10px;
+}
+.slide-sub {
+  font-size: 1rem;
+  color: var(--ink3);
+  max-width: 700px;
+  line-height: 1.7;
+  margin-bottom: 28px;
+  font-style: italic;
+}
+.slide-content { flex: 1; overflow: auto; }
+
+/* ── CONTENT COMPONENTS ───────────────────────────────────── */
+
+/* Hero banner */
+.banner {
+  background: var(--gold-accent);
+  color: #fff;
+  padding: 24px 32px;
+  max-width: 800px;
+  margin-bottom: 20px;
+  border-radius: 2px;
+}
+.banner.blue { background: var(--teal); }
+.banner-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+.banner-body {
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.65;
+  margin-top: 8px;
+  opacity: 0.92;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* Two col cards */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  max-width: 860px;
+}
+.three-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  max-width: 900px;
+}
+.cell {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-top: 3px solid var(--gold-accent);
+  padding: 20px 24px;
+  border-radius: 2px;
+}
+.cell.blue { border-top-color: var(--teal-accent); }
+.cell-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold-accent);
+  margin-bottom: 6px;
+}
+.cell.blue .cell-label { color: var(--teal-accent); }
+.cell-title {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.cell-body {
+  font-size: 0.9rem;
+  color: var(--ink2);
+  line-height: 1.65;
+}
+
+/* Pillar grid */
+.pillar-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  max-width: 900px;
+}
+.pillar-card {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-top: 4px solid var(--teal-accent);
+  padding: 18px 14px 20px;
+  border-radius: 2px;
+  text-align: center;
+}
+.pillar-num {
+  font-family: 'Courier New', monospace;
+  font-size: 0.6rem;
+  color: var(--ink3);
+  letter-spacing: 0.18em;
+  margin-bottom: 6px;
+}
+.pillar-name {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.pillar-desc {
+  font-size: 0.8rem;
+  color: var(--ink3);
+  line-height: 1.5;
+}
+
+/* Callout box */
+.callout {
+  background: var(--teal-bg);
+  border-left: 4px solid var(--teal-accent);
+  padding: 18px 24px;
+  max-width: 800px;
+  border-radius: 2px;
+  margin-top: 16px;
+}
+.callout.orange {
+  background: var(--gold-bg);
+  border-left-color: var(--gold-accent);
+}
+.callout-label {
+  font-family: 'Courier New', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--teal-accent);
+  margin-bottom: 4px;
+}
+.callout.orange .callout-label { color: var(--gold-accent); }
+.callout-text {
+  font-size: 0.95rem;
+  color: var(--ink2);
+  line-height: 1.7;
+}
+
+/* Bullet list */
+.slide-list {
+  list-style: none;
+  padding: 0;
+  max-width: 680px;
+  margin-bottom: 20px;
+}
+.slide-list li {
+  font-size: 1rem;
+  color: var(--ink2);
+  padding: 8px 0 8px 20px;
+  position: relative;
+  line-height: 1.6;
+  border-bottom: 1px solid var(--rule2);
+}
+.slide-list li:last-child { border-bottom: none; }
+.slide-list li::before {
+  content: '→';
+  position: absolute;
+  left: 0;
+  color: var(--gold-accent);
+  font-size: 0.9rem;
+  top: 9px;
+}
+
+/* Tool row */
+.tools-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  max-width: 860px;
+  margin-bottom: 16px;
+}
+.tool-card {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex: 1;
+  min-width: 180px;
+}
+.tool-icon { font-size: 1.6rem; flex-shrink: 0; }
+.tool-info-name {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.tool-info-desc { font-size: 0.8rem; color: var(--ink3); line-height: 1.4; }
+
+/* Ready checklist */
+.checklist {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  max-width: 760px;
+}
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+.check-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #27ae60;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.check-text {
+  font-size: 0.9rem;
+  color: var(--ink2);
+  line-height: 1.5;
+}
+
+/* Nav controls */
+.nav-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 40px;
+  background: var(--paper);
+  border-top: 1px solid var(--rule);
+  flex-shrink: 0;
+}
+.nav-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border: 1.5px solid var(--rule);
+  border-radius: 6px;
+  background: var(--paper);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink2);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.nav-btn:hover:not(:disabled) { background: var(--canvas); border-color: var(--teal-accent); color: var(--teal); }
+.nav-btn:disabled { opacity: 0.35; cursor: default; }
+.nav-btn.primary {
+  background: var(--gold-accent);
+  border-color: var(--gold-accent);
+  color: #fff;
+}
+.nav-btn.primary:hover:not(:disabled) { background: #e08810; border-color: #e08810; color: #fff; }
+
+.slide-dots {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.slide-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--rule2);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.slide-dot.active { background: var(--gold-accent); transform: scale(1.3); }
+.slide-dot:hover:not(.active) { background: var(--rule); }
+
+@media (max-width: 760px) {
+  .slide { padding: 28px 24px 20px; }
+  .topbar { padding: 8px 20px; }
+  .nav-controls { padding: 10px 20px; }
+  .two-col, .three-col { grid-template-columns: 1fr; }
+  .pillar-grid { grid-template-columns: 1fr 1fr; }
+  .checklist { grid-template-columns: 1fr; }
+  .lesson-meta-bar { height: auto; padding: 10px 20px; gap: 8px; }
+}
+</style>
+</head>
+<body data-section="system">
+
+<header>
+  <a class="logo-lockup" href="../">
+    <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
+      <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+      <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+    </svg>
+    <div class="logo-text">
+      <span class="brand">Stitser Built</span>
+      <span class="sub">S-BOS Knowledge Base</span>
+    </div>
+  </a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+
+<div class="nav-overlay">
+  <div class="nav-overlay-header">
+    <a class="logo-lockup" href="../">
+      <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
+        <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+        <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Stitser Built</span>
+        <span class="sub">S-BOS Knowledge Base</span>
+      </div>
+    </a>
+    <button class="nav-overlay-close" aria-label="Close menu">&#10005;</button>
+  </div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<!-- LESSON META BAR -->
+<div class="lesson-meta-bar">
+  <div class="lesson-breadcrumb">
+    <span class="breadcrumb-track" id="meta-track">Learning Track</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-course" id="meta-course">Course Name</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-lesson" id="meta-lesson-name">Lesson Title</span>
+  </div>
+  <div class="lesson-chips">
+    <span class="chip chip-pillar"   id="meta-pillar">People</span>
+    <span class="chip chip-type"     id="meta-type">Training</span>
+    <span class="chip chip-time"     id="meta-time">⏱ 12 min</span>
+    <span class="chip chip-audience" id="meta-audience">All Team</span>
+  </div>
+  <button class="btn-complete" id="btn-complete" onclick="markComplete()">Mark Complete</button>
+</div>
+
+<!-- SHELL -->
+<div class="shell">
+  <!-- Progress bar -->
+  <div class="topbar">
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill" style="width:16.67%"></div>
+    </div>
+    <div class="step-counter">Slide <span id="currentSlideNum">1</span> of <span id="totalSlideNum">6</span></div>
+  </div>
+
+  <!-- Slides container -->
+  <div class="slides" id="slidesContainer">
+
+    <!-- SLIDE 1: What is S-BOS? -->
+    <div class="slide active" data-slide="0">
+      <div class="slide-tier">Orientation · Slide 01</div>
+      <h1 class="slide-headline">What is S-BOS?</h1>
+      <p class="slide-sub">The operating system behind everything we do at Stitser Built.</p>
+      <div class="slide-content">
+        <div class="banner">
+          <div class="banner-title">S-BOS = Stitser Built Operating System</div>
+          <div class="banner-body">S-BOS is a custom business application that connects our projects, people, data, and AI agent (Kompass) into one unified system. It's not a generic tool — it's built specifically for how Stitser Built works.</div>
+        </div>
+        <div class="two-col">
+          <div class="cell">
+            <div class="cell-label">What it replaces</div>
+            <div class="cell-title">Scattered information</div>
+            <div class="cell-body">Emails, sticky notes, spreadsheets, text threads, and the "I think I saw that somewhere" problem. S-BOS puts everything in a single, searchable, shareable record.</div>
+          </div>
+          <div class="cell blue">
+            <div class="cell-label">What it enables</div>
+            <div class="cell-title">Clarity at every level</div>
+            <div class="cell-body">When every project, deal, and task has a home in S-BOS, you and your team always know what's happening — without having to chase down updates or search through inboxes.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: The 5 Pillars -->
+    <div class="slide" data-slide="1">
+      <div class="slide-tier">Orientation · Slide 02</div>
+      <h1 class="slide-headline">The 5 Pillars</h1>
+      <p class="slide-sub">S-BOS is organized around five core areas of the business. Everything has a home.</p>
+      <div class="slide-content">
+        <div class="pillar-grid">
+          <div class="pillar-card">
+            <div class="pillar-num">01</div>
+            <div class="pillar-name">People</div>
+            <div class="pillar-desc">Contacts, clients, team members, vendors, and all relationships.</div>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-num">02</div>
+            <div class="pillar-name">Projects</div>
+            <div class="pillar-desc">Every active project, deal, and opportunity — with full lifecycle tracking.</div>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-num">03</div>
+            <div class="pillar-name">Finance</div>
+            <div class="pillar-desc">Budgets, actuals, pay apps, commissions, and financial reporting.</div>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-num">04</div>
+            <div class="pillar-name">Compliance</div>
+            <div class="pillar-desc">Document tracking, required checklists, audits, and sign-off logs.</div>
+          </div>
+          <div class="pillar-card">
+            <div class="pillar-num">05</div>
+            <div class="pillar-name">Intelligence</div>
+            <div class="pillar-desc">GYR reports, dashboards, Kompass AI, and team-wide visibility.</div>
+          </div>
+        </div>
+        <div class="callout" style="margin-top:20px;">
+          <div class="callout-label">The rule</div>
+          <div class="callout-text">If it happened but it isn't in S-BOS, it didn't happen. Every decision, update, and milestone belongs in the system.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: How It's Organized -->
+    <div class="slide" data-slide="2">
+      <div class="slide-tier">Orientation · Slide 03</div>
+      <h1 class="slide-headline">How It's Organized</h1>
+      <p class="slide-sub">SmartSuite powers the database layer. Google Workspace holds the documents. Kompass bridges both.</p>
+      <div class="slide-content">
+        <div class="three-col">
+          <div class="cell">
+            <div class="cell-label">Layer 01</div>
+            <div class="cell-title">SmartSuite</div>
+            <div class="cell-body">Structured records — projects, contacts, financials, compliance checklists. The system of record for everything that has a proper field and value.</div>
+          </div>
+          <div class="cell">
+            <div class="cell-label">Layer 02</div>
+            <div class="cell-title">Google Workspace</div>
+            <div class="cell-body">Documents, contracts, proposals, meeting notes, and photos. Every project has a linked Drive folder for unstructured files.</div>
+          </div>
+          <div class="cell blue">
+            <div class="cell-label">Layer 03</div>
+            <div class="cell-title">Kompass AI</div>
+            <div class="cell-body">Reads both layers. Synthesizes scattered emails and structured records into one answer. Assists with drafts, audits, and summaries.</div>
+          </div>
+        </div>
+        <div class="callout orange" style="margin-top:20px;">
+          <div class="callout-label">How to think about it</div>
+          <div class="callout-text">SmartSuite is where data lives. Google Drive is where documents live. Kompass is the bridge that makes both accessible in plain language — without switching tools.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Your Tools -->
+    <div class="slide" data-slide="3">
+      <div class="slide-tier">Orientation · Slide 04</div>
+      <h1 class="slide-headline">Your Tools</h1>
+      <p class="slide-sub">Three tools, one system. Here's what each one is for and when to use it.</p>
+      <div class="slide-content">
+        <div class="tools-row">
+          <div class="tool-card">
+            <div class="tool-icon">🗄️</div>
+            <div>
+              <div class="tool-info-name">SmartSuite</div>
+              <div class="tool-info-desc">Open and update project records, enter financials, track compliance. Your primary workspace for structured data.</div>
+            </div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon">📁</div>
+            <div>
+              <div class="tool-info-name">Google Drive</div>
+              <div class="tool-info-desc">Store and share documents, contracts, and photos. Always linked from the SmartSuite record — never saved loose.</div>
+            </div>
+          </div>
+          <div class="tool-card">
+            <div class="tool-icon">⚡</div>
+            <div>
+              <div class="tool-info-name">Kompass</div>
+              <div class="tool-info-desc">Ask questions, get drafts, run audits. Works in Claude Chat or automated via Cowork. Your AI working partner.</div>
+            </div>
+          </div>
+        </div>
+        <ul class="slide-list">
+          <li>Use SmartSuite as your default workspace — check it before checking email</li>
+          <li>If a document doesn't have a SmartSuite record linked, create one</li>
+          <li>Kompass is always available — ask it anything about a project or process</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: How to Get Help -->
+    <div class="slide" data-slide="4">
+      <div class="slide-tier">Orientation · Slide 05</div>
+      <h1 class="slide-headline">How to Get Help</h1>
+      <p class="slide-sub">Four ways to get unstuck — in order of speed.</p>
+      <div class="slide-content">
+        <div class="two-col">
+          <div class="cell">
+            <div class="cell-label">First — ask Kompass</div>
+            <div class="cell-title">Chat with your AI partner</div>
+            <div class="cell-body">Most S-BOS questions — how do I do X, where does Y live, what does this field mean — Kompass can answer instantly. Open Claude and ask in plain language.</div>
+          </div>
+          <div class="cell">
+            <div class="cell-label">Second — check the KB</div>
+            <div class="cell-title">S-BOS Knowledge Base</div>
+            <div class="cell-body">This site. Workflow guides, reference articles, and training content are all here. Search for the process name or browse by pillar.</div>
+          </div>
+          <div class="cell blue">
+            <div class="cell-label">Third — ask your manager</div>
+            <div class="cell-title">Your direct lead</div>
+            <div class="cell-body">For decisions, exceptions, or anything that requires judgment beyond what the system tells you. Come with context — your Ops Manager needs the record link, not just the question.</div>
+          </div>
+          <div class="cell blue">
+            <div class="cell-label">Fourth — flag it</div>
+            <div class="cell-title">Create a task or note</div>
+            <div class="cell-body">If something is unclear or broken, log it in SmartSuite as a task so it doesn't get lost. Don't let ambiguity live in your head — put it in the system.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: You're Ready -->
+    <div class="slide" data-slide="5">
+      <div class="slide-tier">Orientation · Slide 06</div>
+      <h1 class="slide-headline">You're Ready.</h1>
+      <p class="slide-sub">One quick checklist before you get started.</p>
+      <div class="slide-content">
+        <div class="checklist">
+          <div class="check-item">
+            <div class="check-icon">✓</div>
+            <div class="check-text">You have a SmartSuite account and can log in</div>
+          </div>
+          <div class="check-item">
+            <div class="check-icon">✓</div>
+            <div class="check-text">You know the 5 Pillars and what each one covers</div>
+          </div>
+          <div class="check-item">
+            <div class="check-icon">✓</div>
+            <div class="check-text">You understand the three-layer architecture (SmartSuite / Drive / Kompass)</div>
+          </div>
+          <div class="check-item">
+            <div class="check-icon">✓</div>
+            <div class="check-text">You know where to go when you need help</div>
+          </div>
+          <div class="check-item">
+            <div class="check-icon">✓</div>
+            <div class="check-text">You've bookmarked the S-BOS Knowledge Base</div>
+          </div>
+          <div class="check-item">
+            <div class="check-icon">✓</div>
+            <div class="check-text">You're ready to open your first project record</div>
+          </div>
+        </div>
+        <div class="callout" style="margin-top:24px;">
+          <div class="callout-label">Next step</div>
+          <div class="callout-text">Head to the "Create a Project Record" workflow guide to complete your first hands-on task in SmartSuite.</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /slides -->
+
+  <!-- Nav controls -->
+  <div class="nav-controls">
+    <button class="nav-btn" id="prevBtn" onclick="goTo(currentSlide - 1)" disabled>← Previous</button>
+    <div class="slide-dots" id="slideDots"></div>
+    <button class="nav-btn primary" id="nextBtn" onclick="goTo(currentSlide + 1)">Next →</button>
+  </div>
+</div><!-- /shell -->
+
+<script src="../assets/js/nav.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════
+   LESSON CONFIG — replace when creating a real lesson
+   ════════════════════════════════════════════════════════════ */
+const LESSON_CONFIG = {
+  lessonId:       'LESSON_RECORD_ID',
+  lessonTitle:    'Welcome to S-BOS',
+  trackName:      'S-BOS Foundations',
+  courseName:     'Orientation',
+  pillar:         'All Pillars',
+  contentType:    'Orientation',
+  estimatedMins:  12,
+  audience:       'All Team'
+};
+
+const SMARTSUITE_CONFIG = {
+  apiKey:        window.SMARTSUITE_API_KEY        || '',
+  workspaceId:   window.SMARTSUITE_WORKSPACE      || '',
+  progressAppId: '6a18ad82e630be8e82a202ea',       // Progress Table — SB Training & Certifications
+  personId:      new URLSearchParams(window.location.search).get('person_id') || ''
+};
+
+async function markComplete() {
+  const btn = document.getElementById('btn-complete');
+  if (btn.classList.contains('completed')) return;
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+  if (!SMARTSUITE_CONFIG.apiKey) { showCompleted(); return; }
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const payload = {
+      title: `${SMARTSUITE_CONFIG.personId || 'Anonymous'} — ${LESSON_CONFIG.lessonTitle}`,
+      s795f4d404: [LESSON_CONFIG.lessonId],                  // Lesson (linked)
+      s56ad0c6cc: { value: 'Completed' },                    // Status (single select)
+      s47e7db00b: { date: today, include_time: false },      // Completion Date
+      s971159143: 1                                          // Attempt Count
+    };
+    if (SMARTSUITE_CONFIG.personId) {
+      payload.s43b519ec1 = [SMARTSUITE_CONFIG.personId];     // Person (linked)
+    }
+    const res = await fetch(
+      `https://app.smartsuite.com/api/v1/applications/${SMARTSUITE_CONFIG.progressAppId}/records/`,
+      { method: 'POST', headers: { 'Authorization': `Token ${SMARTSUITE_CONFIG.apiKey}`, 'Account-Id': SMARTSUITE_CONFIG.workspaceId, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
+    );
+    if (res.ok) { showCompleted(); }
+    else { btn.textContent = 'Mark Complete'; btn.disabled = false; console.error('SmartSuite API error:', await res.text()); }
+  } catch (err) { showCompleted(); console.warn('Progress save failed (offline?):', err); }
+}
+
+function showCompleted() {
+  const btn = document.getElementById('btn-complete');
+  btn.textContent = '✓ Completed';
+  btn.classList.add('completed');
+  btn.disabled = false;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('meta-track').textContent       = LESSON_CONFIG.trackName;
+  document.getElementById('meta-course').textContent      = LESSON_CONFIG.courseName;
+  document.getElementById('meta-lesson-name').textContent = LESSON_CONFIG.lessonTitle;
+  document.getElementById('meta-pillar').textContent      = LESSON_CONFIG.pillar;
+  document.getElementById('meta-type').textContent        = LESSON_CONFIG.contentType;
+  document.getElementById('meta-time').textContent        = `⏱ ${LESSON_CONFIG.estimatedMins} min`;
+  document.getElementById('meta-audience').textContent    = LESSON_CONFIG.audience;
+  document.title = `${LESSON_CONFIG.lessonTitle} — S-BOS Knowledge Base`;
+  initSlides();
+});
+
+/* ── SLIDE ENGINE ─────────────────────────────────────────── */
+const slides = document.querySelectorAll('.slide');
+const total  = slides.length;
+let currentSlide = 0;
+
+document.getElementById('totalSlideNum').textContent = total;
+
+function initSlides() {
+  const dotsWrap = document.getElementById('slideDots');
+  slides.forEach((_, i) => {
+    const dot = document.createElement('button');
+    dot.className = 'slide-dot' + (i === 0 ? ' active' : '');
+    dot.setAttribute('aria-label', `Slide ${i + 1}`);
+    dot.addEventListener('click', () => goTo(i));
+    dotsWrap.appendChild(dot);
+  });
+  updateUI();
+}
+
+function goTo(idx) {
+  if (idx < 0 || idx >= total) return;
+  const prev = currentSlide;
+  currentSlide = idx;
+
+  slides[prev].classList.remove('active');
+  slides[prev].classList.add('exit-left');
+  setTimeout(() => slides[prev].classList.remove('exit-left'), 400);
+
+  slides[currentSlide].classList.add('active');
+  updateUI();
+}
+
+function updateUI() {
+  document.getElementById('currentSlideNum').textContent = currentSlide + 1;
+  document.getElementById('progressFill').style.width = `${((currentSlide + 1) / total) * 100}%`;
+  document.getElementById('prevBtn').disabled = currentSlide === 0;
+
+  const nextBtn = document.getElementById('nextBtn');
+  if (currentSlide === total - 1) {
+    nextBtn.textContent = 'Finish';
+    nextBtn.onclick = () => markComplete();
+  } else {
+    nextBtn.textContent = 'Next →';
+    nextBtn.onclick = () => goTo(currentSlide + 1);
+  }
+
+  document.querySelectorAll('.slide-dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+}
+
+/* Keyboard navigation */
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') goTo(currentSlide + 1);
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   goTo(currentSlide - 1);
+});
+</script>
+</body>
+</html>

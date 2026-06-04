@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Article Template — S-BOS Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+/* ══════════════════════════════════════════════════════════════
+   LESSON META BAR
+   ══════════════════════════════════════════════════════════════ */
+.lesson-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 40px;
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #BCBEC0;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.lesson-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  color: #BCBEC0;
+  flex: 1;
+  min-width: 0;
+}
+.breadcrumb-track   { color: #BCBEC0; }
+.breadcrumb-sep     { color: #BCBEC0; font-size: 16px; }
+.breadcrumb-course  { color: var(--dark); }
+.breadcrumb-lesson  { color: var(--blue); font-weight: 700; }
+
+.lesson-chips { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+.chip-pillar   { background: var(--blue);   color: #fff; }
+.chip-type     { background: var(--orange); color: #fff; }
+.chip-time     { background: var(--light);  color: var(--dark); border: 1px solid #BCBEC0; }
+.chip-audience { background: var(--light);  color: var(--dark); border: 1px solid #BCBEC0; }
+
+.btn-complete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  flex-shrink: 0;
+}
+.btn-complete:hover:not(:disabled) { background: #e08810; }
+.btn-complete:disabled { opacity: 0.7; cursor: not-allowed; }
+.btn-complete.completed { background: #27ae60; }
+.btn-complete.completed:hover { background: #219a52; }
+
+/* ── ARTICLE LAYOUT ───────────────────────────────────────── */
+.article-wrap {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 0;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: start;
+  padding: 0 40px 80px;
+}
+
+/* ── SIDEBAR ──────────────────────────────────────────────── */
+.article-sidebar {
+  position: sticky;
+  top: 24px;
+  padding: 32px 24px 32px 0;
+  border-right: 1px solid #BCBEC0;
+  margin-right: 0;
+}
+
+.toc-label {
+  font-family: var(--font-head);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: #BCBEC0;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--light);
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0; margin: 0;
+}
+.toc-item {
+  margin-bottom: 2px;
+}
+.toc-link {
+  display: block;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dark);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border-left: 2px solid transparent;
+  line-height: 1.35;
+  transition: background .12s, border-color .12s, color .12s;
+}
+.toc-link:hover { background: var(--light); color: var(--blue); }
+.toc-link.active { background: #E8EEF2; border-left-color: var(--blue); color: var(--blue); font-weight: 700; }
+.toc-link.h3 { font-size: 12px; font-weight: 400; padding-left: 22px; color: #BCBEC0; }
+.toc-link.h3:hover { color: var(--blue); }
+.toc-link.h3.active { color: var(--blue); font-weight: 600; }
+
+/* ── ARTICLE BODY ─────────────────────────────────────────── */
+.article-body {
+  padding: 40px 0 40px 48px;
+  min-width: 0;
+}
+
+/* Article title block */
+.article-title-block {
+  margin-bottom: 40px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #BCBEC0;
+  position: relative;
+}
+.article-title-block::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 60px;
+  height: 2px;
+  background: var(--orange);
+}
+.article-eyebrow {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 10px;
+}
+.article-title {
+  font-family: var(--font-head);
+  font-size: clamp(1.75rem, 3vw, 2.4rem);
+  font-weight: 900;
+  color: var(--dark);
+  line-height: 1.1;
+  letter-spacing: -.01em;
+  margin: 0 0 12px;
+}
+.article-intro {
+  font-family: var(--font-sub);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--dark);
+  opacity: .75;
+  max-width: 680px;
+}
+
+/* Headings */
+.article-body h2 {
+  font-family: var(--font-head);
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--dark);
+  text-transform: uppercase;
+  letter-spacing: -.005em;
+  margin: 48px 0 16px;
+  padding-top: 16px;
+  scroll-margin-top: 32px;
+  position: relative;
+}
+.article-body h2::before {
+  content: "";
+  display: block;
+  width: 32px;
+  height: 3px;
+  background: var(--orange);
+  margin-bottom: 10px;
+}
+.article-body h3 {
+  font-family: var(--font-sub);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--blue);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  margin: 28px 0 10px;
+  scroll-margin-top: 32px;
+}
+
+/* Body text */
+.article-body p {
+  font-family: var(--font-sub);
+  font-size: 15px;
+  line-height: 1.75;
+  color: var(--dark);
+  margin-bottom: 16px;
+  max-width: 680px;
+}
+.article-body p:last-child { margin-bottom: 0; }
+.article-body strong { font-weight: 700; color: var(--dark); }
+.article-body em { font-style: italic; }
+.article-body a { color: var(--blue); text-decoration: underline; text-underline-offset: 2px; }
+.article-body a:hover { color: var(--orange); }
+
+/* Lists */
+.article-body ul, .article-body ol {
+  padding: 0;
+  margin: 12px 0 20px;
+  max-width: 660px;
+  list-style: none;
+}
+.article-body ul li, .article-body ol li {
+  font-family: var(--font-sub);
+  font-size: 15px;
+  color: var(--dark);
+  padding: 5px 0 5px 20px;
+  position: relative;
+  line-height: 1.6;
+}
+.article-body ul li::before {
+  content: '—';
+  position: absolute;
+  left: 0;
+  color: var(--orange);
+  font-weight: 700;
+}
+.article-body ol { counter-reset: ol-counter; }
+.article-body ol li { counter-increment: ol-counter; }
+.article-body ol li::before {
+  content: counter(ol-counter) '.';
+  position: absolute;
+  left: 0;
+  color: var(--blue);
+  font-weight: 700;
+  font-family: var(--font-head);
+  font-size: 12px;
+  top: 7px;
+}
+
+/* Blockquote */
+.article-body blockquote {
+  margin: 20px 0;
+  padding: 14px 20px 14px 18px;
+  border-left: 3px solid var(--orange);
+  background: #FEF4E8;
+  border-radius: 2px;
+  max-width: 680px;
+}
+.article-body blockquote p {
+  font-style: italic;
+  color: var(--dark);
+  font-size: 15px;
+  line-height: 1.65;
+  margin: 0;
+  font-weight: 600;
+}
+.article-body blockquote cite {
+  display: block;
+  font-style: normal;
+  font-family: var(--font-head);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #BCBEC0;
+  margin-top: 8px;
+  font-weight: 700;
+}
+
+/* Callout boxes */
+.callout-box {
+  margin: 20px 0;
+  padding: 18px 22px;
+  border-radius: 4px;
+  max-width: 680px;
+}
+.callout-box.info {
+  background: #E8EEF2;
+  border-left: 4px solid var(--blue);
+}
+.callout-box.warning {
+  background: #FEF4E8;
+  border-left: 4px solid var(--orange);
+}
+.callout-box.success {
+  background: #eafaf1;
+  border-left: 4px solid #27ae60;
+}
+.callout-box-label {
+  font-family: var(--font-head);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.callout-box.info    .callout-box-label { color: var(--blue); }
+.callout-box.warning .callout-box-label { color: var(--orange); }
+.callout-box.success .callout-box-label { color: #27ae60; }
+.callout-box p {
+  font-family: var(--font-sub);
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--dark);
+  margin: 0;
+  max-width: none;
+}
+
+/* Tables */
+.article-table-wrap {
+  overflow-x: auto;
+  margin: 20px 0;
+  max-width: 700px;
+  border: 1px solid #BCBEC0;
+  border-radius: 6px;
+}
+.article-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sub);
+  font-size: 14px;
+}
+.article-table th {
+  background: #2A4E63;
+  color: #fff;
+  font-family: var(--font-head);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  padding: 12px 16px;
+  text-align: left;
+}
+.article-table td {
+  padding: 11px 16px;
+  color: var(--dark);
+  border-bottom: 1px solid var(--light);
+  vertical-align: top;
+  line-height: 1.5;
+}
+.article-table tr:last-child td { border-bottom: none; }
+.article-table tr:nth-child(even) td { background: var(--light); }
+
+/* Status indicator */
+.status-dot {
+  display: inline-block;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+.status-dot.green  { background: #27ae60; }
+.status-dot.yellow { background: #F8991D; }
+.status-dot.red    { background: #e74c3c; }
+
+/* Video embed */
+.video-embed {
+  position: relative;
+  padding-bottom: 56.25%;
+  height: 0;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid #BCBEC0;
+  max-width: 680px;
+  margin: 20px 0;
+}
+.video-embed iframe {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  border: none;
+}
+
+/* Section divider */
+.article-divider {
+  border: none;
+  border-top: 1px solid #BCBEC0;
+  margin: 40px 0 0;
+}
+
+/* Reading time / metadata strip under title */
+.article-meta-strip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.article-meta-chip {
+  font-family: var(--font-sub);
+  font-size: 12px;
+  color: #BCBEC0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.article-meta-chip strong { color: var(--dark); }
+
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .article-wrap {
+    grid-template-columns: 1fr;
+    padding: 0 20px 60px;
+  }
+  .article-sidebar {
+    position: static;
+    border-right: none;
+    border-bottom: 1px solid #BCBEC0;
+    padding: 20px 0;
+    margin-bottom: 8px;
+  }
+  .article-body { padding: 24px 0; }
+  .toc-list { display: flex; gap: 4px; flex-wrap: wrap; }
+  .toc-link { padding: 4px 10px; border: 1px solid #BCBEC0; border-radius: 20px; border-left-width: 1px; }
+  .toc-link.active { border-color: var(--blue); }
+  .toc-link.h3 { display: none; }
+}
+@media (max-width: 560px) {
+  .lesson-meta-bar { height: auto; padding: 12px 20px; gap: 10px; }
+}
+</style>
+</head>
+<body data-section="system">
+
+<header>
+  <a class="logo-lockup" href="../">
+    <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
+      <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+      <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+    </svg>
+    <div class="logo-text">
+      <span class="brand">Stitser Built</span>
+      <span class="sub">S-BOS Knowledge Base</span>
+    </div>
+  </a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+
+<div class="nav-overlay">
+  <div class="nav-overlay-header">
+    <a class="logo-lockup" href="../">
+      <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
+        <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+        <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Stitser Built</span>
+        <span class="sub">S-BOS Knowledge Base</span>
+      </div>
+    </a>
+    <button class="nav-overlay-close" aria-label="Close menu">&#10005;</button>
+  </div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<!-- LESSON META BAR -->
+<div class="lesson-meta-bar">
+  <div class="lesson-breadcrumb">
+    <span class="breadcrumb-track" id="meta-track">Learning Track</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-course" id="meta-course">Course Name</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-lesson" id="meta-lesson-name">Lesson Title</span>
+  </div>
+  <div class="lesson-chips">
+    <span class="chip chip-pillar"   id="meta-pillar">People</span>
+    <span class="chip chip-type"     id="meta-type">Reference</span>
+    <span class="chip chip-time"     id="meta-time">⏱ 10 min</span>
+    <span class="chip chip-audience" id="meta-audience">Internal</span>
+  </div>
+  <button class="btn-complete" id="btn-complete" onclick="markComplete()">Mark Complete</button>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-eyebrow">Reference Article · Intelligence Pillar</div>
+  <h1 class="page-hero-title">Understanding the GYR Status Report</h1>
+  <p class="page-hero-subtitle">What GYR means, how to read it, and how to keep yours current so the team always has an accurate picture of your project.</p>
+</div>
+
+<div class="orange-bar"></div>
+
+<div class="breadcrumb-bar">
+  <div class="breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">→</span>
+    <a href="../system/">System</a>
+    <span class="sep">→</span>
+    <span class="cur">GYR Status Report</span>
+  </div>
+</div>
+
+<!-- MAIN TWO-COLUMN LAYOUT -->
+<div class="article-wrap">
+
+  <!-- SIDEBAR: auto-generated TOC -->
+  <aside class="article-sidebar">
+    <div class="toc-label">In This Article</div>
+    <ul class="toc-list" id="tocList">
+      <!-- populated by JS -->
+    </ul>
+  </aside>
+
+  <!-- ARTICLE BODY -->
+  <article class="article-body" id="articleBody">
+
+    <div class="article-title-block">
+      <div class="article-eyebrow">Reference · Intelligence Pillar</div>
+      <h1 class="article-title">Understanding the GYR Status Report</h1>
+      <p class="article-intro">GYR stands for Green, Yellow, Red — a weekly health snapshot for every active project. This article explains what the status colors mean, how to read the dashboard, and what it takes to keep your report accurate.</p>
+      <div class="article-meta-strip">
+        <span class="article-meta-chip">⏱ <strong>10 min read</strong></span>
+        <span class="article-meta-chip">Last updated: <strong>May 2026</strong></span>
+        <span class="article-meta-chip">Pillar: <strong>Intelligence</strong></span>
+      </div>
+    </div>
+
+    <!-- SECTION 1 -->
+    <h2 id="what-is-gyr">What Is GYR?</h2>
+
+    <p>GYR is a weekly status signal used across every active project at Stitser Built. It gives leadership, team leads, and project managers a shared, at-a-glance picture of project health without requiring anyone to read through full reports or schedule update calls.</p>
+
+    <p>The concept is simple: every project is either on track (Green), needs attention (Yellow), or in trouble (Red). The signal is only useful if it's <strong>honest, timely, and specific</strong>.</p>
+
+    <blockquote>
+      <p>A Green that should be Yellow isn't optimism — it's noise. The GYR system only works when the colors mean something real.</p>
+    </blockquote>
+
+    <h3 id="color-definitions">Color Definitions</h3>
+
+    <div class="article-table-wrap">
+      <table class="article-table">
+        <thead>
+          <tr>
+            <th>Color</th>
+            <th>Meaning</th>
+            <th>What It Signals to Leadership</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="status-dot green"></span><strong>Green</strong></td>
+            <td>On track. No issues requiring escalation.</td>
+            <td>No action needed. Continue monitoring.</td>
+          </tr>
+          <tr>
+            <td><span class="status-dot yellow"></span><strong>Yellow</strong></td>
+            <td>Needs attention. A risk or issue exists — being managed, but visible.</td>
+            <td>Review the note. May need input or a decision.</td>
+          </tr>
+          <tr>
+            <td><span class="status-dot red"></span><strong>Red</strong></td>
+            <td>In trouble. Issue is escalated or blocking progress.</td>
+            <td>Immediate attention required. Escalate to leadership.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="callout-box warning">
+      <div class="callout-box-label">Important</div>
+      <p>A Yellow flag with a clear note and a defined action plan is not a failure — it's the system working correctly. The only bad GYR is one that doesn't reflect reality.</p>
+    </div>
+
+    <hr class="article-divider">
+
+    <!-- SECTION 2 -->
+    <h2 id="five-pillars">The 5 Pillars Explained</h2>
+
+    <p>Each project's GYR report is broken down by the five S-BOS pillars. This means a project can be Green overall but Yellow on a specific pillar — giving a much more precise picture than a single overall color.</p>
+
+    <h3 id="pillar-breakdowns">Pillar-Level Status</h3>
+
+    <p>When you open a project's GYR report in SmartSuite, you'll see a color indicator for each of the five pillars:</p>
+
+    <ul>
+      <li><strong>People</strong> — Is the team properly staffed? Are external parties (vendors, partners, clients) responsive and on track?</li>
+      <li><strong>Projects</strong> — Is the project on schedule? Are milestones being hit? Are there any blockers to progress?</li>
+      <li><strong>Finance</strong> — Is the project within budget? Are there any cost overruns, pending approvals, or unpaid invoices?</li>
+      <li><strong>Compliance</strong> — Are all required documents filed? Are there any outstanding compliance items blocking the next phase?</li>
+      <li><strong>Intelligence</strong> — Is the S-BOS record current? Has the GYR itself been updated this week?</li>
+    </ul>
+
+    <div class="callout-box info">
+      <div class="callout-box-label">Pro tip</div>
+      <p>If you're unsure whether a pillar is Green or Yellow, ask yourself: "Would I be comfortable if leadership reviewed this pillar's data right now, without any additional context from me?" If no, it's Yellow.</p>
+    </div>
+
+    <h3 id="overall-vs-pillar">Overall vs. Pillar Status</h3>
+
+    <p>The overall project color is a manual field — it's your judgment call, not an automatic rollup. Even if all five pillars are Green, you might set the overall to Yellow if there's something contextual the colors don't capture (an incoming negotiation, a pending external decision, etc.).</p>
+
+    <p>However, the rule of thumb is: <strong>the overall color should never be higher than your lowest pillar color.</strong> If Finance is Red, the overall should be Red or Yellow — never Green.</p>
+
+    <hr class="article-divider">
+
+    <!-- SECTION 3 -->
+    <h2 id="read-dashboard">How to Read Your Dashboard</h2>
+
+    <p>The GYR dashboard in SmartSuite aggregates all active projects into a single view organized by status. It's designed for leadership to scan quickly, not read deeply — the detail lives inside each record.</p>
+
+    <h3 id="dashboard-views">Available Views</h3>
+
+    <ol>
+      <li><strong>Red First view</strong> — Sorts all active projects with Red status to the top. Use this as your Monday morning starting point.</li>
+      <li><strong>By Project Manager</strong> — Groups projects by assigned PM. Useful for 1-on-1 reviews.</li>
+      <li><strong>By Pillar</strong> — Shows all projects where a specific pillar is Yellow or Red. Use this to identify systemic issues (e.g., if Finance is Yellow on 6 projects, there may be a process issue, not a project issue).</li>
+      <li><strong>Timeline view</strong> — Shows status history over the last 8 weeks. Identifies projects that have been Yellow for too long.</li>
+    </ol>
+
+    <div class="callout-box success">
+      <div class="callout-box-label">How Kompass uses this data</div>
+      <p>Kompass reads the GYR dashboard every Monday and can generate a team pre-read summary — a one-page synthesis of the week's status across all active projects. Ask Kompass to "draft the weekly GYR pre-read" in Claude Chat.</p>
+    </div>
+
+    <h3 id="gyr-notes">Reading the GYR Notes Field</h3>
+
+    <p>Each pillar-level color has a corresponding notes field. When a pillar is Yellow or Red, the notes field is required — not optional. A Yellow flag without a note is incomplete and will appear on the compliance audit.</p>
+
+    <p>A well-written GYR note has three parts:</p>
+
+    <ul>
+      <li><strong>The issue</strong> — What is the specific problem or risk? (One sentence.)</li>
+      <li><strong>The action</strong> — What is being done about it, and by whom? (One sentence.)</li>
+      <li><strong>The resolution target</strong> — When do you expect this to be resolved or upgraded back to Green? (A date or milestone.)</li>
+    </ul>
+
+    <blockquote>
+      <p>Finance is Yellow: contractor invoice #1042 ($24K) is disputed and pending resolution. PM is meeting with the GC on 5/30 to agree on a revised amount. Expected to resolve and return to Green by 6/6.</p>
+      <cite>— Example of a well-written Yellow GYR note</cite>
+    </blockquote>
+
+    <hr class="article-divider">
+
+    <!-- SECTION 4 -->
+    <h2 id="update-your-report">How to Update Your Report</h2>
+
+    <p>GYR reports should be updated every week — the standard cadence is by end of day Monday so leadership can review before Tuesday's team standup. If your project has a major change mid-week, update it immediately — don't wait for the Monday cycle.</p>
+
+    <h3 id="update-steps">Step-by-Step: Updating a GYR Record</h3>
+
+    <ol>
+      <li>Open the project record in SmartSuite</li>
+      <li>Click into the "GYR Status" section (it's in the right-hand panel on the expanded record view)</li>
+      <li>Update each pillar color using the dropdown — Green, Yellow, or Red</li>
+      <li>For any Yellow or Red pillar, update the corresponding note field (issue, action, target date)</li>
+      <li>Set the overall project color in the main "GYR" field at the top of the record</li>
+      <li>Save the record — SmartSuite will timestamp the update automatically</li>
+    </ol>
+
+    <div class="callout-box warning">
+      <div class="callout-box-label">Compliance note</div>
+      <p>If a project's GYR has not been updated in the last 7 days, it will appear as stale in the compliance audit view and trigger a Kompass notification to the assigned PM and their manager.</p>
+    </div>
+
+    <h3 id="kompass-assist">Using Kompass to Draft Your GYR Note</h3>
+
+    <p>If you're struggling to articulate a Yellow or Red note clearly, Kompass can help. Open Claude Chat and say:</p>
+
+    <blockquote>
+      <p>"Help me write a GYR note for the Finance pillar. The issue is [brief description]. The action we're taking is [what's happening]. The target resolution is [date or milestone]."</p>
+    </blockquote>
+
+    <p>Kompass will draft a concise, properly structured note you can copy directly into SmartSuite. It won't submit the note itself — you always review and paste manually.</p>
+
+    <div class="callout-box info">
+      <div class="callout-box-label">Questions?</div>
+      <p>Ask Kompass "how do I update my GYR report?" for a step-by-step walkthrough, or reach out to your Ops Manager if a status situation is genuinely ambiguous.</p>
+    </div>
+
+  </article>
+</div>
+
+<footer>
+  <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
+  <div class="footer-version">v1.0 · Internal Use Only</div>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/article-editor.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════
+   LESSON CONFIG — replace when creating a real lesson
+   ════════════════════════════════════════════════════════════ */
+const LESSON_CONFIG = {
+  lessonId:       'LESSON_RECORD_ID',
+  lessonTitle:    'Understanding the GYR Status Report',
+  trackName:      'S-BOS Foundations',
+  courseName:     'Intelligence Pillar',
+  pillar:         'Intelligence',
+  contentType:    'Reference',
+  estimatedMins:  10,
+  audience:       'Internal',
+  filePath:       'templates/article-template.html'  // repo-relative path for editor save
+};
+
+const SMARTSUITE_CONFIG = {
+  apiKey:        window.SMARTSUITE_API_KEY        || '',
+  workspaceId:   window.SMARTSUITE_WORKSPACE      || '',
+  progressAppId: '6a18ad82e630be8e82a202ea',       // Progress Table — SB Training & Certifications
+  personId:      new URLSearchParams(window.location.search).get('person_id') || ''
+};
+
+async function markComplete() {
+  const btn = document.getElementById('btn-complete');
+  if (btn.classList.contains('completed')) return;
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+  if (!SMARTSUITE_CONFIG.apiKey) { showCompleted(); return; }
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const payload = {
+      title: `${SMARTSUITE_CONFIG.personId || 'Anonymous'} — ${LESSON_CONFIG.lessonTitle}`,
+      s795f4d404: [LESSON_CONFIG.lessonId],                  // Lesson (linked)
+      s56ad0c6cc: { value: 'Completed' },                    // Status (single select)
+      s47e7db00b: { date: today, include_time: false },      // Completion Date
+      s971159143: 1                                          // Attempt Count
+    };
+    if (SMARTSUITE_CONFIG.personId) {
+      payload.s43b519ec1 = [SMARTSUITE_CONFIG.personId];     // Person (linked)
+    }
+    const res = await fetch(
+      `https://app.smartsuite.com/api/v1/applications/${SMARTSUITE_CONFIG.progressAppId}/records/`,
+      { method: 'POST', headers: { 'Authorization': `Token ${SMARTSUITE_CONFIG.apiKey}`, 'Account-Id': SMARTSUITE_CONFIG.workspaceId, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
+    );
+    if (res.ok) { showCompleted(); }
+    else { btn.textContent = 'Mark Complete'; btn.disabled = false; console.error('SmartSuite API error:', await res.text()); }
+  } catch (err) { showCompleted(); console.warn('Progress save failed (offline?):', err); }
+}
+
+function showCompleted() {
+  const btn = document.getElementById('btn-complete');
+  btn.textContent = '✓ Completed';
+  btn.classList.add('completed');
+  btn.disabled = false;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('meta-track').textContent       = LESSON_CONFIG.trackName;
+  document.getElementById('meta-course').textContent      = LESSON_CONFIG.courseName;
+  document.getElementById('meta-lesson-name').textContent = LESSON_CONFIG.lessonTitle;
+  document.getElementById('meta-pillar').textContent      = LESSON_CONFIG.pillar;
+  document.getElementById('meta-type').textContent        = LESSON_CONFIG.contentType;
+  document.getElementById('meta-time').textContent        = `⏱ ${LESSON_CONFIG.estimatedMins} min`;
+  document.getElementById('meta-audience').textContent    = LESSON_CONFIG.audience;
+  document.title = `${LESSON_CONFIG.lessonTitle} — S-BOS Knowledge Base`;
+
+  buildTOC();
+  initScrollSpy();
+});
+
+/* ── TABLE OF CONTENTS (auto-generated) ──────────────────── */
+function buildTOC() {
+  const body = document.getElementById('articleBody');
+  const headings = body.querySelectorAll('h2, h3');
+  const tocList  = document.getElementById('tocList');
+
+  headings.forEach(h => {
+    if (!h.id) return;
+    const li   = document.createElement('li');
+    li.className = 'toc-item';
+    const a    = document.createElement('a');
+    a.href     = '#' + h.id;
+    a.className = 'toc-link' + (h.tagName === 'H3' ? ' h3' : '');
+    a.textContent = h.textContent;
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.getElementById(h.id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+    li.appendChild(a);
+    tocList.appendChild(li);
+  });
+}
+
+/* ── SCROLL SPY ───────────────────────────────────────────── */
+function initScrollSpy() {
+  const body     = document.getElementById('articleBody');
+  const headings = Array.from(body.querySelectorAll('h2[id], h3[id]'));
+  const links    = document.querySelectorAll('.toc-link');
+
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.toc-link[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, {
+    rootMargin: '-10% 0px -80% 0px',
+    threshold: 0
+  });
+
+  headings.forEach(h => obs.observe(h));
+}
+</script>
+</body>
+</html>

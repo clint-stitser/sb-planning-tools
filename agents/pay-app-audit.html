@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pay App Audit — S-BOS Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+</head>
+<body data-section="agents">
+<header>
+  <a class="logo-lockup" href="../"><svg class="logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/><text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text></svg><div class="logo-text"><span class="brand">Stitser Built</span><span class="sub">S-BOS Knowledge Base</span></div></a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system" href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents" href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles" href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary" href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+<div class="nav-overlay">
+  <div class="nav-overlay-header"><a class="logo-lockup" href="../"><svg class="logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/><text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text></svg><div class="logo-text"><span class="brand">Stitser Built</span><span class="sub">S-BOS Knowledge Base</span></div></a><button class="nav-overlay-close" aria-label="Close menu">&#10005;</button></div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system" href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents" href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles" href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary" href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-eyebrow"><span class="agent-status live" style="display:inline-flex;margin:0">Live</span></div>
+  <h1 class="page-hero-title">Pay App Audit & Lifecycle</h1>
+  <p class="page-hero-subtitle">Per-invoice PM audit with 7 standard tasks, plus a full pay application lifecycle from budget import through approval.</p>
+</div>
+<div class="orange-bar"></div>
+<div class="breadcrumb-bar">
+  <div class="breadcrumb"><a href="../">Home</a><span class="sep">→</span><a href="../agents/">Agents</a><span class="sep">→</span><span class="cur">Pay App Audit</span></div>
+</div>
+
+<section>
+  <div class="section-label">Capability</div>
+  <div class="section-title">What This Agent Does</div>
+  <div class="prose">
+    <p>The Pay App suite covers two related workflows: the per-invoice PM audit and the full pay application lifecycle. The <strong>Pay App Audit</strong> creates 7 standard project management tasks for each invoice submitted, generates the document package required for sign-off, and tracks sign &amp; return status.</p>
+    <p>The <strong>Pay App Lifecycle</strong> handles the broader workflow: loading the Schedule of Values (SOV), initializing a pay period, walking through line items, and processing draws through approval. It connects to the SmartSuite pay app records and keeps the project's financial tracking current.</p>
+    <p><strong>What it reads:</strong> SmartSuite project and budget records, existing pay app history, SOV.</p>
+    <p><strong>What it creates:</strong> SmartSuite tasks (7 per invoice), document packages, pay app records, draw status tracking.</p>
+    <p><strong>What it does NOT do:</strong> It does not approve payments, does not send wire instructions, and does not make lien waiver determinations. Those require human sign-off.</p>
+  </div>
+</section>
+
+<section style="background:var(--light);padding:56px 40px">
+  <div class="section-label">Trigger</div>
+  <div class="section-title">How to Trigger It</div>
+  <div class="trigger-box"><div class="trigger-label">Pay App Audit</div><div class="trigger-phrase">"Run pay app audit"</div></div>
+  <div class="trigger-box"><div class="trigger-label">Import Budget / SOV</div><div class="trigger-phrase">"Import this budget" · "Load the SOV"</div></div>
+  <div class="trigger-box"><div class="trigger-label">Start a Pay Period</div><div class="trigger-phrase">"Kick off Pay App" · "Start the pay app for [project]"</div></div>
+</section>
+
+<section>
+  <div class="section-label">Process</div>
+  <div class="section-title">Pay App Audit — Step by Step</div>
+  <ol class="step-list">
+    <li><p>Claude identifies the project and the invoice being audited.</p></li>
+    <li><p>Claude creates 7 standard PM audit tasks in SmartSuite — covering invoice review, lien waiver, insurance verification, budget check, approval routing, document filing, and payment tracking.</p></li>
+    <li><p>Claude generates the document package checklist for this invoice.</p></li>
+    <li><p>Claude presents the task list and document requirements for your review.</p></li>
+    <li><p>Claude tracks sign &amp; return status as tasks are completed.</p></li>
+  </ol>
+</section>
+
+<section style="background:var(--light);padding:56px 40px">
+  <div class="section-label">Your Responsibility</div>
+  <div class="section-title">What You Still Own</div>
+  <ul class="bullet-list">
+    <li>Reviewing the invoice for accuracy against the SOV</li>
+    <li>Approving or rejecting each pay app</li>
+    <li>Lien waiver collection and verification</li>
+    <li>Authorizing payment disbursement</li>
+  </ul>
+</section>
+
+<section>
+  <div class="section-label">FAQ</div>
+  <div class="section-title">Tips & Common Questions</div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q">What are the 7 standard audit tasks?</div>
+      <div class="faq-a">Invoice review, lien waiver collection, insurance certificate verification, budget line check, approval routing, document filing, and payment tracking. Claude creates all 7 automatically — assigned and due-dated per your project settings.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Can I run it for multiple invoices at once?</div>
+      <div class="faq-a">Run it once per invoice — each invoice gets its own set of 7 tasks and its own document package. This keeps the audit trail clean per line item.</div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div><div class="footer-version">v1.0 · Internal Use Only</div></footer>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/article-editor.js"></script>
+</body>
+</html>

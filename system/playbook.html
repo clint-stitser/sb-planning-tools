@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>The Playbook — S-BOS Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+:root{
+  --ink:#0E0D0B;--ink2:#4A4640;--ink3:#8A847C;
+  --canvas:#F2F4F5;--paper:#FFFFFF;--rule:#BCBEC0;--rule2:#D5D7DA;
+  --gold:#F8991D;--gold-l:#FEF4E8;--gold-d:#C07A10;
+  --pb-blue:#1A3F72;--pb-blue-l:#EAF0F9;--pb-blue-d:#0F2545;
+  --green:#1E5C36;--green-l:#E4F2E9;
+  --teal:#3D6E87;--teal-l:#E8EEF2;--teal-d:#2A4E63;
+  --red:#8C1F1F;--red-l:#F9E8E8;
+  --amber:#9C5A00;--amber-l:#FEF3E2;
+  --night:#0A0908;
+  --display:'Montserrat',sans-serif;
+  --body:'Rajdhani',sans-serif;
+  --mono:'Courier New',monospace;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;}
+
+/* Override global body font for this page */
+body{font-family:var(--body);background:var(--canvas);color:var(--ink);}
+
+/* ── TABS BAR ── */
+.pb-tabs-bar{background:var(--paper);border-bottom:2px solid var(--rule);padding:0 40px;display:flex;align-items:center;}
+.pb-tabs{display:flex;gap:2px;}
+.pb-tab{padding:14px 20px;font-family:var(--display);font-size:11px;font-weight:700;letter-spacing:.06em;cursor:pointer;color:var(--ink3);transition:all .15s;border-bottom:3px solid transparent;margin-bottom:-2px;text-transform:uppercase;}
+.pb-tab:hover{color:var(--ink);}
+.pb-tab.active{color:var(--teal);border-bottom-color:var(--teal);}
+
+/* ── VIEWS ── */
+.view{display:none;}.view.active{display:block;}
+
+/* ══════════════════════════════════════════════════════
+   VIEW 1 — PLAYBOOK
+══════════════════════════════════════════════════════ */
+.pb-hero{background:var(--night);color:#fff;padding:48px 40px 40px;position:relative;overflow:hidden;}
+.pb-hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 70% 50%,rgba(61,110,135,.25) 0%,transparent 70%),radial-gradient(ellipse 40% 80% at 10% 90%,rgba(248,153,29,.08) 0%,transparent 60%);pointer-events:none;}
+.pb-hero-eyebrow{font-family:var(--mono);font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:12px;}
+.pb-hero-title{font-family:var(--display);font-size:clamp(28px,4vw,48px);font-weight:900;line-height:1.05;margin-bottom:16px;letter-spacing:-.02em;}
+.pb-hero-title em{font-style:normal;color:var(--gold);}
+.pb-hero-sub{font-size:14px;color:rgba(255,255,255,.55);max-width:540px;line-height:1.7;font-family:var(--body);}
+.pb-hero-quote{margin-top:28px;border-left:3px solid var(--gold);padding-left:16px;font-size:12px;color:rgba(255,255,255,.45);font-style:italic;max-width:480px;line-height:1.6;font-family:var(--body);}
+
+/* Situations pipeline */
+.situations-wrap{background:var(--paper);padding:32px 40px;}
+.pb-label{font-family:var(--mono);font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin-bottom:20px;}
+.situations-pipeline{display:flex;align-items:stretch;gap:0;overflow-x:auto;padding-bottom:4px;}
+.sit-node{flex:1;min-width:140px;background:var(--canvas);border:1px solid var(--rule);border-radius:8px;padding:16px 14px;position:relative;cursor:pointer;transition:all .2s var(--ease);}
+.sit-node:hover,.sit-node.active{background:var(--teal);border-color:var(--teal);color:#fff;}
+.sit-node:hover .sit-num,.sit-node.active .sit-num{color:rgba(255,255,255,.5);}
+.sit-node:hover .sit-name,.sit-node.active .sit-name{color:#fff;}
+.sit-node:hover .sit-desc,.sit-node.active .sit-desc{color:rgba(255,255,255,.7);}
+.sit-node:hover .sit-risk,.sit-node.active .sit-risk{background:rgba(255,255,255,.15);color:rgba(255,255,255,.8);}
+.sit-arrow{display:flex;align-items:center;padding:0 4px;color:var(--ink3);font-size:16px;flex-shrink:0;margin:0 -4px;position:relative;z-index:1;}
+.sit-num{font-family:var(--mono);font-size:9px;color:var(--ink3);margin-bottom:6px;letter-spacing:.08em;}
+.sit-icon{font-size:20px;margin-bottom:8px;}
+.sit-name{font-family:var(--display);font-size:12px;font-weight:700;color:var(--ink);margin-bottom:6px;line-height:1.3;}
+.sit-desc{font-size:11px;color:var(--ink2);line-height:1.5;margin-bottom:8px;font-family:var(--body);}
+.sit-risk{display:inline-block;font-size:8px;font-family:var(--mono);padding:2px 6px;border-radius:3px;background:var(--amber-l);color:var(--amber);letter-spacing:.04em;}
+
+/* Sit detail panel */
+.sit-detail{background:var(--teal-d);color:#fff;padding:20px 40px;display:none;border-top:1px solid rgba(255,255,255,.1);}
+.sit-detail.open{display:block;}
+.sit-detail-title{font-family:var(--display);font-size:14px;font-weight:700;margin-bottom:8px;}
+.sit-detail-body{font-size:13px;color:rgba(255,255,255,.75);line-height:1.7;max-width:700px;font-family:var(--body);}
+.sit-detail-pillars{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.sit-pillar-tag{padding:4px 10px;border-radius:4px;font-size:10px;font-weight:700;background:rgba(255,255,255,.1);color:rgba(255,255,255,.9);font-family:var(--display);letter-spacing:.04em;}
+.sit-pillar-tag.critical{background:var(--gold);color:var(--night);}
+
+/* Pillars */
+.pillars-wrap{background:var(--canvas);padding:24px 40px 32px;}
+.pillars-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+.pillar-card{background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:16px;}
+.pillar-num{font-family:var(--mono);font-size:9px;color:var(--ink3);margin-bottom:6px;}
+.pillar-icon{font-size:22px;margin-bottom:8px;}
+.pillar-name{font-family:var(--display);font-size:13px;font-weight:700;color:var(--ink);margin-bottom:6px;}
+.pillar-desc{font-size:12px;color:var(--ink2);line-height:1.6;font-family:var(--body);}
+.pillar-card.p1{border-top:3px solid var(--teal);}
+.pillar-card.p2{border-top:3px solid var(--gold);}
+.pillar-card.p3{border-top:3px solid var(--pb-blue);}
+.pillar-card.p4{border-top:3px solid var(--red);}
+
+/* Handoff callout */
+.handoff-callout{background:var(--gold-l);border:1px solid var(--gold);border-radius:8px;padding:16px 20px;margin:0 40px 32px;display:flex;gap:16px;align-items:flex-start;}
+.handoff-callout-icon{font-size:24px;flex-shrink:0;margin-top:2px;}
+.handoff-callout-title{font-family:var(--display);font-size:12px;font-weight:700;color:var(--gold-d);margin-bottom:4px;}
+.handoff-callout-text{font-size:12px;color:var(--amber);line-height:1.6;font-family:var(--body);}
+
+/* ══════════════════════════════════════════════════════
+   VIEW 2 — PRODUCT LINES
+══════════════════════════════════════════════════════ */
+.pl-header{padding:24px 40px 16px;background:var(--paper);border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.pl-header-title{font-family:var(--display);font-size:16px;font-weight:900;flex:1;}
+.filter-chips{display:flex;gap:6px;flex-wrap:wrap;}
+.chip{padding:4px 10px;border-radius:12px;font-size:10px;font-weight:700;cursor:pointer;border:1px solid var(--rule);background:var(--paper);color:var(--ink3);transition:all .12s;font-family:var(--display);letter-spacing:.04em;}
+.chip:hover{border-color:var(--ink3);}
+.chip.active{background:var(--teal);color:#fff;border-color:var(--teal);}
+
+.lanes-grid{padding:24px 40px;display:flex;flex-direction:column;gap:16px;}
+.lane{background:var(--paper);border:1px solid var(--rule);border-radius:10px;overflow:hidden;}
+.lane-hdr{padding:14px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;}
+.lane-hdr:hover{background:var(--canvas);}
+.lane-accent{width:4px;height:28px;border-radius:2px;flex-shrink:0;}
+.lane-name{font-family:var(--display);font-size:14px;font-weight:700;flex:1;}
+.lane-meta{font-size:11px;color:var(--ink3);font-family:var(--body);}
+.lane-chev{color:var(--ink3);font-size:11px;transition:transform .2s;}
+.lane-chev.open{transform:rotate(180deg);}
+.lane-body{display:none;border-top:1px solid var(--rule2);}
+.lane-body.open{display:block;}
+
+.type-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:0;border-bottom:1px solid var(--rule2);}
+.type-card{padding:16px 18px;border-right:1px solid var(--rule2);cursor:pointer;transition:background .12s;}
+.type-card:last-child{border-right:none;}
+.type-card:hover{background:var(--canvas);}
+.type-card.open{background:var(--pb-blue-l);}
+.tc-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px;gap:8px;}
+.tc-name{font-size:12px;font-weight:700;color:var(--ink);line-height:1.4;font-family:var(--display);}
+.tier-badge{flex-shrink:0;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;font-family:var(--mono);letter-spacing:.04em;}
+.tier-badge.tier1{background:var(--teal);color:#fff;}
+.tier-badge.tier2{background:var(--pb-blue-l);color:var(--pb-blue);border:1px solid var(--pb-blue);}
+.tier-badge.exploring{background:var(--amber-l);color:var(--amber);border:1px solid var(--amber);}
+.tier-badge.draft{background:var(--rule2);color:var(--ink3);}
+.tc-desc{font-size:11px;color:var(--ink3);line-height:1.5;margin-bottom:10px;font-family:var(--body);}
+.tc-metrics{display:flex;gap:8px;flex-wrap:wrap;}
+.tc-metric{display:flex;flex-direction:column;}
+.tc-metric-l{font-size:8px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;font-family:var(--display);}
+.tc-metric-v{font-family:var(--mono);font-size:10px;font-weight:500;color:var(--ink);}
+
+/* Expanded type detail */
+.type-detail{background:var(--pb-blue-l);border-top:1px solid var(--rule);padding:16px 18px;display:none;}
+.type-detail.open{display:block;}
+.td-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;}
+.td-section{background:var(--paper);border-radius:6px;padding:12px;border:1px solid var(--rule);}
+.td-section-title{font-size:9px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;font-family:var(--display);}
+.td-row{display:flex;justify-content:space-between;gap:8px;margin-bottom:5px;font-size:11px;}
+.td-row-l{color:var(--ink3);font-family:var(--body);}
+.td-row-v{font-family:var(--mono);color:var(--ink);text-align:right;}
+.disqualifiers{display:flex;flex-direction:column;gap:4px;}
+.dq-item{display:flex;align-items:flex-start;gap:6px;font-size:11px;color:var(--red);line-height:1.4;font-family:var(--body);}
+.dq-item::before{content:'✕';font-size:9px;flex-shrink:0;margin-top:1px;}
+
+/* ══════════════════════════════════════════════════════
+   VIEW 3 — COVERAGE MAP
+══════════════════════════════════════════════════════ */
+.cm-header{padding:24px 40px 16px;background:var(--paper);border-bottom:1px solid var(--rule);}
+.cm-header-title{font-family:var(--display);font-size:16px;font-weight:900;margin-bottom:4px;}
+.cm-header-sub{font-size:12px;color:var(--ink3);font-family:var(--body);}
+.cm-wrap{padding:24px 40px;}
+
+.cm-legend{display:flex;gap:20px;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink2);font-family:var(--body);}
+.legend-dot{width:12px;height:12px;border-radius:3px;}
+.legend-dot.strong{background:var(--teal);}
+.legend-dot.partial{background:var(--gold);}
+.legend-dot.none{background:var(--rule2);border:1px solid var(--rule);}
+
+.cm-table-wrap{background:var(--paper);border:1px solid var(--rule);border-radius:10px;overflow:auto;margin-bottom:28px;}
+.cm-table{width:100%;border-collapse:collapse;min-width:700px;}
+.cm-table th{padding:10px 12px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);border-bottom:1px solid var(--rule);white-space:nowrap;text-align:center;font-family:var(--display);}
+.cm-table th.tool-col{text-align:left;min-width:140px;background:var(--canvas);}
+.cm-table th.group-hdr{background:var(--canvas);font-size:8px;letter-spacing:.1em;color:var(--ink3);border-bottom:1px solid var(--rule2);}
+.cm-table td{padding:12px;border-bottom:1px solid var(--rule2);vertical-align:middle;}
+.cm-table tr:last-child td{border-bottom:none;}
+.cm-table td.tool-cell{padding:12px 16px;}
+.tool-cell-name{font-family:var(--display);font-size:13px;font-weight:700;color:var(--ink);}
+.tool-cell-tag{font-size:10px;color:var(--ink3);margin-top:2px;font-family:var(--body);}
+.cov-dot{width:28px;height:28px;border-radius:5px;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:default;}
+.cov-dot.strong{background:var(--teal-l);color:var(--teal);}
+.cov-dot.partial{background:var(--gold-l);color:var(--gold-d);}
+.cov-dot.none{background:var(--rule2);color:var(--ink3);}
+.cm-table th.sit-group{background:rgba(61,110,135,.06);}
+.cm-table th.pil-group{background:rgba(26,63,114,.06);}
+.cm-table td.sit-group{background:rgba(61,110,135,.02);}
+.cm-table td.pil-group{background:rgba(26,63,114,.02);}
+
+/* Gap cards */
+.gap-section-title{font-family:var(--display);font-size:13px;font-weight:700;color:var(--ink);margin-bottom:14px;}
+.gaps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:28px;}
+.gap-card{background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:14px 16px;border-left:4px solid;}
+.gap-card.critical{border-left-color:var(--red);}
+.gap-card.moderate{border-left-color:var(--amber);}
+.gap-card.opportunity{border-left-color:var(--teal);}
+.gap-card-severity{font-size:8px;font-weight:700;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px;}
+.gap-card.critical .gap-card-severity{color:var(--red);}
+.gap-card.moderate .gap-card-severity{color:var(--amber);}
+.gap-card.opportunity .gap-card-severity{color:var(--teal);}
+.gap-card-title{font-family:var(--display);font-size:12px;font-weight:700;color:var(--ink);margin-bottom:5px;}
+.gap-card-body{font-size:11px;color:var(--ink2);line-height:1.6;font-family:var(--body);}
+.gap-card-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px;}
+.gap-tag{padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;background:var(--canvas);color:var(--ink3);font-family:var(--display);letter-spacing:.02em;}
+
+/* Priority table */
+.priority-table{background:var(--paper);border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin-bottom:28px;}
+.priority-table-hdr{background:var(--night);color:#fff;padding:12px 18px;font-family:var(--display);font-size:12px;font-weight:700;display:flex;gap:12px;align-items:center;}
+.pt-row{display:grid;grid-template-columns:28px 160px 1fr 120px 100px;gap:12px;padding:12px 18px;border-bottom:1px solid var(--rule2);align-items:center;}
+.pt-row:last-child{border-bottom:none;}
+.pt-row:hover{background:var(--canvas);}
+.pt-rank{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--ink3);}
+.pt-project{font-size:12px;font-weight:700;color:var(--ink);font-family:var(--display);}
+.pt-impact{font-size:11px;color:var(--ink2);line-height:1.5;font-family:var(--body);}
+.pt-sits{display:flex;gap:3px;flex-wrap:wrap;}
+.pt-sit-tag{padding:2px 5px;border-radius:3px;font-size:8px;font-weight:700;background:var(--teal-l);color:var(--teal);font-family:var(--display);letter-spacing:.02em;}
+.pt-status{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;font-family:var(--display);}
+.pt-status.active{color:var(--green);}
+.pt-status.building{color:var(--teal);}
+.pt-status.backlog{color:var(--ink3);}
+
+@media(max-width:900px){
+  .pb-hero{padding:32px 20px 28px;}
+  .situations-wrap,.pillars-wrap,.handoff-callout{padding-left:20px;padding-right:20px;}
+  .handoff-callout{margin-left:20px;margin-right:20px;}
+  .pl-header,.lanes-grid,.cm-header,.cm-wrap{padding-left:20px;padding-right:20px;}
+  .pillars-grid{grid-template-columns:repeat(2,1fr);}
+  .td-grid{grid-template-columns:1fr;}
+  .pt-row{grid-template-columns:28px 1fr 1fr;}
+  .pb-tabs-bar{padding:0 20px;}
+}
+</style>
+</head>
+<body data-section="system">
+
+<header>
+  <a class="logo-lockup" href="../"><svg class="logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/><text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text></svg><div class="logo-text"><span class="brand">Stitser Built</span><span class="sub">S-BOS Knowledge Base</span></div></a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system" href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents" href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles" href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary" href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+<div class="nav-overlay">
+  <div class="nav-overlay-header"><a class="logo-lockup" href="../"><svg class="logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/><text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text></svg><div class="logo-text"><span class="brand">Stitser Built</span><span class="sub">S-BOS Knowledge Base</span></div></a><button class="nav-overlay-close" aria-label="Close menu">&#10005;</button></div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system" href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents" href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles" href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary" href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-eyebrow">Strategic Overview · System Guide</div>
+  <h1 class="page-hero-title">The Playbook</h1>
+  <p class="page-hero-subtitle">Five situations, seven product lines, one coverage map — the strategic framework behind every deal Stitser BUILT runs.</p>
+</div>
+<div class="orange-bar"></div>
+<div class="breadcrumb-bar">
+  <div class="breadcrumb"><a href="../">Home</a><span class="sep">→</span><a href="../system/">System</a><span class="sep">→</span><span class="cur">The Playbook</span></div>
+</div>
+
+<!-- TABS -->
+<div class="pb-tabs-bar">
+  <div class="pb-tabs">
+    <div class="pb-tab active" onclick="switchView('playbook',this)">Playbook</div>
+    <div class="pb-tab" onclick="switchView('product-lines',this)">Product Lines</div>
+    <div class="pb-tab" onclick="switchView('coverage',this)">Coverage Map</div>
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     VIEW 1 — PLAYBOOK
+══════════════════════════════════════════════════ -->
+<div class="view active" id="view-playbook">
+
+  <div class="pb-hero">
+    <div class="pb-hero-eyebrow">Stitser BUILT Operating Playbook</div>
+    <div class="pb-hero-title">Win the <em>Situations.</em><br>Win the Game.</div>
+    <div class="pb-hero-sub">We don't obsess about the scoreboard. We obsess about the situations — the specific, repeatable chunks of every project where execution either compounds or leaks. String enough won situations together and the scoreboard takes care of itself.</div>
+    <div class="pb-hero-quote">"Elite teams don't talk about winning the game. They talk about winning the situations. When you string enough won situations together, the scoreboard takes care of itself." — Clint Stitser</div>
+  </div>
+
+  <div class="situations-wrap">
+    <div class="pb-label">The Five Situations — every project, every product line</div>
+    <div class="situations-pipeline" id="situations-pipeline">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+  <div class="sit-detail" id="sit-detail"></div>
+
+  <div class="pillars-wrap">
+    <div class="pb-label">The Four Pillars — required at every handoff</div>
+    <div class="pillars-grid">
+      <div class="pillar-card p1">
+        <div class="pillar-num">01</div>
+        <div class="pillar-icon">🧭</div>
+        <div class="pillar-name">Alignment</div>
+        <div class="pillar-desc">Everyone knows the purpose, the constraints, and has access to key documentation. No one should have to search for the plan.</div>
+      </div>
+      <div class="pillar-card p2">
+        <div class="pillar-num">02</div>
+        <div class="pillar-icon">💰</div>
+        <div class="pillar-name">Budget</div>
+        <div class="pillar-desc">The numbers are locked and viable. A project that moves forward with a fuzzy budget is a project that leaks profit before the first shovel hits the ground.</div>
+      </div>
+      <div class="pillar-card p3">
+        <div class="pillar-num">03</div>
+        <div class="pillar-icon">📅</div>
+        <div class="pillar-name">Schedule</div>
+        <div class="pillar-desc">Time is accounted for. Every situation has a clock. Teams that don't own the schedule become owned by it.</div>
+      </div>
+      <div class="pillar-card p4">
+        <div class="pillar-num">04</div>
+        <div class="pillar-icon">🛡</div>
+        <div class="pillar-name">QC &amp; Safety</div>
+        <div class="pillar-desc">The quality standard is non-negotiable. It is not a checklist at the end — it's a gate at every handoff that protects the relationship and the margin.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="handoff-callout">
+    <div class="handoff-callout-icon">⚡</div>
+    <div>
+      <div class="handoff-callout-title">The Handoff Rule</div>
+      <div class="handoff-callout-text">Before any project moves from one situation to the next, it must pass all four pillars. A fumbled handoff means the person receiving the ball stops running and starts cleaning up a mess — and that is where culture cracks and profit leaks. Kompass + S-BOS exist specifically to make every handoff clean.</div>
+    </div>
+  </div>
+
+</div><!-- /view-playbook -->
+
+
+<!-- ══════════════════════════════════════════════════
+     VIEW 2 — PRODUCT LINES
+══════════════════════════════════════════════════ -->
+<div class="view" id="view-product-lines">
+  <div class="pl-header">
+    <div class="pl-header-title">Product Lines</div>
+    <div class="filter-chips" id="filter-chips">
+      <div class="chip active" data-filter="all" onclick="filterLanes(this)">All</div>
+      <div class="chip" data-filter="tier1" onclick="filterLanes(this)">Tier 1</div>
+      <div class="chip" data-filter="tier2" onclick="filterLanes(this)">Tier 2</div>
+      <div class="chip" data-filter="exploring" onclick="filterLanes(this)">Exploring</div>
+    </div>
+  </div>
+  <div class="lanes-grid" id="lanes-grid">
+    <!-- rendered by JS -->
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════
+     VIEW 3 — COVERAGE MAP
+══════════════════════════════════════════════════ -->
+<div class="view" id="view-coverage">
+  <div class="cm-header">
+    <div class="cm-header-title">Tool Coverage Map</div>
+    <div class="cm-header-sub">How S-BOS, Kompass, and Intacct cover the five situations and four pillars — and where the gaps are.</div>
+  </div>
+  <div class="cm-wrap">
+
+    <div class="cm-legend">
+      <div class="legend-item"><div class="legend-dot strong"></div>Strong coverage</div>
+      <div class="legend-item"><div class="legend-dot partial"></div>Partial coverage</div>
+      <div class="legend-item"><div class="legend-dot none"></div>Gap / not covered</div>
+    </div>
+
+    <div class="cm-table-wrap">
+      <table class="cm-table" id="cm-table"><!-- rendered by JS --></table>
+    </div>
+
+    <div class="gap-section-title">Coverage Gaps &amp; Investment Priorities</div>
+    <div class="gaps-grid" id="gaps-grid"><!-- rendered by JS --></div>
+
+    <div class="priority-table">
+      <div class="priority-table-hdr">📋 Internal Improvement Project Priority Stack</div>
+      <div id="priority-rows"><!-- rendered by JS --></div>
+    </div>
+
+  </div>
+</div>
+
+<footer><div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div><div class="footer-version">v1.0 · Internal Use Only</div></footer>
+
+<script>
+'use strict';
+
+// ── DATA ──────────────────────────────────────────────────────────────────
+
+const SITUATIONS = [
+  {
+    id:'bus-dev', num:'01', icon:'🔭', name:'Business Development',
+    desc:'Scout opportunities, establish the deal thesis, qualify against investment standards before any capital or capacity is committed.',
+    risk:'Deal qualification rigor',
+    detail:'The game starts here. Business development is where we decide what\'s worth playing for. Every project must clear the investment standards before entering Pipeline — absorption, IRR, equity multiple, and disqualifiers are all evaluated here. Weak BD = bad inventory upstream.',
+    criticalPillars:['Alignment','Budget'],
+    tools:['Kompass']
+  },
+  {
+    id:'pipeline', num:'02', icon:'📐', name:'Pipeline',
+    desc:'Gate the project, lock all four pillars, and establish the handoff package before capital starts moving.',
+    risk:'Incomplete handoff package',
+    detail:'Pipeline is the staging zone. A project in Pipeline has passed BD but hasn\'t broken ground. The goal is to emerge from Pipeline with all four pillars fully locked — alignment documented, budget confirmed, schedule set, and QC standards defined. If any pillar is soft, the project stays here.',
+    criticalPillars:['Alignment','Budget','Schedule'],
+    tools:['S-BOS','Kompass']
+  },
+  {
+    id:'wip', num:'03', icon:'🏗', name:'Work in Progress',
+    desc:'Execute the playbook, win every week. Capital is deployed — every day off-schedule or over-budget compounds.',
+    risk:'Schedule drift & cost creep',
+    detail:'This is the film room in real-time. WIP is where the playbook either holds or breaks. The team needs zero ambiguity about scope, schedule, and budget at all times. Kompass aggregates the score; S-BOS runs the plays. The biggest risks here are scope creep and slow decision-making when things deviate.',
+    criticalPillars:['Budget','Schedule','QC & Safety'],
+    tools:['S-BOS','Kompass','Intacct']
+  },
+  {
+    id:'closeout', num:'04', icon:'🏁', name:'Closeout & Customer Service',
+    desc:'Cross the finish line clean. Protect the relationship, close the books, and capture the lessons.',
+    risk:'Punch list drag & relationship fraying',
+    detail:'Closeout is where projects either cement a client for life or burn them. The pillar that matters most here is QC & Safety — the quality of the final product is the last impression. Budget and Schedule pillar compliance is verified here before the project is archived. Lessons learned feed back into the investment standards.',
+    criticalPillars:['QC & Safety','Budget'],
+    tools:['S-BOS','Intacct']
+  },
+  {
+    id:'asset-mgmt', num:'05', icon:'📈', name:'Ongoing Asset Management',
+    desc:'Manage what you own. Maximize what it returns. Keep the portfolio performing after the project closes.',
+    risk:'Passive drift & deferred decisions',
+    detail:'Asset Management is the long tail of the portfolio — and the one that can compound wealth or quietly erode it. Intacct handles the accounting. The gap today is operational: no tool connects asset-level decisions back to the planning tools in a systematic way. This is the next frontier.',
+    criticalPillars:['Budget','Alignment'],
+    tools:['Intacct','Kompass']
+  }
+];
+
+const LANES = [
+  {
+    id:'built-to-last', name:'Built to Last', color:'#3D6E87',
+    verticals:['Construction','Brokerage'],
+    desc:'Full-service and brokerage-only disposition for residential sellers. Lower friction, fast cycle, volume-scalable.',
+    types:[
+      {
+        name:'Turnkey Disposition (CM & Brokerage)', tier:'tier1', status:'Active',
+        desc:'Full-service disposition: CM scope (prep/repair) + listing brokerage.',
+        duration:{min:5,base:8,max:13},
+        gp:'$15K+ / listing', promote:'25% buyer rep split', minIRR:'25%',
+        em:'N/A', maxDrive:'60 min',
+        disqualifiers:['Sale price < $250K','Market with < 3 comps','Repair CapEx > $50K without revenue justification','Seller unwilling to vacate for prep'],
+        standards:{avgCapEx:'$18K avg repair',avgRevenue:'$450K avg sale',minGP:'$15,000',minIRRG0:'25%',minComps:'3 sales'}
+      },
+      {
+        name:'Turnkey Disposition (Brokerage Only)', tier:'tier1', status:'Active',
+        desc:'Listing brokerage only — no construction scope. Lower-friction entry, no CapEx risk.',
+        duration:{min:5,base:8,max:13},
+        gp:'$11K+ / listing', promote:'25% buyer rep split', minIRR:'25%',
+        em:'N/A', maxDrive:'60 min',
+        disqualifiers:['Sale price < $250K','Market with < 3 comps','Property requiring significant prep seller won\'t manage'],
+        standards:{avgCapEx:'N/A',avgRevenue:'$450K avg sale',minGP:'$11,000',minIRRG0:'25%',minComps:'3 sales'}
+      }
+    ]
+  },
+  {
+    id:'entry-level', name:'Entry Level Housing', color:'#1A3F72',
+    verticals:['Development','Construction','Brokerage'],
+    desc:'Horizontal subdivision + vertical build + brokerage. Harmony Mesa archetype for Ground Up; Ranch Harrah for Value Add.',
+    types:[
+      {
+        name:'Entry Level Housing (Ground Up)', tier:'tier1', status:'Active',
+        desc:'Horizontal subdivision + vertical construction + listing brokerage. Harmony Mesa archetype.',
+        duration:{min:24,base:31,max:42},
+        gp:'$562.5K promote (50-home)', promote:'30% on net income/home', minIRR:'20%',
+        em:'1.8x', maxDrive:'75 min',
+        disqualifiers:['Absorption < 1.5 homes/mo','All-in lot basis > 60% of sale price','Water rights unresolved','Entitlement risk unquantified at G2a','< 20 lot projects'],
+        standards:{avgCapEx:'$150K/home vertical',avgRevenue:'$375K avg sale',minGP:'$562.5K (50 homes)',minIRRG0:'15%',minIRRG2:'20%',minIRRG3:'22%',minEM:'1.8x',maxLand:'25%',maxLTV:'65% acq / 75% const',minComps:'5 sales within 5 miles'}
+      },
+      {
+        name:'Entry Level Housing (Value Add)', tier:'tier2', status:'Active',
+        desc:'Acquire, renovate, and sell entry-level SFR. Ranch Harrah archetype. Short cycle, capital-light.',
+        duration:{min:4,base:6,max:10},
+        gp:'$40K+ / deal', promote:'N/A', minIRR:'30%',
+        em:'1.5x', maxDrive:'45 min',
+        disqualifiers:['ARV < $300K','Reno > $100K without comp support','Title/legal complications','No exit comps within 90 days','Team at capacity on Tier 1'],
+        standards:{avgBasis:'$200K–$350K',avgCapEx:'$50K–$100K reno',avgRevenue:'$300K–$450K ARV',minGP:'$40,000',minIRRG0:'25%',minIRRG3:'35%',minEM:'1.5x',maxLand:'40%',minNetMargin:'15%',minComps:'3 within 1 mile'}
+      }
+    ]
+  },
+  {
+    id:'retail', name:'Retail', color:'#8A640E',
+    verticals:['Development','Construction'],
+    desc:'Appreciation-driven commercial plays. Ground Up carries more entitlement risk but higher return hurdles.',
+    types:[
+      {
+        name:'Retail (Ground Up)', tier:'tier1', status:'Active',
+        desc:'Ground-up commercial development. Higher entitlement risk, higher fee and promote upside.',
+        duration:{min:18,base:23,max:28},
+        gp:'$90K+ fees', promote:'30% on appreciation', minIRR:'22%',
+        em:'1.8x', maxDrive:'90 min',
+        disqualifiers:['Entitlement path not confirmed at G2a','No anchor tenant or LOI','Single-tenant dependency','Appreciation < 15%/yr underwritten'],
+        standards:{avgBasis:'$1M–$5M',avgCapEx:'$1M–$4M CapEx',minGP:'$90,000',minIRRG0:'18%',minIRRG2:'22%',minIRRG3:'25%',minEM:'1.8x',maxLand:'25%',maxLTV:'65% acq / 75% const',minNetMargin:'7%',minComps:'3 comparable leases or sales'}
+      },
+      {
+        name:'Retail (Value Add)', tier:'tier2', status:'Active',
+        desc:'Acquire and improve existing retail/commercial asset. Target appreciation through development lift.',
+        duration:{min:18,base:23,max:28},
+        gp:'$60K+ fees', promote:'30% on appreciation', minIRR:'18%',
+        em:'1.6x', maxDrive:'90 min',
+        disqualifiers:['Single-tenant dependency without re-lease plan','Appreciation < 10%/yr underwritten','No asset management partner identified'],
+        standards:{avgBasis:'$1M–$5M',avgCapEx:'$500K–$4M CapEx',minGP:'$60,000',minIRRG0:'15%',minIRRG2:'18%',minIRRG3:'20%',minEM:'1.6x',maxLand:'30%',maxLTV:'70% acq / 75% const',minNetMargin:'5%',minComps:'3 comparable leases or sales'}
+      }
+    ]
+  },
+  {
+    id:'multifamily', name:'Multifamily', color:'#1E5C36',
+    verticals:['Development','Construction'],
+    desc:'~50-door ground-up and value-add. Canyon\'s Edge / HUD 223(f) archetype. Longest cycle, highest total GP.',
+    types:[
+      {
+        name:'Midsized MF (Ground Up)', tier:'tier1', status:'Active',
+        desc:'Ground-up multifamily development. Canyon\'s Edge / HUD 223(f) archetype. ~50 doors.',
+        duration:{min:30,base:38,max:45},
+        gp:'$1.05M fees (50 doors)', promote:'30% on appreciation', minIRR:'18%',
+        em:'1.8x', maxDrive:'90 min',
+        disqualifiers:['Sub-20 doors','HUD 223(f) surplus cash restrictions violated','No institutional equity partner for >$10M','Utility capacity unconfirmed'],
+        standards:{avgBasis:'$500K–$3M land',avgCapEx:'$220K/door ($11M @ 50 doors)',minGP:'$360,000',minIRRG0:'15%',minIRRG2:'18%',minIRRG3:'20%',minEM:'1.8x',maxLand:'20%',maxLTV:'70% acq / 80% const',minAbsorption:'3 units/mo',minNetMargin:'8%',minComps:'5 rental comps'}
+      },
+      {
+        name:'Midsized MF (Value Add)', tier:'exploring', status:'Draft',
+        desc:'Acquire and reposition existing multifamily asset. Standards in development.',
+        duration:{min:30,base:38,max:48},
+        gp:'$200K+ (est.)', promote:'30% on appreciation', minIRR:'18%',
+        em:'1.7x', maxDrive:'90 min',
+        disqualifiers:['No stabilized operations plan','No property management partner','Vacancy > 20% without clear lease-up plan'],
+        standards:{avgBasis:'$2M–$10M',avgCapEx:'$20K–$60K/door reno',minGP:'$200,000',minIRRG0:'15%',minIRRG2:'18%',minIRRG3:'20%',minEM:'1.7x',maxLTV:'75% acq / 80% const',minNetMargin:'7%',minComps:'5 rental comps',note:'Draft — no archetype project yet'}
+      }
+    ]
+  },
+  {
+    id:'gc-construct', name:'GC / Construction', color:'#4A4640',
+    verticals:['Construction'],
+    desc:'Fee-for-service only. No capital at risk. Pure execution — margin is the entire return.',
+    types:[
+      {
+        name:'3rd Party GC — Precon & Construct', tier:'tier1', status:'Active',
+        desc:'Squeeze Inn / tenant improvement archetype. No land, no promote. Pure construction execution.',
+        duration:{min:3,base:6,max:12},
+        gp:'$30K+ (7%+ on hard cost)', promote:'N/A — fee only', minIRR:'N/A',
+        em:'N/A', maxDrive:'60 min',
+        disqualifiers:['GC margin < 5%','Contract without contingency provision','Client financing not confirmed','Specialty subs not in current network','Project > $5M without additional PM capacity'],
+        standards:{avgCapEx:'$500K+ hard cost',minGP:'$30,000',minGCMargin:'7%',maxDrive:'60 min',note:'Team capacity is the primary constraint. No capital at risk.'}
+      }
+    ]
+  },
+  {
+    id:'second-homes', name:'2nd Homes', color:'#6B3A8A',
+    verticals:['Development','Construction','Brokerage'],
+    desc:'Develop, build, or acquire second home assets — whole or fractional ownership. Higher price point, longer cycle.',
+    types:[
+      {
+        name:'2nd Home (Whole Ownership)', tier:'tier1', status:'Draft',
+        desc:'Develop, build, or renovate second home for whole-ownership sale. Luxury SFR archetype.',
+        duration:{min:12,base:18,max:24},
+        gp:'$150K+ / deal', promote:'TBD per deal structure', minIRR:'25%',
+        em:'1.8x', maxDrive:'120 min',
+        disqualifiers:['Buyer financing risk at luxury price points without pre-qualified buyer','Reno > $800K without luxury sub network','No luxury comp support within 10 miles'],
+        standards:{avgBasis:'$500K–$1.5M',avgCapEx:'$200K–$800K',avgRevenue:'$1M–$3M sale',minGP:'$150,000',minIRRG0:'20%',minIRRG2:'25%',minIRRG3:'28%',minEM:'1.8x',maxLand:'30%',maxLTV:'65% acq / 75% const',minNetMargin:'15%',minComps:'3 luxury comps',note:'Draft — no completed archetype'}
+      },
+      {
+        name:'2nd Home (Fractional Ownership)', tier:'tier1', status:'Draft',
+        desc:'Develop or acquire second home assets structured for fractional/co-investment ownership.',
+        duration:{min:12,base:18,max:30},
+        gp:'$100K+ / deal', promote:'TBD per deal', minIRR:'25%',
+        em:'2.0x', maxDrive:'120 min',
+        disqualifiers:['Fractional structure requires Reg D — no securities license in place','No legal structure template completed','Fractional demand not validated in target market'],
+        standards:{avgBasis:'$500K–$2M',avgCapEx:'$100K–$500K',avgRevenue:'$800K–$3M fractional',minGP:'$100,000',minIRRG0:'20%',minIRRG2:'25%',minIRRG3:'28%',minEM:'2.0x',maxLand:'35%',maxLTV:'65% acq / 70% const',minNetMargin:'15%',minComps:'3 luxury comps',note:'Draft — Reg D compliance and TIC structure must be resolved first'}
+      }
+    ]
+  },
+  {
+    id:'cool-shit', name:'Cool Shit', color:'#8C1F1F',
+    verticals:['Development','Construction','Brokerage'],
+    desc:'One-off opportunistic projects. Hard-capped. High return hurdles exist to justify the capacity cost.',
+    types:[
+      {
+        name:'Cool Shit (Hard Cap on Count)', tier:'exploring', status:'Draft',
+        desc:'One-off opportunistic projects that don\'t fit a defined vertical. Strictly capacity-managed.',
+        duration:{min:0,base:12,max:24},
+        gp:'Deal-specific ($100K+ floor)', promote:'Deal-specific', minIRR:'30%',
+        em:'2.0x', maxDrive:'N/A',
+        disqualifiers:['Cannibalizes Tier 1 capacity','Return hurdles below 25% IRR','No clear exit path within 24 months','Requires unallocated team members'],
+        standards:{minGP:'$100,000',minIRRG0:'25%',minIRRG2:'30%',minIRRG3:'35%',minEM:'2.0x',maxDuration:'24 months',note:'Principal discretion only. Each project requires standalone underwriting memo.'}
+      }
+    ]
+  }
+];
+
+const TOOLS = [
+  {
+    id:'sbos', name:'S-BOS', tag:'Project Operating System',
+    coverage:{
+      'bus-dev':'partial','pipeline':'strong','wip':'strong','closeout':'strong','asset-mgmt':'partial',
+      'alignment':'strong','budget':'partial','schedule':'strong','qc-safety':'partial'
+    }
+  },
+  {
+    id:'kompass', name:'Kompass', tag:'Data Aggregation & Reporting',
+    coverage:{
+      'bus-dev':'strong','pipeline':'strong','wip':'strong','closeout':'strong','asset-mgmt':'strong',
+      'alignment':'strong','budget':'strong','schedule':'partial','qc-safety':'none'
+    }
+  },
+  {
+    id:'intacct', name:'Intacct', tag:'Financial Accounting',
+    coverage:{
+      'bus-dev':'none','pipeline':'partial','wip':'partial','closeout':'strong','asset-mgmt':'strong',
+      'alignment':'partial','budget':'strong','schedule':'none','qc-safety':'none'
+    }
+  }
+];
+
+const GAPS = [
+  {
+    severity:'critical', title:'No Business Development Tool',
+    body:'All three tools have weak or zero coverage of the Business Development situation. Deal sourcing, comp tracking, and investment standard qualification happen outside any system — creating inconsistency in what gets to Pipeline.',
+    tags:['Business Development','Alignment Pillar']
+  },
+  {
+    severity:'critical', title:'QC & Safety Pillar Uncovered',
+    body:'None of the current tools systematically track QC or safety standards. S-BOS partially handles this via checklists, but there\'s no dedicated gate enforcement. A fumbled QC handoff is the most visible failure to clients.',
+    tags:['QC & Safety Pillar','WIP','Closeout']
+  },
+  {
+    severity:'moderate', title:'S-BOS ↔ Intacct Data Bridge',
+    body:'Project cost data lives in Intacct; project schedule and scope live in S-BOS. There\'s no automatic bridge between them, creating a manual reconciliation step that delays Budget pillar verification at every handoff.',
+    tags:['Budget Pillar','WIP','Closeout']
+  },
+  {
+    severity:'moderate', title:'Asset Management Operational Gap',
+    body:'Intacct and Kompass cover the financial side of ongoing asset management well. The operational layer — maintenance decisions, lease renewals, capital planning — has no dedicated tool. As the portfolio grows, this gap compounds.',
+    tags:['Asset Management','Schedule Pillar']
+  },
+  {
+    severity:'opportunity', title:'Kompass as Universal Coverage Layer',
+    body:'Kompass already touches all five situations. Expanding its data inputs (esp. from S-BOS and Intacct) and adding BD-stage deal tracking could cover multiple gaps simultaneously — the highest-leverage single investment.',
+    tags:['All Situations','Alignment Pillar','Budget Pillar']
+  }
+];
+
+const PRIORITIES = [
+  {
+    rank:1, project:'S-BOS Build-Out', status:'building',
+    impact:'Closes the Pipeline→WIP→Closeout execution gap. Makes the four-pillar handoff systematic instead of tribal. Directly protects margin on all Tier 1 product lines.',
+    situations:['Pipeline','WIP','Closeout']
+  },
+  {
+    rank:2, project:'Kompass Expansion', status:'building',
+    impact:'Already the broadest coverage tool. Expanding BD deal tracking and deeper Intacct data pull would cover the Business Development gap and reduce the S-BOS↔Intacct bridge problem simultaneously.',
+    situations:['All 5 Situations','Alignment','Budget']
+  },
+  {
+    rank:3, project:'Intacct Integration Depth', status:'active',
+    impact:'The accounting backbone is in place. Automating the cost-to-budget reconciliation flow into S-BOS removes the biggest manual step in the WIP→Closeout handoff. Budget pillar verification becomes instant.',
+    situations:['WIP','Closeout','Asset Mgmt']
+  },
+  {
+    rank:4, project:'BD Deal Tracker / CRM', status:'backlog',
+    impact:'Only gap with zero tool coverage. A lightweight BD tool — even a structured SmartSuite view — would bring investment standard qualification into the system and make the Pipeline handoff package more consistent.',
+    situations:['Business Development']
+  },
+  {
+    rank:5, project:'QC & Safety Pillar System', status:'backlog',
+    impact:'The only pillar with no systematic enforcement. A checklist-based gate in S-BOS tied to the handoff workflow would eliminate the most client-visible failure mode across all product types.',
+    situations:['WIP','Closeout']
+  }
+];
+
+// ── RENDER SITUATIONS ────────────────────────────────────────────────────
+let activeSit = null;
+function renderSituations(){
+  const pipe = document.getElementById('situations-pipeline');
+  let html = '';
+  SITUATIONS.forEach((s,i)=>{
+    if(i>0) html += `<div class="sit-arrow">→</div>`;
+    html += `<div class="sit-node${activeSit===s.id?' active':''}" onclick="toggleSit('${s.id}')">
+      <div class="sit-num">${s.num}</div>
+      <div class="sit-icon">${s.icon}</div>
+      <div class="sit-name">${s.name}</div>
+      <div class="sit-desc">${s.desc}</div>
+      <div class="sit-risk">${s.risk}</div>
+    </div>`;
+  });
+  pipe.innerHTML = html;
+  renderSitDetail();
+}
+
+function toggleSit(id){
+  activeSit = activeSit===id ? null : id;
+  renderSituations();
+}
+
+function renderSitDetail(){
+  const el = document.getElementById('sit-detail');
+  if(!activeSit){ el.className='sit-detail'; el.innerHTML=''; return; }
+  const s = SITUATIONS.find(x=>x.id===activeSit);
+  if(!s){ el.className='sit-detail'; return; }
+  const pillarsHtml = ['Alignment','Budget','Schedule','QC & Safety'].map(p=>{
+    const critical = s.criticalPillars.includes(p);
+    return `<div class="sit-pillar-tag${critical?' critical':''}">${critical?'★ ':''}${p}</div>`;
+  }).join('');
+  const toolsHtml = s.tools.map(t=>`<div class="sit-pillar-tag">${t}</div>`).join('');
+  el.className = 'sit-detail open';
+  el.innerHTML = `<div class="sit-detail-title">${s.icon} ${s.name}</div>
+    <div class="sit-detail-body">${s.detail}</div>
+    <div class="sit-detail-pillars">
+      <span style="font-size:9px;color:rgba(255,255,255,.4);align-self:center;letter-spacing:.06em;text-transform:uppercase;font-family:var(--mono)">Pillars&nbsp;</span>
+      ${pillarsHtml}
+      <span style="font-size:9px;color:rgba(255,255,255,.4);align-self:center;letter-spacing:.06em;text-transform:uppercase;font-family:var(--mono);margin-left:8px">Tools&nbsp;</span>
+      ${toolsHtml}
+    </div>`;
+}
+
+// ── RENDER LANES ─────────────────────────────────────────────────────────
+let openLanes = new Set();
+let openTypes = new Set();
+let activeFilter = 'all';
+
+function renderLanes(){
+  const grid = document.getElementById('lanes-grid');
+  let html = '';
+  LANES.forEach(lane=>{
+    const allTiers = lane.types.map(t=>t.tier);
+    const matchesFilter = activeFilter==='all' || allTiers.includes(activeFilter) ||
+      (activeFilter==='exploring' && allTiers.some(t=>t==='exploring'||t==='draft'));
+    if(!matchesFilter) return;
+    const isOpen = openLanes.has(lane.id);
+    const typeCount = lane.types.length;
+    const tiers = [...new Set(lane.types.map(t=>t.tier))];
+    const tierBadges = tiers.map(t=>`<span class="tier-badge ${t}">${tierLabel(t)}</span>`).join(' ');
+    html += `<div class="lane" id="lane-${lane.id}">
+      <div class="lane-hdr" onclick="toggleLane('${lane.id}')">
+        <div class="lane-accent" style="background:${lane.color}"></div>
+        <div>
+          <div class="lane-name">${lane.name}</div>
+          <div class="lane-meta">${lane.verticals.join(' · ')} · ${typeCount} product type${typeCount>1?'s':''}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;margin-left:auto">
+          ${tierBadges}
+          <div class="lane-chev${isOpen?' open':''}">▼</div>
+        </div>
+      </div>`;
+    if(isOpen){
+      html += `<div class="lane-body open">`;
+      html += `<div class="type-cards">`;
+      lane.types.forEach(type=>{
+        const tid = lane.id+'-'+type.tier+'-'+type.name.replace(/\W+/g,'_').slice(0,20);
+        const isTypeOpen = openTypes.has(tid);
+        html += `<div class="type-card${isTypeOpen?' open':''}" onclick="toggleType('${tid}')">
+          <div class="tc-top">
+            <div class="tc-name">${type.name}</div>
+            <span class="tier-badge ${type.tier}">${tierLabel(type.tier)}</span>
+          </div>
+          <div class="tc-desc">${type.desc}</div>
+          <div class="tc-metrics">
+            <div class="tc-metric"><span class="tc-metric-l">Duration</span><span class="tc-metric-v">${type.duration.min}–${type.duration.max} mo</span></div>
+            <div class="tc-metric"><span class="tc-metric-l">GP / Deal</span><span class="tc-metric-v">${type.gp}</span></div>
+            <div class="tc-metric"><span class="tc-metric-l">Min IRR</span><span class="tc-metric-v">${type.minIRR}</span></div>
+            ${type.em!=='N/A'?`<div class="tc-metric"><span class="tc-metric-l">Min EM</span><span class="tc-metric-v">${type.em}</span></div>`:''}
+          </div>
+        </div>
+        ${isTypeOpen ? renderTypeDetail(type, tid) : ''}`;
+      });
+      html += `</div></div></div>`;
+    } else {
+      html += `</div>`;
+    }
+  });
+  grid.innerHTML = html || `<div style="padding:32px;text-align:center;color:var(--ink3);font-size:12px">No product lines match the selected filter.</div>`;
+}
+
+function renderTypeDetail(type, tid){
+  const dqHtml = type.disqualifiers.map(d=>`<div class="dq-item">${d}</div>`).join('');
+  const stds = type.standards || {};
+  const stdRows = Object.entries(stds).map(([k,v])=>{
+    const labels = {avgBasis:'Avg Basis',avgCapEx:'Avg CapEx',avgRevenue:'Avg Revenue',minGP:'Min GP Floor',minIRRG0:'Min IRR (G0)',minIRRG2:'Min IRR (G2a)',minIRRG3:'Min IRR (G3)',minEM:'Min Equity Multiple',maxLand:'Max Land % Cost',maxLTV:'Max LTV',maxDrive:'Max Drive Time',minAbsorption:'Min Absorption',minNetMargin:'Min Net Margin %',minComps:'Min Comp Transactions',minGCMargin:'Min GC Margin',maxDuration:'Max Duration',note:'Note'};
+    return `<div class="td-row"><span class="td-row-l">${labels[k]||k}</span><span class="td-row-v">${v}</span></div>`;
+  }).join('');
+  return `<div class="type-detail open" id="detail-${tid}">
+    <div class="td-grid">
+      <div class="td-section">
+        <div class="td-section-title">Investment Standards</div>
+        ${stdRows || '<div style="font-size:11px;color:var(--ink3)">Standards TBD</div>'}
+      </div>
+      <div class="td-section">
+        <div class="td-section-title">Disqualifiers</div>
+        <div class="disqualifiers">${dqHtml}</div>
+      </div>
+      <div class="td-section">
+        <div class="td-section-title">Return Profile</div>
+        <div class="td-row"><span class="td-row-l">Promote</span><span class="td-row-v">${type.promote}</span></div>
+        <div class="td-row"><span class="td-row-l">Revenue Model</span><span class="td-row-v">${type.gp}</span></div>
+        <div class="td-row"><span class="td-row-l">Max Drive Time</span><span class="td-row-v">${type.maxDrive}</span></div>
+        <div class="td-row"><span class="td-row-l">Base Duration</span><span class="td-row-v">${type.duration.base} mo (${type.duration.min}–${type.duration.max})</span></div>
+        <div class="td-row"><span class="td-row-l">Status</span><span class="td-row-v">${type.status}</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function toggleLane(id){
+  openLanes.has(id) ? openLanes.delete(id) : openLanes.add(id);
+  renderLanes();
+}
+function toggleType(tid){
+  openTypes.has(tid) ? openTypes.delete(tid) : openTypes.add(tid);
+  renderLanes();
+}
+function tierLabel(t){ return {tier1:'Tier 1',tier2:'Tier 2',exploring:'Exploring',draft:'Draft'}[t]||t; }
+function filterLanes(el){
+  document.querySelectorAll('#filter-chips .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  activeFilter = el.dataset.filter;
+  renderLanes();
+}
+
+// ── RENDER COVERAGE MAP ──────────────────────────────────────────────────
+function renderCoverage(){
+  const sitCols = SITUATIONS;
+  const pillarCols = [
+    {id:'alignment',name:'Alignment'},{id:'budget',name:'Budget'},
+    {id:'schedule',name:'Schedule'},{id:'qc-safety',name:'QC & Safety'}
+  ];
+
+  const COV_ICON = {strong:'✓', partial:'◐', none:'—'};
+
+  let th = `<tr>
+    <th class="tool-col" rowspan="2">Tool</th>
+    <th class="group-hdr sit-group" colspan="${sitCols.length}">Five Situations</th>
+    <th class="group-hdr pil-group" colspan="${pillarCols.length}">Four Pillars</th>
+  </tr><tr>`;
+  sitCols.forEach(s=>{th+=`<th class="sit-group">${s.icon}<br>${s.name.split(' ').slice(0,2).join(' ')}</th>`;});
+  pillarCols.forEach(p=>{th+=`<th class="pil-group">${p.name}</th>`;});
+  th += '</tr>';
+
+  let tbody = '';
+  TOOLS.forEach(tool=>{
+    tbody += `<tr>
+      <td class="tool-cell">
+        <div class="tool-cell-name">${tool.name}</div>
+        <div class="tool-cell-tag">${tool.tag}</div>
+      </td>`;
+    sitCols.forEach(s=>{
+      const c=tool.coverage[s.id]||'none';
+      tbody+=`<td class="sit-group" style="text-align:center"><div class="cov-dot ${c}" title="${tool.name} × ${s.name}: ${c}">${COV_ICON[c]}</div></td>`;
+    });
+    pillarCols.forEach(p=>{
+      const c=tool.coverage[p.id]||'none';
+      tbody+=`<td class="pil-group" style="text-align:center"><div class="cov-dot ${c}" title="${tool.name} × ${p.name}: ${c}">${COV_ICON[c]}</div></td>`;
+    });
+    tbody += '</tr>';
+  });
+
+  document.getElementById('cm-table').innerHTML = `<thead>${th}</thead><tbody>${tbody}</tbody>`;
+
+  const gapsHtml = GAPS.map(g=>`
+    <div class="gap-card ${g.severity}">
+      <div class="gap-card-severity">${g.severity}</div>
+      <div class="gap-card-title">${g.title}</div>
+      <div class="gap-card-body">${g.body}</div>
+      <div class="gap-card-tags">${g.tags.map(t=>`<span class="gap-tag">${t}</span>`).join('')}</div>
+    </div>`).join('');
+  document.getElementById('gaps-grid').innerHTML = gapsHtml;
+
+  const statusIcon = {active:'● Active',building:'⬡ Building',backlog:'○ Backlog'};
+  const prioHtml = PRIORITIES.map(p=>`
+    <div class="pt-row">
+      <div class="pt-rank">${p.rank}</div>
+      <div class="pt-project">${p.project}</div>
+      <div class="pt-impact">${p.impact}</div>
+      <div class="pt-sits">${p.situations.map(s=>`<span class="pt-sit-tag">${s}</span>`).join('')}</div>
+      <div class="pt-status ${p.status}">${statusIcon[p.status]||p.status}</div>
+    </div>`).join('');
+  document.getElementById('priority-rows').innerHTML = prioHtml;
+}
+
+// ── VIEW SWITCHING ────────────────────────────────────────────────────────
+function switchView(id, tab){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.pb-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('view-'+id).classList.add('active');
+  tab.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── BOOT ──────────────────────────────────────────────────────────────────
+renderSituations();
+renderLanes();
+renderCoverage();
+</script>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/article-editor.js"></script>
+</body>
+</html>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compliance Auditor — S-BOS Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+</head>
+<body data-section="agents">
+<header>
+  <a class="logo-lockup" href="../"><svg class="logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/><text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text></svg><div class="logo-text"><span class="brand">Stitser Built</span><span class="sub">S-BOS Knowledge Base</span></div></a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system" href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents" href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles" href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary" href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+<div class="nav-overlay">
+  <div class="nav-overlay-header"><a class="logo-lockup" href="../"><svg class="logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/><text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text></svg><div class="logo-text"><span class="brand">Stitser Built</span><span class="sub">S-BOS Knowledge Base</span></div></a><button class="nav-overlay-close" aria-label="Close menu">&#10005;</button></div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system" href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents" href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles" href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary" href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-eyebrow"><span class="agent-status live" style="display:inline-flex;margin:0 0 0 0">Live</span></div>
+  <h1 class="page-hero-title">Compliance Auditor</h1>
+  <p class="page-hero-subtitle">Audits a property contract against the required disclosures checklist, links Drive files, and creates SmartSuite tasks for every finding.</p>
+</div>
+<div class="orange-bar"></div>
+<div class="breadcrumb-bar">
+  <div class="breadcrumb"><a href="../">Home</a><span class="sep">→</span><a href="../agents/">Agents</a><span class="sep">→</span><span class="cur">Compliance Auditor</span></div>
+</div>
+
+<section>
+  <div class="section-label">Capability</div>
+  <div class="section-title">What This Agent Does</div>
+  <div class="prose">
+    <p>The Compliance Auditor reads the SmartSuite transaction record for a specific property, walks the linked Google Drive folder, and matches the documents on file against the required disclosures checklist for that transaction type. It flags any missing, incomplete, or unsigned items and creates a SmartSuite task for each finding so nothing falls through the cracks.</p>
+    <p>The agent also checks that key fields in the SmartSuite record are populated correctly — commission amounts, party contact info, key dates — and surfaces any gaps before the Ops Manager runs the formal audit. This means the audit conversation starts from a prepared state, not a cold one.</p>
+    <p><strong>What it reads:</strong> SmartSuite transaction record, linked Google Drive folder and documents, required disclosures checklist for the transaction type.</p>
+    <p><strong>What it creates:</strong> SmartSuite tasks for each finding, a summary audit report for the Ops Manager's review.</p>
+    <p><strong>What it does NOT do:</strong> It does not make the final compliance determination. It does not sign off on the audit. It does not decide whether a flagged item is a blocker. Those are always the Ops Manager's calls.</p>
+  </div>
+</section>
+
+<section style="background:var(--light);padding:56px 40px">
+  <div class="section-label">Trigger</div>
+  <div class="section-title">How to Trigger It</div>
+  <div class="trigger-box">
+    <div class="trigger-label">Primary Trigger</div>
+    <div class="trigger-phrase">"Audit [property address]"</div>
+  </div>
+  <div class="trigger-box">
+    <div class="trigger-label">Also Works</div>
+    <div class="trigger-phrase">"Run the compliance audit" or "Run the audit on [property]"</div>
+  </div>
+  <div class="prose" style="margin-top:20px">
+    <p>Claude will confirm which transaction you mean if the address matches multiple records. You can also say the client's last name: <em>"Audit the Johnson transaction."</em></p>
+  </div>
+</section>
+
+<section>
+  <div class="section-label">Process</div>
+  <div class="section-title">What Happens Step by Step</div>
+  <ol class="step-list">
+    <li><p>Claude fetches the transaction record from SmartSuite using the property address or client name you provided.</p></li>
+    <li><p>Claude identifies the transaction type and loads the corresponding required disclosures checklist.</p></li>
+    <li><p>Claude walks the linked Google Drive folder and checks each required document against the checklist.</p></li>
+    <li><p>Claude checks SmartSuite record fields — commissions, parties, dates — for completeness.</p></li>
+    <li><p>Claude creates a SmartSuite task for each missing, unsigned, or incomplete item.</p></li>
+    <li><p>Claude presents a summary to you: items cleared, items flagged, and any record gaps found.</p></li>
+  </ol>
+</section>
+
+<section style="background:var(--light);padding:56px 40px">
+  <div class="section-label">Value Chain</div>
+  <div class="section-title">Where It Fits</div>
+  <div class="prose">
+    <p>This agent is most commonly triggered at <strong>Stage 06 — Pre-Closing</strong> as part of the Ops Manager compliance audit before clearing the transaction to close. It can also be run at <strong>Stage 01 — File &amp; Project Setup</strong> to confirm the opening file is complete.</p>
+  </div>
+  <div style="margin-top:20px;display:flex;gap:12px;flex-wrap:wrap;">
+    <a href="../workflows/file-setup.html" style="font-family:var(--font-sub);font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--blue);text-decoration:none;padding:8px 16px;background:var(--white);border:1px solid var(--mid);">Stage 01 — File &amp; Project Setup</a>
+    <a href="../workflows/pre-closing.html" style="font-family:var(--font-sub);font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--white);text-decoration:none;padding:8px 16px;background:var(--blue);">Stage 06 — Pre-Closing ★</a>
+  </div>
+</section>
+
+<section>
+  <div class="section-label">Your Responsibility</div>
+  <div class="section-title">What You Still Own</div>
+  <ul class="bullet-list">
+    <li>The formal audit sign-off — Claude prepares, you certify</li>
+    <li>The judgment call on flagged items — whether each is a blocker or can proceed</li>
+    <li>Any follow-up conversations with parties to resolve findings</li>
+    <li>The decision to clear the transaction to close</li>
+  </ul>
+</section>
+
+<section style="background:var(--light);padding:56px 40px">
+  <div class="section-label">FAQ</div>
+  <div class="section-title">Tips & Common Questions</div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q">What if the property address matches multiple records?</div>
+      <div class="faq-a">Claude will ask you to confirm which transaction. You can provide the client name, escrow number, or close date to disambiguate.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Can I run it before the Pre-Closing stage?</div>
+      <div class="faq-a">Yes — running it at File Setup to confirm the opening file is a great habit. Catching gaps early is always better than finding them at Pre-Closing.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Will Claude resolve the findings itself?</div>
+      <div class="faq-a">No. Claude creates tasks for each finding but does not send emails, request documents from third parties, or make any changes to the file. That action is yours.</div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div><div class="footer-version">v1.0 · Internal Use Only</div></footer>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/article-editor.js"></script>
+</body>
+</html>

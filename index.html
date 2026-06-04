@@ -2,1608 +2,399 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Stitser BUILT — Planning</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S-BOS Knowledge Base — Stitser BUILT</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/global.css">
 <style>
-:root {
-  --ink:#0E0D0B; --ink2:#4A4640; --ink3:#8A847C;
-  --canvas:#F7F4EF; --paper:#FFFFFF; --rule:#E2DDD6;
-  --rule2:#EDE9E2;
-  --gold:#C8961A; --gold-l:#FBF3DE;
-  --blue:#1A3F72; --blue-l:#EAF0F9;
-  --green:#1E5C36; --green-l:#E4F2E9;
-  --red:#8C1F1F; --red-l:#F9E8E8;
-  --amber:#9C5A00; --amber-l:#FEF3E2;
-  --mono:'DM Mono',monospace;
-  --display:'Syne',sans-serif;
-  --body:'DM Sans',sans-serif;
-  --ease:cubic-bezier(.16,1,.3,1);
+/* ── LAUNCH CARDS ── */
+.launch-section {
+  padding: 64px 40px;
+  background: var(--dark);
 }
-*{box-sizing:border-box;margin:0;padding:0;}
-html{font-size:13px;}
-body{font-family:var(--body);background:var(--canvas);color:var(--ink);height:100vh;overflow:hidden;}
+.launch-section .section-label {
+  color: var(--orange);
+}
+.launch-section .section-title {
+  color: var(--white);
+  margin-bottom: 32px;
+}
+.launch-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.launch-card {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  border-top: 4px solid var(--orange);
+  border-radius: 6px;
+  padding: 32px 28px 28px;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  transition: background .15s, transform .15s;
+  gap: 12px;
+}
+.launch-card:hover {
+  background: rgba(255,255,255,.1);
+  transform: translateY(-2px);
+}
+.launch-card.teal { border-top-color: var(--blue); }
+.launch-card.white { border-top-color: rgba(255,255,255,.5); }
+.launch-card-eyebrow {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--orange);
+}
+.launch-card.teal .launch-card-eyebrow { color: #80b5c9; }
+.launch-card.white .launch-card-eyebrow { color: rgba(255,255,255,.5); }
+.launch-card-title {
+  font-family: var(--font-head);
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--white);
+  line-height: 1.15;
+  letter-spacing: -.01em;
+}
+.launch-card-desc {
+  font-family: var(--font-sub);
+  font-size: 14px;
+  color: rgba(255,255,255,.55);
+  line-height: 1.65;
+  flex: 1;
+}
+.launch-cta {
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-top: 4px;
+}
+.launch-card.teal .launch-cta { color: #80b5c9; }
+.launch-card.white .launch-cta { color: rgba(255,255,255,.6); }
 
-/* ── SCREENS ─────────────────────────────── */
-.screen{display:none;height:100vh;animation:fadeIn .25s var(--ease);}
-.screen.active{display:flex;flex-direction:column;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (max-width: 900px) {
+  .launch-grid { grid-template-columns: 1fr; }
+  .launch-section { padding: 48px 20px; }
+}
 
-/* ── HOME ────────────────────────────────── */
-#home{background:var(--ink);color:#fff;}
-.home-nav{padding:20px 32px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.08);}
-.home-logo{font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#fff;}
-.home-date{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.4);}
-.home-body{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px;gap:48px;}
-.home-headline{text-align:center;}
-.home-headline h1{font-family:var(--display);font-size:clamp(32px,5vw,56px);font-weight:800;line-height:1;letter-spacing:-.02em;color:#fff;}
-.home-headline p{font-size:13px;color:rgba(255,255,255,.5);margin-top:10px;font-weight:300;}
-.home-cards{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px;width:100%;max-width:1400px;}
-.home-card{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:28px;cursor:pointer;transition:all .2s var(--ease);position:relative;overflow:hidden;}
-.home-card::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.06),transparent);opacity:0;transition:opacity .2s;}
-.home-card:hover{background:rgba(255,255,255,.09);border-color:rgba(255,255,255,.25);transform:translateY(-2px);}
-.home-card:hover::before{opacity:1;}
-.card-icon{font-size:24px;margin-bottom:14px;}
-.card-title{font-family:var(--display);font-size:18px;font-weight:700;color:#fff;margin-bottom:6px;}
-.card-desc{font-size:11px;color:rgba(255,255,255,.45);line-height:1.6;font-weight:300;}
-.card-arrow{position:absolute;top:20px;right:20px;font-size:16px;color:rgba(255,255,255,.25);transition:all .2s;}
-.home-card:hover .card-arrow{color:rgba(255,255,255,.7);transform:translate(2px,-2px);}
-.card-accent{position:absolute;bottom:0;left:0;right:0;height:2px;}
-.card-accent.gold{background:linear-gradient(90deg,var(--gold),transparent);}
-.card-accent.blue{background:linear-gradient(90deg,#4A8FE8,transparent);}
-.card-accent.green{background:linear-gradient(90deg,#2D7D4F,transparent);}
-.card-accent.amber{background:linear-gradient(90deg,#9C5A00,transparent);}
-.home-stats{display:flex;gap:32px;justify-content:center;}
-.home-stat{text-align:center;}
-.home-stat-val{font-family:var(--display);font-size:28px;font-weight:800;color:#fff;}
-.home-stat-label{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-top:2px;}
-
-/* ── SHARED APP CHROME ───────────────────── */
-.app-bar{background:var(--paper);border-bottom:1px solid var(--rule);padding:0 20px;display:flex;align-items:center;gap:0;height:44px;flex-shrink:0;}
-.app-bar-back{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink3);cursor:pointer;padding:0 12px 0 0;border-right:1px solid var(--rule);margin-right:12px;height:100%;transition:color .15s;}
-.app-bar-back:hover{color:var(--ink);}
-.app-bar-title{font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:.01em;flex:1;}
-.app-bar-actions{display:flex;gap:6px;align-items:center;}
-
-/* ── TOOLBAR ─────────────────────────────── */
-.toolbar{background:var(--paper);border-bottom:1px solid var(--rule);padding:6px 16px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;min-height:40px;}
-.tl{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;font-weight:500;}
-.pills{display:flex;gap:3px;flex-wrap:wrap;}
-.pill{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--rule);background:var(--canvas);color:var(--ink2);transition:all .12s;user-select:none;}
-.pill.on{background:var(--ink);color:#fff;border-color:var(--ink);}
-.pill:hover:not(.on){background:var(--rule2);}
-.sep{width:1px;height:18px;background:var(--rule);margin:0 3px;flex-shrink:0;}
-.tbtn-grp{display:flex;border:1px solid var(--rule);border-radius:5px;overflow:hidden;}
-.tbtn{padding:3px 10px;font-size:11px;cursor:pointer;background:var(--canvas);color:var(--ink2);border:none;font-family:var(--body);transition:all .12s;font-weight:400;}
-.tbtn.on{background:var(--ink);color:#fff;}
-select{padding:3px 7px;border:1px solid var(--rule);border-radius:4px;font-size:11px;font-family:var(--body);background:var(--paper);color:var(--ink);}
-
-/* ── SUMMARY BAR ─────────────────────────── */
-.sumbar{background:var(--rule2);border-bottom:1px solid var(--rule);padding:6px 16px;display:flex;gap:20px;flex-wrap:wrap;flex-shrink:0;}
-.si{display:flex;flex-direction:column;}
-.si-l{font-size:8px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;font-weight:500;}
-.si-v{font-family:var(--mono);font-size:12px;font-weight:500;color:var(--ink);}
-
-/* ── CONTENT ─────────────────────────────── */
-.scroll-area{overflow-y:auto;flex:1;}
-.content{padding:12px 16px;}
-
-/* ── GROUPS ──────────────────────────────── */
-.grp{margin-bottom:8px;border:1px solid var(--rule);border-radius:6px;overflow:hidden;background:var(--paper);}
-.grp-hdr{background:var(--canvas);padding:7px 12px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;}
-.grp-hdr:hover{background:var(--rule2);}
-.grp-left{display:flex;align-items:center;gap:7px;}
-.grp-fin{font-family:var(--mono);font-size:10px;color:var(--ink2);display:flex;gap:10px;}
-.chev{font-size:9px;color:var(--ink3);transition:transform .12s;display:inline-block;}
-.chev.o{transform:rotate(180deg);}
-.grp-body{display:none;}
-.grp-body.o{display:block;}
-.cgrp{border-top:1px solid var(--rule);}
-.cgrp-hdr{padding:5px 12px 5px 26px;background:var(--paper);display:flex;align-items:center;justify-content:space-between;cursor:pointer;}
-.cgrp-hdr:hover{background:var(--canvas);}
-.cgrp-body{display:none;}
-.cgrp-body.o{display:block;}
-
-/* ── TABLE ───────────────────────────────── */
-table{width:100%;border-collapse:collapse;}
-thead{background:var(--canvas);}
-th{padding:5px 10px;text-align:left;font-size:9px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--rule);white-space:nowrap;}
-th.r{text-align:right;}
-td{padding:6px 10px;border-bottom:1px solid var(--rule2);font-size:11px;vertical-align:middle;}
-td.r{text-align:right;font-family:var(--mono);font-size:10px;}
-tr:last-child td{border-bottom:none;}
-tr:hover td{background:#FAFAF8;}
-.plink{color:var(--blue);text-decoration:none;font-weight:500;}
-.plink:hover{text-decoration:underline;}
-
-/* ── BADGES ──────────────────────────────── */
-.bdg{display:inline-block;padding:2px 7px;border-radius:10px;font-size:9px;font-weight:600;white-space:nowrap;letter-spacing:.02em;}
-.bwip{background:var(--blue-l);color:var(--blue);}
-.bclo{background:var(--green-l);color:var(--green);}
-.bpip{background:var(--amber-l);color:var(--amber);}
-.bbiz{background:var(--gold-l);color:var(--gold);}
-.bnewopp{background:#EEF6EE;color:#1E5C36;}
-.bnurture{background:#FFF2DC;color:#7A5800;}
-.bwarm{background:#FFD5B3;color:#7A3200;}
-.bhot{background:#FF702E;color:#fff;}
-.bcls{background:var(--rule2);color:var(--ink3);}
-.both{background:#F0EBFB;color:#4A2A8C;}
-
-/* ── NKD ─────────────────────────────────── */
-.nkd-btn{font-size:10px;color:var(--blue);cursor:pointer;background:none;border:none;font-family:var(--body);padding:0;text-align:left;}
-.nkd-btn:hover{text-decoration:underline;}
-.nkd-past{color:var(--ink3);}
-
-/* ── PERSON TAG ──────────────────────────── */
-.ptag{display:inline-block;padding:1px 5px;border-radius:2px;background:var(--canvas);border:1px solid var(--rule);font-size:9px;color:var(--ink2);margin:1px 1px 1px 0;}
-
-/* ── CF SPREAD (stacked) ─────────────────── */
-.cf-wrap{overflow-x:auto;}
-.cf-tbl{min-width:800px;width:100%;border-collapse:collapse;}
-.sticky-col{position:sticky;left:0;z-index:5;background:var(--paper);}
-thead .sticky-col{background:var(--canvas);z-index:6;}
-.mo-th{min-width:54px;text-align:right;padding:5px 5px;font-size:8px;font-weight:500;color:var(--ink3);letter-spacing:.04em;}
-.mo-td{text-align:right;padding:4px 5px;font-family:var(--mono);font-size:9px;}
-.mo-cur{background:#FFFCEE!important;}
-.cf-proj-cell{padding:5px 10px;min-width:200px;max-width:200px;}
-.trow td{border-top:2px solid var(--rule);font-weight:600;background:var(--canvas);}
-
-/* ── STACKED BAR ─────────────────────────── */
-.stack-cell{padding:3px 5px;position:relative;}
-.stack-bar{display:flex;height:20px;border-radius:3px;overflow:hidden;gap:1px;min-width:4px;}
-.stack-seg{height:100%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:8px;color:#fff;overflow:hidden;white-space:nowrap;padding:0 3px;transition:opacity .12s;}
-.stack-seg:hover{opacity:.85;}
-.seg-inv{background:var(--blue);}
-.seg-op{background:var(--green);}
-.seg-fin{background:var(--amber);}
-
-/* ── PROJECT PLANNER ─────────────────────── */
-.pp-layout{display:flex;flex:1;overflow:hidden;}
-.pp-sidebar{width:280px;flex-shrink:0;border-right:1px solid var(--rule);background:var(--paper);display:flex;flex-direction:column;overflow:hidden;}
-.pp-sidebar-hdr{padding:10px 14px;border-bottom:1px solid var(--rule);background:var(--canvas);}
-.pp-search{width:100%;box-sizing:border-box;padding:8px 12px;border:1px solid var(--rule);border-radius:4px;font-size:13px;font-family:var(--body);background:var(--paper);color:var(--ink);}
-.pp-search:focus{outline:none;border-color:var(--blue);}
-.pp-list{overflow-y:auto;flex:1;}
-.pp-item{padding:9px 14px;border-bottom:1px solid var(--rule2);cursor:pointer;transition:background .1s;}
-.pp-item:hover{background:var(--canvas);}
-.pp-item.active{background:var(--blue-l);border-left:2px solid var(--blue);}
-.pp-item-name{font-size:11px;font-weight:500;color:var(--ink);line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.pp-item-meta{display:flex;gap:5px;margin-top:3px;align-items:center;}
-.pp-detail{flex:1;overflow:hidden;display:flex;flex-direction:column;}
-.pp-detail-hdr{padding:14px 20px;border-bottom:1px solid var(--rule);background:var(--paper);flex-shrink:0;}
-.pp-detail-title{font-family:var(--display);font-size:17px;font-weight:700;margin-bottom:6px;line-height:1.2;}
-.pp-detail-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
-.pp-tabs{display:flex;border-bottom:1px solid var(--rule);padding:0 20px;background:var(--paper);flex-shrink:0;}
-.pp-tab{padding:8px 12px;font-size:11px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;color:var(--ink2);transition:all .12s;}
-.pp-tab.active{color:var(--blue);border-bottom-color:var(--blue);}
-.pp-body{overflow-y:auto;flex:1;}
-.pp-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;gap:12px;color:var(--ink3);text-align:center;padding:40px;}
-.pp-empty-icon{font-size:32px;opacity:.3;}
-.pp-empty-title{font-family:var(--display);font-size:16px;font-weight:700;color:var(--ink2);}
-
-/* ── INCOME STATEMENT ────────────────────── */
-.is-wrap{padding:16px 20px;}
-.is-sec{margin-bottom:14px;}
-.is-sec-hdr{display:grid;grid-template-columns:1fr 80px 80px 80px 80px 80px 70px;gap:4px;
-  padding:5px 0;border-bottom:1px solid var(--rule);margin-bottom:2px;}
-.is-col{text-align:right;font-size:9px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;}
-.is-row{display:grid;grid-template-columns:1fr 80px 80px 80px 80px 80px 70px;
-  gap:4px;padding:4px 0;border-bottom:1px solid var(--rule2);align-items:center;}
-.is-row:last-child{border-bottom:none;}
-.is-row:hover{background:var(--canvas);}
-.is-acct{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.is-v{font-family:var(--mono);font-size:10px;text-align:right;}
-.is-v.g{color:var(--green);}
-.is-v.d{color:var(--ink3);}
-.is-total{display:grid;grid-template-columns:1fr 80px 80px 80px 80px 80px 70px;
-  gap:4px;padding:5px 0;border-top:1.5px solid var(--rule);margin-top:1px;}
-.is-total-lbl{font-size:11px;font-weight:600;}
-.is-grand{display:grid;grid-template-columns:1fr 80px 80px 80px 80px 80px 70px;
-  gap:4px;padding:10px 20px;background:var(--ink);color:#fff;
-  margin:10px -20px -16px;}
-.is-grand-lbl{font-size:12px;font-weight:700;font-family:var(--display);}
-.is-grand .is-v{color:rgba(255,255,255,.7);}
-.is-grand .is-v.g{color:#6ECA8F;}
-.pct-bar{width:100%;height:3px;background:var(--rule2);border-radius:2px;overflow:hidden;margin-bottom:1px;}
-.pct-fill{height:100%;background:var(--green);border-radius:2px;}
-.t1{display:inline-block;padding:1px 4px;border-radius:2px;font-size:8px;font-weight:600;background:var(--green-l);color:var(--green);margin-left:3px;vertical-align:middle;}
-.t2{display:inline-block;padding:1px 4px;border-radius:2px;font-size:8px;font-weight:600;background:var(--blue-l);color:var(--blue);margin-left:3px;vertical-align:middle;}
-
-/* ── STACKED CF (project level) ──────────── */
-.pcf-wrap{padding:16px 20px;}
-.pcf-legend{display:flex;gap:14px;margin-bottom:12px;flex-wrap:wrap;}
-.pcf-leg{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--ink2);}
-.pcf-dot{width:10px;height:10px;border-radius:2px;}
-.pcf-tbl{width:100%;border-collapse:collapse;min-width:600px;}
-.pcf-tbl th{padding:5px 8px;font-size:9px;font-weight:500;color:var(--ink3);text-transform:uppercase;
-  letter-spacing:.05em;border-bottom:1px solid var(--rule);text-align:right;background:var(--canvas);}
-.pcf-tbl th.acct{text-align:left;min-width:160px;position:sticky;left:0;background:var(--canvas);}
-.pcf-tbl td{padding:4px 8px;border-bottom:1px solid var(--rule2);font-family:var(--mono);font-size:9px;text-align:right;}
-.pcf-tbl td.acct{text-align:left;font-family:var(--body);font-size:11px;color:var(--ink);position:sticky;left:0;background:var(--paper);}
-.pcf-tbl tr:hover td{background:#FAFAF8;}
-.pcf-tbl .sec-hdr td{background:var(--canvas);font-family:var(--body);font-size:9px;font-weight:600;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;padding:6px 8px;}
-.pcf-tbl .subtotal td{border-top:1px solid var(--rule);font-weight:600;background:var(--canvas);}
-.pcf-tbl .grand td{border-top:2px solid var(--ink);font-weight:700;background:var(--canvas);}
-.val-inv{color:var(--blue);}
-.val-op{color:var(--green);}
-.val-fin{color:var(--amber);}
-.val-zero{color:var(--rule);}
-.mo-cur-col{background:#FFFCEE!important;}
-
-/* ── DATES TABLE ─────────────────────────── */
-.dates-wrap{padding:16px 20px;}
-.dates-tbl{width:100%;border-collapse:collapse;}
-.dates-tbl th{padding:5px 10px;font-size:9px;font-weight:500;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid var(--rule);background:var(--canvas);}
-.dates-tbl td{padding:6px 10px;border-bottom:1px solid var(--rule2);font-size:11px;}
-.dates-tbl td.mono{font-family:var(--mono);font-size:10px;}
-.dates-tbl td.actual{color:var(--green);font-weight:500;}
-.no-val{color:var(--ink3);}
-
-/* ── NO DATA ─────────────────────────────── */
-.no-data{padding:32px;text-align:center;color:var(--ink3);font-size:12px;}
-
-/* ── DATE POPUP ──────────────────────────── */
-.popup-overlay{display:none;position:fixed;inset:0;background:rgba(14,13,11,.5);z-index:400;align-items:center;justify-content:center;}
-.popup-overlay.show{display:flex;}
-.popup{background:var(--paper);border-radius:8px;border:1px solid var(--rule);width:480px;max-width:92vw;max-height:70vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 12px 40px rgba(0,0,0,.15);}
-.popup-hdr{padding:12px 16px;border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;}
-.popup-title{font-size:12px;font-weight:600;}
-.popup-close{background:none;border:none;font-size:14px;cursor:pointer;color:var(--ink3);}
-.popup-close:hover{color:var(--ink);}
-.popup-body{overflow-y:auto;padding:14px 16px;}
-
-/* ── MISC ────────────────────────────────── */
-.hidden{display:none!important;}
-.empty{padding:32px;text-align:center;color:var(--ink3);font-size:12px;}
-.sec-badge{display:inline-block;padding:1px 5px;border-radius:2px;font-size:9px;font-weight:600;margin-right:4px;}
-.sb-inv{background:var(--blue-l);color:var(--blue);}
-.sb-op{background:var(--green-l);color:var(--green);}
-.sb-fin{background:var(--amber-l);color:var(--amber);}
-/* ── COMPANY LENS FILTER ─────────────────── */
-#pp-co-filter { display:flex; align-items:center; gap:8px; padding:6px 20px 8px; background:var(--paper); border-bottom:1px solid var(--rule2); flex-shrink:0; }
-#pp-co-sel { font-size:12px; padding:3px 6px; border:1px solid var(--rule); border-radius:4px; background:var(--canvas); color:var(--ink); cursor:pointer; }
-
-/* ── GAAP Compute Engine ─────────────────── */
-.gaap-warn{margin:10px 16px 6px;padding:8px 12px;background:var(--amber-l);border-left:3px solid var(--amber);border-radius:0 4px 4px 0;font-size:10px;color:var(--amber);line-height:1.7;}
-.cf-neg{color:var(--red)!important;}
-.cf-pos{color:var(--green)!important;}
-.cf-date-hint{display:block;font-size:8px;color:var(--ink3);font-family:var(--mono);margin-top:1px;}
-.cf-no-date{font-size:8px;color:var(--amber);}
-.is-gaap-sub{padding:3px 12px 0;font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em;}
-
+/* ── KOMPASS FOUNDATION LAYER ── */
+.kompass-layer {
+  background: var(--blue);
+  border-radius: 8px;
+  padding: 28px 32px;
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+  margin-bottom: 0;
+  text-decoration: none;
+  transition: filter .15s;
+}
+.kompass-layer:hover { filter: brightness(1.1); }
+.kompass-layer-badge {
+  display: inline-block;
+  font-family: var(--font-sub);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--orange);
+  background: rgba(248,153,29,.15);
+  border: 1px solid rgba(248,153,29,.35);
+  padding: 3px 8px;
+  border-radius: 3px;
+  margin-bottom: 10px;
+}
+.kompass-layer-title {
+  font-family: var(--font-head);
+  font-size: 20px;
+  font-weight: 900;
+  color: #fff;
+  margin-bottom: 8px;
+}
+.kompass-layer-body {
+  font-family: var(--font-sub);
+  font-size: 14px;
+  color: rgba(255,255,255,.65);
+  line-height: 1.65;
+  max-width: 680px;
+}
+.kompass-status {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #7dd9a5;
+  background: rgba(125,217,165,.12);
+  border: 1px solid rgba(125,217,165,.25);
+  padding: 5px 12px;
+  border-radius: 20px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.kompass-layer-link {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.45);
+  margin-top: 14px;
+  display: block;
+}
+.kompass-connector {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0 8px;
+}
+.kompass-connector-line {
+  flex: 1;
+  height: 1px;
+  background: var(--mid);
+}
+.kompass-connector-label {
+  font-family: var(--font-sub);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--mid);
+  white-space: nowrap;
+}
+@media (max-width: 768px) {
+  .kompass-layer { flex-direction: column; gap: 16px; padding: 20px; }
+}
 </style>
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════
-     HOME SCREEN
-═══════════════════════════════════════════ -->
-<div class="screen active" id="home">
-  <nav class="home-nav">
-    <div class="home-logo">Stitser Built</div>
-    <div class="home-date" id="home-date"></div>
+<header>
+  <a class="logo-lockup" href="./">
+    <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+      <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+    </svg>
+    <div class="logo-text">
+      <span class="brand">Stitser Built</span>
+      <span class="sub">S-BOS Knowledge Base</span>
+    </div>
+  </a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system"    href="system/">System</a>
+    <a class="nav-link" data-section="workflows" href="workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents"    href="agents/">Agents</a>
+    <a class="nav-link" data-section="roles"     href="roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary"  href="glossary/">Glossary</a>
   </nav>
-  <div class="home-body">
-    <div class="home-headline">
-      <h1>Planning<br>Tools</h1>
-      <p>Financial planning and team capacity · S-Bos data · May 2026</p>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+
+<div class="nav-overlay">
+  <div class="nav-overlay-header">
+    <a class="logo-lockup" href="./">
+      <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+        <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Stitser Built</span>
+        <span class="sub">S-BOS Knowledge Base</span>
+      </div>
+    </a>
+    <button class="nav-overlay-close" aria-label="Close menu">&#10005;</button>
+  </div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system"    href="system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents"    href="agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles"     href="roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary"  href="glossary/">Glossary</a>
+  </nav>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-content">
+    <div class="hero-eyebrow">System · Workflows · Agents</div>
+    <h1>Your guide to<br><span>S-BOS</span> +<br>Kompass</h1>
+    <p class="hero-desc">Everything your team needs to understand how Stitser BUILT operates — the system, the value chain, and how to work with Claude to get more done.</p>
+  </div>
+  <div class="hero-stats">
+    <div class="stat-card">
+      <div class="stat-num">3</div>
+      <div class="stat-label">Presentations</div>
     </div>
-    <div class="home-stats" id="home-stats"></div>
-    <div class="home-cards" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
-      <div class="home-card" onclick="goto('portfolio')">
-        <div class="card-accent gold"></div>
-        <div class="card-arrow">↗</div>
-        <div class="card-icon">◫</div>
-        <div class="card-title">Portfolio Planner</div>
-        <div class="card-desc">All projects grouped by status, company, or type. Cash flow spread across Investing, Operating, and Financing sections. Filter, group, and drill down.</div>
-      </div>
-      <div class="home-card" onclick="goto('project')">
-        <div class="card-accent blue"></div>
-        <div class="card-arrow">↗</div>
-        <div class="card-icon">⊞</div>
-        <div class="card-title">Project Planner</div>
-        <div class="card-desc">Select any project to see its income statement, stacked monthly cash flows across all three sections, and project dates — side by side.</div>
-      </div>
-      <div class="home-card" onclick="window.location.href='/manpower.html'">
-        <div class="card-accent green"></div>
-        <div class="card-arrow">↗</div>
-        <div class="card-icon">◈</div>
-        <div class="card-title">Manpower Planner</div>
-        <div class="card-desc">Team assignments across all active projects. Gantt view by person and role, plus a monthly load heatmap to spot capacity gaps.</div>
-      </div>
-      <div class="home-card" onclick="window.location.href='/pillar-matrix.html'">
-        <div class="card-accent amber"></div>
-        <div class="card-arrow">↗</div>
-        <div class="card-icon">⊟</div>
-        <div class="card-title">Pillar Matrix</div>
-        <div class="card-desc">One row per project. Confirms whether each of the four pillars — Alignment, Budget, Schedule, QC &amp; Safety — has its required tool in place.</div>
-      </div>
-      <div class="home-card" onclick="window.location.href='/financials.html'">
-        <div class="card-accent" style="background:linear-gradient(90deg,#5B3E8C,transparent)"></div>
-        <div class="card-arrow">↗</div>
-        <div class="card-icon">📊</div>
-        <div class="card-title">Financials</div>
-        <div class="card-desc">GAAP job profitability, ASC 230 cash flow statement, and platform P&amp;L with overhead. Export to CFO CoWork.</div>
-      </div>
-      <div class="home-card" onclick="window.location.href='/entity-reporting.html'">
-        <div class="card-accent" style="background:linear-gradient(90deg,#1A6B5A,transparent)"></div>
-        <div class="card-arrow">↗</div>
-        <div class="card-icon">📋</div>
-        <div class="card-title">Entity Reporting</div>
-        <div class="card-desc">Month-end financials tracker. See what's due, what's delivered, and launch a CFO review session — updated daily by your CFO agent.</div>
-      </div>
-      <div class="home-card" onclick="window.location.href='/playbook.html'">
-        <div class="card-accent" style="background:linear-gradient(90deg,#0A0908,transparent)"></div>
-        <div class="card-arrow">↗</div>
-        <div class="card-icon">🏈</div>
-        <div class="card-title">The Playbook</div>
-        <div class="card-desc">Win the situations. Product lines, investment standards, the five situations, four pillars, and tool coverage map — all in one place.</div>
-      </div>
-      <div class="home-card" onclick="window.location.href='/platform-walkthrough.html'">
-        <div class="card-accent" style="background:linear-gradient(90deg,#c9a84c,transparent)"></div>
-        <div class="card-arrow">↗</div>
-        <div class="card-icon">🧭</div>
-        <div class="card-title">Platform Walkthrough</div>
-        <div class="card-desc">Guided tour through all six tiers — strategy, operations, market, product lines, situations, and pillars. Built for onboarding and team alignment.</div>
-      </div>
-      <div class="home-card" onclick="window.location.href='/dashboards/disposition-scorecard.html'">
-        <div class="card-accent" style="background:linear-gradient(90deg,#2ECC71,transparent)"></div>
-        <div class="card-arrow">↗</div>
-        <div class="card-icon">🏠</div>
-        <div class="card-title">Asset Disposition</div>
-        <div class="card-desc">Year-end scorecard — 30 homes closed by Dec 31, 2026. Pipeline funnel, stage deadlines, revenue & GP tracking. Owner: Kaylee.</div>
-      </div>
-      <div class="home-card" onclick="window.location.href='/dashboards/construction-scorecard.html'">
-        <div class="card-accent" style="background:linear-gradient(90deg,#3498DB,transparent)"></div>
-        <div class="card-arrow">↗</div>
-        <div class="card-icon">🏗️</div>
-        <div class="card-title">3P Construction</div>
-        <div class="card-desc">Year-end scorecard — $4.5M revenue at 9% GP by Dec 31, 2026. Revenue recognition table, bid-ready pipeline, stage deadlines.</div>
-      </div>
-      <div class="home-card" onclick="window.location.href='/maxs-study-app.html'">
-        <div class="card-accent" style="background:linear-gradient(90deg,#1a3a6b,transparent)"></div>
-        <div class="card-arrow">↗</div>
-        <div class="card-icon">🗺️</div>
-        <div class="card-title">Max's Study App</div>
-        <div class="card-desc">Learn all 50 U.S. state capitals. Flashcards, multiple-choice quiz, match game, and a searchable reference list — by region or all at once.</div>
-      </div>
+    <div class="stat-card">
+      <div class="stat-num">6+</div>
+      <div class="stat-label">Live Skills</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">10+</div>
+      <div class="stat-label">Claude Skills</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">&#8734;</div>
+      <div class="stat-label">Growing with you</div>
     </div>
   </div>
 </div>
+<div class="orange-bar"></div>
 
-<!-- ══════════════════════════════════════════
-     PORTFOLIO PLANNER
-═══════════════════════════════════════════ -->
-<div class="screen" id="portfolio">
-  <div class="app-bar">
-    <div class="app-bar-back" onclick="goto('home')">← Home</div>
-    <div class="app-bar-title">Portfolio Planner</div>
-    <div class="app-bar-actions">
-      <span style="font-family:var(--mono);font-size:10px;color:var(--ink3)" id="pf-count"></span><span id="last-updated" style="font-family:var(--mono);font-size:9px;color:var(--ink3);margin-left:10px"></span><button onclick="refreshData()" id="refresh-btn" style="margin-left:8px;padding:3px 10px;border:1px solid var(--rule);border-radius:4px;font-size:11px;font-family:var(--body);background:var(--canvas);color:var(--ink2);cursor:pointer">↻ Refresh</button>
-    </div>
-  </div>
-  <div class="toolbar">
-    <span class="tl">Status</span>
-    <div class="pills" id="pf-sg">
-      <div class="pill" data-f="sg" data-v="WIP" onclick="togglePill(this)">WIP</div>
-      <div class="pill" data-f="sg" data-v="Closeout" onclick="togglePill(this)">Closeout</div>
-      <div class="pill" data-f="sg" data-v="Pipeline" onclick="togglePill(this)">Pipeline</div>
-      <div class="pill" data-f="sg" data-v="Hot" onclick="togglePill(this)">Hot</div>
-      <div class="pill" data-f="sg" data-v="Warm" onclick="togglePill(this)">Warm</div>
-      <div class="pill" data-f="sg" data-v="Nurture" onclick="togglePill(this)">Nurture</div>
-      <div class="pill" data-f="sg" data-v="New Opportunity" onclick="togglePill(this)">New Opp</div>
-      <div class="pill" data-f="sg" data-v="Closed" onclick="togglePill(this)">Closed</div>
-    </div>
-    <div class="sep"></div>
-    <span class="tl">Company</span>
-    <select id="pf-co-sel" onchange="setPfCo(this)">
-      <option value="">All</option>
-    </select>
-    <div class="sep"></div>
-    <span class="tl">Group</span>
-    <div class="pills" id="pf-grp">
-      <div class="pill on" data-solo onclick="setGrp(this,'sg')">Status</div>
-      <div class="pill" data-solo onclick="setGrp(this,'co')">Company</div>
-      <div class="pill" data-solo onclick="setGrp(this,'none')">Flat</div>
-    </div>
-    <div class="sep"></div>
-    <span class="tl">Then</span>
-    <select id="pf-sub" onchange="renderPortfolio()"><option value="none">—</option><option value="co">Company</option><option value="sg">Status</option></select>
-    <div class="sep"></div>
-    <span class="tl">View</span>
-    <div class="tbtn-grp">
-      <button class="tbtn on" onclick="setPfView(this,'table')">Table</button>
-      <button class="tbtn" onclick="setPfView(this,'stack')">CF Spread</button>
-    </div>
-  </div>
-  <div class="sumbar" id="pf-sum"></div>
-  <div class="scroll-area"><div class="content" id="pf-content"></div></div>
-</div>
+<!-- PRESENTATIONS — LAUNCH PAD -->
+<div class="launch-section">
+  <div class="section-label">Start Here</div>
+  <div class="section-title">Guided Presentations</div>
+  <div class="launch-grid">
 
-<!-- ══════════════════════════════════════════
-     PROJECT PLANNER
-═══════════════════════════════════════════ -->
-<div class="screen" id="project">
-  <div class="app-bar">
-    <div class="app-bar-back" onclick="goto('home')">← Home</div>
-    <div class="app-bar-title">Project Planner</div>
-    <div class="app-bar-actions"><button onclick="refreshData()" style="padding:3px 10px;border:1px solid var(--rule);border-radius:4px;font-size:11px;font-family:var(--body);background:var(--canvas);color:var(--ink2);cursor:pointer">↻ Refresh</button></div>
-  </div>
-  <div class="pp-layout">
-    <div class="pp-sidebar">
-      <div class="pp-sidebar-hdr">
-        <input type="text" id="pp-search" class="pp-search" placeholder="Search projects…" oninput="renderPPList()" style="margin-bottom:10px;padding:8px 12px;font-size:13px;">
-        <div style="font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-weight:500">Filter</div>
-        <div class="pills" id="pp-sg-pills" style="flex-wrap:wrap;gap:3px;display:flex;">
-          <div class="pill on" data-f="ppsg" data-v="WIP" onclick="togglePill(this)">WIP</div>
-          <div class="pill on" data-f="ppsg" data-v="Closeout" onclick="togglePill(this)">Close</div>
-          <div class="pill" data-f="ppsg" data-v="Pipeline" onclick="togglePill(this)">Pipeline</div>
-          <div class="pill" data-f="ppsg" data-v="Hot" onclick="togglePill(this)">Hot</div>
-          <div class="pill" data-f="ppsg" data-v="Warm" onclick="togglePill(this)">Warm</div>
-          <div class="pill" data-f="ppsg" data-v="Nurture" onclick="togglePill(this)">Nurture</div>
-          <div class="pill" data-f="ppsg" data-v="New Opportunity" onclick="togglePill(this)">New Opp</div>
-          <div class="pill" data-f="ppsg" data-v="Closed" onclick="togglePill(this)">Closed</div>
-        </div>
-        <div style="margin-top:10px;display:flex;flex-direction:column;gap:6px;">
-          <select id="pp-co-sel" onchange="F.ppco=this.value;renderPPList()" style="font-size:11px;padding:4px 6px;border:1px solid var(--rule);border-radius:4px;background:var(--canvas);color:var(--ink);width:100%">
-            <option value="">All Companies</option>
-          </select>
-          <select id="pp-pt-sel" onchange="F.pppt=this.value;renderPPList()" style="font-size:11px;padding:4px 6px;border:1px solid var(--rule);border-radius:4px;background:var(--canvas);color:var(--ink);width:100%">
-            <option value="">All Types</option>
-          </select>
-        </div>
-      </div>
-      <div class="pp-list" id="pp-list"></div>
-    </div>
-    <div class="pp-detail" id="pp-detail">
-      <div class="pp-empty">
-        <div class="pp-empty-icon">⊞</div>
-        <div class="pp-empty-title">Select a project</div>
-        <div style="font-size:11px;color:var(--ink3);line-height:1.6">Choose any project from the list<br>to see its income statement and<br>monthly cash flow breakdown.</div>
-      </div>
-    </div>
+    <a class="launch-card" href="system/platform-walkthrough.html">
+      <div class="launch-card-eyebrow">Onboarding · 10 Slides</div>
+      <div class="launch-card-title">Platform Walkthrough</div>
+      <div class="launch-card-desc">New to Stitser BUILT? Start here. A step-by-step orientation through all six platform tiers — from core strategy and market position down to product lines, situations, and project pillars.</div>
+      <div class="launch-cta">Launch Walkthrough →</div>
+    </a>
+
+    <a class="launch-card teal" href="system/playbook.html">
+      <div class="launch-card-eyebrow">Strategy · 3 Views</div>
+      <div class="launch-card-title">The Playbook</div>
+      <div class="launch-card-desc">The operating framework behind every deal. Five situations, seven product lines with full investment standards, and a coverage map showing where S-BOS, Kompass, and Intacct each fit.</div>
+      <div class="launch-cta">Open The Playbook →</div>
+    </a>
+
+    <a class="launch-card white" href="system/kompass.html">
+      <div class="launch-card-eyebrow">Reference · Interactive</div>
+      <div class="launch-card-title">Kompass Reference</div>
+      <div class="launch-card-desc">The technical reference for Kompass — architecture layers, data model, surfaces, safety guardrails, role-by-role breakdown, and live system status. Everything about how the AI layer is built.</div>
+      <div class="launch-cta">Explore Kompass →</div>
+    </a>
+
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     DATE POPUP
-═══════════════════════════════════════════ -->
-<div class="popup-overlay" id="date-popup" onclick="closePopup(event)">
-  <div class="popup">
-    <div class="popup-hdr">
-      <div class="popup-title" id="popup-title">Project Dates</div>
-      <button class="popup-close" onclick="closePopup()">✕</button>
-    </div>
-    <div class="popup-body" id="popup-body"></div>
+<!-- KB SECTIONS -->
+<section>
+  <div class="section-label">Knowledge Base</div>
+  <div class="section-title">Everything in the KB</div>
+  <div class="nav-grid">
+    <a class="nav-card featured" href="system/">
+      <div class="nav-card-number">01</div>
+      <div class="nav-card-icon">🗺️</div>
+      <div class="nav-card-title">The System</div>
+      <div class="nav-card-desc">S-BOS, Kompass, Google Drive, Smartsheet, FUB — how the custom business application connects to the rest of the stack and why it's built the way it is.</div>
+      <div class="nav-card-arrow">Explore →</div>
+    </a>
+    <a class="nav-card" href="workflows/">
+      <div class="nav-card-number">02</div>
+      <div class="nav-card-icon">🔗</div>
+      <div class="nav-card-title">Workflows & Value Chain</div>
+      <div class="nav-card-desc">Every escrow stage from File Setup to Nesting — who supplies, who receives, what value gets added, and when audits are required.</div>
+      <div class="nav-card-arrow">Explore →</div>
+    </a>
+    <a class="nav-card" href="agents/">
+      <div class="nav-card-number">03</div>
+      <div class="nav-card-icon">🤖</div>
+      <div class="nav-card-title">Claude Agents & Skills</div>
+      <div class="nav-card-desc">Which agents are live, what they do, how to trigger them, and where they fit in your workflow. Updated as new skills ship.</div>
+      <div class="nav-card-arrow">Explore →</div>
+    </a>
+    <a class="nav-card" href="whats-new/">
+      <div class="nav-card-number">05</div>
+      <div class="nav-card-icon">🆕</div>
+      <div class="nav-card-title">What's New</div>
+      <div class="nav-card-desc">Release notes for S-BOS features and newly launched Claude skills. Check here when something changes.</div>
+      <div class="nav-card-arrow">Explore →</div>
+    </a>
+    <a class="nav-card" href="glossary/">
+      <div class="nav-card-number">06</div>
+      <div class="nav-card-icon">📖</div>
+      <div class="nav-card-title">Glossary</div>
+      <div class="nav-card-desc">IREN-MD, NORR, value chain terms, system acronyms, and role definitions — all in one place.</div>
+      <div class="nav-card-arrow">Explore →</div>
+    </a>
   </div>
-</div>
+</section>
 
-<script>
-// ═══════════════════════════════════════════
-// DATA
-// ═══════════════════════════════════════════
-let APP={projects:[]};
-let PROJECTS = [];
-const ALL_MONTHS = (() => {
-  const m = [];
-  for (let y = 2023; y <= 2032; y++)
-    for (let mo = 1; mo <= 12; mo++)
-      m.push(`${y}-${String(mo).padStart(2,'0')}`);
-  return m;
-})();
-const CUR = new Date().toISOString().slice(0,7);
+<!-- AGENTS -->
+<section>
+  <div class="section-label">AI-Powered</div>
+  <div class="section-title">Claude Skills</div>
 
-const SG_ORDER = ['WIP','Closeout','Pipeline','Hot','Warm','Nurture','New Opportunity','Closed','Other'];
-const SG_LABEL = {WIP:'WIP',Closeout:'Closeout',Pipeline:'Pipeline','Hot':'Hot (0-6 mo)','Warm':'Warm (6-12 mo)','Nurture':'Nurture (12+ mo)','New Opportunity':'New Opportunity',Closed:'Closed',Other:'Other'};
-const SG_CLS   = {WIP:'bwip',Closeout:'bclo',Pipeline:'bpip','Hot':'bhot','Warm':'bwarm','Nurture':'bnurture','New Opportunity':'bnewopp',Closed:'bcls',Other:'both'};
-const SEC_LABEL = {inv:'Investing',op:'Operating',fin:'Financing'};
-const SEC_CLS   = {inv:'sb-inv',op:'sb-op',fin:'sb-fin'};
-const SEC_COL   = {inv:'val-inv',op:'val-op',fin:'val-fin'};
-const SEC_ORD   = ['inv','op','fin'];
-
-// ── GAAP Compute Engine ───────────────────
-const REV_RE     = /revenue|proceeds|income|return|refi|sale|back.end|lease income|nnn income/i;
-const COST_RE    = /cost|price|acquisition|improvement|carry|interest carry|closing/i;
-const GP_RE      = /gross\s*profit/i;
-const WIP_RE     = /wip\s*offset|work.in.progress\s*offset/i;
-const FIN_OUT_RE = /repay|distribut|return of capital|interest|fee[s]?|costs?\s+to|penalty/i;
-const FIN_IN_RE  = /required|debt|equity|loan proceeds|capital contribution|borrow|draw\b|refinanc/i;
-
-function buildDateMap(p){
-  const m={};
-  for(const d of(p.dates||[])) m[d.e]=d.d;
-  return m;
-}
-function toYM(ds){ return ds?ds.slice(0,7):null; }
-function monthRange(a,b){
-  if(!a) return [];
-  const r=[]; let [y,mo]=a.split('-').map(Number);
-  const end=b&&b>a?b:a, [ey,em]=end.split('-').map(Number);
-  while(y<ey||(y===ey&&mo<=em)){
-    r.push(`${y}-${String(mo).padStart(2,'0')}`);
-    if(++mo>12){mo=1;y++;}
-  }
-  return r;
-}
-function spreadMo(amount,sYM,eYM,type){
-  const m={};
-  if(!sYM||!amount) return m;
-  if(type==='point'||!eYM||eYM<=sYM){ m[sYM]=(m[sYM]||0)+amount; }
-  else { const mos=monthRange(sYM,eYM), pp=amount/mos.length; for(const mo of mos) m[mo]=(m[mo]||0)+pp; }
-  return m;
-}
-function classifyRow(row,dm){
-  const a=row.a||'', s=row.s;
-
-  // Always-first: GP budget reference — excluded from all statements (reference line only)
-  if(GP_RE.test(a))  return{gl:'gp_budget',sign:0,sYM:null,eYM:null,type:'point'};
-
-  // WIP Offset / Work-in-Progress: this IS a legitimate investing cash outflow
-  // (capitalizing construction costs to the WIP asset account = money leaving for asset creation)
-  if(WIP_RE.test(a)){
-    const sign=row.cfDir==='Wr0tD'?1:-1; // default outflow if no direction set
-    return{gl:'inv_asset',sign,_cfSec:'inv',
-      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
-      eYM:toYM(dm['Construction End']),type:'even'};
-  }
-
-  // ── Account-code-driven classification (primary path) ────────────────────
-  // Uses acctSeries (1–6) and cfDir slug from refresh-data.js
-  // cfDir slugs: 'Wr0tD' = + Inflow (+1),  'oGjmd' = - Outflow (-1)
-  const series = row.acctSeries || 0;
-  const cfDir  = row.cfDir || '';
-  const dirSign = cfDir==='Wr0tD' ? 1 : cfDir==='oGjmd' ? -1 : 0;
-
-  if(series===1){
-    // 1xxx Assets — Investing Cash Flow (asset creation = outflow, asset disposition = inflow)
-    const sign=dirSign||-1; // default outflow if no CF direction set
-    return{gl:'inv_asset',sign,_cfSec:'inv',
-      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
-      eYM:toYM(sign>0
-        ? (dm['COE/Lease Commence']||dm['Construction End'])   // inflow: spread to sale/lease
-        : (dm['Construction End'])),                           // outflow: spread through build
-      type:'even'};
-  }
-
-  if(series===2||series===3){
-    // 2xxx Liabilities / 3xxx Equity — Financing Cash
-    const sign=dirSign||1;
-    return{gl:'fin',sign,_cfSec:'fin',
-      sYM:toYM(sign>0 ? dm['Purchase Close Date']||dm['Construction Start']
-                      : dm['Construction Start']||dm['Purchase Close Date']),
-      eYM:toYM(sign<0 ? dm['COE/Lease Commence']||dm['Construction End'] : null),
-      type:sign<0?'even':'point'};
-  }
-
-  if(series===4){
-    // 4xxx Revenue — Operating Cash / Income
-    // Distinguish for-sale property (point at COE) vs service/recurring (spread)
-    if(s==='inv'){
-      // For-sale: revenue recognized at closing / COE
-      return{gl:'revenue',sign:1,_cfSec:'op',
-        sYM:toYM(dm['COE/Lease Commence']||dm['Purchase Close Date']||dm['Construction End']),
-        eYM:null,type:'point'};
-    }
-    return{gl:'oprev',sign:1,_cfSec:'op',
-      sYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),
-      eYM:toYM(dm['1 Year Warranty End Date']||dm['Statutory Liability End Date']||dm['Closeout & Punch List']),
-      type:'even'};
-  }
-
-  if(series===5){
-    // 5xxx Cost of Goods Sold / Cost of Revenue — Operating Cash / COGS
-    if(s==='inv'){
-      // For-sale project: sub-account timing then default to sale date (point)
-      if(/purchase price|land cost|land acquisition/i.test(a))
-        return{gl:'cogs',sign:-1,_cfSec:'op',sYM:toYM(dm['Purchase Close Date']),eYM:null,type:'point'};
-      if(/improvement|construction cost|hard cost|soft cost|permit fee|design|architect/i.test(a))
-        return{gl:'cogs',sign:-1,_cfSec:'op',
-          sYM:toYM(dm['Construction Start']||dm['Permit Issuance']||dm['Purchase Close Date']),
-          eYM:toYM(dm['Construction End']),type:'even'};
-      if(/carry|holding|interest carry|closing cost/i.test(a))
-        return{gl:'cogs',sign:-1,_cfSec:'op',
-          sYM:toYM(dm['Purchase Close Date']||dm['Construction Start']),
-          eYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),type:'even'};
-      // Default for-sale COGS: cost basis recognized at sale (COE / closing)
-      return{gl:'cogs',sign:-1,_cfSec:'op',
-        sYM:toYM(dm['COE/Lease Commence']||dm['Purchase Close Date']||dm['Construction End']),
-        eYM:null,type:'point'};
-    }
-    // Service/construction/TI: spread over build period
-    return{gl:'cogs',sign:-1,_cfSec:'op',
-      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
-      eYM:toYM(dm['Construction End']||dm['COE/Lease Commence']),
-      type:'even'};
-  }
-
-  if(series===6){
-    // 6xxx Overhead / Operating Expenses
-    return{gl:'opex',sign:-1,_cfSec:'op',
-      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
-      eYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),
-      type:'even'};
-  }
-
-  // ── Keyword fallback (no account code set) ────────────────────────────────
-  if(s==='fin'){
-    const isIn=FIN_IN_RE.test(a);
-    const isOut=!isIn&&FIN_OUT_RE.test(a);
-    const sign=isOut?-1:1;
-    return{gl:'fin',sign,
-      sYM:toYM(sign<0?(dm['Construction Start']||dm['Purchase Close Date']):dm['Purchase Close Date']||dm['Construction Start']),
-      eYM:sign<0?toYM(dm['COE/Lease Commence']||dm['Construction End']):null,
-      type:sign<0?'even':'point'};
-  }
-  if(s==='inv'){
-    const isRev=REV_RE.test(a)&&!COST_RE.test(a);
-    if(isRev) return{gl:'revenue',sign:1,
-      sYM:toYM(dm['COE/Lease Commence']||dm['Closeout & Punch List']||dm['Construction End']),eYM:null,type:'point'};
-    if(/purchase price|land cost|land acquisition/i.test(a))
-      return{gl:'cogs',sign:-1,sYM:toYM(dm['Purchase Close Date']),eYM:null,type:'point'};
-    if(/improvement|construction cost|hard cost|soft cost|permit fee|design|architect/i.test(a))
-      return{gl:'cogs',sign:-1,
-        sYM:toYM(dm['Construction Start']||dm['Permit Issuance']||dm['Purchase Close Date']),
-        eYM:toYM(dm['Construction End']),type:'even'};
-    if(/carry|holding|interest carry|closing cost/i.test(a))
-      return{gl:'cogs',sign:-1,
-        sYM:toYM(dm['Purchase Close Date']||dm['Construction Start']),
-        eYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),type:'even'};
-    return{gl:'cogs',sign:-1,
-      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
-      eYM:toYM(dm['Construction End']),type:'even'};
-  }
-  if(s==='op'){
-    const isRev=REV_RE.test(a)&&!COST_RE.test(a);
-    if(isRev) return{gl:'oprev',sign:1,
-      sYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),
-      eYM:toYM(dm['1 Year Warranty End Date']||dm['Statutory Liability End Date']||dm['Closeout & Punch List']),
-      type:'even'};
-    const OP_COGS_RE=/cost of (goods|revenue|sales)|direct cost|job cost|labor|material|subcontract|\bsub\b|gc cost|construction cost|hard cost|soft cost/i;
-    if(OP_COGS_RE.test(a)) return{gl:'cogs',sign:-1,
-      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
-      eYM:toYM(dm['Construction End']||dm['COE/Lease Commence']),type:'even'};
-    return{gl:'opex',sign:-1,
-      sYM:toYM(dm['Construction Start']||dm['Purchase Close Date']),
-      eYM:toYM(dm['COE/Lease Commence']||dm['Construction End']),type:'even'};
-  }
-  return{gl:'cogs',sign:-1,sYM:null,eYM:null,type:'point'};
-}
-function computeProjectCF(p, override){
-  const TODAY=new Date().toISOString().slice(0,10);
-  const TODAY_YM=TODAY.slice(0,7);
-  const dm=buildDateMap(p), mos=new Set(), warns=[];
-  const rows=(p.rows||[]).map(r=>{
-    const cl=classifyRow(r,dm);
-    if(cl.gl==='gp_budget') return{...r,cl,budMo:{},actMo:{}};
-
-    // ── 1. Manual override (UI dropdowns) takes highest priority ──
-    if(override){
-      if(override.sYM) cl.sYM=override.sYM;
-      if(override.eYM) cl.eYM=override.eYM;
-      if(override.sYM&&override.eYM) cl.type='even';
-    }
-    // ── 2. Item-level Begin/End dates override keyword-based dates ──
-    else if(r.bDate||r.eDate){
-      const iSYM=r.bDate?toYM(r.bDate):null;
-      const iEYM=r.eDate?toYM(r.eDate):null;
-      cl.sYM=iSYM||cl.sYM;
-      cl.eYM=iEYM||cl.eYM;
-      // Safety: if dates are reversed (begin > end), swap them
-      if(cl.sYM&&cl.eYM&&cl.sYM>cl.eYM){const _t=cl.sYM;cl.sYM=cl.eYM;cl.eYM=_t;}
-      cl.type=(cl.sYM&&cl.eYM&&cl.eYM>cl.sYM)?'even':'point';
-    }
-
-    // ── 3. BTF + CTD spreading ──────────────────────────────────────────────
-    // Default: spread full budget across the assigned date range
-    let budAmt=(r.adj||r.b||0)*cl.sign;
-    let sYM=cl.sYM, eYM=cl.eYM, type=cl.type;
-    let ctdMo={};
-
-    if(!override && cl.sYM && cl.eYM && cl.sYM<TODAY_YM && cl.eYM>=TODAY_YM){
-      // Item spans today: split into historical CTD + forward BTF
-      if(r.ctd){
-        // Spread CTD across the historical window (begin → last completed month)
-        const lastMo=monthRange(cl.sYM,TODAY_YM).slice(-2,-1)[0]||cl.sYM;
-        ctdMo=spreadMo(r.ctd*cl.sign,cl.sYM,lastMo,'even');
-      }
-      if(r.btf>0){
-        // Spread BTF forward from today → end date
-        budAmt=r.btf*cl.sign;
-        sYM=TODAY_YM;
-        type='even';
-      } else {
-        budAmt=0;
-      }
-    }
-
-    const budMo=spreadMo(budAmt,sYM,eYM,type);
-    // Merge CTD historical months into budMo
-    Object.entries(ctdMo).forEach(([m,v])=>{ budMo[m]=(budMo[m]||0)+v; });
-    const actMo=spreadMo((r.act||0)*cl.sign,cl.sYM,cl.eYM,cl.type);
-    if(!sYM && cl.gl!=='wip_offset') warns.push(`"${r.a}": no spread date`);
-    Object.keys(budMo).forEach(m=>mos.add(m));
-    Object.keys(actMo).forEach(m=>mos.add(m));
-    return{...r,cl,budMo,actMo};
-  });
-  return{rows,months:[...mos].sort(),warns,dm};
-}
-// CF_CACHE is populated by initApp() after data loads
-const CF_CACHE={};
-// CF_DATE_OVERRIDE: keyed by project ID → {sYM, eYM} or absent
-const CF_DATE_OVERRIDE={};
-// SELECTED_CO: keyed by project ID → company name string or null (all)
-const SELECTED_CO={};
-
-
-
-// ── Filters ──────────────────────────────
-const F = { sg:new Set(), co:'', ppsg:new Set(['WIP','Closeout']), ppco:'', pppt:'', pfview:'table', grpby:'sg' };
-let ppSelectedId = null;
-
-function togglePill(el){
-  const f=el.dataset.f, v=el.dataset.v, set=F[f];
-  if(set.has(v)){set.delete(v);el.classList.remove('on');}
-  else{set.add(v);el.classList.add('on');}
-  if(f==='ppsg') renderPPList();
-  else renderPortfolio();
-}
-function setPfCo(sel){ F.co=sel.value; renderPortfolio(); }
-function setGrp(el,val){
-  F.grpby=val;
-  document.querySelectorAll('#pf-grp .pill').forEach(p=>p.classList.remove('on'));
-  el.classList.add('on'); renderPortfolio();
-}
-function setPfView(el,val){
-  F.pfview=val;
-  document.querySelectorAll('#portfolio .tbtn-grp .tbtn').forEach(b=>b.classList.remove('on'));
-  el.classList.add('on'); renderPortfolio();
-}
-
-// ── Helpers ───────────────────────────────
-function fmt(v,compact){
-  if(!v||v===0) return '—';
-  const a=Math.abs(v);
-  if(a>=1e9) return '$'+(v/1e9).toFixed(2)+'B';
-  if(a>=1e6) return '$'+(v/1e6).toFixed(1)+'M';
-  if(a>=1e3) return '$'+Math.round(v/1e3)+'K';
-  return '$'+Math.round(v).toLocaleString();
-}
-function fmts(v){
-  if(!v||v===0) return '';
-  const a=Math.abs(v);
-  if(a>=1e6) return (v/1e6).toFixed(1)+'M';
-  if(a>=1e3) return Math.round(v/1e3)+'K';
-  return Math.round(v).toString();
-}
-function badge(sg){return `<span class="bdg ${SG_CLS[sg]||'both'}">${SG_LABEL[sg]||sg}</span>`;}
-function fmtDate(s){
-  if(!s) return '—';
-  try{const d=new Date(s);return d.toLocaleString('en',{month:'short',day:'numeric',year:'numeric'});}
-  catch{return s;}
-}
-
-// ── Navigation ────────────────────────────
-function goto(screen){
-  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active');});
-  document.getElementById(screen).classList.add('active');
-  if(screen==='portfolio') renderPortfolio();
-  if(screen==='project') renderPPList();
-}
-
-// ── Portfolio filtered ────────────────────
-function pfFiltered(){
-  return PROJECTS.filter(p=>{
-    if(F.sg.size>0&&!F.sg.has(p.sg)) return false;
-    if(F.co&&p.co!==F.co) return false;
-    return true;
-  });
-}
-function grpSum(arr){
-  return arr.reduce((a,p)=>({
-    ib:a.ib+(p.inv_b||0),ic:a.ic+(p.inv_c||0),
-    ob:a.ob+(p.op_b||0),oc:a.oc+(p.op_c||0),
-    fb:a.fb+(p.fin_b||0),
-  }),{ib:0,ic:0,ob:0,oc:0,fb:0});
-}
-function sumStr(s){
-  const p=[];
-  if(s.ib) p.push('Inv '+fmt(s.ib));
-  if(s.ob) p.push('Op '+fmt(s.ob));
-  if(s.fb) p.push('Fin '+fmt(s.fb));
-  return p.join(' · ')||'—';
-}
-
-// ── Portfolio render ──────────────────────
-function renderPortfolio(){
-  const sub=document.getElementById('pf-sub').value;
-  const data=pfFiltered();
-  const s=grpSum(data);
-  document.getElementById('pf-count').textContent=data.length+' projects';
-  document.getElementById('pf-sum').innerHTML=`
-    <div class="si"><span class="si-l">Projects</span><span class="si-v">${data.length}</span></div>
-    <div class="si"><span class="si-l">Investing</span><span class="si-v">${fmt(s.ib)}</span></div>
-    <div class="si"><span class="si-l">Inv CTD</span><span class="si-v">${fmt(s.ic)}</span></div>
-    <div class="si"><span class="si-l">Operating</span><span class="si-v">${fmt(s.ob)}</span></div>
-    <div class="si"><span class="si-l">Op CTD</span><span class="si-v">${fmt(s.oc)}</span></div>
-    <div class="si"><span class="si-l">Financing</span><span class="si-v">${fmt(s.fb)}</span></div>`;
-
-  if(!data.length){document.getElementById('pf-content').innerHTML='<div class="empty">No projects match the current filters.</div>';return;}
-
-  if(F.pfview==='stack'){ renderPfStack(data); return; }
-
-  // Table view
-  if(F.grpby==='none'){document.getElementById('pf-content').innerHTML=pfTable(data,12);return;}
-  const groups={};
-  data.forEach(p=>{const k=p[F.grpby]||'—';(groups[k]=groups[k]||[]).push(p);});
-  const keys=F.grpby==='sg'?SG_ORDER.filter(k=>groups[k]):Object.keys(groups).sort();
-  let html='';
-  keys.forEach((key,gi)=>{
-    const projs=groups[key],gs=grpSum(projs),open=gi<2?'o':'';
-    let body='';
-    if(sub!=='none'){
-      const sg2={};
-      projs.forEach(p=>{const sk=p[sub]||'—';(sg2[sk]=sg2[sk]||[]).push(p);});
-      const sk2=sub==='sg'?SG_ORDER.filter(k=>sg2[k]):Object.keys(sg2).sort();
-      sk2.forEach((sk,si)=>{
-        const sp=sg2[sk],so=si===0?'o':'';
-        body+=`<div class="cgrp">
-          <div class="cgrp-hdr" onclick="tog(this)">
-            <div style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500">
-              <span class="chev ${so}">▼</span>${sk}<span style="color:var(--ink3);font-weight:400">(${sp.length})</span></div>
-            <div class="grp-fin">${sumStr(grpSum(sp))}</div>
-          </div>
-          <div class="cgrp-body ${so}">${pfTable(sp,44)}</div>
-        </div>`;
-      });
-    } else body=pfTable(projs,28);
-    const kb=F.grpby==='sg'?badge(key):`<span style="font-weight:600;font-size:12px">${key||'—'}</span>`;
-    html+=`<div class="grp">
-      <div class="grp-hdr" onclick="tog(this)">
-        <div class="grp-left"><span class="chev ${open}">▼</span>${kb}<span style="font-size:11px;color:var(--ink2)">${projs.length}</span></div>
-        <div class="grp-fin">${sumStr(gs)}</div>
-      </div>
-      <div class="grp-body ${open}">${body}</div>
-    </div>`;
-  });
-  document.getElementById('pf-content').innerHTML=html;
-}
-
-function pfTable(projs,indent){
-  const rows=projs.map(p=>{
-    const nkd=p.nkd?`<button class="nkd-btn ${p.nkd.past?'nkd-past':''}" onclick="showDates('${p.id}')">${p.nkd.past?'↩':'→'} ${p.nkd.e.replace('Construction ','').replace('COE/Lease Commence','COE')}<br><span style="font-family:var(--mono);font-size:9px">${fmtDate(p.nkd.d)}</span></button>`:'<span class="no-val">—</span>';
-    const mp=Object.entries(p.mp||{}).slice(0,2).map(([r,ns])=>{
-      const s={'Project Manager':'PM','Superintendent':'Sup','Project Estimator':'Est','Project Engineer':'PE','Biz Dev Lead':'BDL'}[r]||r;
-      return `<span class="ptag">${s}: ${ns.slice(0,1).join('')}</span>`;
-    }).join('');
-    return `<tr>
-      <td style="padding-left:${indent}px"><a class="plink" href="${p.url}" target="_blank">${p.n}</a>
-        <button onclick="openProject('${p.id}')" style="background:none;border:none;cursor:pointer;color:var(--ink3);font-size:10px;margin-left:4px;padding:0;" title="Open in Project Planner">⊞</button></td>
-      <td>${badge(p.sg)}</td>
-      <td style="color:var(--ink2);font-size:10px">${p.co}</td>
-      <td>${nkd}</td>
-      <td>${mp}</td>
-      <td class="r">${fmt(p.inv_b)}</td>
-      <td class="r" style="color:var(--green)">${p.inv_c?fmt(p.inv_c):'—'}</td>
-      <td class="r">${fmt(p.op_b)}</td>
-      <td class="r" style="color:var(--green)">${p.op_c?fmt(p.op_c):'—'}</td>
-      <td class="r">${p.fin_b?fmt(p.fin_b):'—'}</td>
-    </tr>`;
-  }).join('');
-  return `<table><thead><tr>
-    <th style="padding-left:${indent}px">Project</th><th>Status</th><th>Co.</th>
-    <th>Next Key Date</th><th>Team</th>
-    <th class="r">Inv Baseline</th><th class="r">Inv CTD</th>
-    <th class="r">Op Baseline</th><th class="r">Op CTD</th>
-    <th class="r">Fin Baseline</th>
-  </tr></thead><tbody>${rows}</tbody></table>`;
-}
-
-function tog(el){const b=el.nextElementSibling,c=el.querySelector('.chev');b.classList.toggle('o');c.classList.toggle('o');}
-
-// ── Portfolio CF Spread (stacked bars) ────
-function renderPfStack(data){
-  // Group by month, sum all three sections
-  const months=ALL_MONTHS.filter(m=>m>='2025-01'&&m<='2027-12');
-  const projData=data.map(p=>{
-    const moInv={},moOp={},moFin={};
-    const cfP=CF_CACHE[p.id];
-    (cfP?cfP.rows:(p.rows||[])).forEach(r=>{
-      const mo=cfP?r.budMo:(r.mo||{});
-      Object.entries(mo).forEach(([m,v])=>{
-        const av=Math.abs(v);
-        // Use classifyRow-derived CF section (_cfSec) when available; fall back to raw SmartSuite field (r.s)
-        const sec=(r.cl&&r.cl._cfSec)||r.s||'op';
-        if(sec==='inv') moInv[m]=(moInv[m]||0)+av;
-        else if(sec==='op') moOp[m]=(moOp[m]||0)+av;
-        else if(sec==='fin') moFin[m]=(moFin[m]||0)+av;
-      });
-    });
-    return {...p,moInv,moOp,moFin};
-  }).filter(p=>months.some(m=>p.moInv[m]||p.moOp[m]||p.moFin[m]));
-
-  const maxTotal=Math.max(...months.map(m=>projData.reduce((a,p)=>a+(p.moInv[m]||0)+(p.moOp[m]||0)+(p.moFin[m]||0),0)),1);
-
-  const moHdrs=months.map(m=>{
-    const [y,mo]=m.split('-');
-    const lbl=mo==='01'?y:new Date(+y,+mo-1,1).toLocaleString('en',{month:'short'});
-    return `<th class="mo-th${m===CUR?' mo-cur':''}">${lbl}</th>`;
-  }).join('');
-
-  const rows=projData.map(p=>{
-    const cells=months.map(m=>{
-      const inv=p.moInv[m]||0, op=p.moOp[m]||0, fin=p.moFin[m]||0;
-      const total=inv+op+fin;
-      if(!total) return `<td class="stack-cell${m===CUR?' mo-cur':''}"><span style="color:var(--rule);font-family:var(--mono);font-size:9px">·</span></td>`;
-      const maxW=120, tot2=total||1;
-      const iw=Math.round(inv/tot2*100), ow=Math.round(op/tot2*100), fw=Math.round(fin/tot2*100);
-      const invS=inv?`<div class="stack-seg seg-inv" style="width:${iw}%" title="Inv ${fmts(inv)}">${iw>25?fmts(inv):''}</div>`:'';
-      const opS=op?`<div class="stack-seg seg-op" style="width:${ow}%" title="Op ${fmts(op)}">${ow>25?fmts(op):''}</div>`:'';
-      const finS=fin?`<div class="stack-seg seg-fin" style="width:${fw}%" title="Fin ${fmts(fin)}">${fw>25?fmts(fin):''}</div>`:'';
-      return `<td class="stack-cell${m===CUR?' mo-cur':''}"><div class="stack-bar">${invS}${opS}${finS}</div></td>`;
-    }).join('');
-    return `<tr>
-      <td class="sticky-col cf-proj-cell">
-        <a class="plink" href="${p.url}" target="_blank" style="font-size:11px;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.n}</a>
-        <div style="display:flex;gap:4px;margin-top:2px">${badge(p.sg)}<span style="font-size:9px;color:var(--ink3)">${p.co}</span></div>
-      </td>${cells}
-    </tr>`;
-  }).join('');
-
-  // Total row
-  const totCells=months.map(m=>{
-    const inv=projData.reduce((a,p)=>a+(p.moInv[m]||0),0);
-    const op=projData.reduce((a,p)=>a+(p.moOp[m]||0),0);
-    const fin=projData.reduce((a,p)=>a+(p.moFin[m]||0),0);
-    const total=inv+op+fin;
-    if(!total) return `<td class="mo-td${m===CUR?' mo-cur':''}"><span style="color:var(--rule)">·</span></td>`;
-    const pct=Math.round(total/maxTotal*100);
-    return `<td class="stack-cell${m===CUR?' mo-cur':''}">
-      <div style="font-family:var(--mono);font-size:9px;font-weight:600;color:var(--ink)">${fmts(total)}</div>
-      <div style="height:3px;background:var(--rule2);border-radius:2px;margin-top:2px;overflow:hidden"><div style="height:100%;width:${pct}%;background:var(--ink);border-radius:2px"></div></div>
-    </td>`;
-  }).join('');
-
-  document.getElementById('pf-content').innerHTML=`
-    <div style="display:flex;gap:12px;margin-bottom:10px;flex-wrap:wrap">
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px"><div style="width:10px;height:10px;border-radius:2px;background:var(--blue)"></div>Investing</div>
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px"><div style="width:10px;height:10px;border-radius:2px;background:var(--green)"></div>Operating</div>
-      <div style="display:flex;align-items:center;gap:5px;font-size:10px"><div style="width:10px;height:10px;border-radius:2px;background:var(--amber)"></div>Financing</div>
-      <span style="font-size:10px;color:var(--ink3)">· Bar width = section proportion · Bar height = relative monthly volume</span>
+  <!-- KOMPASS FOUNDATION -->
+  <a class="kompass-layer" href="system/kompass.html">
+    <div style="flex:1">
+      <div class="kompass-layer-badge">Required Foundation Layer</div>
+      <div class="kompass-layer-title">Kompass</div>
+      <div class="kompass-layer-body">Every Claude skill below runs through Kompass. It is the active connection between Claude and S-BOS — providing read/write access to live records so skills can pull data, execute workflows, and write results back in real time. <strong style="color:rgba(255,255,255,.85)">Kompass must be active for any skill to function.</strong> Without it, Claude has no connection to your data.</div>
+      <span class="kompass-layer-link">Open Kompass Reference →</span>
     </div>
-    <div class="cf-wrap"><table class="cf-tbl">
-      <thead><tr><th class="sticky-col" style="padding:5px 10px;font-size:9px">PROJECT (${projData.length})</th>${moHdrs}</tr></thead>
-      <tbody>${rows}</tbody>
-      <tfoot><tr class="trow"><td class="sticky-col" style="padding:6px 10px;font-size:10px;font-family:var(--body);font-weight:600">Total All Sections</td>${totCells}</tr></tfoot>
-    </table></div>`;
-}
-
-// ── Project Planner ───────────────────────
-function ppFiltered(){
-  const q=(document.getElementById('pp-search').value||'').toLowerCase();
-  return PROJECTS.filter(p=>{
-    if(F.ppsg.size>0&&!F.ppsg.has(p.sg)) return false;
-    if(F.ppco&&p.co!==F.ppco) return false;
-    if(F.pppt&&p.pt!==F.pppt) return false;
-    if(q&&!p.n.toLowerCase().includes(q)) return false;
-    return true;
-  });
-}
-
-function renderPPList(){
-  const projs=ppFiltered();
-  const html=projs.map(p=>`
-    <div class="pp-item${p.id===ppSelectedId?' active':''}" onclick="openProject('${p.id}')">
-      <div class="pp-item-name" title="${p.n}">${p.n}</div>
-      <div class="pp-item-meta">${badge(p.sg)}<span style="font-size:9px;color:var(--ink3)">${p.co}</span></div>
-    </div>`).join('');
-  document.getElementById('pp-list').innerHTML=html||'<div class="no-data">No projects match.</div>';
-}
-
-function openProject(id){
-  ppSelectedId=id;
-  // Switch to project screen if not there
-  if(!document.getElementById('project').classList.contains('active')) goto('project');
-  renderPPList();
-  const p=PROJECTS.find(x=>x.id===id);
-  if(!p){document.getElementById('pp-detail').innerHTML='<div class="pp-empty"><div class="pp-empty-icon">!</div><div>Project not found</div></div>';return;}
-
-  // Build entity list: always include project entity, plus any entities from row-level cos
-  const rowCosRaw=[...new Set((p.rows||[]).flatMap(r=>r.cos||[]).filter(Boolean))];
-  const allCos=[...new Set([...(p.co&&p.co!=='—'?[p.co]:[]),...rowCosRaw])].sort();
-  // hasMultiEntityRows: true when any rows carry a cos assignment (risk of double-counting)
-  const hasMultiEntityRows=rowCosRaw.length>0;
-
-  // Auto-select project entity on first open — prevents "All Companies" double-counting by default
-  if(!SELECTED_CO.hasOwnProperty(p.id) && p.co && p.co!=='—'){
-    SELECTED_CO[p.id]=p.co;
-  }
-  const curSelCo=SELECTED_CO[p.id]||'';
-
-  document.getElementById('pp-detail').innerHTML=`
-    <div class="pp-detail-hdr">
-      <div class="pp-detail-title">${p.n}</div>
-      <div class="pp-detail-meta">
-        ${badge(p.sg)}
-        <span style="font-size:11px;color:var(--ink2)">${p.co}</span>
-        <a href="${p.url}" target="_blank" style="font-size:11px;color:var(--blue);text-decoration:none;margin-left:4px">↗ Open in S-Bos</a>
-      </div>
+    <div style="flex-shrink:0;text-align:right;">
+      <div class="kompass-status">⚡ Active</div>
     </div>
-    <div class="pp-tabs">
-      <div class="pp-tab active" onclick="ppTab(this,'is')">Cash Flow Statement</div>
-      <div class="pp-tab" onclick="ppTab(this,'cf')">Cash Flow Spread</div>
-      <div class="pp-tab" onclick="ppTab(this,'dates')">Dates</div>
-    </div>
-    ${allCos.length?`<div id="pp-co-filter">
-      <span style="font-size:11px;color:var(--ink3);white-space:nowrap">Entity view:</span>
-      <select id="pp-co-sel" onchange="selectCo(this,'${p.id}')">
-        <option value="" ${!curSelCo?'selected':''}>All Entities ⚠</option>
-        ${allCos.map(c=>`<option value="${c}" ${c===curSelCo?'selected':''}>${c}</option>`).join('')}
-      </select>
-      <span data-role="entity-warn" style="font-size:10px;color:var(--amber);margin-left:6px;${hasMultiEntityRows&&!curSelCo?'':'display:none'}">⚠ Select an entity for accurate statements</span>
-    </div>`:''}
-    <div class="pp-body" id="pp-body"></div>`;
+  </a>
 
-  renderIS(p);
-}
-
-function ppTab(el,tab){
-  document.querySelectorAll('.pp-tab').forEach(t=>t.classList.remove('active'));
-  el.classList.add('active');
-  const p=PROJECTS.find(x=>x.id===ppSelectedId);
-  if(!p) return;
-  if(tab==='is') renderIS(p);
-  else if(tab==='cf') renderCFProject(p);
-  else renderDates(p);
-}
-
-// ── Consolidated Cash Flow Statement ─────────────────────────────────────────
-function renderIS(p){
-  const selCo=SELECTED_CO[p.id]||null;
-  const hasMultiEntityRows=(p.rows||[]).some(r=>r.cos&&r.cos.length>0);
-  const fp={...p, rows:(p.rows||[]).filter(r=>
-    !selCo
-      ? true
-      : (!r.cos||r.cos.length===0||r.cos.includes(selCo))
-  )};
-  const rows=fp.rows||[];
-  if(!rows.length){document.getElementById('pp-body').innerHTML='<div class="no-data">No baseline budget data yet — add BBI records in SmartSuite.</div>';return;}
-  const cf=(selCo ? computeProjectCF(fp) : (CF_CACHE[p.id]||computeProjectCF(fp)));
-
-  // GL buckets — inv_asset = 1xxx investing items (WIP, land, asset purchases/sales)
-  const byGL={revenue:[],cogs:[],oprev:[],opex:[],fin:[],inv_asset:[],gp_budget:[],wip_offset:[]};
-  cf.rows.forEach(r=>{const g=r.cl.gl||'cogs';if(byGL[g])byGL[g].push(r);});
-
-  // Sum helpers (raw amounts — signs applied at net calc level)
-  const sE  =arr=>arr.reduce((a,r)=>a+(r.e||0),0);
-  const sB  =arr=>arr.reduce((a,r)=>a+(r.b||0),0);
-  const sAdj=arr=>arr.reduce((a,r)=>a+(r.adj||0),0);
-  const sCTD=arr=>arr.reduce((a,r)=>a+(r.ctd||0),0);
-  const sAct=arr=>arr.reduce((a,r)=>a+(r.act||0),0);
-  const sBTF=arr=>arr.reduce((a,r)=>a+(r.btf||0),0);
-
-  // ── OPERATING CASH FLOW ─────────────────────────
-  const revAll=[...byGL.revenue,...byGL.oprev];
-  const totRevE=sE(revAll),  totRevB=sB(revAll),  totRevAdj=sAdj(revAll),  totRevBTF=sBTF(revAll);
-  const totCOGSE=sE(byGL.cogs), totCOGSB=sB(byGL.cogs), totCOGSAdj=sAdj(byGL.cogs), totCOGSBTF=sBTF(byGL.cogs);
-  const totOpExE=sE(byGL.opex), totOpExB=sB(byGL.opex), totOpExAdj=sAdj(byGL.opex), totOpExBTF=sBTF(byGL.opex);
-  // Net Operating = Revenue − COGS − Overhead
-  const netOpE  = totRevE - totCOGSE - totOpExE;
-  const netOpB  = totRevB - totCOGSB - totOpExB;
-  const netOpAdj= (totRevAdj||totCOGSAdj||totOpExAdj) ? (totRevAdj-totCOGSAdj-totOpExAdj) : null;
-  const netOpBTF= (totRevBTF||totCOGSBTF||totOpExBTF) ? (totRevBTF-totCOGSBTF-totOpExBTF) : null;
-
-  // ── INVESTING CASH FLOW ─────────────────────────
-  const invOut=byGL.inv_asset.filter(r=>r.cl.sign<=0);
-  const invIn =byGL.inv_asset.filter(r=>r.cl.sign>0);
-  const totInvOutB=sB(invOut), totInvInB=sB(invIn);
-  const totInvOutBTF=sBTF(invOut), totInvInBTF=sBTF(invIn);
-  const netInvB  = totInvInB - totInvOutB;
-  const netInvBTF= (totInvInBTF||totInvOutBTF) ? (totInvInBTF-totInvOutBTF) : null;
-
-  // ── FINANCING CASH FLOW ─────────────────────────
-  const finIn =byGL.fin.filter(r=>r.cl.sign>0);
-  const finOut=byGL.fin.filter(r=>r.cl.sign<0);
-  const totFinInB=sB(finIn),  totFinOutB=sB(finOut);
-  const totFinInBTF=sBTF(finIn), totFinOutBTF=sBTF(finOut);
-  const netFinB  = totFinInB - totFinOutB;
-  const netFinBTF= (totFinInBTF||totFinOutBTF) ? (totFinInBTF-totFinOutBTF) : null;
-
-  // ── NET TOTAL ───────────────────────────────────
-  const netTotalB  = netOpB + netInvB + netFinB;
-  const netTotalBTF= (netOpBTF!=null||netInvBTF!=null||netFinBTF!=null)
-    ? (netOpBTF||0)+(netInvBTF||0)+(netFinBTF||0) : null;
-
-  const allWarns=[...cf.warns];
-  if(!selCo&&hasMultiEntityRows) allWarns.unshift('All Entities selected — inter-entity transactions may double-count or offset incorrectly. Use the Entity View selector above to see one entity at a time.');
-  if(totRevB===0&&(totCOGSB>0||totOpExB>0)) allWarns.push('No revenue accounts identified — verify account codes are set (4xxx series = revenue)');
-
-  const colH=`<div class="is-col">Est.</div><div class="is-col">Baseline</div><div class="is-col">Adj.</div><div class="is-col">CTD</div><div class="is-col">Actual</div><div class="is-col">BTF / %</div>`;
-
-  const rowLine=r=>{
-    const trk=r.t?`<span class="${r.t.includes('1')?'t1':'t2'}">${r.t.includes('1')?'T1':'T2'}</span>`:'';
-    const bar=r.b>0?`<div class="pct-bar"><div class="pct-fill" style="width:${Math.min(100,r.pct||0)}%"></div></div>`:'';
-    return`<div class="is-row">
-      <div class="is-acct" title="${r.a}">${r.a}${trk}</div>
-      <div class="is-v ${r.e?'':'d'}">${r.e?fmt(r.e):'—'}</div>
-      <div class="is-v">${r.b?fmt(r.b):'—'}</div>
-      <div class="is-v">${r.adj?fmt(r.adj):'—'}</div>
-      <div class="is-v ${r.ctd?'g':''}">${r.ctd?fmt(r.ctd):'—'}</div>
-      <div class="is-v ${r.act?'g':''}">${r.act?fmt(r.act):'—'}</div>
-      <div class="is-v">${bar}${r.btf?fmt(r.btf):'—'}</div>
-    </div>`;
-  };
-
-  // totLine: subsection subtotal row (Est / Baseline / Adj, BTF empty)
-  const totLine=(lbl,eV,bV,aV,color)=>{
-    const c=color?`color:${color};`:'';
-    return`<div class="is-total">
-      <div class="is-total-lbl">${lbl}</div>
-      <div class="is-v" style="font-weight:700;${c}">${eV?fmt(eV):'—'}</div>
-      <div class="is-v" style="font-weight:700;${c}">${bV?fmt(bV):'—'}</div>
-      <div class="is-v" style="font-weight:700;${c}">${aV?fmt(aV):'—'}</div>
-      <div></div><div></div><div></div>
-    </div>`;
-  };
-
-  // netLine: section net row with Est / Baseline / Adj / BTF highlighted
-  const netLine=(lbl,eV,bV,aV,btfV,sub,bg)=>`<div class="is-grand" style="background:${bg||'var(--green)'}">
-    <div class="is-grand-lbl">${lbl}${sub?`<span style="font-size:10px;font-weight:400;opacity:.7;margin-left:8px">${sub}</span>`:''}</div>
-    <div class="is-v" style="font-weight:800;color:#fff">${eV!=null?fmt(eV):'—'}</div>
-    <div class="is-v" style="font-weight:800;color:#fff">${bV!=null?fmt(bV):'—'}</div>
-    <div class="is-v" style="font-weight:800;color:#fff">${aV!=null?fmt(aV):'—'}</div>
-    <div></div><div></div>
-    <div class="is-v" style="font-weight:800;color:#fff">${btfV!=null?fmt(btfV):'—'}</div>
-  </div>`;
-
-  // Section divider label
-  const secDiv=(label,icon,color)=>`<div style="padding:10px 14px 4px;font-family:var(--display);font-size:10px;font-weight:700;letter-spacing:.10em;text-transform:uppercase;color:${color};border-top:2px solid ${color};margin-top:10px">${icon} ${label}</div>`;
-
-  let html='<div class="is-wrap">';
-  if(allWarns.length) html+=`<div class="gaap-warn">${allWarns.map(w=>`<div>⚠ ${w}</div>`).join('')}</div>`;
-
-  // ══════════════════════════════════════════════
-  // SECTION 1 — OPERATING CASH FLOW
-  // ══════════════════════════════════════════════
-  html+=secDiv('Operating Cash Flow','⚙','var(--green)');
-
-  // Revenue inflows (4xxx)
-  html+=`<div class="is-sec"><div class="is-sec-hdr">
-    <div><span class="sec-badge" style="background:var(--green);color:#fff">REVENUE · INFLOWS</span></div>${colH}</div>
-    ${byGL.revenue.map(rowLine).join('')}
-    ${byGL.oprev.length?`<div class="is-gaap-sub">Operating / Recurring Revenue</div>${byGL.oprev.map(rowLine).join('')}`:''}
-    ${!revAll.length?'<div class="is-row"><div class="is-acct" style="color:var(--ink3)">No revenue accounts detected (4xxx series)</div></div>':''}
-    ${revAll.length?totLine('Total Revenue Inflows',totRevE,totRevB,totRevAdj,'var(--green)'):''}
-  </div>`;
-
-  // COGS outflows (5xxx)
-  if(byGL.cogs.length) html+=`<div class="is-sec"><div class="is-sec-hdr">
-    <div><span class="sec-badge" style="background:var(--red);color:#fff">COST OF REVENUE · OUTFLOWS</span></div>${colH}</div>
-    ${byGL.cogs.map(rowLine).join('')}
-    ${totLine('Total Cost of Revenue Outflows',totCOGSE,totCOGSB,totCOGSAdj,'var(--red)')}
-  </div>`;
-
-  // Overhead outflows (6xxx)
-  if(byGL.opex.length) html+=`<div class="is-sec"><div class="is-sec-hdr">
-    <div><span class="sec-badge" style="background:var(--amber);color:#fff">OVERHEAD · OUTFLOWS</span></div>${colH}</div>
-    ${byGL.opex.map(rowLine).join('')}
-    ${totLine('Total Overhead Outflows',totOpExE,totOpExB,totOpExAdj,'var(--amber)')}
-  </div>`;
-
-  // Net Operating CF
-  const opMargin=totRevB>0?` · ${(netOpB/totRevB*100).toFixed(1)}% of revenue`:'';
-  html+=netLine('NET OPERATING CASH FLOW',
-    netOpE||null, netOpB||null, netOpAdj, netOpBTF,
-    opMargin, netOpB>=0?'var(--green)':'var(--red)');
-
-  // ══════════════════════════════════════════════
-  // SECTION 2 — INVESTING CASH FLOW
-  // ══════════════════════════════════════════════
-  if(byGL.inv_asset.length){
-    html+=secDiv('Investing Cash Flow','🏗','var(--blue)');
-    html+=`<div class="is-sec"><div class="is-sec-hdr">
-      <div><span class="sec-badge" style="background:var(--blue);color:#fff">INVESTING ACTIVITIES · 1xxx</span></div>${colH}</div>`;
-    if(invOut.length){
-      html+=`<div class="is-gaap-sub">Asset Investments / Outflows (Create Assets)</div>`;
-      html+=invOut.map(rowLine).join('');
-      if(invOut.length>1) html+=totLine('Total Investing Outflows',null,totInvOutB,null,'var(--blue)');
-    }
-    if(invIn.length){
-      html+=`<div class="is-gaap-sub">Asset Dispositions / Inflows (Sell Assets)</div>`;
-      html+=invIn.map(rowLine).join('');
-      if(invIn.length>1) html+=totLine('Total Investing Inflows',null,totInvInB,null,'var(--blue)');
-    }
-    html+=`</div>`;
-    html+=netLine('NET INVESTING CASH FLOW',
-      null, netInvB||null, null, netInvBTF,
-      null, netInvB>=0?'var(--blue)':'var(--red)');
-  }
-
-  // ══════════════════════════════════════════════
-  // SECTION 3 — FINANCING CASH FLOW
-  // ══════════════════════════════════════════════
-  if(byGL.fin.length){
-    html+=secDiv('Financing Cash Flow','🏦','var(--ink2)');
-    html+=`<div class="is-sec"><div class="is-sec-hdr">
-      <div><span class="sec-badge sb-inv">FINANCING ACTIVITIES · 2xxx / 3xxx</span></div>${colH}</div>`;
-    if(finIn.length){
-      html+=`<div class="is-gaap-sub">Borrowings &amp; Equity Contributions (Inflows)</div>`;
-      html+=finIn.map(rowLine).join('');
-      if(finIn.length>1) html+=totLine('Total Financing Inflows',null,totFinInB,null,'var(--ink)');
-    }
-    if(finOut.length){
-      html+=`<div class="is-gaap-sub">Repayments &amp; Distributions (Outflows)</div>`;
-      html+=finOut.map(rowLine).join('');
-      if(finOut.length>1) html+=totLine('Total Financing Outflows',null,totFinOutB,null,'var(--ink)');
-    }
-    html+=`</div>`;
-    html+=netLine('NET FINANCING CASH FLOW',
-      null, netFinB||null, null, netFinBTF,
-      null, netFinB>=0?'var(--ink)':'var(--red)');
-  }
-
-  // ══════════════════════════════════════════════
-  // TOTAL NET CASH FLOW
-  // ══════════════════════════════════════════════
-  html+=netLine('NET TOTAL PROJECT CASH FLOW',
-    null, netTotalB||null, null, netTotalBTF,
-    null, netTotalB>=0?'#0a2a1a':'#5a0000');
-  html+='</div>';
-  document.getElementById('pp-body').innerHTML=html;
-}
-
-function renderCFProject(p){
-  const selCo=SELECTED_CO[p.id]||null;
-  const hasMultiEntityRows=(p.rows||[]).some(r=>r.cos&&r.cos.length>0);
-  // Row filter: unassigned rows always show; cos-assigned rows only show for matching entity
-  const fp={...p, rows:(p.rows||[]).filter(r=>
-    !selCo
-      ? true
-      : (!r.cos||r.cos.length===0||r.cos.includes(selCo))
-  )};
-
-  // Apply date override if set, and recompute (bypass cache when override active)
-  const ov=CF_DATE_OVERRIDE[p.id]||null;
-  const cf=(ov||selCo) ? computeProjectCF(fp, ov) : (CF_CACHE[p.id]||computeProjectCF(fp));
-  if(!ov&&!selCo) CF_CACHE[p.id]=cf;
-
-  const{rows,months,warns}=cf;
-
-  // Build date dropdown options from p.dates (sorted chronologically)
-  const dateOpts=(p.dates||[]).slice().sort((a,b)=>a.d.localeCompare(b.d))
-    .map(d=>`<option value="${d.d}">${d.e} (${d.d})</option>`).join('');
-  const dateCtrl=`<div style="padding:8px 0 12px;display:flex;align-items:center;gap:8px;font-size:12px">
-    <span style="color:var(--ink3);font-size:11px">Override spread:</span>
-    <select style="font-size:12px" data-proj-id="${p.id}" data-role="cf-from" onchange="cfOverrideChange(this)">
-      <option value="">— auto —</option>${dateOpts}
-    </select>
-    <span style="color:var(--ink3)">→</span>
-    <select style="font-size:12px" data-proj-id="${p.id}" data-role="cf-to" onchange="cfOverrideChange(this)">
-      <option value="">— auto —</option>${dateOpts}
-    </select>
-    ${ov?`<button onclick="cfOverrideClear('${p.id}')" style="font-size:11px;padding:2px 8px;border:1px solid var(--rule);border-radius:3px;background:var(--canvas);cursor:pointer;color:var(--ink2)">Clear</button>`:''}
-  </div>`;
-
-  if(!selCo&&hasMultiEntityRows) warns.unshift('All Entities selected — inter-entity transactions may double-count. Select an entity above for accurate cash flows.');
-  if(!months.length){
-    let wb='';
-    if(warns.length) wb=`<div class="gaap-warn" style="margin:0 0 12px">${warns.map(w=>`<div>⚠ ${w}</div>`).join('')}</div>`;
-    document.getElementById('pp-body').innerHTML=`<div class="pcf-wrap">${dateCtrl}${wb}<div class="no-data" style="padding:16px 0">No dated cash flows — add milestone dates in SmartSuite to generate the spread.</div></div>`;
-    // Restore dropdown selections after render
-    _restoreCFDropdowns(p.id);
-    return;
-  }
-  // Exclude gp_budget (reference-only) from cash flow spread; inv_asset items now included
-  const cfRows=rows.filter(r=>r.cl.gl!=='gp_budget'&&r.cl.gl!=='wip_offset'); // wip_offset kept for safety (shouldn't exist post-reclassify)
-  const bySec={inv:[],op:[],fin:[]};
-  // Use account-code-derived section (_cfSec) if available, else fall back to SmartSuite field (r.s)
-  cfRows.forEach(r=>{const bucket=r.cl._cfSec||r.s||'op'; if(bySec[bucket])bySec[bucket].push(r);});
-  const netMo={};months.forEach(m=>{netMo[m]=0;});
-  cfRows.forEach(r=>Object.entries(r.budMo||{}).forEach(([m,v])=>{if(m in netMo)netMo[m]+=v;}));
-  let cum=0;const cumMo={};months.forEach(m=>{cum+=netMo[m]||0;cumMo[m]=cum;});
-  const moHdrs=months.map(m=>{
-    const[y,mo]=m.split('-'),isCur=m===CUR,isYrS=mo==='01';
-    const lbl=new Date(+y,+mo-1,1).toLocaleString('en',{month:'short'});
-    return`<th class="${isCur?'mo-cur-col':''}">${isYrS?y:lbl}</th>`;
-  }).join('');
-  const SEC_NAME={inv:'Investing Cash',op:'Operating Cash',fin:'Financing Cash'};
-  const NET_LBL={inv:'Net Investing Cash Flow',op:'Net Operating Cash Flow',fin:'Net Financing Cash Flow'};
-  let html=`<div class="pcf-wrap">${dateCtrl}`;
-  if(warns.length) html+=`<div class="gaap-warn" style="margin-bottom:12px">${warns.map(w=>`<div>⚠ ${w}</div>`).join('')}</div>`;
-  html+=`<div class="pcf-legend">
-    <div class="pcf-leg"><div class="pcf-dot" style="background:var(--blue)"></div>Investing</div>
-    <div class="pcf-leg"><div class="pcf-dot" style="background:var(--green)"></div>Operating</div>
-    <div class="pcf-leg"><div class="pcf-dot" style="background:var(--amber)"></div>Financing</div>
-    <div class="pcf-leg" style="color:var(--ink3);font-size:9px">+ = inflow &nbsp;− = outflow</div>
+  <div class="kompass-connector">
+    <div class="kompass-connector-line"></div>
+    <div class="kompass-connector-label">Skills powered by Kompass</div>
+    <div class="kompass-connector-line"></div>
   </div>
-  <div style="overflow-x:auto"><table class="pcf-tbl">
-  <thead><tr><th class="acct">Account</th>${moHdrs}<th>Total</th></tr></thead><tbody>`;
 
-  // Helper: render a group of rows with a sub-header label
-  function cfGroup(label, groupRows, sec, secTot){
-    if(!groupRows.length) return '';
-    let out=`<tr class="cf-subhdr"><td class="acct" colspan="${months.length+2}" style="padding-left:20px;font-size:9px;color:var(--ink3);font-weight:600;text-transform:uppercase;letter-spacing:.05em;background:var(--canvas)">${label}</td></tr>`;
-    groupRows.forEach(r=>{
-      let rowTot=0;
-      const TODAY_YM=new Date().toISOString().slice(0,7);
-      const isBTF=!r.cl._ov&&r.bDate&&r.eDate&&toYM(r.bDate)<TODAY_YM&&toYM(r.eDate)>=TODAY_YM&&r.btf>0;
-      const dSrc=r.bDate||r.eDate?'●':'';  // dot = item-level date
-      const hint=r.cl.sYM?`<span class="cf-date-hint">${dSrc}${isBTF?'BTF ':''} ${r.cl.sYM}${r.cl.eYM&&r.cl.eYM!==r.cl.sYM?' → '+r.cl.eYM:''}</span>`:'<span class="cf-no-date"> ⚠ no date</span>';
-      const cells=months.map(m=>{
-        const v=r.budMo[m]||0;rowTot+=v;secTot[m]=(secTot[m]||0)+v;
-        const vCls=v<0?'cf-neg':v>0?SEC_COL[sec]:'';
-        return`<td class="${vCls}${m===CUR?' mo-cur-col':''}">${v?fmts(Math.round(v)):'<span class="val-zero">·</span>'}</td>`;
-      }).join('');
-      out+=`<tr><td class="acct" style="padding-left:24px">${r.a}${hint}</td>${cells}<td class="${rowTot<0?'cf-neg':SEC_COL[sec]}" style="font-weight:500">${fmts(Math.round(rowTot))}</td></tr>`;
-    });
-    return out;
-  }
+  <div class="agents-grid">
+    <a class="agent-card" href="agents/compliance-auditor.html">
+      <div class="agent-status live">Live</div>
+      <div class="agent-name">Compliance Auditor</div>
+      <div class="agent-desc">Audits property contracts against required disclosures, links Drive files, creates tasks for findings.</div>
+      <div class="agent-trigger">Say: <span>"Audit [property name]"</span></div>
+    </a>
+    <a class="agent-card" href="agents/pay-app-audit.html">
+      <div class="agent-status live">Live</div>
+      <div class="agent-name">Pay App Audit</div>
+      <div class="agent-desc">Per-invoice PM audit — creates 7 standard tasks, generates document package, tracks sign & return.</div>
+      <div class="agent-trigger">Say: <span>"Run pay app audit"</span></div>
+    </a>
+    <a class="agent-card" href="agents/stitser-way.html">
+      <div class="agent-status live">Live</div>
+      <div class="agent-name">Stitser Way Rituals</div>
+      <div class="agent-desc">Morning ritual, evening ritual, weekly review, and journal stacks — conversational, one question at a time.</div>
+      <div class="agent-trigger">Say: <span>"Start my morning ritual"</span></div>
+    </a>
+    <a class="agent-card" href="agents/baseline-capture.html">
+      <div class="agent-status live">Live</div>
+      <div class="agent-name">Baseline Capture</div>
+      <div class="agent-desc">Conversational intake for project budget and timeline — any deal type, creates structured S-BOS records.</div>
+      <div class="agent-trigger">Say: <span>"Baseline this project"</span></div>
+    </a>
+    <a class="agent-card" href="agents/underwriting-model.html">
+      <div class="agent-status new">New</div>
+      <div class="agent-name">Underwriting Model</div>
+      <div class="agent-desc">Full lifecycle deal analysis for Formation Homes — capital stack, pro forma, release P&L, reports.</div>
+      <div class="agent-trigger">Say: <span>"Let's underwrite a deal"</span></div>
+    </a>
+    <a class="agent-card" href="agents/morning-brief.html">
+      <div class="agent-status soon">Coming Soon</div>
+      <div class="agent-name">Morning Brief</div>
+      <div class="agent-desc">S-BOS Operation 1 — daily executive brief pulling priorities, GYR status, and calendar from Kompass.</div>
+      <div class="agent-trigger">Say: <span>"Run my morning brief"</span></div>
+    </a>
+  </div>
+</section>
 
-  SEC_ORD.filter(s=>bySec[s]&&bySec[s].length).forEach(sec=>{
-    const sr=bySec[sec];
-    const pos=sr.filter(r=>r.cl.sign>0), neg=sr.filter(r=>r.cl.sign<0);
-    const smTot={};months.forEach(m=>{smTot[m]=0;});
-    html+=`<tr class="sec-hdr"><td class="acct" colspan="${months.length+2}"><span class="sec-badge ${SEC_CLS[sec]}">${SEC_NAME[sec]}</span></td></tr>`;
-    html+=cfGroup('↑ Inflows',pos,sec,smTot);
-    html+=cfGroup('↓ Outflows',neg,sec,smTot);
-    const stot=months.reduce((a,m)=>a+(smTot[m]||0),0);
-    const sc=months.map(m=>{const v=smTot[m]||0;return`<td class="${v<0?'cf-neg':SEC_COL[sec]}${m===CUR?' mo-cur-col':''}" style="font-weight:700">${v?fmts(Math.round(v)):'·'}</td>`;}).join('');
-    html+=`<tr class="subtotal"><td class="acct" style="font-weight:700">${NET_LBL[sec]}</td>${sc}<td class="${stot<0?'cf-neg':SEC_COL[sec]}" style="font-weight:800">${fmts(Math.round(stot))}</td></tr>`;
-  });
+<footer>
+  <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
+  <div class="footer-version">v1.0 · Internal Use Only</div>
+</footer>
 
-  // NET CASH FLOW
-  const netTot=Object.values(netMo).reduce((a,v)=>a+v,0);
-  const netCells=months.map(m=>{const v=netMo[m]||0;return`<td class="${v<0?'cf-neg':v>0?'cf-pos':''}${m===CUR?' mo-cur-col':''}" style="font-weight:700">${v?fmts(Math.round(v)):'·'}</td>`;}).join('');
-  html+=`<tr style="border-top:2px solid var(--ink)"><td class="acct" style="font-weight:700">NET CASH FLOW</td>${netCells}<td class="${netTot<0?'cf-neg':'cf-pos'}" style="font-weight:800">${fmts(Math.round(netTot))}</td></tr>`;
-  // CUMULATIVE
-  const cumCells=months.map(m=>{const v=Math.round(cumMo[m]||0);return`<td class="${v<0?'cf-neg':''}${m===CUR?' mo-cur-col':''}" style="color:var(--ink3);font-style:italic">${fmts(v)}</td>`;}).join('');
-  html+=`<tr><td class="acct" style="color:var(--ink3);font-style:italic">Cumulative CF</td>${cumCells}<td style="color:var(--ink3);font-style:italic">${fmts(Math.round(cum))}</td></tr>`;
-  html+='</tbody></table></div></div>';
-  document.getElementById('pp-body').innerHTML=html;
-  _restoreCFDropdowns(p.id);
-}
-
-// ── CF date override helpers ──────────────
-function _restoreCFDropdowns(pid){
-  const ov=CF_DATE_OVERRIDE[pid]||{};
-  document.querySelectorAll(`select[data-proj-id="${pid}"]`).forEach(sel=>{
-    if(sel.dataset.role==='cf-from') sel.value=ov._fromRaw||'';
-    if(sel.dataset.role==='cf-to')   sel.value=ov._toRaw||'';
-  });
-}
-function cfOverrideChange(sel){
-  const pid=sel.dataset.pid||sel.dataset.projId||sel.getAttribute('data-proj-id');
-  const body=document.getElementById('pp-body');
-  const fromSel=body.querySelector(`select[data-proj-id="${pid}"][data-role="cf-from"]`);
-  const toSel  =body.querySelector(`select[data-proj-id="${pid}"][data-role="cf-to"]`);
-  const fromDate=fromSel?fromSel.value:'';
-  const toDate  =toSel  ?toSel.value  :'';
-  if(fromDate||toDate){
-    // Store raw date strings so dropdowns can be restored after re-render
-    CF_DATE_OVERRIDE[pid]={
-      sYM:fromDate?toYM(fromDate):null,
-      eYM:toDate?toYM(toDate):null,
-      _fromRaw:fromDate,
-      _toRaw:toDate
-    };
-  } else {
-    delete CF_DATE_OVERRIDE[pid];
-  }
-  delete CF_CACHE[pid];
-  const p=PROJECTS.find(x=>x.id===pid);
-  if(p) renderCFProject(p);
-}
-function cfOverrideClear(pid){
-  delete CF_DATE_OVERRIDE[pid];
-  delete CF_CACHE[pid];
-  const p=PROJECTS.find(x=>x.id===pid);
-  if(p) renderCFProject(p);
-}
-
-// ── Entity lens filter ────────────────────
-function selectCo(sel, pid){
-  const co=sel.value||null;
-  SELECTED_CO[pid]=co||null;
-  // Clear CF cache so it recomputes with new entity filter
-  delete CF_CACHE[pid];
-  // Update the inline warning span immediately
-  const warnSpan=document.querySelector('#pp-co-filter span[data-role="entity-warn"]');
-  if(warnSpan) warnSpan.style.display=co?'none':'';
-  const p=PROJECTS.find(x=>x.id===pid);
-  if(!p) return;
-  // Re-render whichever tab is active
-  const activeTab=document.querySelector('.pp-tab.active');
-  if(!activeTab) return;
-  const tabText=activeTab.textContent.trim();
-  if(tabText==='Cash Flow Statement') renderIS(p);
-  else if(tabText==='Cash Flow Spread') renderCFProject(p);
-  else renderDates(p);
-}
-
-// ── Dates tab ─────────────────────────────
-function renderDates(p){
-  const evts=p.dates||[];
-  if(!evts.length){document.getElementById('pp-body').innerHTML='<div class="no-data">No dates recorded yet. Activate the dates list in SmartSuite for this project.</div>';return;}
-  const TODAY=new Date().toISOString().slice(0,10);
-  const dm=buildDateMap(p);
-  // Check whether events have est/base/act detail
-  const hasDetail=evts.some(d=>d.est||d.base||d.act);
-  // Validate date sequence
-  const warns=[];
-  const seq=[['Purchase Close Date','Construction Start'],['Construction Start','Construction End'],['Construction End','COE/Lease Commence']];
-  seq.forEach(([a,b])=>{if(dm[a]&&dm[b]&&dm[a]>dm[b])warns.push(`${a} (${dm[a]}) is after ${b} (${dm[b]}) — check milestone order`);});
-  const rows=evts.map(d=>{
-    const isPast=d.d&&d.d<TODAY;
-    const isKey=['Purchase Close Date','Construction Start','Construction End','COE/Lease Commence','Permit Issuance'].includes(d.e);
-    if(hasDetail){
-      // Full 5-col table: Event | Estimated | Baseline | Actual | Variance
-      const varDays=d.base&&d.act?Math.round((new Date(d.act)-new Date(d.base))/(864e5)):null;
-      const varLabel=varDays===null?'—':varDays===0?'On target':varDays>0?`+${varDays}d late`:varDays<0?`${varDays}d early`:'—';
-      const varColor=varDays===null?'var(--ink3)':varDays>0?'var(--red)':varDays<0?'var(--green)':'var(--green)';
-      return`<tr${isKey?' style="font-weight:500"':''}>
-        <td>${d.e}${isKey?'<span style="font-size:8px;color:var(--blue);margin-left:4px">KEY</span>':''}</td>
-        <td class="mono" style="color:var(--ink3)">${d.est?fmtDate(d.est):'—'}</td>
-        <td class="mono">${d.base?fmtDate(d.base):'—'}</td>
-        <td class="mono ${d.act?'actual':''}">${d.act?fmtDate(d.act):d.base&&!isPast?'<span style="color:var(--ink3)">Pending</span>':'—'}</td>
-        <td class="mono" style="color:${varColor}">${varLabel}</td>
-      </tr>`;
-    }
-    return`<tr${isKey?' style="font-weight:500"':''}>
-      <td>${d.e}${isKey?'<span style="font-size:8px;color:var(--blue);margin-left:4px">KEY</span>':''}</td>
-      <td class="mono ${isPast?'no-val':''}">${d.d?fmtDate(d.d):'—'}</td>
-      <td class="mono" style="color:${isPast?'var(--ink3)':'var(--green)'}">${isPast?'Past':d.d?'Upcoming':'—'}</td>
-    </tr>`;
-  }).join('');
-  let html='<div class="dates-wrap">';
-  if(warns.length) html+=`<div class="gaap-warn">${warns.map(w=>`<div>⚠ ${w}</div>`).join('')}</div>`;
-  const thead=hasDetail
-    ?`<tr><th>Event</th><th>Estimated</th><th>Baseline</th><th>Actual</th><th>Variance</th></tr>`
-    :`<tr><th>Event</th><th>Date</th><th>Status</th></tr>`;
-  html+=`<table class="dates-tbl"><thead>${thead}</thead><tbody>${rows}</tbody></table></div>`;
-  document.getElementById('pp-body').innerHTML=html;
-}
-
-// ── Date popup ────────────────────────────
-function showDates(id){
-  const p=PROJECTS.find(x=>x.id===id);
-  if(!p) return;
-  document.getElementById('popup-title').textContent=p.n;
-  const evts=p.dates||[];
-  const TODAY=new Date().toISOString().slice(0,10);
-  const rows=evts.map(d=>{
-    const isPast=d.d<TODAY;
-    return `<tr style="border-bottom:1px solid var(--rule2)">
-      <td style="padding:5px 10px;font-size:11px;font-weight:500">${d.e}</td>
-      <td style="padding:5px 10px;font-family:var(--mono);font-size:10px;${isPast?'color:var(--ink3)':''}">${fmtDate(d.d)}</td>
-      <td style="padding:5px 10px;font-size:10px;color:${isPast?'var(--ink3)':'var(--green)'}">${isPast?'Past':'Upcoming'}</td>
-    </tr>`;
-  }).join('');
-  document.getElementById('popup-body').innerHTML=`
-    <table style="width:100%;border-collapse:collapse">
-      <thead><tr style="background:var(--canvas)">
-        <th style="padding:5px 10px;font-size:9px;color:var(--ink3);text-align:left;text-transform:uppercase;letter-spacing:.05em">Event</th>
-        <th style="padding:5px 10px;font-size:9px;color:var(--ink3);text-align:left;text-transform:uppercase;letter-spacing:.05em">Date</th>
-        <th style="padding:5px 10px;font-size:9px;color:var(--ink3);text-align:left;text-transform:uppercase;letter-spacing:.05em">Status</th>
-      </tr></thead>
-      <tbody>${rows||'<tr><td colspan="3" style="padding:16px;text-align:center;color:var(--ink3)">No dates recorded</td></tr>'}</tbody>
-    </table>`;
-  document.getElementById('date-popup').classList.add('show');
-}
-function closePopup(e){
-  if(!e||e.target===document.getElementById('date-popup'))
-    document.getElementById('date-popup').classList.remove('show');
-}
-document.addEventListener('keydown',e=>{if(e.key==='Escape')closePopup();});
-
-// ── Home stats ────────────────────────────
-function initHome(){
-  const now=new Date();
-  document.getElementById('home-date').textContent=
-    now.toLocaleString('en',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
-
-  const wip=PROJECTS.filter(p=>p.sg==='WIP').length;
-  const pipe=PROJECTS.filter(p=>p.sg==='Pipeline').length;
-  const totalInv=PROJECTS.reduce((a,p)=>a+(p.inv_b||0),0);
-  document.getElementById('home-stats').innerHTML=`
-    <div class="home-stat"><div class="home-stat-val">${PROJECTS.length}</div><div class="home-stat-label">Total Projects</div></div>
-    <div class="home-stat"><div class="home-stat-val">${wip}</div><div class="home-stat-label">Active WIP</div></div>
-    <div class="home-stat"><div class="home-stat-val">${pipe}</div><div class="home-stat-label">Pipeline</div></div>
-    <div class="home-stat"><div class="home-stat-val">${totalInv>=1e6?'$'+(totalInv/1e6).toFixed(0)+'M':fmt(totalInv)}</div><div class="home-stat-label">Inv. Portfolio</div></div>`;
-}
-
-// ── Init ──────────────────────────────────
-// initApp() is called after data loads from /api/data
-
-// ── Data loading ──────────────────────────
-function initApp(data) {
-  APP      = data;
-  PROJECTS = data.projects || [];
-  PROJECTS.forEach(p => { CF_CACHE[p.id] = computeProjectCF(p); });
-  // Build company + type lists from live data
-  const cos=[...new Set(PROJECTS.map(p=>p.co).filter(c=>c&&c!=='—'))].sort();
-  const pts=[...new Set(PROJECTS.map(p=>p.pt).filter(t=>t&&t!=='—'))].sort();
-
-  // Portfolio planner company dropdown
-  const coSel=document.getElementById('pf-co-sel');
-  if(coSel){
-    coSel.innerHTML='<option value="">All</option>'+cos.map(c=>`<option value="${c}">${c}</option>`).join('');
-    if(F.co) coSel.value=F.co;
-  }
-  // Project planner sidebar dropdowns
-  const ppCoSel=document.getElementById('pp-co-sel');
-  if(ppCoSel) ppCoSel.innerHTML='<option value="">All Companies</option>'+cos.map(c=>`<option value="${c}">${c}</option>`).join('');
-  const ppPtSel=document.getElementById('pp-pt-sel');
-  if(ppPtSel) ppPtSel.innerHTML='<option value="">All Types</option>'+pts.map(t=>`<option value="${t}">${t}</option>`).join('');
-
-  initHome();
-  if (data.lastUpdated) {
-    const d = new Date(data.lastUpdated);
-    const label = d.toLocaleString('en', {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'});
-    document.querySelectorAll('#last-updated').forEach(el => el.textContent = 'Updated ' + label);
-  }
-}
-
-async function loadData(force) {
-  const btn = document.getElementById('refresh-btn');
-  const url = force ? '/api/data?force=true' : '/api/data';
-  if (btn) { btn.disabled = true; btn.textContent = '…'; }
-  setProgressBar(true);
-  try {
-    const res  = await fetch(url);
-    if (!res.ok) throw new Error('Server error ' + res.status);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    initApp(data);
-    if (force) showToast('Data refreshed — ' + (data.projects||[]).length + ' projects');
-    else if (data.stale) showToast('Showing cached data — refreshing in background…');
-  } catch (err) {
-    showToast('Failed to load: ' + err.message, true);
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = '↻ Refresh'; }
-    setProgressBar(false);
-  }
-}
-
-function setProgressBar(on) {
-  let bar = document.getElementById('progress-bar');
-  if (!bar) {
-    bar = document.createElement('div');
-    bar.id = 'progress-bar';
-    bar.style.cssText = 'position:fixed;top:0;left:0;height:2px;background:var(--gold);z-index:700;transition:width .3s ease,opacity .4s ease;width:0;opacity:0';
-    document.body.appendChild(bar);
-  }
-  if (on) {
-    bar.style.opacity = '1'; bar.style.width = '0';
-    requestAnimationFrame(() => { bar.style.width = '70%'; });
-    bar._interval = setInterval(() => {
-      const w = parseFloat(bar.style.width);
-      if (w < 90) bar.style.width = (w + (90 - w) * 0.1) + '%';
-    }, 400);
-  } else {
-    clearInterval(bar._interval);
-    bar.style.width = '100%';
-    setTimeout(() => { bar.style.opacity = '0'; setTimeout(() => { bar.style.width = '0'; }, 400); }, 200);
-  }
-}
-
-function showToast(msg, isErr) {
-  const t = document.createElement('div');
-  t.textContent = msg;
-  t.style.cssText = `position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
-    background:${isErr?'#8C1F1F':'#1E5C36'};color:#fff;padding:8px 18px;border-radius:6px;
-    font-size:11px;font-family:var(--mono);z-index:600;opacity:0;transition:opacity .2s;
-    white-space:nowrap;box-shadow:0 4px 12px rgba(0,0,0,.2)`;
-  document.body.appendChild(t);
-  requestAnimationFrame(() => { t.style.opacity = '1'; });
-  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
-}
-
-function refreshData() { loadData(true); }
-
-loadData(false);
-
-</script>
-
-
+<script src="assets/js/nav.js"></script>
 </body>
 </html>

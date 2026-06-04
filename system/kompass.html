@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S-BOS + Kompass Reference — S-BOS Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+.kompass-wrap { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+/* ── Context cards ── */
+.context-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+.context-card {
+  background: var(--light);
+  border-left: 3px solid var(--blue);
+  border-radius: 3px; overflow: hidden;
+}
+.context-card.full { border-left-color: var(--orange); }
+.context-card-header {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem 1.25rem; cursor: pointer; user-select: none;
+  background: transparent; border: none; width: 100%;
+  font-family: inherit; text-align: left;
+}
+.context-card-header:hover { background: rgba(61,110,135,0.06); }
+.context-card-title { display: flex; align-items: baseline; gap: 0.75rem; flex: 1; }
+.context-card-label {
+  font-family: var(--font-sub); font-size: 10px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--orange); font-weight: 700;
+}
+.context-card-headline {
+  font-family: var(--font-head); font-size: 15px;
+  color: var(--dark); font-weight: 900;
+  text-transform: uppercase; letter-spacing: -0.005em;
+}
+.context-card-toggle {
+  font-family: var(--font-sub); font-size: 11px;
+  color: var(--blue); letter-spacing: 0.08em;
+  transition: transform 0.3s; display: inline-flex;
+  align-items: center; gap: 0.35rem;
+  margin-left: 1rem; white-space: nowrap;
+}
+.context-card-body { max-height: 0; overflow: hidden; transition: max-height 0.4s ease-out; }
+.context-card[open] .context-card-body { max-height: 8000px; }
+.context-card-inner { padding: 0 1.25rem 1.5rem; font-family: var(--font-sub); font-size: 15px; line-height: 1.7; color: var(--dark); }
+.context-card-inner p { margin-bottom: 0.85rem; }
+.context-card-inner p:last-child { margin-bottom: 0; }
+.context-card-inner em.highlight { font-style: italic; color: var(--blue); font-weight: 700; }
+.context-punch { padding: 0 1.25rem 1.5rem; font-size: 15px; line-height: 1.55; color: var(--dark); }
+.context-punch-lead { font-size: 17px; font-weight: 700; color: var(--dark); line-height: 1.4; margin-bottom: 0.5rem; font-family: var(--font-head); }
+.context-punch-support { color: var(--dark); opacity: 0.75; font-family: var(--font-sub); }
+.context-card-inner.longform { padding: 0.5rem 1.75rem 2rem; font-size: 15px; max-width: 760px; }
+.context-card-inner.longform h3 {
+  font-family: var(--font-head); font-size: 16px; font-weight: 900;
+  text-transform: uppercase; letter-spacing: -0.005em;
+  color: var(--blue); margin: 2rem 0 0.75rem;
+  padding-top: 1rem; border-top: 1px solid var(--mid);
+}
+.context-card-inner.longform h3:first-child { margin-top: 0.5rem; padding-top: 0; border-top: none; }
+.context-card-inner.longform h4 {
+  font-family: var(--font-sub); font-size: 10px;
+  letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--orange); font-weight: 700; margin: 1.25rem 0 0.4rem;
+}
+.context-card-inner.longform blockquote {
+  font-style: italic; color: var(--dark); font-size: 16px; line-height: 1.55;
+  padding: 0.75rem 0 0.75rem 1rem; margin: 1rem 0;
+  border-left: 3px solid var(--orange);
+  background: rgba(248,153,29,0.05); font-weight: 600;
+}
+.context-card-inner.longform blockquote cite {
+  display: block; font-style: normal; font-size: 11px;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--mid); margin-top: 0.5rem; font-weight: 700;
+}
+.context-card-inner.longform ul { list-style: none; padding: 0; margin: 0.75rem 0; }
+.context-card-inner.longform ul li { padding: 0.3rem 0 0.3rem 1.1rem; position: relative; color: var(--dark); font-family: var(--font-sub); }
+.context-card-inner.longform ul li::before { content: "—"; position: absolute; left: 0; color: var(--orange); font-weight: 700; }
+
+/* ── Section headers ── */
+.k-section { margin-bottom: 3.5rem; }
+.k-section-header {
+  display: flex; align-items: center; gap: 1rem;
+  margin-bottom: 1.25rem; padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--mid); position: relative;
+}
+.k-section-header::after {
+  content: ""; position: absolute; bottom: -1px; left: 0;
+  width: 48px; height: 2px; background: var(--orange);
+}
+.k-section-number {
+  font-family: var(--font-sub); font-size: 11px; font-weight: 700;
+  letter-spacing: 0.18em; color: var(--orange);
+  padding: 0.2rem 0.5rem; background: var(--light); border-radius: 2px;
+}
+.k-section-title { font-family: var(--font-head); font-size: 22px; font-weight: 900; letter-spacing: -0.01em; color: var(--dark); text-transform: uppercase; }
+.k-section-hint { margin-left: auto; font-family: var(--font-sub); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid); }
+.k-section-intro { font-family: var(--font-sub); font-size: 15px; color: var(--dark); opacity: 0.75; font-style: italic; margin-bottom: 1.5rem; max-width: 720px; }
+
+/* ── Architecture ── */
+.arch-wrap { display: grid; grid-template-columns: 1fr 380px; gap: 2rem; align-items: start; }
+.k-arch-diagram { background: #fff; border: 1px solid var(--mid); border-radius: 6px; padding: 1.75rem 1.5rem; position: relative; }
+.arch-side-label {
+  font-family: var(--font-sub); font-size: 10px; letter-spacing: 0.14em;
+  text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem;
+  display: flex; align-items: center; gap: 0.5rem;
+}
+.arch-side-label.flex { color: var(--orange); }
+.arch-side-label.universal { color: var(--mid); margin-top: 1.25rem; }
+.arch-side-label::before { content: ""; width: 20px; height: 1px; background: currentColor; display: inline-block; }
+.arch-layer {
+  padding: 1rem 1.1rem; border-radius: 5px; margin-bottom: 0.6rem;
+  cursor: pointer; position: relative; border: 0.8px solid;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.arch-layer:hover { transform: translateX(3px); box-shadow: -3px 2px 0 0 rgba(61,110,135,0.2); }
+.arch-layer.selected { transform: translateX(3px); box-shadow: -4px 2px 0 0 var(--orange); }
+.arch-layer-role { background: #E8D5B7; border-color: #8B6B3E; color: #5C4424; }
+.arch-layer-project { background: #E6C7A8; border-color: #9C6B3E; color: #6B4423; }
+.arch-layer-knowledge { background: #B8D4DE; border-color: var(--blue); color: #1E3D4A; }
+.arch-layer-identity { background: #C5CDD3; border-color: var(--dark); color: #2E3A42; }
+.arch-layer-name { font-family: var(--font-head); font-size: 15px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.005em; display: flex; justify-content: space-between; align-items: center; }
+.arch-layer-name::after { content: "→"; font-size: 18px; opacity: 0.55; transition: transform 0.15s; }
+.arch-layer:hover .arch-layer-name::after, .arch-layer.selected .arch-layer-name::after { transform: translateX(3px); opacity: 1; }
+.arch-layer-desc { font-family: var(--font-sub); font-size: 13px; margin-top: 0.3rem; opacity: 0.88; line-height: 1.45; }
+
+.detail-panel { position: sticky; top: 1rem; background: var(--light); border-radius: 6px; padding: 1.5rem 1.4rem; min-height: 300px; }
+.detail-panel.empty { display: flex; align-items: center; justify-content: center; text-align: center; color: var(--mid); font-style: italic; font-size: 14px; padding: 2rem; font-family: var(--font-sub); }
+.detail-panel-label { font-family: var(--font-sub); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--blue); font-weight: 700; margin-bottom: 0.5rem; }
+.detail-panel-title { font-family: var(--font-head); font-size: 17px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.005em; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 1px solid var(--mid); color: var(--dark); }
+.detail-panel-section { margin-bottom: 1.1rem; }
+.detail-panel-section h4 { font-family: var(--font-sub); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); font-weight: 700; margin-bottom: 0.3rem; }
+.detail-panel-section p { font-family: var(--font-sub); font-size: 14px; line-height: 1.6; color: var(--dark); margin-bottom: 0.5rem; }
+.detail-panel-section p:last-child { margin-bottom: 0; }
+.detail-panel-section ul { list-style: none; padding: 0; }
+.detail-panel-section li { font-family: var(--font-sub); font-size: 14px; color: var(--dark); padding: 0.3rem 0 0.3rem 1rem; position: relative; line-height: 1.5; }
+.detail-panel-section li::before { content: "·"; position: absolute; left: 0.25rem; color: var(--blue); font-weight: bold; }
+.detail-panel-quote { font-family: var(--font-sub); font-style: italic; color: var(--dark); font-size: 14px; line-height: 1.5; padding: 0.75rem 0 0.75rem 0.9rem; border-left: 2px solid var(--blue); margin: 0.75rem 0; }
+.detail-panel-close { position: absolute; top: 0.75rem; right: 0.9rem; background: none; border: none; font-size: 18px; color: var(--mid); cursor: pointer; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 3px; }
+.detail-panel-close:hover { background: rgba(28,28,26,0.08); color: var(--dark); }
+
+/* ── Data diagram ── */
+.data-wrap { background: #fff; border: 1px solid var(--mid); border-radius: 6px; padding: 2rem 1.75rem; margin-bottom: 1rem; }
+.data-wrap svg { width: 100%; height: auto; max-width: 720px; margin: 0 auto; display: block; }
+.data-callouts { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1.5rem; }
+.data-callout { padding: 1rem 1.2rem; border-radius: 4px; border-left: 3px solid; }
+.data-callout-scattered { background: var(--light); border-left-color: var(--orange); }
+.data-callout-structured { background: var(--light); border-left-color: var(--blue); }
+.data-callout-label { font-family: var(--font-sub); font-size: 10px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; margin-bottom: 0.35rem; }
+.data-callout-scattered .data-callout-label { color: var(--orange); }
+.data-callout-structured .data-callout-label { color: var(--blue); }
+.data-callout-title { font-family: var(--font-head); font-size: 14px; font-weight: 900; color: var(--dark); margin-bottom: 0.3rem; }
+.data-callout-body { font-family: var(--font-sub); font-size: 13px; color: var(--dark); line-height: 1.5; }
+.data-insight { background: var(--blue); color: #fff; padding: 1.1rem 1.4rem; border-radius: 4px; margin-top: 1rem; display: flex; align-items: center; gap: 1rem; border-left: 4px solid var(--orange); }
+.data-insight-label { font-family: var(--font-sub); font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; color: var(--orange); white-space: nowrap; }
+.data-insight-text { font-family: var(--font-sub); font-size: 15px; font-weight: 600; line-height: 1.5; }
+.data-insight-text em { font-style: italic; color: #fff; font-weight: 700; }
+
+/* ── Surfaces ── */
+.surfaces-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem; }
+.surface-card { padding: 1.4rem 1.5rem; border-radius: 6px; border: 1px solid; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease; position: relative; }
+.surface-card:hover { transform: translateY(-2px); box-shadow: 0 4px 0 0 rgba(61,110,135,0.15); }
+.surface-chat-card { background: #E1EBF0; border-color: var(--blue); color: #1E3D4A; }
+.surface-cowork-card { background: #FCE8CC; border-color: #C77813; color: #6B3E08; }
+.surface-card-label { font-family: var(--font-sub); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; margin-bottom: 0.35rem; }
+.surface-card-title { font-family: var(--font-head); font-size: 20px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.01em; margin-bottom: 0.5rem; }
+.surface-card-tagline { font-family: var(--font-sub); font-size: 14px; line-height: 1.55; margin-bottom: 0.75rem; }
+.surface-card-meta { font-family: var(--font-sub); font-size: 11px; opacity: 0.75; padding-top: 0.75rem; border-top: 1px solid rgba(0,0,0,0.12); display: flex; justify-content: space-between; align-items: center; }
+.surface-card-meta-cta { font-weight: 700; letter-spacing: 0.04em; }
+.surface-detail { background: #fff; border: 1px solid var(--mid); border-radius: 6px; padding: 1.5rem 1.75rem; margin-bottom: 1rem; display: none; }
+.surface-detail.open { display: block; }
+.surface-detail h3 { font-family: var(--font-head); font-size: 15px; margin-bottom: 0.75rem; font-weight: 900; text-transform: uppercase; letter-spacing: -0.005em; color: var(--blue); }
+.surface-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1rem; }
+.surface-detail-col h4 { font-family: var(--font-sub); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); font-weight: 700; margin-bottom: 0.5rem; }
+.surface-detail-col ul { list-style: none; padding: 0; }
+.surface-detail-col li { font-family: var(--font-sub); font-size: 13px; color: var(--dark); padding: 0.3rem 0 0.3rem 1rem; position: relative; line-height: 1.5; }
+.surface-detail-col li::before { content: "—"; position: absolute; left: 0; color: var(--blue); }
+.sidebar-tech { background: var(--light); border-left: 3px solid var(--blue); border-radius: 3px; padding: 1rem 1.25rem; margin-top: 1.25rem; font-family: var(--font-sub); font-size: 13px; color: var(--dark); line-height: 1.6; }
+.sidebar-tech-label { font-family: var(--font-sub); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--mid); font-weight: 700; margin-bottom: 0.5rem; }
+.sidebar-tech strong { color: var(--dark); }
+.sidebar-tech code { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 12px; background: var(--white); padding: 0.1rem 0.35rem; border-radius: 3px; color: var(--blue); }
+
+/* ── Safety ── */
+.safety-principle { background: var(--light); padding: 1.5rem 1.75rem; border-radius: 4px; margin-bottom: 1.25rem; font-family: var(--font-head); font-size: 18px; font-weight: 900; color: var(--blue); text-align: center; border: 1px solid var(--blue); border-left: 4px solid var(--orange); letter-spacing: -0.005em; }
+.safety-principle-sub { font-family: var(--font-sub); font-size: 11px; font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; color: var(--mid); margin-top: 0.5rem; }
+.safety-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.75rem; margin-bottom: 1.25rem; }
+.safety-item { background: #fff; border: 1px solid var(--mid); border-radius: 4px; padding: 0.85rem 1rem; cursor: pointer; transition: border-color 0.15s, background 0.15s; }
+.safety-item:hover { border-color: var(--blue); background: var(--light); }
+.safety-item-num { font-family: var(--font-sub); font-size: 11px; font-style: italic; color: var(--blue); margin-bottom: 0.25rem; }
+.safety-item-text { font-family: var(--font-sub); font-size: 13px; color: var(--dark); line-height: 1.45; }
+.safety-detail { background: #fff; border: 1px solid var(--mid); border-radius: 6px; padding: 1.25rem 1.5rem; display: none; }
+.safety-detail.open { display: block; }
+.safety-detail h4 { font-family: var(--font-sub); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--blue); font-weight: 700; margin-bottom: 0.4rem; }
+.safety-detail h4:not(:first-child) { margin-top: 1.1rem; }
+.safety-detail p { font-family: var(--font-sub); font-size: 14px; color: var(--dark); line-height: 1.6; margin-bottom: 0.5rem; }
+.safety-detail .example-line { font-family: var(--font-sub); font-style: italic; color: var(--dark); padding: 0.6rem 0.9rem; background: var(--light); border-left: 2px solid var(--blue); border-radius: 2px; margin: 0.5rem 0; font-size: 14px; }
+
+/* ── Role finder ── */
+.role-finder { background: #fff; border: 1px solid var(--mid); border-radius: 6px; padding: 1.5rem 1.75rem; }
+.role-chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.25rem; }
+.role-chip { padding: 0.5rem 1rem; border: 1px solid var(--mid); border-radius: 20px; background: transparent; font-family: var(--font-sub); font-size: 13px; color: var(--dark); cursor: pointer; transition: all 0.15s; letter-spacing: 0.02em; }
+.role-chip:hover { border-color: var(--blue); color: var(--dark); }
+.role-chip.active { background: var(--blue); border-color: var(--blue); color: #fff; font-weight: 700; box-shadow: 0 2px 0 0 var(--orange); }
+.role-output { min-height: 160px; padding: 1.25rem; background: var(--light); border-radius: 4px; display: flex; flex-direction: column; justify-content: center; }
+.role-output.empty { font-style: italic; color: var(--mid); font-family: var(--font-sub); font-size: 14px; text-align: center; }
+.role-output-surfaces { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+.role-tag { font-family: var(--font-sub); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; padding: 0.25rem 0.6rem; border-radius: 3px; font-weight: 700; }
+.role-tag-chat { background: #E1EBF0; color: #1E3D4A; border: 0.5px solid var(--blue); }
+.role-tag-cowork { background: #FCE8CC; color: #6B3E08; border: 0.5px solid #C77813; }
+.role-output h3 { font-family: var(--font-head); font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: -0.005em; margin-bottom: 0.5rem; color: var(--dark); }
+.role-output p { font-family: var(--font-sub); font-size: 14px; color: var(--dark); line-height: 1.6; margin-bottom: 0.6rem; }
+.role-output p:last-child { margin-bottom: 0; }
+.role-output strong { color: var(--dark); font-weight: 700; }
+
+/* ── Status strip ── */
+.status-strip { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding-top: 1.5rem; border-top: 1px solid var(--mid); }
+.status-col-label { font-family: var(--font-sub); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
+.status-dot.live { background: var(--blue); }
+.status-dot.building { background: var(--orange); }
+.status-dot.next { background: var(--mid); }
+.status-col ul { list-style: none; padding: 0; }
+.status-col li { font-family: var(--font-sub); font-size: 13px; color: var(--dark); padding: 0.25rem 0; line-height: 1.5; }
+
+@media (max-width: 820px) {
+  .context-row { grid-template-columns: 1fr; }
+  .arch-wrap { grid-template-columns: 1fr; }
+  .detail-panel { position: static; margin-top: 1rem; }
+  .surfaces-row { grid-template-columns: 1fr; }
+  .surface-detail-grid { grid-template-columns: 1fr; gap: 1rem; }
+  .safety-grid { grid-template-columns: repeat(2, 1fr); }
+  .status-strip { grid-template-columns: 1fr; gap: 1.25rem; }
+  .data-callouts { grid-template-columns: 1fr; }
+  .data-insight { flex-direction: column; align-items: flex-start; gap: 0.4rem; }
+}
+@media (max-width: 480px) {
+  .safety-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body data-section="system">
+
+<header>
+  <a class="logo-lockup" href="../"><svg class="logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/><text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text></svg><div class="logo-text"><span class="brand">Stitser Built</span><span class="sub">S-BOS Knowledge Base</span></div></a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system" href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents" href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles" href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary" href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+<div class="nav-overlay">
+  <div class="nav-overlay-header"><a class="logo-lockup" href="../"><svg class="logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/><text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text></svg><div class="logo-text"><span class="brand">Stitser Built</span><span class="sub">S-BOS Knowledge Base</span></div></a><button class="nav-overlay-close" aria-label="Close menu">&#10005;</button></div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system" href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents" href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles" href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary" href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-eyebrow">Interactive Reference · S-BOS + Kompass</div>
+  <h1 class="page-hero-title">S-BOS + Kompass</h1>
+  <p class="page-hero-subtitle">Architecture, data flows, surfaces, and safety — the full picture at a glance.</p>
+</div>
+<div class="orange-bar"></div>
+<div class="breadcrumb-bar">
+  <div class="breadcrumb"><a href="../">Home</a><span class="sep">→</span><a href="../system/">System</a><span class="sep">→</span><span class="cur">Kompass Reference</span></div>
+</div>
+
+<div class="kompass-wrap">
+
+  <!-- Context 00: Words matter -->
+  <div style="margin-bottom:1rem;">
+    <div class="context-card full" data-context="words">
+      <button class="context-card-header" onclick="toggleContext('words')">
+        <span class="context-card-title">
+          <span class="context-card-label">Context · 00</span>
+          <span class="context-card-headline">Words matter</span>
+        </span>
+        <span class="context-card-toggle"><span>Read</span> <span>▾</span></span>
+      </button>
+      <div class="context-card-body">
+        <div class="context-card-inner longform">
+          <h3>S-BOS — Stitser Built Operating System</h3>
+          <p>S-BOS is a custom-built business application designed to serve the Stitser BUILT companies. It's powered by structured databases and automations hosted on SmartSuite, our working data that lives in Google Workspace, and project schedules managed in Smartsheet.</p>
+          <h3>Kompass</h3>
+          <p>Kompass is a custom-built AI agent built on Claude, designed to be everyone's working partner. Its current and future skills and plugins — described throughout this document — are built to significantly reduce the friction in your work, so you can spend more time thinking, competing, and communicating.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context 01 + 02 -->
+  <div class="context-row">
+    <div class="context-card" data-context="aim">
+      <button class="context-card-header" onclick="toggleContext('aim')">
+        <span class="context-card-title">
+          <span class="context-card-label">Context · 01</span>
+          <span class="context-card-headline">What we aim to achieve</span>
+        </span>
+        <span class="context-card-toggle"><span>Read</span> <span>▾</span></span>
+      </button>
+      <div class="context-card-body">
+        <div class="context-punch">
+          <p class="context-punch-lead">An always-available right hand for every person at Stitser BUILT.</p>
+          <p class="context-punch-support">One agent. One identity. Many skills. Kompass knows our company and shows up differently depending on who's asking and what they're working on.</p>
+          <p class="context-punch-support" style="margin-top:0.6rem;">Not faster work. <em class="highlight">Clearer work.</em></p>
+        </div>
+      </div>
+    </div>
+    <div class="context-card" data-context="idea">
+      <button class="context-card-header" onclick="toggleContext('idea')">
+        <span class="context-card-title">
+          <span class="context-card-label">Context · 02</span>
+          <span class="context-card-headline">The one idea</span>
+        </span>
+        <span class="context-card-toggle"><span>Read</span> <span>▾</span></span>
+      </button>
+      <div class="context-card-body">
+        <div class="context-punch">
+          <p class="context-punch-lead">Friction slows everything.</p>
+          <p class="context-punch-support">Without context, everyone gets buried in email, texts, docs, and urgency. We're flipping that — every role gets what they need to think, decide, and execute.</p>
+          <p class="context-punch-support" style="margin-top:0.6rem;"><em class="highlight">It should be the operating system of the whole company.</em></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Context 03: Full briefing -->
+  <div style="margin-bottom:3rem;">
+    <div class="context-card full" data-context="why">
+      <button class="context-card-header" onclick="toggleContext('why')">
+        <span class="context-card-title">
+          <span class="context-card-label" style="color:var(--orange);">Context · 03 · Full briefing</span>
+          <span class="context-card-headline">Why this matters — the full story</span>
+        </span>
+        <span class="context-card-toggle"><span>Read</span> <span>▾</span></span>
+      </button>
+      <div class="context-card-body">
+        <div class="context-card-inner longform">
+          <h3>The morning I got angry at myself</h3>
+          <p>I started 2026 excited. As an asset manager responsible for apartment buildings we co-own and operate on behalf of investors, we'd spent the last couple of years clearing major hurdles — refinances, operations, agency relationships. Our budgets were locked. We had rhythm. I had a beautiful plan for weekly and monthly reviews with the management team.</p>
+          <p>Then the year started. Audits. New project financing timelines. Easement disputes. Investor calls. The normal chaos of running a business. And the next thing I knew, we were almost done with Q1 and I hadn't done a thorough job of cataloging where we were versus our goals. I was back in reaction mode.</p>
+          <p>People came to me asking for approvals — rent reductions, capital expenditures, incentive programs. They needed decisions fast. I was being asked to make them without context. I didn't know if those decisions fit the annual plan. I was making million-dollar choices blind.</p>
+          <p>One decision came across my desk that had real financial implications. I asked a simple question: <em>how does this impact the annual budget?</em></p>
+          <p>No one knew.</p>
+          <blockquote>That question broke something open in me. Not because my team was incompetent — they weren't. They were drowning in the same information scattered across emails, monthly reports, weekly updates, and requests. Nobody had the time or space to synthesize it all.</blockquote>
+          <p>In that moment of frustration, I did something different. I took all the information from the previous year, year-to-date emails, monthly reports, everything. I gave it to Claude and said: <em>help me see where we really are.</em></p>
+          <p>Claude came back with a 32-page report. It synthesized every email, every monthly report, every decision request. It brought context to the decision I was being asked to make. Within minutes — not hours, not days — I went from angry and blind to clear and confident.</p>
+          <p>That document changed how I showed up as a leader. Instead of a knee-jerk approval, I could say: <em>yes, I'll grant you this tool, but only within these constraints, for this duration, until we hit this milestone. Then we revert.</em></p>
+          <p>The shift — from stressed and reactive to calm and strategic — wasn't about me being smarter. It was about friction removal.</p>
+          <h3>The friction problem</h3>
+          <p>Here's what most organizations get wrong about AI: they think it's a productivity hack. Make people faster. Squeeze more output from the same person.</p>
+          <p>Sure, productivity will improve, but that's not what I'm primarily interested in.</p>
+          <p>I'm interested in removing friction so that everyone in the organization has what they need to think, communicate, and compete. Not just executives. Not just leaders. <strong>Everyone.</strong></p>
+          <p>Because right now, in most companies, friction is distributed unequally. The person at the top gets an assistant, a briefing, context. Everyone else gets email and urgency.</p>
+          <blockquote>A lack of friction shouldn't be a perk for executives. It should be the operating system of your entire company.</blockquote>
+          <p>The friction I'm talking about isn't laziness. It's the gap between intention and execution. It's the hours spent hunting for information instead of using it. It's the decisions made in darkness because no one had time to consolidate context.</p>
+          <p>AI removes that friction. Not so we can work more. So we can work better. So we can think. So we can communicate clearly. So we can compete.</p>
+          <h3>What we're building</h3>
+          <p>Kompass is an always-available assistant for every person at Stitser BUILT. Not a chatbot. Not a search engine. An actual acting agent that knows our company — our projects, our Manifesto, our data, our cadence — and that shows up differently depending on who is asking and what they're trying to do.</p>
+          <blockquote>One agent. One identity. Many skills.</blockquote>
+          <p>We are not building different AIs for different departments. We are building <em>one</em> Kompass — with a single personality, a single set of values, and a single rulebook — and then teaching it the specific skills each role needs.</p>
+          <ul>
+            <li>We only have to teach Kompass "how Stitser BUILT thinks" once.</li>
+            <li>When we learn something new, everybody benefits at the same time.</li>
+            <li>When a PM hands off to a Superintendent, the context comes with.</li>
+            <li>The tone, standards, and discipline of the Manifesto apply everywhere.</li>
+          </ul>
+          <h4>The archetype we're building</h4>
+          <blockquote>A young, relentless, enterprising, highly educated professional who just landed a job as the right hand to the CEO. This is their shot to make a difference. They're going to make it their life to know everything and clear the path for the principal to be as effective as possible.<cite>— The Kompass archetype, S-BOS Agent Guiding Spec</cite></blockquote>
+          <h3>How your data stays safe</h3>
+          <blockquote>Access to execute, not access to expose.<cite>— S-BOS Agent Guiding Spec § 9.2</cite></blockquote>
+          <p>Six categories of data Kompass will never surface — even if asked directly, even if the question is framed cleverly: employee compensation, investor ownership percentages, investor PII, capital table details, attorney-client privileged communications, and personal or medical information.</p>
+          <p>And every action Kompass takes that modifies data or sends communication gets recorded in a <strong>Decision Ledger</strong> — a real queryable table in S-BOS that we can audit and roll back from.</p>
+          <h3>Two surfaces — Chat and Cowork</h3>
+          <p><strong>Chat</strong> is conversational. You open a session, ask a question, Kompass responds. Nothing happens without you in the room.</p>
+          <p><strong>Cowork</strong> is autonomous. Kompass runs on a schedule or in the background. You set it up once; outputs stage for your review.</p>
+          <p><em>Chat is Kompass answering when you ask. Cowork is Kompass doing the work you'd otherwise forget to do.</em></p>
+          <h3>Where we are and what's next</h3>
+          <p>Kompass is live today in Chat. The agent identity is configured, the connection to S-BOS is working, and we're in the early phase of building out the first Role Skill Packs. Every capability launches in Reactive mode and graduates to Proactive, then Scheduled, as it earns trust.</p>
+          <h4>What I'm asking of you</h4>
+          <blockquote>When everyone has the tools, the information, and the context they need, you have a truly competitive organization. Not because people are faster — because people are clearer.</blockquote>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- § 01 Architecture -->
+  <section class="k-section">
+    <div class="k-section-header">
+      <span class="k-section-number">§ 01</span>
+      <h2 class="k-section-title">The architecture</h2>
+      <span class="k-section-hint">Click any layer for detail</span>
+    </div>
+    <p class="k-section-intro">Four layers. The bottom two are universal — every person who interacts with Kompass gets them identically. The top two flex based on who's asking and what they're working on.</p>
+    <div class="arch-wrap">
+      <div class="k-arch-diagram">
+        <div class="arch-side-label flex">Flexes — per user, per project</div>
+        <div class="arch-layer arch-layer-role" onclick="selectLayer('role')" data-layer="role">
+          <div class="arch-layer-name">Role Skill Packs</div>
+          <div class="arch-layer-desc">Competencies each role needs: PM, Superintendent, Estimator, and so on</div>
+        </div>
+        <div class="arch-layer arch-layer-project" onclick="selectLayer('project')" data-layer="project">
+          <div class="arch-layer-name">Project-Type Context Packs</div>
+          <div class="arch-layer-desc">Knowledge for each of our seven project types</div>
+        </div>
+        <div class="arch-side-label universal">Universal — applies everywhere</div>
+        <div class="arch-layer arch-layer-knowledge" onclick="selectLayer('knowledge')" data-layer="knowledge">
+          <div class="arch-layer-name">Shared Org Knowledge</div>
+          <div class="arch-layer-desc">The Manifesto, Playbook, Data Dictionary, Customer Profiles</div>
+        </div>
+        <div class="arch-layer arch-layer-identity" onclick="selectLayer('identity')" data-layer="identity">
+          <div class="arch-layer-name">Agent Identity</div>
+          <div class="arch-layer-desc">Persona. Tone. Operating principles. Approval gates. Decision Ledger.</div>
+        </div>
+      </div>
+      <div class="detail-panel empty" id="layer-detail">
+        Select a layer to see what it contains, why it exists, and how it shows up in your work.
+      </div>
+    </div>
+  </section>
+
+  <!-- § 02 Data -->
+  <section class="k-section">
+    <div class="k-section-header">
+      <span class="k-section-number">§ 02</span>
+      <h2 class="k-section-title">What Kompass works with</h2>
+    </div>
+    <p class="k-section-intro">Kompass sits on top of two different kinds of information we live with every day — and bridges them for you, so you don't have to.</p>
+    <div class="data-wrap">
+      <svg viewBox="0 0 720 440" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="arrUp" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+            <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </marker>
+        </defs>
+        <circle cx="360" cy="45" r="22" fill="#fff" stroke="#58595B" stroke-width="1.2"/>
+        <text x="360" y="50" font-family="Montserrat, sans-serif" font-size="11" font-weight="700" fill="#58595B" text-anchor="middle" letter-spacing="1.2">YOU</text>
+        <text x="360" y="88" font-family="Rajdhani, sans-serif" font-size="11" fill="#8a8b8d" text-anchor="middle" font-style="italic">"What's going on with Squeeze Inn?"</text>
+        <line x1="360" y1="165" x2="360" y2="72" stroke="#3D6E87" stroke-width="1.5" marker-end="url(#arrUp)"/>
+        <rect x="220" y="165" width="280" height="70" rx="8" fill="#3D6E87" stroke="#2a536a" stroke-width="1"/>
+        <text x="360" y="195" font-family="Montserrat, sans-serif" font-size="18" font-weight="900" fill="#fff" text-anchor="middle" letter-spacing="-0.5">KOMPASS</text>
+        <text x="360" y="218" font-family="Rajdhani, sans-serif" font-size="11" fill="#B8D4DE" text-anchor="middle" letter-spacing="1.4" font-weight="600">READS BOTH · BRIDGES BOTH · ANSWERS ONE WAY</text>
+        <line x1="150" y1="285" x2="280" y2="240" stroke="#F8991D" stroke-width="1.3" marker-end="url(#arrUp)"/>
+        <line x1="570" y1="285" x2="440" y2="240" stroke="#3D6E87" stroke-width="1.3" marker-end="url(#arrUp)"/>
+        <text x="150" y="305" font-family="Rajdhani, sans-serif" font-size="10" font-weight="700" fill="#C77813" text-anchor="middle" letter-spacing="1.8">SCATTERED</text>
+        <rect x="30" y="320" width="240" height="100" rx="4" fill="none" stroke="#F8991D" stroke-width="0.8" stroke-dasharray="3 3" opacity="0.5"/>
+        <g transform="translate(55,340) rotate(-6)"><rect x="0" y="0" width="80" height="52" rx="3" fill="#FCE8CC" stroke="#C77813" stroke-width="0.6"/><line x1="8" y1="12" x2="58" y2="12" stroke="#C77813" stroke-width="0.7"/><line x1="8" y1="20" x2="72" y2="20" stroke="#C77813" stroke-width="0.5" opacity="0.5"/><line x1="8" y1="27" x2="68" y2="27" stroke="#C77813" stroke-width="0.5" opacity="0.5"/><line x1="8" y1="34" x2="60" y2="34" stroke="#C77813" stroke-width="0.5" opacity="0.5"/><text x="40" y="48" font-family="Rajdhani, sans-serif" font-size="8" font-weight="700" fill="#6B3E08" text-anchor="middle" letter-spacing="1">EMAIL</text></g>
+        <g transform="translate(110,335) rotate(3)"><rect x="0" y="0" width="70" height="62" rx="3" fill="#FCE8CC" stroke="#C77813" stroke-width="0.6"/><line x1="8" y1="12" x2="50" y2="12" stroke="#C77813" stroke-width="0.8"/><line x1="8" y1="22" x2="62" y2="22" stroke="#C77813" stroke-width="0.5" opacity="0.5"/><line x1="8" y1="29" x2="58" y2="29" stroke="#C77813" stroke-width="0.5" opacity="0.5"/><line x1="8" y1="36" x2="62" y2="36" stroke="#C77813" stroke-width="0.5" opacity="0.5"/><line x1="8" y1="43" x2="50" y2="43" stroke="#C77813" stroke-width="0.5" opacity="0.5"/><text x="35" y="56" font-family="Rajdhani, sans-serif" font-size="8" font-weight="700" fill="#6B3E08" text-anchor="middle" letter-spacing="1">DOC</text></g>
+        <g transform="translate(175,345) rotate(-4)"><rect x="0" y="0" width="78" height="55" rx="3" fill="#FCE8CC" stroke="#C77813" stroke-width="0.6"/><circle cx="10" cy="12" r="2" fill="#C77813"/><line x1="16" y1="13" x2="68" y2="13" stroke="#C77813" stroke-width="0.5" opacity="0.6"/><circle cx="10" cy="22" r="2" fill="#C77813"/><line x1="16" y1="23" x2="60" y2="23" stroke="#C77813" stroke-width="0.5" opacity="0.6"/><circle cx="10" cy="32" r="2" fill="#C77813"/><line x1="16" y1="33" x2="64" y2="33" stroke="#C77813" stroke-width="0.5" opacity="0.6"/><text x="39" y="50" font-family="Rajdhani, sans-serif" font-size="8" font-weight="700" fill="#6B3E08" text-anchor="middle" letter-spacing="0.8">MEETING</text></g>
+        <text x="150" y="432" font-family="Rajdhani, sans-serif" font-size="11" fill="#58595B" text-anchor="middle" font-style="italic">emails · docs · meeting minutes</text>
+        <text x="570" y="305" font-family="Rajdhani, sans-serif" font-size="10" font-weight="700" fill="#3D6E87" text-anchor="middle" letter-spacing="1.8">STRUCTURED</text>
+        <rect x="450" y="320" width="240" height="100" rx="4" fill="none" stroke="#3D6E87" stroke-width="0.8"/>
+        <rect x="465" y="332" width="210" height="14" rx="1" fill="#3D6E87"/>
+        <text x="475" y="342" font-family="Rajdhani, sans-serif" font-size="8" font-weight="700" fill="#fff" letter-spacing="1">PROJECT</text>
+        <text x="555" y="342" font-family="Rajdhani, sans-serif" font-size="8" font-weight="700" fill="#fff" letter-spacing="1">STATUS</text>
+        <text x="625" y="342" font-family="Rajdhani, sans-serif" font-size="8" font-weight="700" fill="#fff" letter-spacing="1">GYR</text>
+        <rect x="465" y="348" width="210" height="14" rx="1" fill="#E1EBF0" stroke="#3D6E87" stroke-width="0.4"/>
+        <text x="475" y="358" font-family="Rajdhani, sans-serif" font-size="8" fill="#1E3D4A">Squeeze Inn</text>
+        <text x="555" y="358" font-family="Rajdhani, sans-serif" font-size="8" fill="#1E3D4A">Active</text>
+        <circle cx="635" cy="355" r="3" fill="#3B6D11"/>
+        <rect x="465" y="364" width="210" height="14" rx="1" fill="#fff" stroke="#3D6E87" stroke-width="0.4"/>
+        <text x="475" y="374" font-family="Rajdhani, sans-serif" font-size="8" fill="#1E3D4A">6450 S. Virginia</text>
+        <text x="555" y="374" font-family="Rajdhani, sans-serif" font-size="8" fill="#1E3D4A">Due Dil</text>
+        <circle cx="635" cy="371" r="3" fill="#EF9F27"/>
+        <rect x="465" y="380" width="210" height="14" rx="1" fill="#E1EBF0" stroke="#3D6E87" stroke-width="0.4"/>
+        <text x="475" y="390" font-family="Rajdhani, sans-serif" font-size="8" fill="#1E3D4A">Canyon's Edge</text>
+        <text x="555" y="390" font-family="Rajdhani, sans-serif" font-size="8" fill="#1E3D4A">Hold</text>
+        <circle cx="635" cy="387" r="3" fill="#3B6D11"/>
+        <rect x="465" y="396" width="210" height="14" rx="1" fill="#fff" stroke="#3D6E87" stroke-width="0.4"/>
+        <text x="475" y="406" font-family="Rajdhani, sans-serif" font-size="8" fill="#1E3D4A">Harmony Mesa</text>
+        <text x="555" y="406" font-family="Rajdhani, sans-serif" font-size="8" fill="#1E3D4A">Entitle</text>
+        <circle cx="635" cy="403" r="3" fill="#E24B4A"/>
+        <text x="570" y="432" font-family="Rajdhani, sans-serif" font-size="11" fill="#58595B" text-anchor="middle" font-style="italic">S-BOS tables · schedules · pay apps</text>
+        <line x1="360" y1="270" x2="360" y2="420" stroke="#BCBEC0" stroke-width="0.5" stroke-dasharray="2 4"/>
+      </svg>
+      <div class="data-callouts">
+        <div class="data-callout data-callout-scattered">
+          <div class="data-callout-label">Scattered</div>
+          <div class="data-callout-title">The messy, everyday stuff</div>
+          <div class="data-callout-body">Emails, Google Docs, meeting minutes, text threads, handwritten notes, photos from the field. The context lives in conversations and files — not in neat columns.</div>
+        </div>
+        <div class="data-callout data-callout-structured">
+          <div class="data-callout-label">Structured</div>
+          <div class="data-callout-title">The rigid, system-of-record stuff</div>
+          <div class="data-callout-body">S-BOS tables, project records, schedules, pay applications, financial data, the Manifesto, the Playbook, the Data Dictionary. Everything that has a proper home in a system.</div>
+        </div>
+      </div>
+      <div class="data-insight">
+        <span class="data-insight-label">The point</span>
+        <span class="data-insight-text">You shouldn't have to remember where something lives to use it. Ask Kompass <em>"what's going on with this project?"</em> — it reads the emails, checks the tables, synthesizes both, and answers you once.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- § 03 Two surfaces -->
+  <section class="k-section">
+    <div class="k-section-header">
+      <span class="k-section-number">§ 03</span>
+      <h2 class="k-section-title">The two surfaces</h2>
+      <span class="k-section-hint">Click a surface to expand</span>
+    </div>
+    <p class="k-section-intro">Same agent, two places you meet it. Chat is Kompass answering when you ask. Cowork is Kompass doing the work you'd otherwise forget to do.</p>
+    <div class="surfaces-row">
+      <div class="surface-card surface-chat-card" onclick="toggleSurface('chat')">
+        <div class="surface-card-label">Surface 01</div>
+        <div class="surface-card-title">Chat</div>
+        <p class="surface-card-tagline">You ask, Kompass answers. Drafts, analyzes, audits, proposes. Nothing happens without you in the room.</p>
+        <div class="surface-card-meta"><span>Human-initiated · Conversational</span><span class="surface-card-meta-cta">Expand →</span></div>
+      </div>
+      <div class="surface-card surface-cowork-card" onclick="toggleSurface('cowork')">
+        <div class="surface-card-label">Surface 02</div>
+        <div class="surface-card-title">Cowork</div>
+        <p class="surface-card-tagline">Kompass runs on a schedule or in the background. Set it up once; outputs stage for your review.</p>
+        <div class="surface-card-meta"><span>Scheduled · Autonomous</span><span class="surface-card-meta-cta">Expand →</span></div>
+      </div>
+    </div>
+    <div class="surface-detail" id="surface-chat-detail">
+      <h3>Chat — the conversational surface</h3>
+      <p style="font-family:var(--font-sub);font-size:14px;color:var(--dark);line-height:1.6;">Open a session, type a question, get a response. Kompass uses <strong>skills</strong> — instruction packages that activate based on what the conversation needs.</p>
+      <div class="surface-detail-grid">
+        <div class="surface-detail-col">
+          <h4>Use it when</h4>
+          <ul>
+            <li>"Draft this week's GYR pre-read for Squeeze Inn"</li>
+            <li>"Audit my project file and tell me what's stale"</li>
+            <li>"Help me think through this investor memo"</li>
+            <li>"What's the impact of this change order on forecast?"</li>
+          </ul>
+        </div>
+        <div class="surface-detail-col">
+          <h4>Best for</h4>
+          <ul>
+            <li>Drafting — communications, memos, reports</li>
+            <li>Thinking partner — deal analysis, strategic work</li>
+            <li>Ad-hoc audits — one project, one question</li>
+            <li>Starter packs — what's on my plate today?</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="surface-detail" id="surface-cowork-detail">
+      <h3>Cowork — the autonomous surface</h3>
+      <p style="font-family:var(--font-sub);font-size:14px;color:var(--dark);line-height:1.6;">Kompass runs on a schedule or in the background. Uses <strong>plugins</strong> — bundles of skills plus the connectors and triggers needed to run automatically. Outputs stage for human review; nothing publishes without sign-off.</p>
+      <div class="surface-detail-grid">
+        <div class="surface-detail-col">
+          <h4>Use it when</h4>
+          <ul>
+            <li>Monday-evening GYR drafts for every active project</li>
+            <li>Nightly data sync between Intacct and S-BOS</li>
+            <li>Monthly compliance sweep (insurance certs, lien waivers)</li>
+            <li>Quarterly CRM health check and deduplication</li>
+          </ul>
+        </div>
+        <div class="surface-detail-col">
+          <h4>Best for</h4>
+          <ul>
+            <li>Recurring rhythm — weekly, monthly, trigger-based</li>
+            <li>Cross-system reconciliation</li>
+            <li>Compliance verification at scale</li>
+            <li>Exception reports — tell me what crossed a threshold</li>
+          </ul>
+        </div>
+      </div>
+      <div class="sidebar-tech">
+        <div class="sidebar-tech-label">For those who'll build these</div>
+        <p>A <strong>skill</strong> is a folder containing a <code>SKILL.md</code> file with instructions. One skill, one workflow.</p>
+        <p style="margin-top:0.5rem;">A <strong>plugin</strong> is a bundle: one or more skills, plus MCP connectors, plus sub-agents, plus slash commands (like <code>/weekly-gyr</code>), packaged as a single installable unit.</p>
+        <p style="margin-top:0.5rem;">Today: skills work in Claude.ai chat on the Team plan. Plugins activate as we stand up the first automated workflows.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- § 04 Safety -->
+  <section class="k-section">
+    <div class="k-section-header">
+      <span class="k-section-number">§ 04</span>
+      <h2 class="k-section-title">How your data stays safe</h2>
+      <span class="k-section-hint">Click any card for detail</span>
+    </div>
+    <div class="safety-principle">
+      "Access to execute, not access to expose."
+      <div class="safety-principle-sub">The governing principle — S-BOS Agent Guiding Spec § 9.2</div>
+    </div>
+    <p class="k-section-intro">Six categories of data Kompass will never surface in drafts, reports, or responses — even if asked directly, even if the question is framed cleverly.</p>
+    <div class="safety-grid">
+      <div class="safety-item" onclick="toggleSafety()"><div class="safety-item-num">01</div><div class="safety-item-text">Employee compensation — salaries, rates, raises, bonuses</div></div>
+      <div class="safety-item" onclick="toggleSafety()"><div class="safety-item-num">02</div><div class="safety-item-text">Investor ownership percentages &amp; capital contributions</div></div>
+      <div class="safety-item" onclick="toggleSafety()"><div class="safety-item-num">03</div><div class="safety-item-text">Investor PII — contacts, tax records, addresses</div></div>
+      <div class="safety-item" onclick="toggleSafety()"><div class="safety-item-num">04</div><div class="safety-item-text">Capital table — equity splits, promotes, waterfalls</div></div>
+      <div class="safety-item" onclick="toggleSafety()"><div class="safety-item-num">05</div><div class="safety-item-text">Attorney-client privileged communications</div></div>
+      <div class="safety-item" onclick="toggleSafety()"><div class="safety-item-num">06</div><div class="safety-item-text">Personal or medical information about any team member</div></div>
+    </div>
+    <div class="safety-detail" id="safety-detail">
+      <h4>The principle, in practice</h4>
+      <p>A Project Manager building a pay application needs to know the <em>minimum billable rate</em> for a given role. Kompass accesses the underlying salary plus our markup rules, does the math, and surfaces only:</p>
+      <div class="example-line">"Minimum billable rate for this role is $X."</div>
+      <p>The underlying salary is never shown.</p>
+      <h4>The anti-manipulation rule</h4>
+      <div class="example-line">"That's not information I'm able to share in this context. If you need to work through a compensation or cost structure question, let's define what you actually need to execute — and I'll work from there."</div>
+      <h4>The Decision Ledger</h4>
+      <p>Every action Kompass takes that modifies data or sends communication is recorded in a queryable S-BOS table — who approved it, what options were presented, which was chosen, what the reasoning was, and a link back to the source record.</p>
+    </div>
+  </section>
+
+  <!-- § 05 Roles -->
+  <section class="k-section">
+    <div class="k-section-header">
+      <span class="k-section-number">§ 05</span>
+      <h2 class="k-section-title">What changes for you</h2>
+      <span class="k-section-hint">Pick your role</span>
+    </div>
+    <div class="role-finder">
+      <div class="role-chips">
+        <button class="role-chip" onclick="selectRole(event,'pm')">Project Manager</button>
+        <button class="role-chip" onclick="selectRole(event,'estimator')">Estimator</button>
+        <button class="role-chip" onclick="selectRole(event,'super')">Superintendent / Foreman</button>
+        <button class="role-chip" onclick="selectRole(event,'leadership')">Leadership / Principal</button>
+        <button class="role-chip" onclick="selectRole(event,'systems')">Systems / Compliance / Accounting</button>
+        <button class="role-chip" onclick="selectRole(event,'sales')">Sales / Pursuit</button>
+      </div>
+      <div class="role-output empty" id="role-output">
+        Select your role to see which surfaces you'll primarily use and what Kompass can do for you today.
+      </div>
+    </div>
+  </section>
+
+  <!-- § 06 Status -->
+  <section class="k-section">
+    <div class="k-section-header">
+      <span class="k-section-number">§ 06</span>
+      <h2 class="k-section-title">Where we are</h2>
+    </div>
+    <div class="status-strip">
+      <div class="status-col">
+        <div class="status-col-label"><span class="status-dot live"></span>Live today</div>
+        <ul>
+          <li>Agent identity configured</li>
+          <li>MCP connection to S-BOS working</li>
+          <li>Chat surface available to all team seats</li>
+          <li>13 SmartSuite tools accessible</li>
+        </ul>
+      </div>
+      <div class="status-col">
+        <div class="status-col-label"><span class="status-dot building"></span>Building now</div>
+        <ul>
+          <li>v1 Role Skill Packs — PM, Estimator first</li>
+          <li>Project setup &amp; file audit capabilities</li>
+          <li>Pay App assistance workflow</li>
+          <li>Weekly GYR Pre-Read drafting</li>
+        </ul>
+      </div>
+      <div class="status-col">
+        <div class="status-col-label"><span class="status-dot next"></span>Coming next</div>
+        <ul>
+          <li>First Cowork plugins (scheduled GYR, compliance)</li>
+          <li>Field tools for Superintendents (v2)</li>
+          <li>Finance orbit — AP/AR support (v3)</li>
+          <li>Pursuit orbit — sales &amp; investor comms (v5)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+</div><!-- /kompass-wrap -->
+
+<footer><div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div><div class="footer-version">v1.0 · Internal Use Only</div></footer>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/article-editor.js"></script>
+<script>
+function toggleContext(key) {
+  const card = document.querySelector('.context-card[data-context="' + key + '"]');
+  card.toggleAttribute('open');
+  const btn = card.querySelector('.context-card-toggle span:first-child');
+  btn.textContent = card.hasAttribute('open') ? 'Close' : 'Read';
+}
+
+const layerContent = {
+  role: {
+    title: "Role Skill Packs", label: "Layer 04 · Flexes per user",
+    what: "Competencies keyed to who Kompass is currently helping. A PM's pack drafts RFIs, submittals, change orders, daily logs. A Superintendent's pack drafts field reports and safety observations. An Estimator's pack translates takeoffs into S-BOS cost codes.",
+    why: "Same agent, different hands. You don't need a separate AI for each role — you need the same Kompass with the right competencies surfaced for the person in front of it.",
+    examples: ["PM pack: RFI drafts, change-order analysis, daily-log generation","Superintendent pack: field reports, material call-offs, safety observations","Estimator pack: takeoff-to-SOV translation, cost-code mapping","CFO pack: variance commentary, forecast rollups"],
+    quote: "\"Same agent, different hands.\""
+  },
+  project: {
+    title: "Project-Type Context Packs", label: "Layer 03 · Flexes per project",
+    what: "Knowledge modules Kompass loads based on which of our seven project types a record belongs to. A Fractionalization pack knows TIC/LLC structures and securities compliance touchpoints. A Ground-Up Multifamily pack knows entitlement checklists and permit milestones.",
+    why: "Same agent, different domain lenses. Kompass doesn't apply a generic construction playbook to a Fractionalization deal — it loads the pack that matches the work.",
+    examples: ["Second Home Fractionalization","Value-Add Retail","Ground-Up Multifamily / Retail","Ground-Up Entry-Level Housing / Land Lease","Refresh &amp; Sell","Third-Party Construction","Ongoing Asset Management"]
+  },
+  knowledge: {
+    title: "Shared Org Knowledge Library", label: "Layer 02 · Universal",
+    what: "The published organizational knowledge that makes Kompass fluent in Stitser BUILT, not generically fluent in construction.",
+    why: "Everyone works from the same definitions, the same Manifesto-informed voice, the same Playbook-defined project types. No more \"what do we mean when we say X?\" — Kompass knows, and applies it consistently.",
+    examples: ["The Stitser BUILT Manifesto — purpose, code, promises, summit","Project Playbook v4 — seven project types, buy boxes, lifecycle","S-BOS Data Dictionary — every table, field, relationship","Ideal Customer &amp; User Profiles — the six archetypes"],
+    quote: "\"Fluent in Stitser BUILT, not generically fluent.\""
+  },
+  identity: {
+    title: "Agent Identity", label: "Layer 01 · Universal",
+    what: "Who Kompass is. The persona, tone, operating principles, approval gates, and Decision Ledger discipline. Written once, applies everywhere.",
+    why: "Consistency is what makes Kompass trustable. The tone of a PM conversation and a CFO conversation is the same. The refusal to surface sensitive data is the same.",
+    examples: ["Five principles: Initiative, Context obsession, Respectful urgency, Institutional memory, Earned trust","Approval gates — nothing writes to S-BOS without human sign-off","Decision Ledger — every action logged with options, choice, reasoning","Three-part flag structure: Fact → Record → Offer","\"No dead ends. Ever.\""],
+    quote: "\"Written once. Applies everywhere. Never changes based on who's asking.\""
+  }
+};
+
+function selectLayer(key) {
+  document.querySelectorAll('.arch-layer').forEach(l => l.classList.remove('selected'));
+  document.querySelector('.arch-layer[data-layer="' + key + '"]').classList.add('selected');
+  const c = layerContent[key];
+  const panel = document.getElementById('layer-detail');
+  panel.classList.remove('empty');
+  panel.innerHTML = '<button class="detail-panel-close" onclick="clearLayer()">×</button>' +
+    '<div class="detail-panel-label">' + c.label + '</div>' +
+    '<div class="detail-panel-title">' + c.title + '</div>' +
+    '<div class="detail-panel-section"><h4>What it is</h4><p>' + c.what + '</p></div>' +
+    '<div class="detail-panel-section"><h4>Why it exists</h4><p>' + c.why + '</p></div>' +
+    '<div class="detail-panel-section"><h4>Examples</h4><ul>' + c.examples.map(e => '<li>' + e + '</li>').join('') + '</ul></div>' +
+    (c.quote ? '<div class="detail-panel-quote">' + c.quote + '</div>' : '');
+}
+
+function clearLayer() {
+  document.querySelectorAll('.arch-layer').forEach(l => l.classList.remove('selected'));
+  const panel = document.getElementById('layer-detail');
+  panel.classList.add('empty');
+  panel.innerHTML = 'Select a layer to see what it contains, why it exists, and how it shows up in your work.';
+}
+
+function toggleSurface(key) {
+  const detail = document.getElementById('surface-' + key + '-detail');
+  const isOpen = detail.classList.contains('open');
+  document.querySelectorAll('.surface-detail').forEach(d => d.classList.remove('open'));
+  if (!isOpen) detail.classList.add('open');
+}
+
+function toggleSafety() {
+  document.getElementById('safety-detail').classList.toggle('open');
+}
+
+const roleContent = {
+  pm: { surfaces: ['chat'], title: "Project Managers", html: "<p>You'll use Kompass primarily in <strong>Chat</strong>. Ask it to draft your RFIs, submittals, change orders, and daily logs. Ask it to audit your project file and tell you what's stale. Ask it to draft your Weekly Pre-Read on Monday afternoon — then walk into Tuesday's meeting with a reviewed document instead of a blank agenda.</p><p><strong>Your guarantee:</strong> the propose-approve-log loop means nothing writes to S-BOS without your sign-off.</p>" },
+  estimator: { surfaces: ['chat'], title: "Estimators", html: "<p>You'll use Kompass in <strong>Chat</strong>. The big unlock: <strong>estimate-to-SOV translation</strong>. Feed Kompass an approved estimate and it proposes the Schedule of Values structure in S-BOS, ready for your review.</p><p>This is the handoff that has bled days off pay-app setup for years. Kompass absorbs that work.</p>" },
+  super: { surfaces: ['chat'], title: "Superintendents & Foremen", html: "<p><strong>Initially, lighter touch.</strong> Field tools are v2 scope — they come after the admin backbone is solid. This is deliberate sequencing, not deprioritization.</p><p>When v2 lands, you'll use Kompass in <strong>Chat</strong> to draft field reports, safety observations, and material call-offs from your notes and photos.</p>" },
+  leadership: { surfaces: ['chat','cowork'], title: "Leadership & Principal", html: "<p><strong>Chat</strong> for thinking partner work — deal analysis, portfolio review, investor communications, strategic framing.</p><p><strong>Cowork</strong> for scheduled exception reports — Kompass tells you on Monday morning what crossed a threshold over the weekend. You don't go hunting for the signal. The signal comes to you.</p>" },
+  systems: { surfaces: ['cowork','chat'], title: "Systems, Compliance & Accounting", html: "<p><strong>Cowork is where you earn the return.</strong> Monthly insurance-cert sweeps. Quarterly CRM health checks. Nightly Intacct ↔ S-BOS reconciliation. Pay-app package compliance verification.</p><p>The Decision Ledger means every automated action is auditable. You configure the workflows; Kompass runs them; you review the staged output before it commits.</p>" },
+  sales: { surfaces: ['chat'], title: "Sales & Pursuit", html: "<p><strong>Initially, lighter touch.</strong> Pursuit orbit is v5 scope — we're building the administrative and delivery backbones first.</p><p>When it lands, you'll use Kompass in <strong>Chat</strong> for prospect research, investor-memo drafting, and pipeline synthesis.</p>" }
+};
+
+function selectRole(e, key) {
+  document.querySelectorAll('.role-chip').forEach(c => c.classList.remove('active'));
+  e.target.classList.add('active');
+  const r = roleContent[key];
+  const output = document.getElementById('role-output');
+  output.classList.remove('empty');
+  const tags = r.surfaces.map(s => '<span class="role-tag role-tag-' + s + '">' + (s === 'chat' ? 'Chat' : 'Cowork') + '</span>').join('');
+  output.innerHTML = '<div class="role-output-surfaces">' + tags + '</div><h3>' + r.title + '</h3>' + r.html;
+}
+</script>
+</body>
+</html>

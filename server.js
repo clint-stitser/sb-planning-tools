@@ -797,7 +797,7 @@ app.post('/api/entity-reporting/config', express.json(), (req, res) => {
 // CORS is open to GitHub Pages origin + localhost for local dev.
 
 const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
-const GH_REPO      = 'clint-stitser/SBos-Knowledge-Base';
+const GH_REPO      = 'clint-stitser/sb-planning-tools';  // KB files now live here
 const GH_API       = 'https://api.github.com';
 
 function articleCors(req, res, next) {

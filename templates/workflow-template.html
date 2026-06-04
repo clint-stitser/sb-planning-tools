@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Workflow Template — S-BOS Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+/* ══════════════════════════════════════════════════════════════
+   LESSON META BAR
+   ══════════════════════════════════════════════════════════════ */
+.lesson-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 40px;
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #BCBEC0;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.lesson-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  color: #BCBEC0;
+  flex: 1;
+  min-width: 0;
+}
+.breadcrumb-track { color: #BCBEC0; }
+.breadcrumb-sep { color: #BCBEC0; font-size: 16px; }
+.breadcrumb-course { color: var(--dark); }
+.breadcrumb-lesson { color: var(--blue); font-weight: 700; }
+
+.lesson-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+.chip-pillar  { background: var(--blue);   color: #fff; }
+.chip-type    { background: var(--orange); color: #fff; }
+.chip-time    { background: var(--light);  color: var(--dark); border: 1px solid #BCBEC0; }
+.chip-audience{ background: var(--light);  color: var(--dark); border: 1px solid #BCBEC0; }
+
+.btn-complete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  flex-shrink: 0;
+}
+.btn-complete:hover:not(:disabled) { background: #e08810; }
+.btn-complete:disabled { opacity: 0.7; cursor: not-allowed; }
+.btn-complete.completed { background: #27ae60; }
+.btn-complete.completed:hover { background: #219a52; }
+
+/* ── ACTOR LEGEND ─────────────────────────────────────────── */
+.vc-legend {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 28px;
+}
+.vc-legend-chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px;
+  border-radius: 6px;
+  font-family: var(--font-sub);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  border: 2px solid transparent;
+}
+.vc-legend-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.vc-legend-chip.people  { background:#2A4E63; color:#fff; }
+.vc-legend-chip.people  .vc-legend-dot { background:rgba(255,255,255,.6); }
+.vc-legend-chip.sbos    { background:#FEF4E8; color:#2A4E63; border-color:#F8991D; }
+.vc-legend-chip.sbos    .vc-legend-dot { background:#F8991D; }
+.vc-legend-chip.claude  { background:#E8EEF2; color:#2A4E63; border-color:#3D6E87; }
+.vc-legend-chip.claude  .vc-legend-dot { background:#3D6E87; }
+
+/* ── PROCESS MAP ──────────────────────────────────────────── */
+.vc-map-wrap {
+  overflow-x: auto;
+  padding: 24px 0 8px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #BCBEC0 transparent;
+}
+.vc-map {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  min-width: max-content;
+  padding: 0 2px;
+}
+.vc-chip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  padding: 14px 18px;
+  min-width: 120px;
+  text-align: center;
+  background: var(--light);
+  border: 2px solid transparent;
+  border-radius: 8px;
+  transition: background .15s, border-color .15s;
+  position: relative;
+}
+.vc-chip:hover { background:#FEF4E8; border-color:#F8991D; }
+.vc-chip.active { background:#FEF4E8; border-color:#F8991D; }
+.vc-chip.active .vc-chip-num { color:#F8991D; }
+.vc-chip.active .vc-chip-name { color:#2A4E63; }
+.vc-chip-num {
+  font-family: var(--font-head);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color:#BCBEC0;
+}
+.vc-chip-name {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dark);
+  line-height: 1.25;
+}
+.vc-chip-role {
+  font-family: var(--font-head);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--blue);
+  background: #E8EEF2;
+  padding: 2px 6px;
+  border-radius: 3px;
+  margin-top: 2px;
+}
+.vc-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  flex-shrink: 0;
+  color: #BCBEC0;
+  font-size: 18px;
+  font-weight: 300;
+}
+
+/* ── STEP DETAIL CARD ─────────────────────────────────────── */
+.vc-detail {
+  margin-top: 20px;
+  border: 2px solid #BCBEC0;
+  border-radius: 12px;
+  overflow: hidden;
+  display: none;
+}
+.vc-detail.visible { display: block; }
+
+.vc-detail-header {
+  background: #2A4E63;
+  color: #fff;
+  padding: 22px 32px;
+}
+.vc-detail-header-top {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 4px;
+}
+.vc-detail-tag {
+  font-family: var(--font-head);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  opacity: .55;
+}
+.vc-detail-title {
+  font-family: var(--font-head);
+  font-size: 24px;
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.1;
+}
+.vc-detail-desc {
+  font-family: var(--font-sub);
+  font-size: 15px;
+  opacity: .75;
+  margin-top: 6px;
+}
+
+/* ── FOUR-FIELD STEP GRID ─────────────────────────────────── */
+.step-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  border-top: 1px solid #BCBEC0;
+}
+.step-field {
+  padding: 24px 28px;
+  border-right: 1px solid #BCBEC0;
+  background: #fff;
+}
+.step-field:last-child { border-right: none; }
+.step-field-label {
+  font-family: var(--font-head);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: #BCBEC0;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--light);
+}
+.step-field.who   .step-field-label { color: #2A4E63; border-bottom-color: #2A4E63; }
+.step-field.what  .step-field-label { color: #F8991D; border-bottom-color: #F8991D; }
+.step-field.tool  .step-field-label { color: #3D6E87; border-bottom-color: #3D6E87; }
+.step-field.output .step-field-label { color: #27ae60; border-bottom-color: #27ae60; }
+
+.step-field-role {
+  font-family: var(--font-sub);
+  font-size: 15px;
+  font-weight: 700;
+  color: #2A4E63;
+  margin-bottom: 8px;
+}
+.step-field-actions {
+  list-style: none;
+  padding: 0; margin: 0;
+}
+.step-field-actions li {
+  font-family: var(--font-sub);
+  font-size: 14px;
+  color: var(--dark);
+  padding: 4px 0 4px 16px;
+  position: relative;
+  line-height: 1.45;
+}
+.step-field-actions li::before {
+  content: '›';
+  position: absolute;
+  left: 0;
+  color: #BCBEC0;
+  font-size: 16px;
+  top: 3px;
+}
+.tool-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #E8EEF2;
+  border: 1px solid #3D6E87;
+  border-radius: 4px;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 700;
+  color: #2A4E63;
+  margin-bottom: 8px;
+}
+.tool-tag-note {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  color: var(--dark);
+  opacity: .75;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+.output-item {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dark);
+  padding: 5px 8px 5px 10px;
+  background: var(--light);
+  border-radius: 4px;
+  border-left: 3px solid #27ae60;
+  margin-bottom: 5px;
+  line-height: 1.35;
+}
+
+/* ── NOTES BAND ───────────────────────────────────────────── */
+.vc-notes-band {
+  background: #FEF4E8;
+  border-top: 3px solid #F8991D;
+  padding: 20px 28px;
+  display: flex;
+  align-items: flex-start;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.vc-notes-label {
+  font-family: var(--font-head);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: #F8991D;
+  margin-bottom: 6px;
+}
+.vc-notes-text {
+  font-family: var(--font-sub);
+  font-size: 14px;
+  color: var(--dark);
+  line-height: 1.5;
+}
+
+/* ── EMPTY STATE ──────────────────────────────────────────── */
+.vc-empty {
+  padding: 48px 32px;
+  text-align: center;
+  color: #BCBEC0;
+  font-family: var(--font-sub);
+  font-size: 15px;
+  border: 2px dashed #BCBEC0;
+  border-radius: 12px;
+  margin-top: 20px;
+}
+.vc-empty strong {
+  display: block;
+  font-family: var(--font-head);
+  font-size: 13px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  color: #BCBEC0;
+}
+
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .step-fields { grid-template-columns: 1fr 1fr; }
+  .step-field { border-bottom: 1px solid #BCBEC0; }
+  .step-field:nth-child(2n) { border-right: none; }
+}
+@media (max-width: 560px) {
+  .step-fields { grid-template-columns: 1fr; }
+  .step-field { border-right: none; }
+  .lesson-meta-bar { height: auto; padding: 12px 20px; gap: 10px; }
+}
+</style>
+</head>
+<body data-section="workflows">
+
+<header>
+  <a class="logo-lockup" href="../">
+    <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+      <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+    </svg>
+    <div class="logo-text">
+      <span class="brand">Stitser Built</span>
+      <span class="sub">S-BOS Knowledge Base</span>
+    </div>
+  </a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+
+<div class="nav-overlay">
+  <div class="nav-overlay-header">
+    <a class="logo-lockup" href="../">
+      <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
+        <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+        <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Stitser Built</span>
+        <span class="sub">S-BOS Knowledge Base</span>
+      </div>
+    </a>
+    <button class="nav-overlay-close" aria-label="Close menu">&#10005;</button>
+  </div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<!-- LESSON META BAR -->
+<div class="lesson-meta-bar">
+  <div class="lesson-breadcrumb">
+    <span class="breadcrumb-track" id="meta-track">Learning Track</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-course" id="meta-course">Course Name</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-lesson" id="meta-lesson-name">Lesson Title</span>
+  </div>
+  <div class="lesson-chips">
+    <span class="chip chip-pillar"   id="meta-pillar">People</span>
+    <span class="chip chip-type"     id="meta-type">Workflow</span>
+    <span class="chip chip-time"     id="meta-time">⏱ 8 min</span>
+    <span class="chip chip-audience" id="meta-audience">Internal</span>
+  </div>
+  <button class="btn-complete" id="btn-complete" onclick="markComplete()">Mark Complete</button>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-eyebrow">Workflows — Step by Step</div>
+  <h1 class="page-hero-title">Create a Project Record in SmartSuite</h1>
+  <p class="page-hero-subtitle">A 5-step walkthrough for opening a new project in S-BOS. Click any step to see who does what, which tool to use, and what the output should be.</p>
+</div>
+
+<div class="orange-bar"></div>
+
+<div class="breadcrumb-bar">
+  <div class="breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">→</span>
+    <a href="../workflows/">Workflows</a>
+    <span class="sep">→</span>
+    <span class="cur">Create a Project Record</span>
+  </div>
+</div>
+
+<!-- OVERVIEW -->
+<section>
+  <div class="section-label">How to Use This</div>
+  <div class="section-title">Who, What, Tool, Output</div>
+  <div class="prose">
+    <p>Every step in this workflow breaks down to four things: <strong>Who</strong> is responsible, <strong>What</strong> they need to do, <strong>Which tool</strong> or system they use, and <strong>What output</strong> the step produces. Click any step in the map below to see the full breakdown.</p>
+    <p>If a step has a note band, that note contains important context, exceptions, or reminders that apply only to that step. Read it before proceeding.</p>
+  </div>
+  <div class="vc-legend">
+    <div class="vc-legend-chip people"><div class="vc-legend-dot"></div>People — Roles &amp; Responsibilities</div>
+    <div class="vc-legend-chip sbos"><div class="vc-legend-dot"></div>S-BOS — Records &amp; Data</div>
+    <div class="vc-legend-chip claude"><div class="vc-legend-dot"></div>Claude — Reads, Assists, Writes</div>
+  </div>
+</section>
+
+<!-- STEP MAP + INTERACTIVE DETAIL -->
+<section style="padding-top:0">
+  <div class="section-label">Click a Step</div>
+  <div class="section-title">Workflow Steps</div>
+  <div class="vc-map-wrap">
+    <div class="vc-map" id="vcMap"></div>
+  </div>
+  <div class="vc-empty" id="vcEmpty">
+    <strong>Select a Step Above</strong>
+    Click any step chip to see the full breakdown — who does it, what the actions are, which tool to use, and what the output looks like.
+  </div>
+  <div class="vc-detail" id="vcDetail"></div>
+</section>
+
+<footer>
+  <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
+  <div class="footer-version">v1.0 · Internal Use Only</div>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════
+   LESSON CONFIG — replace when creating a real lesson
+   ════════════════════════════════════════════════════════════ */
+const LESSON_CONFIG = {
+  lessonId:       'LESSON_RECORD_ID',
+  lessonTitle:    'Create a Project Record in SmartSuite',
+  trackName:      'S-BOS Foundations',
+  courseName:     'SmartSuite Basics',
+  pillar:         'Systems',
+  contentType:    'Workflow',
+  estimatedMins:  8,
+  audience:       'Internal'
+};
+
+const SMARTSUITE_CONFIG = {
+  apiKey:        window.SMARTSUITE_API_KEY        || '',
+  workspaceId:   window.SMARTSUITE_WORKSPACE      || '',
+  progressAppId: '6a18ad82e630be8e82a202ea',       // Progress Table — SB Training & Certifications
+  personId:      new URLSearchParams(window.location.search).get('person_id') || ''
+};
+
+async function markComplete() {
+  const btn = document.getElementById('btn-complete');
+  if (btn.classList.contains('completed')) return;
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+
+  if (!SMARTSUITE_CONFIG.apiKey) {
+    showCompleted(); return;
+  }
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const payload = {
+      title: `${SMARTSUITE_CONFIG.personId || 'Anonymous'} — ${LESSON_CONFIG.lessonTitle}`,
+      s795f4d404: [LESSON_CONFIG.lessonId],                  // Lesson (linked)
+      s56ad0c6cc: { value: 'Completed' },                    // Status (single select)
+      s47e7db00b: { date: today, include_time: false },      // Completion Date
+      s971159143: 1                                          // Attempt Count
+    };
+    if (SMARTSUITE_CONFIG.personId) {
+      payload.s43b519ec1 = [SMARTSUITE_CONFIG.personId];     // Person (linked)
+    }
+    const res = await fetch(
+      `https://app.smartsuite.com/api/v1/applications/${SMARTSUITE_CONFIG.progressAppId}/records/`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${SMARTSUITE_CONFIG.apiKey}`,
+          'Account-Id': SMARTSUITE_CONFIG.workspaceId,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+    if (res.ok) { showCompleted(); }
+    else { btn.textContent = 'Mark Complete'; btn.disabled = false; console.error('SmartSuite API error:', await res.text()); }
+  } catch (err) { showCompleted(); console.warn('Progress save failed (offline?):', err); }
+}
+
+function showCompleted() {
+  const btn = document.getElementById('btn-complete');
+  btn.textContent = '✓ Completed';
+  btn.classList.add('completed');
+  btn.disabled = false;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('meta-track').textContent        = LESSON_CONFIG.trackName;
+  document.getElementById('meta-course').textContent       = LESSON_CONFIG.courseName;
+  document.getElementById('meta-lesson-name').textContent  = LESSON_CONFIG.lessonTitle;
+  document.getElementById('meta-pillar').textContent       = LESSON_CONFIG.pillar;
+  document.getElementById('meta-type').textContent         = LESSON_CONFIG.contentType;
+  document.getElementById('meta-time').textContent         = `⏱ ${LESSON_CONFIG.estimatedMins} min`;
+  document.getElementById('meta-audience').textContent     = LESSON_CONFIG.audience;
+  document.title = `${LESSON_CONFIG.lessonTitle} — S-BOS Knowledge Base`;
+});
+
+/* ════════════════════════════════════════════════════════════
+   WORKFLOW DATA
+   ─ To create a real workflow from this template:
+     1. Copy this file and rename it
+     2. Replace the WORKFLOW object below with your steps
+     3. Update the page-hero title and subtitle above
+     4. Update LESSON_CONFIG above
+   ════════════════════════════════════════════════════════════ */
+const WORKFLOW = {
+  name: 'Create a Project Record in SmartSuite',
+  steps: [
+    {
+      id: 'open-app',
+      tag: 'Step 01',
+      name: 'Open Projects App',
+      desc: 'Navigate to the Projects application in SmartSuite to begin creating the new record.',
+      who: {
+        role: 'Project Manager',
+        actions: [
+          'Log into SmartSuite at app.smartsuite.com',
+          'Select the correct workspace (Stitser BUILT)',
+          'Click "Projects" from the left navigation'
+        ]
+      },
+      what: [
+        'Confirm you\'re in the right solution — look for the Projects app icon in the left rail',
+        'If creating a project from an existing deal, have the deal number ready before opening the app'
+      ],
+      tool: {
+        name: 'SmartSuite',
+        icon: '🗄️',
+        note: 'Desktop browser recommended. Mobile works for viewing but not initial record creation.'
+      },
+      output: ['Projects app open in browser', 'Correct workspace confirmed'],
+      note: null
+    },
+    {
+      id: 'fill-fields',
+      tag: 'Step 02',
+      name: 'Fill Required Fields',
+      desc: 'Enter all mandatory fields to create a complete and searchable project record.',
+      who: {
+        role: 'Project Manager',
+        actions: [
+          'Click "+ Add Record" at the top of the Projects view',
+          'Fill in Project Name using the standard format: [Client Last Name] — [Address]',
+          'Select the correct Project Type from the dropdown',
+          'Enter the Project Address and confirm it resolves correctly',
+          'Set the Start Date and Estimated Completion Date'
+        ]
+      },
+      what: [
+        'Required fields are marked with a red asterisk in SmartSuite',
+        'Project Name must follow the naming convention exactly — it drives search and reports',
+        'Do not skip the Project Type — it determines which fields and automations activate'
+      ],
+      tool: {
+        name: 'SmartSuite — Record Form',
+        icon: '📋',
+        note: 'Use the expanded record view (double-click the row) for easier data entry on new records.'
+      },
+      output: ['Draft project record with all required fields populated', 'Record visible in Projects view (unsaved state)'],
+      note: 'If you\'re unsure which Project Type applies, refer to the Project Playbook or ask your Ops Manager before saving.'
+    },
+    {
+      id: 'assign-team',
+      tag: 'Step 03',
+      name: 'Assign Team',
+      desc: 'Link the correct team members to the project so automations, notifications, and dashboards work correctly.',
+      who: {
+        role: 'Project Manager',
+        actions: [
+          'Find the "Team Members" linked field on the record',
+          'Search for and add the Lead Practitioner',
+          'Add the Production Manager (if different from yourself)',
+          'Add any additional team members — vendors, subs, or partner contacts'
+        ]
+      },
+      what: [
+        'Team member assignments drive the dashboard visibility — only assigned members see this project on their personal dashboard',
+        'External parties (vendors, clients) should be added as Contacts, not Team Members'
+      ],
+      tool: {
+        name: 'SmartSuite — Linked Record Field',
+        icon: '🔗',
+        note: 'Type a name to search the People table. If someone isn\'t appearing, they may not have a People record yet — create one first.'
+      },
+      output: ['Project record shows at least 1 team member assigned', 'Project appears on assigned members\' dashboards'],
+      note: null
+    },
+    {
+      id: 'set-status',
+      tag: 'Step 04',
+      name: 'Set Status',
+      desc: 'Choose the correct initial status so the project routes to the right views and reports from day one.',
+      who: {
+        role: 'Project Manager',
+        actions: [
+          'Locate the "Status" field on the record',
+          'Select the appropriate starting status from the dropdown',
+          'Confirm the GYR field is set — it defaults to Green but adjust if needed',
+          'If this is a new lead or opportunity, set Status to "Discovery" — do not use "Active" until work is confirmed'
+        ]
+      },
+      what: [
+        'Status controls which board view the record appears in',
+        'GYR (Green/Yellow/Red) is a separate field from Status — both must be set correctly',
+        'Do not set to "Closed" or "Complete" on creation — only use those statuses when the project is fully wrapped'
+      ],
+      tool: {
+        name: 'SmartSuite — Status & GYR Fields',
+        icon: '🚦',
+        note: 'The GYR field feeds the weekly GYR Summary report. Setting it correctly here means your first report entry is accurate.'
+      },
+      output: ['Status field set to correct value', 'GYR field set to starting color', 'Project routes to correct board view'],
+      note: 'When in doubt between "Discovery" and "Active," ask yourself: has the client committed and has a contract been signed? If not, use Discovery.'
+    },
+    {
+      id: 'save-confirm',
+      tag: 'Step 05',
+      name: 'Save and Confirm',
+      desc: 'Save the record and verify it appears correctly in all relevant views before notifying the team.',
+      who: {
+        role: 'Project Manager',
+        actions: [
+          'Click "Save" or press Cmd/Ctrl + S to save the record',
+          'Navigate to the main Projects board view and confirm the card appears',
+          'Click into the record and verify all fields saved correctly',
+          'Copy the record URL and paste it into the project Slack channel or team notification'
+        ]
+      },
+      what: [
+        'SmartSuite auto-saves most field changes, but new records require an explicit save',
+        'Confirm the record ID appears in the URL — this is the unique identifier you\'ll reference everywhere',
+        'Notify your Ops Manager that the record is live so they can link it to the Master DB'
+      ],
+      tool: {
+        name: 'SmartSuite + Slack',
+        icon: '✅',
+        note: 'Share the SmartSuite record URL (not a screenshot) so team members can click directly into the live record.'
+      },
+      output: ['Project record saved and confirmed in all board views', 'Record URL shared with relevant team members', 'Ops Manager notified to link to Master DB'],
+      note: null
+    }
+  ]
+};
+
+/* ════════════════════════════════════════════════════════════
+   RENDER ENGINE
+   ════════════════════════════════════════════════════════════ */
+let activeIdx = -1;
+
+function init() { buildMap(); }
+
+function buildMap() {
+  const wrap = document.getElementById('vcMap');
+  WORKFLOW.steps.forEach((s, i) => {
+    if (i > 0) {
+      const arr = document.createElement('div');
+      arr.className = 'vc-arrow';
+      arr.textContent = '›';
+      wrap.appendChild(arr);
+    }
+    const chip = document.createElement('div');
+    chip.className = 'vc-chip';
+    chip.dataset.idx = i;
+    chip.innerHTML = `
+      <div class="vc-chip-num">${s.tag}</div>
+      <div class="vc-chip-name">${s.name}</div>
+      <div class="vc-chip-role">${s.who.role}</div>
+    `;
+    chip.addEventListener('click', () => selectStep(i));
+    wrap.appendChild(chip);
+  });
+}
+
+function selectStep(idx) {
+  if (activeIdx === idx) {
+    activeIdx = -1;
+    document.querySelectorAll('.vc-chip').forEach(c => c.classList.remove('active'));
+    document.getElementById('vcDetail').classList.remove('visible');
+    document.getElementById('vcEmpty').style.display = '';
+    return;
+  }
+  activeIdx = idx;
+  document.querySelectorAll('.vc-chip').forEach((c, i) => c.classList.toggle('active', i === idx));
+  renderStep(idx);
+  document.getElementById('vcDetail').classList.add('visible');
+  document.getElementById('vcEmpty').style.display = 'none';
+  setTimeout(() => {
+    document.getElementById('vcDetail').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 50);
+}
+
+function renderStep(idx) {
+  const s = WORKFLOW.steps[idx];
+  const detail = document.getElementById('vcDetail');
+
+  const whoHTML = `
+    <div class="step-field who">
+      <div class="step-field-label">Who</div>
+      <div class="step-field-role">${s.who.role}</div>
+      <ul class="step-field-actions">
+        ${s.who.actions.map(a => `<li>${a}</li>`).join('')}
+      </ul>
+    </div>
+  `;
+
+  const whatHTML = `
+    <div class="step-field what">
+      <div class="step-field-label">What</div>
+      <ul class="step-field-actions">
+        ${s.what.map(a => `<li>${a}</li>`).join('')}
+      </ul>
+    </div>
+  `;
+
+  const toolHTML = `
+    <div class="step-field tool">
+      <div class="step-field-label">Tool / System</div>
+      <div class="tool-tag">${s.tool.icon} ${s.tool.name}</div>
+      <div class="tool-tag-note">${s.tool.note}</div>
+    </div>
+  `;
+
+  const outputHTML = `
+    <div class="step-field output">
+      <div class="step-field-label">Output</div>
+      ${s.output.map(o => `<div class="output-item">${o}</div>`).join('')}
+    </div>
+  `;
+
+  const noteHTML = s.note ? `
+    <div class="vc-notes-band">
+      <div>
+        <div class="vc-notes-label">Note for This Step</div>
+        <div class="vc-notes-text">${s.note}</div>
+      </div>
+    </div>
+  ` : '';
+
+  detail.innerHTML = `
+    <div class="vc-detail-header">
+      <div class="vc-detail-header-top">
+        <div class="vc-detail-tag">${s.tag}</div>
+      </div>
+      <div class="vc-detail-title">${s.name}</div>
+      <div class="vc-detail-desc">${s.desc}</div>
+    </div>
+    <div class="step-fields">
+      ${whoHTML}${whatHTML}${toolHTML}${outputHTML}
+    </div>
+    ${noteHTML}
+  `;
+}
+
+init();
+</script>
+</body>
+</html>

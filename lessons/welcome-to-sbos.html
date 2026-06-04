@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Welcome to S-BOS — S-BOS Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+/* ══════════════════════════════════════════════════════════════
+   LESSON META BAR
+   ══════════════════════════════════════════════════════════════ */
+.lesson-meta-bar {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 40px;
+  height: 56px;
+  background: #fff;
+  border-bottom: 1px solid #BCBEC0;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.lesson-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  color: #BCBEC0;
+  flex: 1;
+  min-width: 0;
+}
+.breadcrumb-track  { color: #BCBEC0; }
+.breadcrumb-sep    { color: #BCBEC0; font-size: 16px; }
+.breadcrumb-course { color: var(--dark); }
+.breadcrumb-lesson { color: var(--blue); font-weight: 700; }
+
+.lesson-chips {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+.chip-pillar   { background: var(--blue);   color: #fff; }
+.chip-type     { background: var(--orange); color: #fff; }
+.chip-time     { background: var(--light);  color: var(--dark); border: 1px solid #BCBEC0; }
+.chip-audience { background: var(--light);  color: var(--dark); border: 1px solid #BCBEC0; }
+
+.btn-complete {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  background: var(--orange);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: background 0.2s, opacity 0.2s;
+  flex-shrink: 0;
+}
+.btn-complete:hover:not(:disabled) { background: #e08810; }
+.btn-complete:disabled { opacity: 0.7; cursor: not-allowed; }
+.btn-complete.completed { background: #27ae60; }
+
+/* ══════════════════════════════════════════════════════════════
+   ARTICLE LAYOUT
+   ══════════════════════════════════════════════════════════════ */
+.article-wrap {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 40px 80px;
+  gap: 0;
+}
+.article-sidebar {
+  position: sticky;
+  top: 80px;
+  height: fit-content;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+  padding: 32px 24px 32px 0;
+  border-right: 1px solid #BCBEC0;
+}
+.toc-label {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #BCBEC0;
+  margin-bottom: 12px;
+}
+.toc-list { list-style: none; padding: 0; margin: 0; }
+.toc-link {
+  display: block;
+  padding: 6px 0 6px 12px;
+  border-left: 2px solid transparent;
+  font-family: var(--font-sub);
+  font-size: 13px;
+  color: #58595B;
+  text-decoration: none;
+  transition: color 0.15s, border-color 0.15s;
+  line-height: 1.3;
+}
+.toc-link:hover { color: var(--blue); }
+.toc-link.active { color: var(--blue); border-left-color: var(--blue); font-weight: 700; }
+.toc-link.h3 { padding-left: 24px; font-size: 12px; color: #BCBEC0; }
+.toc-link.h3.active { color: var(--blue); border-left-color: var(--blue); }
+
+.article-body {
+  padding: 40px 0 40px 48px;
+  max-width: 720px;
+}
+.article-title-block { margin-bottom: 32px; }
+.article-eyebrow {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 8px;
+}
+.article-title {
+  font-family: var(--font-head);
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--dark);
+  margin: 0 0 12px;
+  line-height: 1.2;
+}
+.article-intro {
+  font-size: 1.05rem;
+  color: #58595B;
+  line-height: 1.7;
+  margin: 0;
+}
+.article-meta-strip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+.article-meta-chip {
+  font-family: var(--font-sub);
+  font-size: 12px;
+  color: #BCBEC0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.article-meta-chip strong { color: var(--dark); }
+
+.article-body h2 {
+  font-family: var(--font-head);
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 48px 0 16px;
+  padding-top: 8px;
+}
+.article-body h3 {
+  font-family: var(--font-sub);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 32px 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.article-body p { line-height: 1.75; color: #3D3D3D; margin: 0 0 16px; }
+.article-body ul, .article-body ol { margin: 0 0 16px 20px; }
+.article-body li { line-height: 1.75; color: #3D3D3D; margin-bottom: 6px; }
+.article-body strong { font-weight: 700; color: var(--dark); }
+
+blockquote {
+  border-left: 3px solid var(--orange);
+  margin: 24px 0;
+  padding: 16px 20px;
+  background: #FFF8F0;
+  border-radius: 0 6px 6px 0;
+}
+blockquote p { margin: 0 0 8px; font-style: italic; color: #58595B; }
+blockquote p:last-child { margin-bottom: 0; }
+blockquote cite {
+  font-size: 0.85rem;
+  color: #BCBEC0;
+  font-style: normal;
+}
+
+.callout-box {
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 24px 0;
+  border: 1px solid transparent;
+}
+.callout-box-label {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.callout-box.info    { background: #EFF6FF; border-color: #BFDBFE; }
+.callout-box.info    .callout-box-label { color: var(--blue); }
+.callout-box.warning { background: #FFFBEB; border-color: #FDE68A; }
+.callout-box.warning .callout-box-label { color: #D97706; }
+.callout-box.success { background: #F0FDF4; border-color: #BBF7D0; }
+.callout-box.success .callout-box-label { color: #16A34A; }
+.callout-box p { margin: 0; color: #3D3D3D; }
+
+.article-divider {
+  border: none;
+  border-top: 1px solid #BCBEC0;
+  margin: 40px 0 0;
+}
+
+/* Three-layer diagram */
+.layer-diagram {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid #BCBEC0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 24px 0;
+}
+.layer-row {
+  display: flex;
+  align-items: stretch;
+  border-bottom: 1px solid #BCBEC0;
+}
+.layer-row:last-child { border-bottom: none; }
+.layer-label {
+  width: 140px;
+  min-width: 140px;
+  padding: 16px 20px;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.layer-label.data    { background: var(--blue);   color: #fff; }
+.layer-label.agent   { background: var(--orange); color: #fff; }
+.layer-label.people  { background: var(--dark);   color: #fff; }
+.layer-detail {
+  flex: 1;
+  padding: 16px 20px;
+  border-left: 1px solid #BCBEC0;
+}
+.layer-detail strong { display: block; font-size: 0.95rem; color: var(--dark); margin-bottom: 4px; }
+.layer-detail p { font-size: 0.88rem; color: #58595B; margin: 0; line-height: 1.5; }
+
+/* Pillar cards */
+.pillar-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 20px 0;
+}
+.pillar-card {
+  border: 1px solid #BCBEC0;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fff;
+}
+.pillar-card-icon {
+  font-size: 1.4rem;
+  margin-bottom: 6px;
+}
+.pillar-card-name {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--dark);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.pillar-card-desc {
+  font-size: 0.83rem;
+  color: #58595B;
+  line-height: 1.5;
+}
+
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .article-wrap {
+    grid-template-columns: 1fr;
+    padding: 0 20px 60px;
+  }
+  .article-sidebar {
+    position: static;
+    border-right: none;
+    border-bottom: 1px solid #BCBEC0;
+    padding: 20px 0;
+    margin-bottom: 8px;
+  }
+  .article-body { padding: 24px 0; }
+  .toc-list { display: flex; gap: 4px; flex-wrap: wrap; }
+  .toc-link { padding: 4px 10px; border: 1px solid #BCBEC0; border-radius: 20px; border-left-width: 1px; }
+  .toc-link.active { border-color: var(--blue); }
+  .toc-link.h3 { display: none; }
+  .pillar-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  .lesson-meta-bar { height: auto; padding: 12px 20px; gap: 10px; }
+  .layer-label { width: 90px; min-width: 90px; font-size: 10px; }
+}
+</style>
+</head>
+<body data-section="system">
+
+<header>
+  <a class="logo-lockup" href="../">
+    <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
+      <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+      <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+    </svg>
+    <div class="logo-text">
+      <span class="brand">Stitser Built</span>
+      <span class="sub">S-BOS Knowledge Base</span>
+    </div>
+  </a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+
+<div class="nav-overlay">
+  <div class="nav-overlay-header">
+    <a class="logo-lockup" href="../">
+      <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
+        <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+        <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Stitser Built</span>
+        <span class="sub">S-BOS Knowledge Base</span>
+      </div>
+    </a>
+    <button class="nav-overlay-close" aria-label="Close menu">✕</button>
+  </div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<!-- LESSON META BAR -->
+<div class="lesson-meta-bar">
+  <div class="lesson-breadcrumb">
+    <span class="breadcrumb-track" id="meta-track">S-BOS Foundations</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-course" id="meta-course">System Introduction</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-lesson" id="meta-lesson-name">Welcome to S-BOS</span>
+  </div>
+  <div class="lesson-chips">
+    <span class="chip chip-pillar"   id="meta-pillar">People</span>
+    <span class="chip chip-type"     id="meta-type">Article</span>
+    <span class="chip chip-time"     id="meta-time">⏱ 10 min</span>
+    <span class="chip chip-audience" id="meta-audience">Internal</span>
+  </div>
+  <button class="btn-complete" id="btn-complete" onclick="markComplete()">Mark Complete</button>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-eyebrow">Orientation Article · People Pillar</div>
+  <h1 class="page-hero-title">Welcome to S-BOS</h1>
+  <p class="page-hero-subtitle">The operating system behind Stitser BUILT — what it is, how it works, and how you fit into it.</p>
+</div>
+
+<div class="orange-bar"></div>
+
+<div class="breadcrumb-bar">
+  <div class="breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">→</span>
+    <a href="../system/">System</a>
+    <span class="sep">→</span>
+    <span class="cur">Welcome to S-BOS</span>
+  </div>
+</div>
+
+<!-- MAIN TWO-COLUMN LAYOUT -->
+<div class="article-wrap">
+
+  <!-- SIDEBAR: auto-generated TOC -->
+  <aside class="article-sidebar">
+    <div class="toc-label">In This Article</div>
+    <ul class="toc-list" id="tocList">
+      <!-- populated by JS -->
+    </ul>
+  </aside>
+
+  <!-- ARTICLE BODY -->
+  <article class="article-body" id="articleBody">
+
+    <div class="article-title-block">
+      <div class="article-eyebrow">Orientation · People Pillar</div>
+      <h1 class="article-title">Welcome to S-BOS</h1>
+      <p class="article-intro">S-BOS is the operating system that runs Stitser BUILT — a connected layer of data, intelligence, and process that makes the company scalable, transparent, and fast. This article gives you the foundational orientation you need to work inside it effectively.</p>
+      <div class="article-meta-strip">
+        <span class="article-meta-chip">⏱ <strong>10 min read</strong></span>
+        <span class="article-meta-chip">Last updated: <strong>May 2026</strong></span>
+        <span class="article-meta-chip">Pillar: <strong>People</strong></span>
+      </div>
+    </div>
+
+    <!-- SECTION 1: What is S-BOS? -->
+    <h2 id="what-is-sbos">What Is S-BOS?</h2>
+
+    <p><strong>S-BOS stands for Stitser Built Operating System.</strong> It's not a single app — it's the combination of data infrastructure, AI agents, workflows, and team behaviors that allow Stitser BUILT to operate at scale across multiple product lines, projects, and people simultaneously.</p>
+
+    <p>Most companies run on tribal knowledge, scattered spreadsheets, and informal communication. Stitser BUILT is building something different: a system where the right information is always in the right place, the right people always know what to do next, and the organization can learn and improve in real time.</p>
+
+    <blockquote>
+      <p>S-BOS is how Stitser BUILT turns operational complexity into competitive advantage.</p>
+    </blockquote>
+
+    <p>You don't need to understand every part of S-BOS to be effective in your role — but you do need to understand the shape of it, what's in it, and where your work lives inside it.</p>
+
+    <hr class="article-divider">
+
+    <!-- SECTION 2: The Three Layers -->
+    <h2 id="three-layers">The Three Layers</h2>
+
+    <p>S-BOS is built on three interconnected layers. Each layer serves a different function, and together they create a system that is both powerful and practical.</p>
+
+    <div class="layer-diagram">
+      <div class="layer-row">
+        <div class="layer-label data">Data Layer</div>
+        <div class="layer-detail">
+          <strong>SmartSuite — the source of truth</strong>
+          <p>Every project, person, property, document, task, milestone, and financial record lives here. SmartSuite is the central database. If it isn't in SmartSuite, it doesn't officially exist in S-BOS.</p>
+        </div>
+      </div>
+      <div class="layer-row">
+        <div class="layer-label agent">Agent Layer</div>
+        <div class="layer-detail">
+          <strong>Kompass — the AI operating agent</strong>
+          <p>Kompass is S-BOS's AI system, built on Claude. It reads from and writes to SmartSuite, guides workflows, answers questions, drafts documents, and surfaces insights. Kompass is the intelligence layer — it does the thinking work so you can focus on the decision work.</p>
+        </div>
+      </div>
+      <div class="layer-row">
+        <div class="layer-label people">Interface Layer</div>
+        <div class="layer-detail">
+          <strong>Softr + Knowledge Base — how people interact with the system</strong>
+          <p>The S-BOS frontend (app.stitserbuilt.com) is built on Softr. It gives every team member a role-appropriate view of data, workflows, training, and tools — no SmartSuite admin access required. This Knowledge Base (where you are now) is also part of the interface layer.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout-box info">
+      <div class="callout-box-label">The big idea</div>
+      <p>The three layers work together: <strong>SmartSuite holds the data. Kompass moves and interprets the data. Softr and the Knowledge Base show the data to the right people in the right format.</strong> Your job is to keep your part of SmartSuite current — the rest of the system is built around that discipline.</p>
+    </div>
+
+    <hr class="article-divider">
+
+    <!-- SECTION 3: The Five Pillars -->
+    <h2 id="five-pillars">The Five Pillars</h2>
+
+    <p>Everything in S-BOS is organized around five pillars. The pillars are the lenses through which Stitser BUILT tracks health, makes decisions, and measures progress. Whether you're looking at a project record, a GYR report, or a workflow document, you'll see these five pillars:</p>
+
+    <div class="pillar-grid">
+      <div class="pillar-card">
+        <div class="pillar-card-icon">👥</div>
+        <div class="pillar-card-name">People</div>
+        <div class="pillar-card-desc">Team structure, staffing, roles, culture, onboarding, and human performance. Are the right people in the right seats doing the right work?</div>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-card-icon">📋</div>
+        <div class="pillar-card-name">Projects</div>
+        <div class="pillar-card-desc">Project execution across all product lines — from intake to close. Milestones, schedules, tasks, and status signals live here.</div>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-card-icon">💰</div>
+        <div class="pillar-card-name">Finance</div>
+        <div class="pillar-card-desc">Budgets, pay apps, invoices, compensation, and financial health across the company. The numbers are in S-BOS, not in someone's head.</div>
+      </div>
+      <div class="pillar-card">
+        <div class="pillar-card-icon">✅</div>
+        <div class="pillar-card-name">Compliance</div>
+        <div class="pillar-card-desc">Contracts, disclosures, licensing, documentation, and regulatory requirements. Nothing slips through the cracks because the system tracks it.</div>
+      </div>
+      <div class="pillar-card" style="grid-column: 1 / -1;">
+        <div class="pillar-card-icon">🧠</div>
+        <div class="pillar-card-name">Intelligence</div>
+        <div class="pillar-card-desc">Data quality, GYR reporting, decision logs, and system health. Intelligence is the meta-pillar — it's about whether the system itself is working and whether the data inside it can be trusted.</div>
+      </div>
+    </div>
+
+    <p>You don't need to own all five pillars — most roles touch two or three. But you do need to understand what each pillar means because it's the shared vocabulary across the whole organization.</p>
+
+    <hr class="article-divider">
+
+    <!-- SECTION 4: Day-to-Day -->
+    <h2 id="day-to-day">How It Works Day-to-Day</h2>
+
+    <p>Working inside S-BOS is more behavioral than technical. The platform is only as good as the discipline behind it — which means S-BOS depends on you updating records, following workflows, and using Kompass as a genuine thinking partner rather than just a search engine.</p>
+
+    <h3 id="daily-habits">The Core Habits</h3>
+
+    <ul>
+      <li><strong>Keep your SmartSuite records current.</strong> If something changed, update it. Don't wait for a weekly review or a reminder. The system's signal quality is a direct reflection of how often records are updated.</li>
+      <li><strong>Use Kompass for the thinking work.</strong> Before you draft an email, write a note, create a document, or make a decision — try asking Kompass first. It's trained on every playbook, protocol, and process at Stitser BUILT.</li>
+      <li><strong>Follow the workflows.</strong> S-BOS workflows aren't bureaucracy — they're the distilled lessons of everything that's gone wrong (and right) before. When in doubt, there's a workflow for it.</li>
+      <li><strong>Log decisions and context.</strong> If you make a decision or take an action that isn't self-evident from the SmartSuite record, add a note. Future you (and your teammates) will thank you.</li>
+    </ul>
+
+    <h3 id="where-to-start">Where to Start Each Day</h3>
+
+    <p>Your S-BOS starting point depends on your role, but most team members follow a similar pattern:</p>
+
+    <ol>
+      <li>Open <a href="https://app.stitserbuilt.com" target="_blank" rel="noopener">app.stitserbuilt.com</a> and check your current priorities view</li>
+      <li>Review any tasks assigned to you or overdue in SmartSuite</li>
+      <li>Check the GYR dashboard for any projects you're responsible for</li>
+      <li>Use Kompass (Claude Chat) for anything that requires drafting, research, or judgment</li>
+    </ol>
+
+    <div class="callout-box success">
+      <div class="callout-box-label">Kompass tip</div>
+      <p>Start your first Kompass session by saying <em>"I'm [your name], [your role]. What should I be focused on today?"</em> Kompass can pull your current priorities from SmartSuite and give you a personalized starting point.</p>
+    </div>
+
+    <hr class="article-divider">
+
+    <!-- SECTION 5: Your Role -->
+    <h2 id="your-role">Your Role in the System</h2>
+
+    <p>S-BOS is a living system — it gets smarter and more useful the more consistently it's used. As a team member, your role is twofold:</p>
+
+    <p><strong>1. Be a good data citizen.</strong> Keep your records current. Follow the workflows. Document decisions. Flag problems early. The quality of S-BOS is a direct product of team discipline — and the team depends on you for your part of it.</p>
+
+    <p><strong>2. Use the system, don't work around it.</strong> When you find yourself solving a problem with a spreadsheet, a text thread, or a "hey can you just send me that file" — that's a signal that the system isn't being used for something it could handle. Surface it. Bring it to Kompass or your team lead. S-BOS is designed to absorb that kind of work.</p>
+
+    <blockquote>
+      <p>The goal isn't to make you work harder. It's to make the organization smarter so everyone can work on higher-value things.</p>
+    </blockquote>
+
+    <h3 id="questions">Questions and Help</h3>
+
+    <p>The S-BOS Knowledge Base (this site) is your first stop for how-to articles, workflow guides, and reference material. If you can't find what you need here, ask Kompass — it has access to every workflow, protocol, and playbook in the system.</p>
+
+    <div class="callout-box warning">
+      <div class="callout-box-label">When Kompass doesn't know</div>
+      <p>Kompass is trained on documented processes — it doesn't know what isn't written down. If you ask Kompass something and it can't give you a clear answer, that's a signal that the process needs to be documented. Flag it to your team lead or Andi (S-BOS Admin) so it can be captured.</p>
+    </div>
+
+    <p>Welcome to S-BOS. The system works when the people inside it work together — and you're now one of those people.</p>
+
+  </article>
+</div>
+
+<footer>
+  <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
+  <div class="footer-version">v1.0 · Internal Use Only</div>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/article-editor.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════
+   LESSON CONFIG
+   ════════════════════════════════════════════════════════════ */
+const LESSON_CONFIG = {
+  lessonId:       '6a18f979f33c1c8fc967bd8d',
+  lessonTitle:    'Welcome to S-BOS',
+  trackName:      'S-BOS Foundations',
+  courseName:     'System Introduction',
+  pillar:         'People',
+  contentType:    'Article',
+  estimatedMins:  10,
+  audience:       'Internal',
+  filePath:       'lessons/welcome-to-sbos.html'  // repo-relative path for editor save
+};
+
+const SMARTSUITE_CONFIG = {
+  apiKey:        window.SMARTSUITE_API_KEY        || '',
+  workspaceId:   window.SMARTSUITE_WORKSPACE      || '',
+  progressAppId: '6a18ad82e630be8e82a202ea',       // Progress Table — SB Training & Certifications
+  personId:      new URLSearchParams(window.location.search).get('person_id') || ''
+};
+
+async function markComplete() {
+  const btn = document.getElementById('btn-complete');
+  if (btn.classList.contains('completed')) return;
+  btn.textContent = 'Saving...';
+  btn.disabled = true;
+  if (!SMARTSUITE_CONFIG.apiKey) { showCompleted(); return; }
+  try {
+    const today = new Date().toISOString().split('T')[0];
+    const payload = {
+      title: `${SMARTSUITE_CONFIG.personId || 'Anonymous'} — ${LESSON_CONFIG.lessonTitle}`,
+      s795f4d404: [LESSON_CONFIG.lessonId],                  // Lesson (linked)
+      s56ad0c6cc: { value: 'Completed' },                    // Status (single select)
+      s47e7db00b: { date: today, include_time: false },      // Completion Date
+      s971159143: 1                                          // Attempt Count
+    };
+    if (SMARTSUITE_CONFIG.personId) {
+      payload.s43b519ec1 = [SMARTSUITE_CONFIG.personId];     // Person (linked)
+    }
+    const res = await fetch(
+      `https://app.smartsuite.com/api/v1/applications/${SMARTSUITE_CONFIG.progressAppId}/records/`,
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${SMARTSUITE_CONFIG.apiKey}`,
+          'Account-Id': SMARTSUITE_CONFIG.workspaceId,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+    if (res.ok) { showCompleted(); }
+    else { btn.textContent = 'Mark Complete'; btn.disabled = false; console.error('SmartSuite API error:', await res.text()); }
+  } catch (err) { showCompleted(); console.warn('Progress save failed (offline?):', err); }
+}
+
+function showCompleted() {
+  const btn = document.getElementById('btn-complete');
+  btn.textContent = '✓ Completed';
+  btn.classList.add('completed');
+  btn.disabled = false;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  /* ── Populate meta bar from config ── */
+  document.getElementById('meta-track').textContent       = LESSON_CONFIG.trackName;
+  document.getElementById('meta-course').textContent      = LESSON_CONFIG.courseName;
+  document.getElementById('meta-lesson-name').textContent = LESSON_CONFIG.lessonTitle;
+  document.getElementById('meta-pillar').textContent      = LESSON_CONFIG.pillar;
+  document.getElementById('meta-type').textContent        = LESSON_CONFIG.contentType;
+  document.getElementById('meta-time').textContent        = `⏱ ${LESSON_CONFIG.estimatedMins} min`;
+  document.getElementById('meta-audience').textContent    = LESSON_CONFIG.audience;
+  document.title = `${LESSON_CONFIG.lessonTitle} — S-BOS Knowledge Base`;
+
+  /* ── Auto-generate TOC from h2/h3 headings ── */
+  const body    = document.getElementById('articleBody');
+  const tocList = document.getElementById('tocList');
+  const headings = body.querySelectorAll('h2[id], h3[id]');
+  headings.forEach(h => {
+    const li   = document.createElement('li');
+    const link = document.createElement('a');
+    link.href       = `#${h.id}`;
+    link.textContent = h.textContent;
+    link.className  = `toc-link ${h.tagName === 'H3' ? 'h3' : ''}`;
+    li.appendChild(link);
+    tocList.appendChild(li);
+  });
+
+  /* ── Scroll-spy via IntersectionObserver ── */
+  const tocLinks = tocList.querySelectorAll('.toc-link');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        tocLinks.forEach(l => l.classList.remove('active'));
+        const active = tocList.querySelector(`a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' });
+  headings.forEach(h => observer.observe(h));
+});
+</script>
+</body>
+</html>

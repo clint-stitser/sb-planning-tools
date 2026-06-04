@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baseline Capture — S-BOS Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+</head>
+<body data-section="agents">
+<header>
+  <a class="logo-lockup" href="../"><svg class="logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/><text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text></svg><div class="logo-text"><span class="brand">Stitser Built</span><span class="sub">S-BOS Knowledge Base</span></div></a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system" href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents" href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles" href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary" href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+<div class="nav-overlay">
+  <div class="nav-overlay-header"><a class="logo-lockup" href="../"><svg class="logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/><text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text></svg><div class="logo-text"><span class="brand">Stitser Built</span><span class="sub">S-BOS Knowledge Base</span></div></a><button class="nav-overlay-close" aria-label="Close menu">&#10005;</button></div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system" href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents" href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles" href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary" href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-eyebrow"><span class="agent-status live" style="display:inline-flex;margin:0">Live</span></div>
+  <h1 class="page-hero-title">Baseline Capture</h1>
+  <p class="page-hero-subtitle">Conversational intake for project budget and timeline — any deal type. Creates structured S-BOS records in SmartSuite.</p>
+</div>
+<div class="orange-bar"></div>
+<div class="breadcrumb-bar">
+  <div class="breadcrumb"><a href="../">Home</a><span class="sep">→</span><a href="../agents/">Agents</a><span class="sep">→</span><span class="cur">Baseline Capture</span></div>
+</div>
+
+<section>
+  <div class="section-label">Capability</div>
+  <div class="section-title">What This Agent Does</div>
+  <div class="prose">
+    <p>Baseline Capture is a conversational intake agent that walks you through capturing the budget and timeline data for any Stitser BUILT project. It handles construction, flip, development, fractional, and TI deals — each with the right budget categories and timeline milestones for that deal type.</p>
+    <p>The conversation is one question at a time. Claude asks for the address, deal type, purchase price, and then walks through the budget line items appropriate for that project. At the end, it writes all the structured records back to SmartSuite — so the project is properly "in S-BOS" with a real baseline from day one.</p>
+    <p><strong>What it reads:</strong> Existing SmartSuite project records (to avoid duplicates), deal type templates for budget categories.</p>
+    <p><strong>What it creates:</strong> SmartSuite project record, baseline budget line items, key milestone dates.</p>
+    <p><strong>What it does NOT do:</strong> It does not make deal decisions, evaluate feasibility, or set strategy. Those are always yours.</p>
+  </div>
+</section>
+
+<section style="background:var(--light);padding:56px 40px">
+  <div class="section-label">Trigger</div>
+  <div class="section-title">How to Trigger It</div>
+  <div class="trigger-box"><div class="trigger-label">Primary</div><div class="trigger-phrase">"Baseline this project"</div></div>
+  <div class="trigger-box"><div class="trigger-label">Also Works</div><div class="trigger-phrase">"New project" · "Set up [address]" · "Get a project into S-BOS"</div></div>
+  <div class="prose" style="margin-top:16px"><p>You can also lead with the address: <em>"Let's baseline 123 Main Street — it's a flip."</em> Claude will pick up the deal type and skip that question.</p></div>
+</section>
+
+<section>
+  <div class="section-label">Process</div>
+  <div class="section-title">What Happens Step by Step</div>
+  <ol class="step-list">
+    <li><p>Claude asks for the project address and deal type (construction, flip, development, fractional, or TI).</p></li>
+    <li><p>Claude confirms the deal type and loads the appropriate budget template and milestone structure.</p></li>
+    <li><p>Claude walks through budget line items conversationally — one category at a time, asking for your numbers.</p></li>
+    <li><p>Claude asks for key timeline dates — start, major milestones, target completion.</p></li>
+    <li><p>Claude summarizes the baseline and asks you to confirm before writing anything.</p></li>
+    <li><p>On confirmation, Claude writes the SmartSuite project record, budget lines, and milestone dates.</p></li>
+  </ol>
+</section>
+
+<section style="background:var(--light);padding:56px 40px">
+  <div class="section-label">Value Chain</div>
+  <div class="section-title">Where It Fits</div>
+  <div class="prose"><p>Baseline Capture is triggered at <strong>Stage 01 — File &amp; Project Setup</strong>, immediately after contract execution for construction and development projects. It ensures every project enters S-BOS with a real budget and timeline from day one — not a blank record filled in later.</p></div>
+  <div style="margin-top:20px">
+    <a href="../workflows/file-setup.html" style="font-family:var(--font-sub);font-weight:700;font-size:12px;letter-spacing:1px;text-transform:uppercase;color:var(--white);text-decoration:none;padding:8px 16px;background:var(--blue);">Stage 01 — File &amp; Project Setup ★</a>
+  </div>
+</section>
+
+<section>
+  <div class="section-label">Your Responsibility</div>
+  <div class="section-title">What You Still Own</div>
+  <ul class="bullet-list">
+    <li>The actual numbers — Claude asks, you provide</li>
+    <li>Deal strategy and feasibility decisions</li>
+    <li>Confirming the baseline is accurate before Claude writes it</li>
+    <li>Any adjustments after the baseline is created</li>
+  </ul>
+</section>
+
+<section style="background:var(--light);padding:56px 40px">
+  <div class="section-label">FAQ</div>
+  <div class="section-title">Tips & Common Questions</div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-q">What if I don't have all the numbers yet?</div>
+      <div class="faq-a">You can say "unknown" or give a range. Claude will note it as TBD in the record. Better to have a partial baseline than no baseline — you can update it as numbers firm up.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Can I use it for a deal that's already in SmartSuite?</div>
+      <div class="faq-a">Yes — Claude will find the existing record and update it rather than creating a duplicate. Tell Claude the project name or address and it will locate and update the right record.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Which deal types does it support?</div>
+      <div class="faq-a">Construction, flip, development (ground-up), fractional, and tenant improvement (TI). Each has a different budget template. If your deal doesn't fit neatly, say so and Claude will ask clarifying questions to find the right fit.</div>
+    </div>
+  </div>
+</section>
+
+<footer><div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div><div class="footer-version">v1.0 · Internal Use Only</div></footer>
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/article-editor.js"></script>
+</body>
+</html>

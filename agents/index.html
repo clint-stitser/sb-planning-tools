@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Claude Agents & Skills — S-BOS Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+</head>
+<body data-section="agents">
+
+<header>
+  <a class="logo-lockup" href="../">
+    <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+      <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+    </svg>
+    <div class="logo-text">
+      <span class="brand">Stitser Built</span>
+      <span class="sub">S-BOS Knowledge Base</span>
+    </div>
+  </a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+
+<div class="nav-overlay">
+  <div class="nav-overlay-header">
+    <a class="logo-lockup" href="../">
+      <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+        <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Stitser Built</span>
+        <span class="sub">S-BOS Knowledge Base</span>
+      </div>
+    </a>
+    <button class="nav-overlay-close" aria-label="Close menu">&#10005;</button>
+  </div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-eyebrow">Layer 03 — Agents</div>
+  <h1 class="page-hero-title">Claude Agents & Skills</h1>
+  <p class="page-hero-subtitle">AI-powered workflows built on S-BOS — when to use them, how to trigger them, and what they do.</p>
+</div>
+
+<div class="orange-bar"></div>
+
+<div class="breadcrumb-bar">
+  <div class="breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">→</span>
+    <span class="cur">Agents</span>
+  </div>
+</div>
+
+<!-- HOW TO USE CLAUDE -->
+<section>
+  <div class="section-label">Getting Started</div>
+  <div class="section-title">How to Use Claude</div>
+  <div class="prose">
+    <p>Claude is accessed at <strong>claude.ai</strong> or through the Claude desktop app. You trigger skills by saying the right phrase — Claude reads the skill instructions and executes the workflow. You don't need to explain the context or describe what you want step-by-step. The right trigger phrase is all it takes.</p>
+    <p>The core principle: <strong>Claude handles the system tasks. You handle the judgment calls and client relationships.</strong> Claude will fetch records from SmartSuite, walk through checklists, create tasks, generate documents, and flag what needs attention. What it won't do is make the call about whether to proceed — that's always yours.</p>
+    <p>Every agent listed below has a detail page with the exact trigger phrases, a step-by-step breakdown of what Claude does, and a clear list of what you still own. When in doubt, read the agent detail page before triggering.</p>
+  </div>
+
+  <div style="margin-top:32px; display:flex; gap:16px; flex-wrap:wrap;">
+    <div style="display:flex;align-items:center;gap:8px;font-family:var(--font-sub);font-size:13px;font-weight:700;">
+      <span class="agent-status live" style="margin:0">Live</span> Available now
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-family:var(--font-sub);font-size:13px;font-weight:700;">
+      <span class="agent-status new" style="margin:0">New</span> Recently launched
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;font-family:var(--font-sub);font-size:13px;font-weight:700;">
+      <span class="agent-status soon" style="margin:0">Coming Soon</span> In development
+    </div>
+  </div>
+</section>
+
+<!-- AGENTS GRID -->
+<section style="padding-top:0">
+  <div class="section-label">All Agents</div>
+  <div class="section-title">Current Skills & Agents</div>
+  <div class="agents-grid">
+
+    <a class="agent-card" href="compliance-auditor.html">
+      <div class="agent-status live">Live</div>
+      <div class="agent-name">Compliance Auditor</div>
+      <div class="agent-desc">Audits a property contract against the required disclosures checklist. Links Google Drive files, creates SmartSuite tasks for any findings, and generates a summary report.</div>
+      <div class="agent-trigger">Say: <span>"Audit [property name]"</span> or <span>"Run the compliance audit"</span></div>
+    </a>
+
+    <a class="agent-card" href="pay-app-audit.html">
+      <div class="agent-status live">Live</div>
+      <div class="agent-name">Pay App Audit</div>
+      <div class="agent-desc">Per-invoice PM audit — creates 7 standard tasks in SmartSuite, generates the document package, and tracks sign &amp; return status for each pay application.</div>
+      <div class="agent-trigger">Say: <span>"Run pay app audit"</span></div>
+    </a>
+
+    <a class="agent-card" href="pay-app-audit.html">
+      <div class="agent-status live">Live</div>
+      <div class="agent-name">Pay App Lifecycle</div>
+      <div class="agent-desc">Full pay application workflow — import the budget SOV, kick off the pay app process, track through approval. Covers the full lifecycle from budget load to disbursement.</div>
+      <div class="agent-trigger">Say: <span>"Import this budget"</span> or <span>"Kick off Pay App"</span></div>
+    </a>
+
+    <a class="agent-card" href="stitser-way.html">
+      <div class="agent-status live">Live</div>
+      <div class="agent-name">Stitser Way Rituals</div>
+      <div class="agent-desc">Morning ritual, evening ritual, weekly review, and journal stacks — conversational, one question at a time, designed to keep the team aligned with the Stitser Way.</div>
+      <div class="agent-trigger">Say: <span>"Start my morning ritual"</span> or <span>"Let's do the evening ritual"</span></div>
+    </a>
+
+    <a class="agent-card" href="baseline-capture.html">
+      <div class="agent-status live">Live</div>
+      <div class="agent-name">Baseline Capture</div>
+      <div class="agent-desc">Conversational intake for project budget and timeline. Works for any deal type — construction, flip, development, fractional, or TI. Creates structured S-BOS records in SmartSuite.</div>
+      <div class="agent-trigger">Say: <span>"Baseline this project"</span> or <span>"New project"</span></div>
+    </a>
+
+    <a class="agent-card" href="underwriting-model.html">
+      <div class="agent-status new">New</div>
+      <div class="agent-name">Underwriting Model</div>
+      <div class="agent-desc">Full lifecycle deal analysis for Formation Homes — capital stack, pro forma, release P&amp;L, and management reports. Models any ground-up development scenario.</div>
+      <div class="agent-trigger">Say: <span>"Let's underwrite a deal"</span> or <span>"Help me model this project"</span></div>
+    </a>
+
+    <a class="agent-card" href="compliance-auditor.html">
+      <div class="agent-status live">Live</div>
+      <div class="agent-name">Duplicate Contact Merge</div>
+      <div class="agent-desc">Finds and consolidates duplicate contact records in SmartSuite. Preserves the most complete record and merges data from the duplicate without data loss.</div>
+      <div class="agent-trigger">Say: <span>"Merge these two records"</span> or <span>"There are duplicate contacts"</span></div>
+    </a>
+
+    <a class="agent-card" href="stitser-way.html">
+      <div class="agent-status live">Live</div>
+      <div class="agent-name">Skill Management</div>
+      <div class="agent-desc">Create, test, and deploy new Claude skills for the S-BOS platform. Guides the process of defining a skill, writing the instructions, and publishing it to the team.</div>
+      <div class="agent-trigger">Say: <span>"I want to create a skill"</span> or <span>"Build a skill for X"</span></div>
+    </a>
+
+    <a class="agent-card" href="morning-brief.html">
+      <div class="agent-status soon">Coming Soon</div>
+      <div class="agent-name">Morning Brief</div>
+      <div class="agent-desc">S-BOS Operation 1 — daily executive brief pulling active deal priorities, GYR status across all projects, calendar, and key tasks from Kompass.</div>
+      <div class="agent-trigger">Say: <span>"Run my morning brief"</span></div>
+    </a>
+
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
+  <div class="footer-version">v1.0 · Internal Use Only</div>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
+</body>
+</html>
