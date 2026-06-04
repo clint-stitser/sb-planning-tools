@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Knowledge Base — A Field Guide · S-BOS</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+/* ── LESSON META BAR ── */
+.lesson-meta-bar {
+  display: flex; align-items: center; gap: 20px;
+  padding: 0 40px; height: 56px;
+  background: #fff; border-bottom: 1px solid #BCBEC0;
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.lesson-breadcrumb {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-sub); font-size: 13px; color: #BCBEC0;
+  flex: 1; min-width: 0;
+}
+.breadcrumb-sep { font-size: 16px; }
+.breadcrumb-course { color: var(--dark); }
+.breadcrumb-lesson { color: var(--blue); font-weight: 700; }
+.lesson-chips { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.chip {
+  display: inline-flex; align-items: center; padding: 4px 12px;
+  border-radius: 20px; font-family: var(--font-sub); font-size: 12px;
+  font-weight: 700; letter-spacing: .04em; line-height: 1;
+}
+.chip-pillar   { background: var(--blue);   color: #fff; }
+.chip-type     { background: var(--orange); color: #fff; }
+.chip-time     { background: var(--light);  color: var(--dark); border: 1px solid #BCBEC0; }
+.chip-audience { background: var(--light);  color: var(--dark); border: 1px solid #BCBEC0; }
+.btn-complete {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; background: var(--orange); color: #fff;
+  border: none; border-radius: 6px; font-family: var(--font-sub);
+  font-size: 13px; font-weight: 700; letter-spacing: .04em;
+  cursor: pointer; transition: background .2s; flex-shrink: 0;
+}
+.btn-complete:hover:not(:disabled) { background: #e08810; }
+.btn-complete:disabled { opacity: .7; cursor: not-allowed; }
+.btn-complete.completed { background: #27ae60; }
+
+/* ── ARTICLE LAYOUT ── */
+.article-wrap {
+  display: grid; grid-template-columns: 240px 1fr;
+  max-width: 1100px; margin: 0 auto; padding: 0 40px 80px;
+}
+.article-sidebar {
+  position: sticky; top: 80px; height: fit-content;
+  max-height: calc(100vh - 100px); overflow-y: auto;
+  padding: 32px 24px 32px 0; border-right: 1px solid #BCBEC0;
+}
+.toc-label {
+  font-family: var(--font-sub); font-size: 11px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: #BCBEC0; margin-bottom: 12px;
+}
+.toc-list { list-style: none; padding: 0; margin: 0; }
+.toc-link {
+  display: block; padding: 6px 0 6px 12px;
+  border-left: 2px solid transparent;
+  font-family: var(--font-sub); font-size: 13px; color: #58595B;
+  text-decoration: none; transition: color .15s, border-color .15s; line-height: 1.3;
+}
+.toc-link:hover { color: var(--blue); }
+.toc-link.active { color: var(--blue); border-left-color: var(--blue); font-weight: 700; }
+.toc-link.h3 { padding-left: 24px; font-size: 12px; color: #BCBEC0; }
+.toc-link.h3.active { color: var(--blue); border-left-color: var(--blue); }
+
+.article-body { padding: 40px 0 40px 48px; max-width: 720px; }
+
+.article-title-block { margin-bottom: 32px; }
+.article-eyebrow {
+  font-family: var(--font-sub); font-size: 11px; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--orange); margin-bottom: 8px;
+}
+.article-title { font-family: var(--font-head); font-size: 2rem; font-weight: 900; color: var(--dark); margin: 0 0 12px; line-height: 1.2; }
+.article-intro { font-size: 1.05rem; color: #58595B; line-height: 1.7; margin: 0; }
+.article-meta-strip { display: flex; align-items: center; gap: 16px; margin-top: 16px; flex-wrap: wrap; }
+.article-meta-chip { font-family: var(--font-sub); font-size: 12px; color: #BCBEC0; display: flex; align-items: center; gap: 5px; }
+.article-meta-chip strong { color: var(--dark); }
+
+.article-body h2 { font-family: var(--font-head); font-size: 1.4rem; font-weight: 700; color: var(--dark); margin: 48px 0 16px; padding-top: 8px; }
+.article-body h3 { font-family: var(--font-sub); font-size: 1rem; font-weight: 700; color: var(--dark); margin: 32px 0 12px; text-transform: uppercase; letter-spacing: .04em; }
+.article-body p  { line-height: 1.75; color: #3D3D3D; margin: 0 0 16px; }
+.article-body ul, .article-body ol { margin: 0 0 16px 20px; }
+.article-body li { line-height: 1.75; color: #3D3D3D; margin-bottom: 6px; }
+.article-body strong { font-weight: 700; color: var(--dark); }
+.article-body a { color: var(--blue); }
+
+blockquote {
+  border-left: 3px solid var(--orange); margin: 24px 0; padding: 16px 20px;
+  background: #FFF8F0; border-radius: 0 6px 6px 0;
+}
+blockquote p { margin: 0; font-style: italic; color: #58595B; }
+
+.callout-box { border-radius: 8px; padding: 16px 20px; margin: 24px 0; border: 1px solid transparent; }
+.callout-box-label { font-family: var(--font-sub); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; margin-bottom: 8px; }
+.callout-box.info    { background: #EFF6FF; border-color: #BFDBFE; }
+.callout-box.info    .callout-box-label { color: var(--blue); }
+.callout-box.warning { background: #FFFBEB; border-color: #FDE68A; }
+.callout-box.warning .callout-box-label { color: #D97706; }
+.callout-box.success { background: #F0FDF4; border-color: #BBF7D0; }
+.callout-box.success .callout-box-label { color: #16A34A; }
+.callout-box p { margin: 0; color: #3D3D3D; }
+
+.article-divider { border: none; border-top: 1px solid #BCBEC0; margin: 40px 0 0; }
+
+/* ── Template type cards ── */
+.template-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0 8px;
+}
+.template-card {
+  border: 1px solid #E0E0E0; border-radius: 8px; padding: 20px 16px;
+  background: #fff; display: flex; flex-direction: column; gap: 8px;
+}
+.template-card-accent {
+  height: 3px; border-radius: 2px; margin-bottom: 4px;
+}
+.accent-orange { background: var(--orange); }
+.accent-blue   { background: var(--blue); }
+.accent-teal   { background: #2A9D8F; }
+.template-card-name {
+  font-family: var(--font-sub); font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--dark);
+}
+.template-card-desc { font-size: 0.82rem; color: #666; line-height: 1.5; }
+.template-card-use  { font-size: 0.78rem; color: #BCBEC0; font-style: italic; }
+
+/* ── Nav section diagram ── */
+.nav-section-list { display: flex; flex-direction: column; gap: 2px; margin: 16px 0; }
+.nav-section-item {
+  display: flex; align-items: baseline; gap: 12px;
+  padding: 10px 14px; border-radius: 6px; background: #F8F8F8;
+  border-left: 3px solid var(--orange);
+}
+.nav-section-item.blue   { border-left-color: var(--blue); }
+.nav-section-item.teal   { border-left-color: #2A9D8F; }
+.nav-section-item.purple { border-left-color: #7C3AED; }
+.nav-section-item.gray   { border-left-color: #BCBEC0; }
+.nav-section-name {
+  font-family: var(--font-sub); font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--dark);
+  white-space: nowrap; min-width: 100px;
+}
+.nav-section-desc { font-size: 0.82rem; color: #666; line-height: 1.4; }
+
+/* ── Edit steps ── */
+.steps-list { display: flex; flex-direction: column; gap: 14px; margin: 20px 0; }
+.step-item { display: flex; gap: 16px; align-items: flex-start; }
+.step-num {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--dark);
+  color: #fff; font-family: var(--font-sub); font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 2px;
+}
+.step-content h4 {
+  font-family: var(--font-sub); font-size: 13px; font-weight: 700;
+  color: var(--dark); margin: 0 0 3px; text-transform: uppercase; letter-spacing: .04em;
+}
+.step-content p { font-size: 0.83rem; color: #666; line-height: 1.5; margin: 0; }
+
+/* ── Hierarchy diagram ── */
+.hierarchy { display: flex; flex-direction: column; gap: 0; margin: 16px 0; }
+.hier-row {
+  display: flex; align-items: stretch;
+  border: 1px solid #E0E0E0; border-top: none; first-of-type: none;
+}
+.hier-row:first-child { border-top: 1px solid #E0E0E0; border-radius: 8px 8px 0 0; }
+.hier-row:last-child  { border-radius: 0 0 8px 8px; }
+.hier-label {
+  width: 130px; min-width: 130px; padding: 14px 16px;
+  font-family: var(--font-sub); font-size: 11px; font-weight: 700;
+  letter-spacing: .07em; text-transform: uppercase;
+  display: flex; align-items: center;
+}
+.hier-label.l1 { background: var(--dark); color: #fff; }
+.hier-label.l2 { background: var(--blue); color: #fff; }
+.hier-label.l3 { background: #EFF6FF; color: var(--blue); }
+.hier-detail {
+  flex: 1; padding: 14px 16px; border-left: 1px solid #E0E0E0;
+  background: #fff; font-size: 0.83rem; color: #555; line-height: 1.5;
+}
+.hier-detail strong { color: var(--dark); font-weight: 700; }
+
+@media (max-width: 900px) {
+  .article-wrap { grid-template-columns: 1fr; padding: 0 20px 60px; }
+  .article-sidebar { position: static; border-right: none; border-bottom: 1px solid #BCBEC0; padding: 20px 0; }
+  .article-body { padding: 24px 0; }
+  .toc-list { display: flex; gap: 4px; flex-wrap: wrap; }
+  .toc-link { padding: 4px 10px; border: 1px solid #BCBEC0; border-radius: 20px; }
+  .toc-link.h3 { display: none; }
+  .template-grid { grid-template-columns: 1fr; }
+  .nav-section-name { min-width: 80px; }
+}
+@media (max-width: 560px) {
+  .lesson-meta-bar { height: auto; padding: 12px 20px; gap: 10px; }
+}
+</style>
+</head>
+<body data-section="system">
+
+<header>
+  <a class="logo-lockup" href="../">
+    <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
+      <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+      <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+    </svg>
+    <div class="logo-text">
+      <span class="brand">Stitser Built</span>
+      <span class="sub">S-BOS Knowledge Base</span>
+    </div>
+  </a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+
+<div class="nav-overlay">
+  <div class="nav-overlay-header">
+    <a class="logo-lockup" href="../">
+      <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
+        <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+        <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Stitser Built</span>
+        <span class="sub">S-BOS Knowledge Base</span>
+      </div>
+    </a>
+    <button class="nav-overlay-close" aria-label="Close menu">✕</button>
+  </div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<!-- LESSON META BAR -->
+<div class="lesson-meta-bar">
+  <div class="lesson-breadcrumb">
+    <span class="breadcrumb-track" id="meta-track">S-BOS Foundations</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-course" id="meta-course">System Introduction</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-lesson" id="meta-lesson-name">The Knowledge Base — A Field Guide</span>
+  </div>
+  <div class="lesson-chips">
+    <span class="chip chip-pillar"   id="meta-pillar">Systems</span>
+    <span class="chip chip-type"     id="meta-type">Article</span>
+    <span class="chip chip-time"     id="meta-time">⏱ 8 min</span>
+    <span class="chip chip-audience" id="meta-audience">Internal</span>
+  </div>
+  <button class="btn-complete" id="btn-complete" onclick="markComplete()">Mark Complete</button>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-eyebrow">System Article · Systems Pillar</div>
+  <h1 class="page-hero-title">The Knowledge Base — A Field Guide</h1>
+  <p class="page-hero-subtitle">How the S-BOS Knowledge Base is structured, how to navigate it, what the different article types mean, and how to edit any page.</p>
+</div>
+
+<div class="orange-bar"></div>
+
+<div class="breadcrumb-bar">
+  <div class="breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">→</span>
+    <a href="../system/">System</a>
+    <span class="sep">→</span>
+    <span class="cur">Knowledge Base Field Guide</span>
+  </div>
+</div>
+
+<div class="article-wrap">
+
+  <aside class="article-sidebar">
+    <div class="toc-label">In This Article</div>
+    <ul class="toc-list" id="tocList"></ul>
+  </aside>
+
+  <article class="article-body" id="articleBody">
+
+    <div class="article-title-block">
+      <div class="article-eyebrow">System Reference · Systems Pillar</div>
+      <h1 class="article-title">The Knowledge Base — A Field Guide</h1>
+      <p class="article-intro">The S-BOS Knowledge Base is where Stitser BUILT's processes, roles, training, and reference material live — organized for action. This article is your map for using it.</p>
+      <div class="article-meta-strip">
+        <span class="article-meta-chip">⏱ <strong>8 min read</strong></span>
+        <span class="article-meta-chip">Last updated: <strong>June 2026</strong></span>
+        <span class="article-meta-chip">Pillar: <strong>Systems</strong></span>
+      </div>
+    </div>
+
+    <!-- SECTION 1 -->
+    <h2 id="structure">Structure and Navigation</h2>
+
+    <p>The Knowledge Base is organized into six top-level sections, each accessible from the navigation bar at the top of every page. Think of them as the six rooms in a house — each room has a clear purpose and everything in it belongs there.</p>
+
+    <div class="nav-section-list">
+      <div class="nav-section-item">
+        <span class="nav-section-name">System</span>
+        <span class="nav-section-desc">How S-BOS works — architecture, Kompass, the platform overview, and foundational orientation articles like this one.</span>
+      </div>
+      <div class="nav-section-item blue">
+        <span class="nav-section-name">Workflows</span>
+        <span class="nav-section-desc">Step-by-step value chain process maps for every product line — who does what at each stage, and how S-BOS supports it.</span>
+      </div>
+      <div class="nav-section-item teal">
+        <span class="nav-section-name">Agents</span>
+        <span class="nav-section-desc">Reference guides for every Kompass skill — what it does, when to invoke it, and what to expect.</span>
+      </div>
+      <div class="nav-section-item purple">
+        <span class="nav-section-name">Roles</span>
+        <span class="nav-section-desc">Role-specific guides for every position at Stitser BUILT — Practitioner, Production Manager, Ops Manager, Broker.</span>
+      </div>
+      <div class="nav-section-item">
+        <span class="nav-section-name">What's New</span>
+        <span class="nav-section-desc">Recent system updates, new workflow documents, and changes to protocols — the running changelog for S-BOS.</span>
+      </div>
+      <div class="nav-section-item gray">
+        <span class="nav-section-name">Glossary</span>
+        <span class="nav-section-desc">Definitions for S-BOS terms, acronyms, and vocabulary used across the system and in Kompass conversations.</span>
+      </div>
+    </div>
+
+    <h3 id="how-to-use">How to use it</h3>
+
+    <p>The Knowledge Base is designed to be browsed by section and searched by need. A few patterns that work well:</p>
+
+    <ul>
+      <li><strong>Starting a new task?</strong> Go to Workflows → find the process for your situation → follow the value chain.</li>
+      <li><strong>Unsure about your role's responsibilities?</strong> Go to Roles → your role page lists your obligations at every stage.</li>
+      <li><strong>Asking Kompass something and not sure what skill to use?</strong> Go to Agents → skim the skill names and descriptions.</li>
+      <li><strong>Learning the system for the first time?</strong> Start with the System section → begin with "Welcome to S-BOS" → work through the System Introduction course.</li>
+    </ul>
+
+    <div class="callout-box info">
+      <div class="callout-box-label">Kompass shortcut</div>
+      <p>You can ask Kompass "where do I find X in the Knowledge Base?" and it will point you to the right page. The Knowledge Base and Kompass are designed to work together — Kompass knows every article, workflow, and role guide here.</p>
+    </div>
+
+    <hr class="article-divider">
+
+    <!-- SECTION 2 -->
+    <h2 id="article-types">Article Types</h2>
+
+    <p>Not every piece of content looks the same. The Knowledge Base uses three HTML templates, each designed for a different kind of information. Knowing the template type tells you immediately how to interact with the content.</p>
+
+    <div class="template-grid">
+      <div class="template-card">
+        <div class="template-card-accent accent-orange"></div>
+        <div class="template-card-name">Article</div>
+        <div class="template-card-desc">Long-form reference content with a sticky sidebar table of contents. Sections, callout boxes, tables, and blockquotes.</div>
+        <div class="template-card-use">Used for: orientation, concepts, how-to explanations, role guides, system documentation.</div>
+      </div>
+      <div class="template-card">
+        <div class="template-card-accent accent-blue"></div>
+        <div class="template-card-name">Workflow</div>
+        <div class="template-card-desc">Step-by-step process map with a clickable stage selector. Each stage shows Who, What, Tool, and Output in side-by-side panels.</div>
+        <div class="template-card-use">Used for: value chain processes, escrow stages, deal workflows, handoff protocols.</div>
+      </div>
+      <div class="template-card">
+        <div class="template-card-accent accent-teal"></div>
+        <div class="template-card-name">Slide Deck</div>
+        <div class="template-card-desc">Full-screen slides with keyboard navigation, a progress bar, and a "Mark Complete" button on the final slide.</div>
+        <div class="template-card-use">Used for: onboarding, training modules, orientation sessions, sequential learning.</div>
+      </div>
+    </div>
+
+    <p>All three template types share the same lesson meta bar at the top — showing the learning track, course, pillar, content type, estimated time, and a <strong>Mark Complete</strong> button that logs your progress to S-BOS.</p>
+
+    <hr class="article-divider">
+
+    <!-- SECTION 3 -->
+    <h2 id="organization">How Content Is Organized</h2>
+
+    <p>Content in the Knowledge Base is organized two ways simultaneously. Every piece of content belongs to both a <strong>navigation section</strong> (where you find it by browsing) and a <strong>learning hierarchy</strong> (where it appears in a training course).</p>
+
+    <h3 id="learning-tracks">Learning Tracks and Courses</h3>
+
+    <p>Training content is organized into a three-level hierarchy that mirrors how learning actually works — broad → focused → specific.</p>
+
+    <div class="hierarchy">
+      <div class="hier-row">
+        <div class="hier-label l1">Track</div>
+        <div class="hier-detail"><strong>The broad subject area.</strong> Example: "S-BOS Foundations" — covers everything a new team member needs to understand about the operating system.</div>
+      </div>
+      <div class="hier-row">
+        <div class="hier-label l2">Course</div>
+        <div class="hier-detail"><strong>A focused module within a track.</strong> Example: "System Introduction" — a sequence of articles that orient a new hire to S-BOS before they start using it day-to-day.</div>
+      </div>
+      <div class="hier-row">
+        <div class="hier-label l3">Lesson</div>
+        <div class="hier-detail"><strong>A single article, workflow, or slide deck.</strong> Example: "Welcome to S-BOS" — one article with an estimated read time, a pillar tag, and a Mark Complete button. This article is a lesson.</div>
+      </div>
+    </div>
+
+    <p>The lesson meta bar at the top of every page shows exactly where you are in this hierarchy. The breadcrumb reads: <em>Track › Course › Lesson</em>.</p>
+
+    <div class="callout-box info">
+      <div class="callout-box-label">One file, multiple surfaces</div>
+      <p>The same HTML file serves as both a standalone article (findable by browsing) and a lesson in a course (visible in a learning track). There's no separate "training version" of the content — it's the same page in both contexts.</p>
+    </div>
+
+    <h3 id="workflows-section">Workflows</h3>
+
+    <p>Workflow pages live in the <strong>Workflows</strong> section and map the full value chain for a process — every role, every stage, every handoff. They use the Workflow template with a clickable stage bar across the top.</p>
+
+    <p>A workflow page answers three questions for every stage:</p>
+    <ul>
+      <li><strong>Who</strong> is responsible — Practitioner, Production Mgr, Ops Mgr, Broker, or S-BOS/Claude</li>
+      <li><strong>What</strong> needs to happen — the specific action or deliverable at this stage</li>
+      <li><strong>How</strong> it gets done — the tool, system, or conversation that makes it happen</li>
+    </ul>
+
+    <p>Workflow pages also include a <strong>Parallel Value Chains</strong> section for situations that can arise at any stage (failed contracts, addenda, timeline changes) and a <strong>Team Expectations</strong> block that applies across the whole process.</p>
+
+    <blockquote>
+      <p>If you're in the middle of a deal and unsure what to do next — there is a workflow for it. Go to the Workflows section, find your process, click the stage you're in, and follow it.</p>
+    </blockquote>
+
+    <hr class="article-divider">
+
+    <!-- SECTION 4 -->
+    <h2 id="editing">Editing Articles and Tracking Changes</h2>
+
+    <p>Every page in the Knowledge Base is editable by any team member — no login, no admin access, no request process. The edit workflow is built directly into each page.</p>
+
+    <h3 id="how-to-edit">How to edit a page</h3>
+
+    <div class="steps-list">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>Click "✏ Edit page"</h4>
+          <p>The button is fixed in the bottom-right corner of every page. Click it to enter edit mode.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>Click any highlighted text</h4>
+          <p>Once in edit mode, every editable text block gets an amber dashed outline and a yellow tint. Click any one to place your cursor and start typing — paragraphs, headings, list items, callout text, and table cells are all editable.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>Click "💾 Save changes"</h4>
+          <p>When you're done, click the green Save button. A dialog will ask for your name — this is what appears in the edit history. Enter it and confirm.</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>Changes go live in ~30 seconds</h4>
+          <p>Your edit is committed directly to GitHub. GitHub Pages deploys the change automatically. Reload after 30 seconds to see it live.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout-box warning">
+      <div class="callout-box-label">What editing doesn't change</div>
+      <p>The edit mode lets you change <strong>text content</strong> — words, sentences, paragraphs, list items. It does not add or remove sections, callout boxes, tables, or structural elements. For layout changes, contact the S-BOS admin to update the source file.</p>
+    </div>
+
+    <h3 id="edit-history">Viewing edit history</h3>
+
+    <p>Every page has a complete edit history accessible at the bottom. Scroll to the footer of any page and click <strong>"🕐 Edit history"</strong> to expand a panel showing every edit that's been saved — who made it and when.</p>
+
+    <p>The history is backed by GitHub commits, which means it's permanent, ordered, and tamper-proof. Every save is recorded with the editor's name and the exact date and time.</p>
+
+    <div class="callout-box success">
+      <div class="callout-box-label">Try it on this page</div>
+      <p>Scroll to the bottom of this article and click "🕐 Edit history" to see the change log for this page. You'll see who last updated it and when.</p>
+    </div>
+
+  </article>
+</div>
+
+<footer>
+  <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
+  <div class="footer-version">v1.0 · Internal Use Only</div>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/article-editor.js"></script>
+<script>
+const LESSON_CONFIG = {
+  lessonId:       '6a220b57de22ebdb26cebd49',
+  lessonTitle:    'The Knowledge Base — A Field Guide',
+  trackName:      'S-BOS Foundations',
+  courseName:     'System Introduction',
+  pillar:         'Systems',
+  contentType:    'Article',
+  estimatedMins:  8,
+  audience:       'Internal',
+  filePath:       'lessons/knowledge-base-guide.html'
+};
+
+const SMARTSUITE_CONFIG = {
+  apiKey:        window.SMARTSUITE_API_KEY   || '',
+  workspaceId:   window.SMARTSUITE_WORKSPACE || '',
+  progressAppId: '6a18ad82e630be8e82a202ea',
+  personId:      new URLSearchParams(window.location.search).get('person_id') || ''
+};
+
+async function markComplete() {
+  const btn = document.getElementById('btn-complete');
+  if (btn.classList.contains('completed')) return;
+  btn.textContent = 'Saving...'; btn.disabled = true;
+  if (!SMARTSUITE_CONFIG.apiKey) { showBtn(); return; }
+  try {
+    const today   = new Date().toISOString().split('T')[0];
+    const payload = {
+      title:      `${SMARTSUITE_CONFIG.personId || 'Anonymous'} — ${LESSON_CONFIG.lessonTitle}`,
+      s795f4d404: [LESSON_CONFIG.lessonId],
+      s56ad0c6cc: { value: 'Completed' },
+      s47e7db00b: { date: today, include_time: false },
+      s971159143: 1
+    };
+    if (SMARTSUITE_CONFIG.personId) payload.s43b519ec1 = [SMARTSUITE_CONFIG.personId];
+    const res = await fetch(
+      `https://app.smartsuite.com/api/v1/applications/${SMARTSUITE_CONFIG.progressAppId}/records/`,
+      { method: 'POST', headers: { 'Authorization': `Token ${SMARTSUITE_CONFIG.apiKey}`, 'Account-Id': SMARTSUITE_CONFIG.workspaceId, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
+    );
+    if (res.ok) { showBtn(); } else { btn.textContent = 'Mark Complete'; btn.disabled = false; }
+  } catch { showBtn(); }
+}
+function showBtn() {
+  const btn = document.getElementById('btn-complete');
+  btn.textContent = '✓ Completed'; btn.classList.add('completed'); btn.disabled = false;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('meta-track').textContent       = LESSON_CONFIG.trackName;
+  document.getElementById('meta-course').textContent      = LESSON_CONFIG.courseName;
+  document.getElementById('meta-lesson-name').textContent = LESSON_CONFIG.lessonTitle;
+  document.getElementById('meta-pillar').textContent      = LESSON_CONFIG.pillar;
+  document.getElementById('meta-type').textContent        = LESSON_CONFIG.contentType;
+  document.getElementById('meta-time').textContent        = `⏱ ${LESSON_CONFIG.estimatedMins} min`;
+  document.getElementById('meta-audience').textContent    = LESSON_CONFIG.audience;
+  document.title = `${LESSON_CONFIG.lessonTitle} — S-BOS Knowledge Base`;
+
+  const body    = document.getElementById('articleBody');
+  const tocList = document.getElementById('tocList');
+  body.querySelectorAll('h2[id], h3[id]').forEach(h => {
+    const li = document.createElement('li');
+    const a  = document.createElement('a');
+    a.href = `#${h.id}`; a.textContent = h.textContent;
+    a.className = `toc-link ${h.tagName === 'H3' ? 'h3' : ''}`;
+    li.appendChild(a); tocList.appendChild(li);
+  });
+
+  const links    = tocList.querySelectorAll('.toc-link');
+  const headings = body.querySelectorAll('h2[id], h3[id]');
+  new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const a = tocList.querySelector(`a[href="#${e.target.id}"]`);
+        if (a) a.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-10% 0px -80% 0px' }).observe && headings.forEach(h => {
+    new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          links.forEach(l => l.classList.remove('active'));
+          const a = tocList.querySelector(`a[href="#${e.target.id}"]`);
+          if (a) a.classList.add('active');
+        }
+      });
+    }, { rootMargin: '-10% 0px -80% 0px' }).observe(h);
+  });
+});
+</script>
+</body>
+</html>
