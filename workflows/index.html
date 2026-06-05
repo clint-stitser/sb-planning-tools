@@ -6,384 +6,6 @@
 <title>Workflows & Value Chain — S-BOS Knowledge Base</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/global.css">
-<style>
-  /* ── FILTER BAR ── */
-  .filter-bar {
-    background: var(--white);
-    border-bottom: 2px solid var(--light);
-    padding: 24px 40px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    position: sticky;
-    top: 72px;
-    z-index: 90;
-    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-  }
-
-  .filter-group {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-
-  .filter-group-label {
-    font-family: var(--font-sub);
-    font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--mid);
-    min-width: 100px;
-    flex-shrink: 0;
-  }
-
-  .filter-chip {
-    font-family: var(--font-sub);
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
-    color: var(--dark);
-    background: var(--light);
-    border: 2px solid transparent;
-    padding: 6px 14px;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
-    white-space: nowrap;
-    user-select: none;
-  }
-
-  .filter-chip:hover {
-    border-color: var(--blue);
-    color: var(--blue);
-  }
-
-  .filter-chip.active {
-    background: var(--blue);
-    color: var(--white);
-    border-color: var(--blue);
-  }
-
-  .filter-chip.orange.active {
-    background: var(--orange);
-    border-color: var(--orange);
-    color: var(--white);
-  }
-
-  .filter-chip.disabled {
-    opacity: 0.38;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-
-  .filter-count {
-    font-family: var(--font-sub);
-    font-weight: 600;
-    font-size: 13px;
-    color: var(--mid);
-    letter-spacing: 0.5px;
-    padding-top: 2px;
-  }
-
-  .filter-count strong {
-    color: var(--blue);
-    font-weight: 900;
-  }
-
-  /* ── BOARD SECTION ── */
-  .board-section {
-    padding: 48px 40px;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-
-  /* ── FEATURED CARD ── */
-  .featured-card {
-    background: var(--blue);
-    padding: 36px 40px;
-    margin-bottom: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 32px;
-    border-top: 5px solid var(--orange);
-    text-decoration: none;
-    color: inherit;
-    transition: box-shadow 0.2s;
-  }
-
-  .featured-card:hover {
-    box-shadow: 0 12px 40px rgba(61,110,135,0.3);
-  }
-
-  .featured-card-body {
-    flex: 1;
-  }
-
-  .featured-card-eyebrow {
-    font-family: var(--font-sub);
-    font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: var(--orange);
-    margin-bottom: 10px;
-  }
-
-  .featured-card-title {
-    font-family: var(--font-head);
-    font-weight: 900;
-    font-size: clamp(20px, 2.5vw, 28px);
-    color: var(--white);
-    letter-spacing: -0.3px;
-    margin-bottom: 8px;
-  }
-
-  .featured-card-desc {
-    font-family: var(--font-sub);
-    font-size: 15px;
-    font-weight: 400;
-    color: rgba(255,255,255,0.72);
-    line-height: 1.6;
-    max-width: 560px;
-  }
-
-  .featured-card-cta {
-    font-family: var(--font-sub);
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--white);
-    background: var(--orange);
-    padding: 12px 24px;
-    border-radius: 3px;
-    white-space: nowrap;
-    flex-shrink: 0;
-    transition: background 0.15s;
-  }
-
-  .featured-card:hover .featured-card-cta {
-    background: #e07f00;
-  }
-
-  /* ── WORKFLOW BOARD GRID ── */
-  .workflow-board {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 3px;
-  }
-
-  /* ── WORKFLOW CARD ── */
-  .workflow-card {
-    background: var(--light);
-    padding: 28px 28px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s;
-  }
-
-  .workflow-card::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 3px;
-    background: var(--orange);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.25s ease;
-  }
-
-  .workflow-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.10);
-  }
-
-  .workflow-card:hover::after {
-    transform: scaleX(1);
-  }
-
-  .workflow-card[hidden] {
-    display: none;
-  }
-
-  .workflow-card-chips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-
-  .chip {
-    font-family: var(--font-sub);
-    font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    padding: 3px 8px;
-    border-radius: 2px;
-    white-space: nowrap;
-  }
-
-  .chip-product {
-    background: rgba(61,110,135,0.1);
-    color: var(--blue);
-  }
-
-  .chip-pillar {
-    background: rgba(248,153,29,0.12);
-    color: #b56a00;
-  }
-
-  .workflow-card-title {
-    font-family: var(--font-head);
-    font-weight: 900;
-    font-size: 16px;
-    color: var(--blue);
-    letter-spacing: -0.3px;
-    line-height: 1.2;
-  }
-
-  .workflow-card-desc {
-    font-family: var(--font-sub);
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--dark);
-    line-height: 1.55;
-    opacity: 0.8;
-    flex: 1;
-  }
-
-  .workflow-card-link {
-    margin-top: auto;
-    font-family: var(--font-sub);
-    font-weight: 700;
-    font-size: 12px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--orange);
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    transition: gap 0.15s;
-  }
-
-  .workflow-card-link:hover {
-    gap: 8px;
-  }
-
-  /* ── EMPTY STATE ── */
-  .board-empty {
-    grid-column: 1 / -1;
-    padding: 64px 32px;
-    text-align: center;
-    color: var(--mid);
-    font-family: var(--font-sub);
-    font-size: 16px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
-
-  /* ── CONSTRUCTION PLACEHOLDER ── */
-  .coming-soon-section {
-    background: var(--light);
-    padding: 48px 40px;
-    border-top: 1px solid #e0e0e0;
-  }
-
-  .coming-soon-section .section-label { color: var(--mid); }
-  .coming-soon-section .section-label::before { background: var(--mid); }
-  .coming-soon-section .section-title { color: var(--mid); }
-
-  .coming-soon-note {
-    font-family: var(--font-sub);
-    font-size: 15px;
-    font-weight: 400;
-    color: var(--mid);
-    line-height: 1.6;
-    max-width: 560px;
-    margin-top: -24px;
-    margin-bottom: 32px;
-  }
-
-  .coming-soon-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 3px;
-  }
-
-  .coming-soon-card {
-    background: #ebebed;
-    padding: 28px 28px 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    border-top: 3px solid #c8c9ca;
-    opacity: 0.6;
-  }
-
-  .coming-soon-card-label {
-    font-family: var(--font-sub);
-    font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--mid);
-  }
-
-  .coming-soon-card-title {
-    font-family: var(--font-head);
-    font-weight: 900;
-    font-size: 15px;
-    color: var(--mid);
-  }
-
-  .coming-soon-badge {
-    display: inline-block;
-    font-family: var(--font-sub);
-    font-weight: 700;
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: var(--mid);
-    border: 1.5px solid var(--mid);
-    padding: 3px 8px;
-    border-radius: 2px;
-    margin-top: auto;
-    align-self: flex-start;
-  }
-
-  /* ── RESPONSIVE ── */
-  @media (max-width: 1000px) {
-    .workflow-board,
-    .coming-soon-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-
-  @media (max-width: 900px) {
-    .filter-bar { padding: 20px 24px; top: 72px; }
-    .filter-group-label { min-width: 80px; font-size: 9px; }
-    .board-section { padding: 36px 24px; }
-    .featured-card { padding: 28px 24px; flex-direction: column; align-items: flex-start; }
-    .featured-card-cta { align-self: flex-start; }
-    .coming-soon-section { padding: 36px 24px; }
-  }
-
-  @media (max-width: 600px) {
-    .workflow-board,
-    .coming-soon-grid { grid-template-columns: 1fr; }
-    .filter-group-label { min-width: 0; width: 100%; }
-    .filter-group { gap: 6px; }
-    .filter-chip { font-size: 11px; padding: 5px 10px; }
-  }
-</style>
 </head>
 <body data-section="workflows">
 
@@ -437,7 +59,7 @@
 <div class="page-hero">
   <div class="page-hero-eyebrow">Layer 02 — Workflows</div>
   <h1 class="page-hero-title">Workflows & Value Chain</h1>
-  <p class="page-hero-subtitle">Every value-chain stage documented — who does what, when, and why. Filter by product line or pillar to find exactly what you need.</p>
+  <p class="page-hero-subtitle">The escrow process from contract to nesting — stage by stage, role by role, value added at every step.</p>
 </div>
 
 <div class="orange-bar"></div>
@@ -450,183 +72,139 @@
   </div>
 </div>
 
-<!-- FILTER BAR -->
-<div class="filter-bar" id="filterBar">
-  <div class="filter-group">
-    <span class="filter-group-label">Product Line</span>
-    <button class="filter-chip active" data-filter-type="product" data-filter-value="all">All</button>
-    <button class="filter-chip" data-filter-type="product" data-filter-value="brokerage">Brokerage / Disposition</button>
-    <button class="filter-chip disabled" data-filter-type="product" data-filter-value="construction" title="No workflows yet">Construction</button>
-    <button class="filter-chip disabled" data-filter-type="product" data-filter-value="pm" title="Coming soon">Property Management</button>
+<!-- FEATURED: FULL VALUE CHAIN VIEW -->
+<section style="padding-bottom:0">
+  <div class="section-label">New Format</div>
+  <div class="section-title">Full Value Chain — All Three Layers</div>
+  <div class="tool-grid" style="margin-top:24px">
+    <a class="tool-card" href="escrow-process.html" style="text-decoration:none;border-top:4px solid var(--orange)">
+      <div class="tool-name" style="color:var(--blue)">Buyer Escrow Process</div>
+      <div class="tool-role">Interactive Value Chain · All 9 Stages</div>
+      <div class="tool-when">The complete escrow process in one page. Click any stage to see who does what — People, S-BOS records, and Claude assistance — all in one view. Use this as the template format for any process.</div>
+    </a>
   </div>
-  <div class="filter-group">
-    <span class="filter-group-label">Pillar</span>
-    <button class="filter-chip active" data-filter-type="pillar" data-filter-value="all">All</button>
-    <button class="filter-chip" data-filter-type="pillar" data-filter-value="people">People</button>
-    <button class="filter-chip" data-filter-type="pillar" data-filter-value="projects">Projects</button>
-    <button class="filter-chip" data-filter-type="pillar" data-filter-value="finance">Finance</button>
-    <button class="filter-chip" data-filter-type="pillar" data-filter-value="compliance">Compliance</button>
-    <button class="filter-chip" data-filter-type="pillar" data-filter-value="intelligence">Intelligence</button>
+</section>
+
+<!-- VALUE CHAIN EXPLAINED -->
+<section>
+  <div class="section-label">The Model</div>
+  <div class="section-title">How the Value Chain Works</div>
+  <div class="prose">
+    <p>Every escrow stage follows the same fundamental pattern: <strong>Supply → Clarify &amp; Verify → Receive.</strong> One role does the work of their stage and hands it forward. The receiving role checks that everything is complete and accurate before accepting it. No stage is skipped. No handoff happens without Clarify &amp; Verify.</p>
+    <p>"Value Added" means something specific here: each role contributes what only they can contribute at their position. The Practitioner manages the client relationship. The Production Manager orchestrates the parties. The Ops Manager ensures compliance. Skipping a role doesn't speed things up — it creates gaps that cost time later.</p>
+    <p>Three stages require a formal <strong>Ops Manager audit</strong> before the team can proceed: File &amp; Project Setup, Execute Diligence, and Pre-Closing. These are marked with an orange Audit badge. The audit confirms the file is complete and the team is cleared to move forward. See <a href="../glossary/#A">Audit Stage</a> in the glossary.</p>
+    <p>Some actions — contract addenda, timeline changes, problem solving, failed contract — can happen at any stage. They don't fit neatly into the linear flow and are handled as they arise, always with Clarify &amp; Verify applied.</p>
   </div>
-  <div class="filter-count" id="filterCount"><strong>10</strong> workflows</div>
-</div>
+</section>
 
-<!-- MAIN BOARD -->
-<div class="board-section">
-
-  <!-- FEATURED: FULL VALUE CHAIN -->
-  <a class="featured-card" href="escrow-process.html" id="featuredCard">
-    <div class="featured-card-body">
-      <div class="featured-card-eyebrow">Full Value Chain · All 9 Stages · All Three Layers</div>
-      <div class="featured-card-title">Buyer Escrow Process</div>
-      <div class="featured-card-desc">The complete escrow process in one page. Click any stage to see who does what — People, S-BOS records, and Claude assistance — mapped from contract to keys.</div>
-    </div>
-    <div class="featured-card-cta">Open Master Map →</div>
-  </a>
-
-  <!-- WORKFLOW CARDS -->
-  <div class="workflow-board" id="workflowBoard" aria-live="polite">
-
-    <div class="workflow-card"
-         data-product="brokerage"
-         data-pillars="compliance">
-      <div class="workflow-card-chips">
-        <span class="chip chip-product">Brokerage / Disposition</span>
-        <span class="chip chip-pillar">Compliance</span>
-      </div>
-      <div class="workflow-card-title">File &amp; Project Setup</div>
-      <div class="workflow-card-desc">Enter contract, assemble docs, notify team, set up the deal file.</div>
-      <a class="workflow-card-link" href="file-setup.html">Open →</a>
-    </div>
-
-    <div class="workflow-card"
-         data-product="brokerage"
-         data-pillars="compliance">
-      <div class="workflow-card-chips">
-        <span class="chip chip-product">Brokerage / Disposition</span>
-        <span class="chip chip-pillar">Compliance</span>
-      </div>
-      <div class="workflow-card-title">Escrow Open</div>
-      <div class="workflow-card-desc">Open escrow, notify all parties, verify commissions.</div>
-      <a class="workflow-card-link" href="escrow-open.html">Open →</a>
-    </div>
-
-    <div class="workflow-card"
-         data-product="brokerage"
-         data-pillars="projects">
-      <div class="workflow-card-chips">
-        <span class="chip chip-product">Brokerage / Disposition</span>
-        <span class="chip chip-pillar">Projects</span>
-      </div>
-      <div class="workflow-card-title">Execute Due Diligence</div>
-      <div class="workflow-card-desc">Inspection, contingency removal, and diligence coordination.</div>
-      <a class="workflow-card-link" href="execute-diligence.html">Open →</a>
-    </div>
-
-    <div class="workflow-card"
-         data-product="brokerage"
-         data-pillars="people">
-      <div class="workflow-card-chips">
-        <span class="chip chip-product">Brokerage / Disposition</span>
-        <span class="chip chip-pillar">People</span>
-      </div>
-      <div class="workflow-card-title">Assemble &amp; Respond to Offers</div>
-      <div class="workflow-card-desc">Offer assembly, submission, and response workflow.</div>
-      <a class="workflow-card-link" href="assemble-respond.html">Open →</a>
-    </div>
-
-    <div class="workflow-card"
-         data-product="brokerage"
-         data-pillars="finance">
-      <div class="workflow-card-chips">
-        <span class="chip chip-product">Brokerage / Disposition</span>
-        <span class="chip chip-pillar">Finance</span>
-      </div>
-      <div class="workflow-card-title">Pre-Closing</div>
-      <div class="workflow-card-desc">Pre-closing checklist, final walk-through, and docs.</div>
-      <a class="workflow-card-link" href="pre-closing.html">Open →</a>
-    </div>
-
-    <div class="workflow-card"
-         data-product="brokerage"
-         data-pillars="finance">
-      <div class="workflow-card-chips">
-        <span class="chip chip-product">Brokerage / Disposition</span>
-        <span class="chip chip-pillar">Finance</span>
-      </div>
-      <div class="workflow-card-title">Closing</div>
-      <div class="workflow-card-desc">Final steps from signing through keys and record close.</div>
-      <a class="workflow-card-link" href="closing.html">Open →</a>
-    </div>
-
-    <div class="workflow-card"
-         data-product="brokerage"
-         data-pillars="finance">
-      <div class="workflow-card-chips">
-        <span class="chip chip-product">Brokerage / Disposition</span>
-        <span class="chip chip-pillar">Finance</span>
-      </div>
-      <div class="workflow-card-title">Commission Distribution</div>
-      <div class="workflow-card-desc">Post-close commission split and distribution process.</div>
-      <a class="workflow-card-link" href="commission-distribution.html">Open →</a>
-    </div>
-
-    <div class="workflow-card"
-         data-product="brokerage"
-         data-pillars="compliance">
-      <div class="workflow-card-chips">
-        <span class="chip chip-product">Brokerage / Disposition</span>
-        <span class="chip chip-pillar">Compliance</span>
-      </div>
-      <div class="workflow-card-title">Reinspections</div>
-      <div class="workflow-card-desc">Reinspection scheduling, results, and resolution.</div>
-      <a class="workflow-card-link" href="reinspections.html">Open →</a>
-    </div>
-
-    <div class="workflow-card"
-         data-product="brokerage"
-         data-pillars="people">
-      <div class="workflow-card-chips">
-        <span class="chip chip-product">Brokerage / Disposition</span>
-        <span class="chip chip-pillar">People</span>
-      </div>
-      <div class="workflow-card-title">Nesting</div>
-      <div class="workflow-card-desc">Buyer move-in coordination and property handoff.</div>
-      <a class="workflow-card-link" href="nesting.html">Open →</a>
-    </div>
-
-    <!-- empty state — shown when no cards match -->
-    <div class="board-empty" id="boardEmpty" hidden>No workflows match the selected filters.</div>
-
-  </div><!-- /workflow-board -->
-
-</div><!-- /board-section -->
-
-<!-- CONSTRUCTION PLACEHOLDER -->
-<div class="coming-soon-section">
-  <div style="max-width:1200px; margin:0 auto;">
-    <div class="section-label">Coming Soon</div>
-    <div class="section-title">Construction Workflows</div>
-    <p class="coming-soon-note">Construction value chain documentation is currently in progress. These workflows will follow the same stage-by-stage format as the Brokerage / Disposition value chain above.</p>
-    <div class="coming-soon-grid">
-      <div class="coming-soon-card">
-        <div class="coming-soon-card-label">Construction</div>
-        <div class="coming-soon-card-title">Project Intake &amp; Scope</div>
-        <span class="coming-soon-badge">In Progress</span>
-      </div>
-      <div class="coming-soon-card">
-        <div class="coming-soon-card-label">Construction</div>
-        <div class="coming-soon-card-title">Permit &amp; Compliance</div>
-        <span class="coming-soon-badge">In Progress</span>
-      </div>
-      <div class="coming-soon-card">
-        <div class="coming-soon-card-label">Construction</div>
-        <div class="coming-soon-card-title">Project Close-Out</div>
-        <span class="coming-soon-badge">In Progress</span>
-      </div>
-    </div>
+<!-- VALUE CHAIN NAVIGATOR -->
+<div class="chain-section">
+  <div class="section-label" style="color:var(--orange)">Click a Stage</div>
+  <div class="section-title">Value Chain Navigator</div>
+  <div class="chain-flow">
+    <a class="chain-stage" href="file-setup.html">
+      <div class="chain-stage-num">01</div>
+      <div class="chain-stage-name">File & Project Setup</div>
+      <div class="chain-stage-audit">Audit</div>
+    </a>
+    <a class="chain-stage" href="escrow-open.html">
+      <div class="chain-stage-num">02</div>
+      <div class="chain-stage-name">Escrow Open</div>
+    </a>
+    <a class="chain-stage" href="execute-diligence.html">
+      <div class="chain-stage-num">03</div>
+      <div class="chain-stage-name">Execute Diligence</div>
+      <div class="chain-stage-audit">Audit</div>
+    </a>
+    <a class="chain-stage" href="assemble-respond.html">
+      <div class="chain-stage-num">04</div>
+      <div class="chain-stage-name">Assemble & Respond</div>
+    </a>
+    <a class="chain-stage" href="reinspections.html">
+      <div class="chain-stage-num">05</div>
+      <div class="chain-stage-name">Re-Inspections & Walkthrough</div>
+    </a>
+    <a class="chain-stage" href="pre-closing.html">
+      <div class="chain-stage-num">06</div>
+      <div class="chain-stage-name">Pre-Closing</div>
+      <div class="chain-stage-audit">Audit</div>
+    </a>
+    <a class="chain-stage" href="closing.html">
+      <div class="chain-stage-num">07</div>
+      <div class="chain-stage-name">Closing</div>
+    </a>
+    <a class="chain-stage" href="commission-distribution.html">
+      <div class="chain-stage-num">08</div>
+      <div class="chain-stage-name">Commission Distribution</div>
+    </a>
+    <a class="chain-stage" href="nesting.html">
+      <div class="chain-stage-num">09</div>
+      <div class="chain-stage-name">Nesting</div>
+    </a>
   </div>
 </div>
+
+<!-- STAGE CARDS -->
+<section>
+  <div class="section-label">All Stages</div>
+  <div class="section-title">The Nine Escrow Stages</div>
+  <div class="nav-grid">
+    <a class="nav-card" href="file-setup.html">
+      <div class="nav-card-number">01 · Audit Required</div>
+      <div class="nav-card-title">File & Project Setup</div>
+      <div class="nav-card-desc">Enter contract in Smartsheet, assemble docs in Drive, notify Production MGR, introduce Production MGR to Buyer and Partner Agent.</div>
+      <div class="nav-card-arrow">Practitioner → Production MGR → Ops MGR</div>
+    </a>
+    <a class="nav-card" href="escrow-open.html">
+      <div class="nav-card-number">02</div>
+      <div class="nav-card-title">Escrow Open</div>
+      <div class="nav-card-desc">Open escrow, notify all parties, verify commissions, confirm contact info and communication methods.</div>
+      <div class="nav-card-arrow">Production MGR → Title / Lender / Partner Agent</div>
+    </a>
+    <a class="nav-card" href="execute-diligence.html">
+      <div class="nav-card-number">03 · Audit Required</div>
+      <div class="nav-card-title">Execute Diligence & Contingencies</div>
+      <div class="nav-card-desc">Request diligence documents, initiate contingency timelines, order inspections, confirm client strategy and timing.</div>
+      <div class="nav-card-arrow">Production MGR + Practitioner → All Parties</div>
+    </a>
+    <a class="nav-card" href="assemble-respond.html">
+      <div class="nav-card-number">04</div>
+      <div class="nav-card-title">Assemble & Respond</div>
+      <div class="nav-card-desc">Receive and deliver diligence documents, review with client, create NORR if needed, object and provide substantiation.</div>
+      <div class="nav-card-arrow">Production MGR → Practitioner → Buyer</div>
+    </a>
+    <a class="nav-card" href="reinspections.html">
+      <div class="nav-card-number">05</div>
+      <div class="nav-card-title">Re-Inspections & Walkthrough</div>
+      <div class="nav-card-desc">Confirm repairs complete, coordinate re-inspections and walkthroughs, review new docs, buyer approves or rejects.</div>
+      <div class="nav-card-arrow">Partner Agent → Production MGR → Practitioner</div>
+    </a>
+    <a class="nav-card" href="pre-closing.html">
+      <div class="nav-card-number">06 · Audit Required</div>
+      <div class="nav-card-title">Pre-Closing</div>
+      <div class="nav-card-desc">Coordinate all closing parties, send commission instructions for signature, review settlement statement, compliance audit.</div>
+      <div class="nav-card-arrow">Production MGR → Practitioner → Broker → Ops MGR</div>
+    </a>
+    <a class="nav-card" href="closing.html">
+      <div class="nav-card-number">07</div>
+      <div class="nav-card-title">Closing</div>
+      <div class="nav-card-desc">Confirm funding and recording, coordinate home delivery, Woohoo call, update MLS, activate post-closing action set.</div>
+      <div class="nav-card-arrow">Practitioner → Production MGR → Ops MGR</div>
+    </a>
+    <a class="nav-card" href="commission-distribution.html">
+      <div class="nav-card-number">08</div>
+      <div class="nav-card-title">Commission Distribution</div>
+      <div class="nav-card-desc">Review compliance docs, verify commission accuracy, deposit commission checks, disburse and track.</div>
+      <div class="nav-card-arrow">Ops MGR → Broker → Accountant</div>
+    </a>
+    <a class="nav-card" href="nesting.html">
+      <div class="nav-card-number">09</div>
+      <div class="nav-card-title">Nesting</div>
+      <div class="nav-card-desc">Execute FUB post-closing action set, deliver vendor list, send tax documents, set anniversary reminders.</div>
+      <div class="nav-card-arrow">Practitioner → Buyer</div>
+    </a>
+  </div>
+</section>
 
 <footer>
   <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
@@ -634,83 +212,5 @@
 </footer>
 
 <script src="../assets/js/nav.js"></script>
-<script src="../assets/js/article-editor.js"></script>
-<script>
-(function () {
-  const board       = document.getElementById('workflowBoard');
-  const countEl     = document.getElementById('filterCount');
-  const emptyEl     = document.getElementById('boardEmpty');
-  const featuredCard = document.getElementById('featuredCard');
-  const allCards    = Array.from(board.querySelectorAll('.workflow-card'));
-
-  let activeProduct = 'all';
-  let activePillar  = 'all';
-
-  function applyFilters() {
-    let visible = 0;
-
-    allCards.forEach(function (card) {
-      const product = card.dataset.product;
-      const pillars = card.dataset.pillars.split(' ');
-
-      const productMatch = activeProduct === 'all' || product === activeProduct;
-      const pillarMatch  = activePillar  === 'all' || pillars.includes(activePillar);
-
-      if (productMatch && pillarMatch) {
-        card.hidden = false;
-        visible++;
-      } else {
-        card.hidden = true;
-      }
-    });
-
-    // Show / hide empty state
-    emptyEl.hidden = visible > 0;
-
-    // Update count — featured card is always visible but not counted in the filterable set
-    countEl.innerHTML = '<strong>' + visible + '</strong> workflow' + (visible === 1 ? '' : 's');
-  }
-
-  function handleChipClick(chip) {
-    const type  = chip.dataset.filterType;
-    const value = chip.dataset.filterValue;
-
-    // Toggle: clicking an already-active non-all chip resets to all
-    if (type === 'product') {
-      activeProduct = (value === activeProduct && value !== 'all') ? 'all' : value;
-    } else {
-      activePillar  = (value === activePillar  && value !== 'all') ? 'all' : value;
-    }
-
-    // Sync active class within the group
-    document.querySelectorAll('[data-filter-type="' + type + '"]').forEach(function (c) {
-      const isAll = c.dataset.filterValue === 'all';
-      const matchesCurrent = type === 'product'
-        ? c.dataset.filterValue === activeProduct
-        : c.dataset.filterValue === activePillar;
-      c.classList.toggle('active', matchesCurrent || (isAll && (
-        (type === 'product' && activeProduct === 'all') ||
-        (type === 'pillar'  && activePillar  === 'all')
-      )));
-    });
-
-    // If a specific value was selected, deactivate "All" chip
-    if ((type === 'product' && activeProduct !== 'all') ||
-        (type === 'pillar'  && activePillar  !== 'all')) {
-      document.querySelector('[data-filter-type="' + type + '"][data-filter-value="all"]')
-        .classList.remove('active');
-    }
-
-    applyFilters();
-  }
-
-  document.querySelectorAll('.filter-chip:not(.disabled)').forEach(function (chip) {
-    chip.addEventListener('click', function () { handleChipClick(chip); });
-  });
-
-  // Initial count
-  applyFilters();
-})();
-</script>
 </body>
 </html>
