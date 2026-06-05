@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Core Documents — S-BOS Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+  /* ── Manifesto Section ── */
+  .manifesto-section {
+    background: #231F20;
+    padding: 80px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .manifesto-section::before {
+    content: '"';
+    position: absolute;
+    left: -20px;
+    top: -40px;
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: 600px;
+    color: rgba(255,255,255,0.02);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .manifesto-inner {
+    max-width: 820px;
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+  }
+
+  .manifesto-eyebrow {
+    font-family: var(--font-sub);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+  }
+  .manifesto-eyebrow::before,
+  .manifesto-eyebrow::after {
+    content: '';
+    display: block;
+    width: 48px;
+    height: 1px;
+    background: var(--orange);
+    opacity: 0.6;
+  }
+
+  .manifesto-headline {
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: clamp(13px, 1.5vw, 16px);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.45);
+    margin-bottom: 28px;
+  }
+
+  .manifesto-opening {
+    font-family: var(--font-sub);
+    font-size: clamp(17px, 2.2vw, 22px);
+    font-weight: 400;
+    color: rgba(255,255,255,0.7);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  .manifesto-reason {
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: clamp(28px, 4.5vw, 52px);
+    color: #FFFFFF;
+    letter-spacing: -1px;
+    line-height: 1.0;
+    margin-bottom: 56px;
+  }
+  .manifesto-reason span { color: var(--orange); }
+
+  .manifesto-divider {
+    width: 60px;
+    height: 2px;
+    background: var(--orange);
+    margin: 0 auto 48px;
+    opacity: 0.5;
+  }
+
+  .manifesto-code-label {
+    font-family: var(--font-sub);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 24px;
+  }
+
+  .manifesto-code {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 56px;
+  }
+
+  .manifesto-code li {
+    font-family: var(--font-sub);
+    font-size: clamp(16px, 2vw, 20px);
+    font-weight: 600;
+    color: rgba(255,255,255,0.82);
+    line-height: 1.4;
+    letter-spacing: 0.2px;
+  }
+
+  .manifesto-promises-label {
+    font-family: var(--font-sub);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 24px;
+  }
+
+  .manifesto-promises {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 64px;
+  }
+
+  .manifesto-promises li {
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: clamp(14px, 1.8vw, 18px);
+    color: rgba(255,255,255,0.75);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+  .manifesto-promises li strong {
+    color: #FFFFFF;
+    font-size: clamp(16px, 2vw, 21px);
+  }
+
+  .manifesto-bhag-wrapper {
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 56px;
+    margin-top: 8px;
+  }
+
+  .manifesto-bhag-prefix {
+    font-family: var(--font-sub);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 20px;
+  }
+
+  .manifesto-bhag {
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: clamp(24px, 4vw, 48px);
+    color: var(--orange);
+    letter-spacing: -0.5px;
+    line-height: 1.05;
+    text-transform: uppercase;
+  }
+
+  /* ── Strategic Direction ── */
+  .direction-section {
+    background: var(--light);
+    padding: 80px 40px;
+  }
+
+  .direction-headline {
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: clamp(20px, 2.5vw, 28px);
+    color: var(--blue);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  .direction-sub {
+    font-family: var(--font-sub);
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin-bottom: 48px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .direction-sub::before {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 2px;
+    background: var(--orange);
+  }
+
+  .pillars-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3px;
+  }
+
+  .pillar-card {
+    background: #FFFFFF;
+    padding: 40px 36px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border-top: 4px solid var(--blue);
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.2s, border-top-color 0.2s;
+  }
+  .pillar-card:hover {
+    box-shadow: 0 12px 32px rgba(0,0,0,0.09);
+    border-top-color: var(--orange);
+  }
+
+  .pillar-number {
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--orange);
+    text-transform: uppercase;
+  }
+
+  .pillar-name {
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: clamp(20px, 2.2vw, 26px);
+    color: var(--blue);
+    letter-spacing: -0.3px;
+    line-height: 1.1;
+  }
+
+  .pillar-desc {
+    font-family: var(--font-sub);
+    font-size: 15px;
+    font-weight: 400;
+    color: var(--dark);
+    line-height: 1.6;
+    opacity: 0.8;
+  }
+
+  .pillar-card-bg-num {
+    position: absolute;
+    bottom: -16px;
+    right: -8px;
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: 130px;
+    color: rgba(61,110,135,0.05);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* ── Foundation Section ── */
+  .foundation-section {
+    background: var(--blue);
+    padding: 80px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .foundation-section .section-label { color: var(--orange); }
+  .foundation-section .section-label::before { background: var(--orange); }
+  .foundation-section .section-title { color: #FFFFFF; }
+
+  .foundation-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+  }
+
+  .foundation-card {
+    background: rgba(255,255,255,0.07);
+    padding: 40px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    border-bottom: 4px solid rgba(255,255,255,0.1);
+    transition: background 0.2s, border-bottom-color 0.2s;
+  }
+  .foundation-card:hover {
+    background: rgba(255,255,255,0.12);
+    border-bottom-color: var(--orange);
+  }
+
+  .foundation-icon {
+    font-size: 36px;
+    line-height: 1;
+  }
+
+  .foundation-name {
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: clamp(20px, 2.2vw, 26px);
+    color: #FFFFFF;
+    letter-spacing: -0.3px;
+  }
+
+  .foundation-tag {
+    font-family: var(--font-sub);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--orange);
+  }
+
+  .foundation-desc {
+    font-family: var(--font-sub);
+    font-size: 15px;
+    font-weight: 400;
+    color: rgba(255,255,255,0.72);
+    line-height: 1.6;
+  }
+
+  /* ── Built to Last Section ── */
+  .built-section {
+    background: #231F20;
+    padding: 80px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .built-section::after {
+    content: 'BUILT.';
+    position: absolute;
+    right: -30px;
+    bottom: -50px;
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: 220px;
+    color: rgba(255,255,255,0.025);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .built-section .section-label { color: var(--orange); }
+  .built-section .section-label::before { background: var(--orange); }
+  .built-section .section-title { color: #FFFFFF; }
+
+  .built-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 64px;
+    align-items: start;
+    position: relative;
+    z-index: 2;
+  }
+
+  .built-beliefs {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .built-belief {
+    padding: 22px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .built-belief-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--orange);
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 8px;
+  }
+
+  .built-belief-text {
+    font-family: var(--font-sub);
+    font-size: clamp(16px, 1.8vw, 20px);
+    font-weight: 600;
+    color: rgba(255,255,255,0.82);
+    line-height: 1.4;
+  }
+
+  .built-promise {
+    background: rgba(255,255,255,0.04);
+    border-left: 4px solid var(--orange);
+    padding: 36px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    align-self: center;
+  }
+
+  .built-promise-label {
+    font-family: var(--font-sub);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--orange);
+  }
+
+  .built-promise-quote {
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: clamp(17px, 1.8vw, 22px);
+    color: #FFFFFF;
+    line-height: 1.3;
+    letter-spacing: -0.2px;
+  }
+
+  /* ── Responsive overrides ── */
+  @media (max-width: 900px) {
+    .manifesto-section,
+    .direction-section,
+    .foundation-section,
+    .built-section {
+      padding: 56px 24px;
+    }
+
+    .pillars-grid { grid-template-columns: 1fr; }
+    .foundation-grid { grid-template-columns: 1fr; }
+    .built-content { grid-template-columns: 1fr; gap: 40px; }
+  }
+
+  @media (max-width: 600px) {
+    .pillars-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body data-section="system">
+
+<header>
+  <a class="logo-lockup" href="../">
+    <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+      <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+    </svg>
+    <div class="logo-text">
+      <span class="brand">Stitser Built</span>
+      <span class="sub">S-BOS Knowledge Base</span>
+    </div>
+  </a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+
+<div class="nav-overlay">
+  <div class="nav-overlay-header">
+    <a class="logo-lockup" href="../">
+      <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+        <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Stitser Built</span>
+        <span class="sub">S-BOS Knowledge Base</span>
+      </div>
+    </a>
+    <button class="nav-overlay-close" aria-label="Close menu">&#10005;</button>
+  </div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<!-- ── PAGE HERO ── -->
+<div class="page-hero">
+  <div class="page-hero-eyebrow">Section 06 — Core Documents</div>
+  <h1 class="page-hero-title">Core Documents</h1>
+  <p class="page-hero-subtitle">The beliefs, principles, and strategic framework that define Stitser BUILT.</p>
+</div>
+
+<div class="orange-bar"></div>
+
+<div class="breadcrumb-bar">
+  <div class="breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">→</span>
+    <span class="cur">Core Documents</span>
+  </div>
+</div>
+
+<!-- ── THE MANIFESTO ── -->
+<div class="manifesto-section" id="manifesto">
+  <div class="manifesto-inner">
+
+    <div class="manifesto-eyebrow">The Manifesto</div>
+
+    <p class="manifesto-opening">We exist for one simple reason:</p>
+    <div class="manifesto-reason">To create <span>COOL PLACES</span></div>
+
+    <div class="manifesto-divider"></div>
+
+    <p class="manifesto-code-label">To get there, we live by a specific code:</p>
+    <ul class="manifesto-code">
+      <li>We bring solutions, never just problems.</li>
+      <li>We skip the BS. We tell the truth, always.</li>
+      <li>We are real, and we are respectful.</li>
+      <li>We own our role. Focus matters.</li>
+      <li>And we finish strong. We don't stop until it's done right.</li>
+    </ul>
+
+    <p class="manifesto-promises-label">Because of that code, we can make these promises:</p>
+    <ul class="manifesto-promises">
+      <li>We are <strong>BUILT.</strong> with fantastic people.</li>
+      <li>Our projects are <strong>BUILT.</strong> with stewardship.</li>
+      <li>We are <strong>BUILT.</strong> to Last.</li>
+    </ul>
+
+    <div class="manifesto-bhag-wrapper">
+      <div class="manifesto-bhag-prefix">We are laser focused to achieve our first summit:</div>
+      <div class="manifesto-bhag">Cool Places for 10,000 People.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── STRATEGIC DIRECTION ── -->
+<div class="direction-section" id="strategic-direction">
+  <div class="section-label">Our Focus</div>
+  <div class="direction-headline">We Are Local Sharpshooters</div>
+  <div class="direction-sub">Market Focused. Product Diverse.</div>
+
+  <div class="pillars-grid">
+
+    <div class="pillar-card">
+      <div class="pillar-number">Pillar 01</div>
+      <div class="pillar-name">Design Methodology</div>
+      <div class="pillar-desc">From ideation to delivery. Faster. More Cost-Competitive.</div>
+      <div class="pillar-card-bg-num">1</div>
+    </div>
+
+    <div class="pillar-card">
+      <div class="pillar-number">Pillar 02</div>
+      <div class="pillar-name">Direct Vertical Integration</div>
+      <div class="pillar-desc">Seamless control of Construction, Brokerage, and Asset Management.</div>
+      <div class="pillar-card-bg-num">2</div>
+    </div>
+
+    <div class="pillar-card">
+      <div class="pillar-number">Pillar 03</div>
+      <div class="pillar-name">Complimentary Partnerships</div>
+      <div class="pillar-desc">Development, Financing. A "dream team" for every single project.</div>
+      <div class="pillar-card-bg-num">3</div>
+    </div>
+
+    <div class="pillar-card">
+      <div class="pillar-number">Pillar 04</div>
+      <div class="pillar-name">Strategic [PILLAR 4]</div>
+      <div class="pillar-desc">[Edit this — description not yet captured from strategy poster]</div>
+      <div class="pillar-card-bg-num">4</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── OUR FOUNDATION ── -->
+<div class="foundation-section" id="foundation">
+  <div class="section-label">Our Foundation</div>
+  <div class="section-title">What We're Built On</div>
+
+  <div class="foundation-grid">
+
+    <div class="foundation-card">
+      <div class="foundation-icon">&#128202;</div>
+      <div class="foundation-name">S-BOS</div>
+      <div class="foundation-tag">The Brain</div>
+      <div class="foundation-desc">One Cohesive Shared Intelligence. Every process, record, and decision — connected.</div>
+    </div>
+
+    <div class="foundation-card">
+      <div class="foundation-icon">&#9881;</div>
+      <div class="foundation-name">Unified IT Platform</div>
+      <div class="foundation-tag">The Engine</div>
+      <div class="foundation-desc">The operating system behind the business. Tools, integrations, and infrastructure — unified.</div>
+    </div>
+
+    <div class="foundation-card">
+      <div class="foundation-icon">&#128270;</div>
+      <div class="foundation-name">Magnetic Marketing</div>
+      <div class="foundation-tag">The Signal</div>
+      <div class="foundation-desc">We don't chase business. We attract it.</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── BUILT TO LAST ── -->
+<div class="built-section" id="built-to-last">
+  <div class="section-label">Our Commitment</div>
+  <div class="section-title">Built to Last</div>
+
+  <div class="built-content">
+
+    <div class="built-beliefs">
+      <div class="built-belief">
+        <div class="built-belief-dot"></div>
+        <div class="built-belief-text">Decisions for Longevity and Lasting Value.</div>
+      </div>
+      <div class="built-belief">
+        <div class="built-belief-dot"></div>
+        <div class="built-belief-text">We are Partners for the Long Haul.</div>
+      </div>
+      <div class="built-belief">
+        <div class="built-belief-dot"></div>
+        <div class="built-belief-text">Partner with us as amazing RE operators, not as developer flippers.</div>
+      </div>
+    </div>
+
+    <div class="built-promise">
+      <div class="built-promise-label">The Partner Promise</div>
+      <div class="built-promise-quote">"Partner with us as amazing RE operators, not as developer flippers."</div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
+  <div class="footer-version">v1.0 · Internal Use Only</div>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/article-editor.js"></script>
+</body>
+</html>

@@ -903,6 +903,140 @@ app.get('/api/construction-data', async (req, res) => {
   }
 });
 
+// ── Learning Tracks (Section 1) ────────────────────────────────────────────
+// GET /api/learning-tracks?person_id=<optional>
+// Returns full Track→Course→Lesson hierarchy plus per-lesson completion status.
+const TRAIN_TRACKS_APP  = '68d480e2727607560a7f0d23';
+const TRAIN_COURSES_APP = '68d480e2727607560a7f0d2c';
+const TRAIN_LESSONS_APP = '68d480e2727607560a7f0d26';
+const TRAIN_PROGRESS_APP= '6a18ad82e630be8e82a202ea';
+
+async function ssListAll(appId, fields = []) {
+  const headers = { 'Authorization': `Token ${API_KEY}`, 'ACCOUNT-ID': SS_ACCOUNT_ID, 'Content-Type': 'application/json' };
+  const all = []; let offset = 0;
+  while (true) {
+    const body = { limit: 200, offset };
+    if (fields.length) body.fields = fields;
+    const r = await fetch(`${SS_BASE_URL}/applications/${appId}/records/list/`, { method: 'POST', headers, body: JSON.stringify(body) });
+    if (!r.ok) break;
+    const d = await r.json();
+    all.push(...(d.items || []));
+    if (!d.has_more || !(d.items || []).length) break;
+    offset += d.items.length;
+  }
+  return all;
+}
+
+app.get('/api/learning-tracks', async (req, res) => {
+  try {
+    const personId = req.query.person_id || null;
+    const [tracks, courses, lessons] = await Promise.all([
+      ssListAll(TRAIN_TRACKS_APP, ['title', 'description']),
+      ssListAll(TRAIN_COURSES_APP, ['title', 'description', 'link_to_learning_tracks', 'sf4cbfb4bb', 's59d010ab9', 'sdc776b2fa']),
+      ssListAll(TRAIN_LESSONS_APP, ['title', 'type', 'sa2c745c03', 'sefd6f1609', 'sd97f4c063', 'se82cbdade', 'link_to_courses', 's05e6aca0a', 's7ccdea252', 's2d92d822a', 'description']),
+    ]);
+
+    // Progress lookup: completed lesson IDs for this person
+    let completedLessonIds = new Set();
+    if (personId) {
+      const progress = await ssListAll(TRAIN_PROGRESS_APP, ['s795f4d404', 's43b519ec1', 's56ad0c6cc']);
+      progress.forEach(p => {
+        const persons = p.s43b519ec1 || [];
+        if (persons.includes(personId)) {
+          (p.s795f4d404 || []).forEach(lid => completedLessonIds.add(lid));
+        }
+      });
+    }
+
+    // Index courses by ID
+    const courseById = {};
+    courses.forEach(c => { courseById[c.id] = c; });
+
+    // Build track→courses→lessons hierarchy
+    const hierarchy = tracks.map(track => ({
+      id:          track.id,
+      title:       track.title,
+      description: track.description || '',
+      courses:     courses
+        .filter(c => (c.link_to_learning_tracks || []).includes(track.id))
+        .map(course => ({
+          id:          course.id,
+          title:       course.title,
+          description: course.description || '',
+          totalMins:   parseFloat(course.s59d010ab9) || null,
+          lessons:     lessons
+            .filter(l => (l.link_to_courses || []).includes(course.id))
+            .sort((a, b) => (parseFloat(a.se82cbdade) || 99) - (parseFloat(b.se82cbdade) || 99))
+            .map(l => ({
+              id:          l.id,
+              title:       l.title,
+              description: l.description || '',
+              url:         l.sefd6f1609 || null,
+              mins:        parseFloat(l.sa2c745c03) || null,
+              pillar:      l.s05e6aca0a || '',
+              type:        l.s7ccdea252 || l.type || '',
+              audience:    l.s2d92d822a || '',
+              status:      l.sd97f4c063 || '',
+              lessonNum:   parseFloat(l.se82cbdade) || null,
+              completed:   completedLessonIds.has(l.id),
+            })),
+        })),
+    }));
+
+    res.json({ tracks: hierarchy, personId });
+  } catch (err) {
+    console.error('Learning tracks error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ── Feature Roadmap / IT Projects (Section 5) ──────────────────────────────
+// GET /api/roadmap
+// Returns Projects table records filtered to IT/Systems dept, grouped by stage.
+const IT_DEPT_ID = '6858d8c9355da45e14c28547';
+const ROADMAP_STATUS_MAP = {
+  'ready_for_review':                      'pipeline',
+  'complete':                              'pipeline',
+  '21c0705b-0c3b-45cd-9e93-07672fac949d': 'pipeline',
+  'fb5677b7-3e68-4705-86af-abb8745a43f7': 'pipeline',
+  'backlog':                               'pipeline',
+  'zOlNR':                                 'wip',
+  'Swowl':                                 'closeout',
+  'Dio3d':                                 'closed',
+};
+
+app.get('/api/roadmap', async (req, res) => {
+  try {
+    const projects = await ssListAll(SS_PROJECTS_ID, [
+      'title', 'status', 's49e345573', 'description', 'sfa6ec0fec',
+      's8227b8fc4', 's7e23170f2', 's695a5c195', 'secceac461', 's4687ad08c',
+    ]);
+    const itProjects = projects.filter(p =>
+      (p.s49e345573 || []).includes(IT_DEPT_ID)
+    );
+    const grouped = { pipeline: [], wip: [], closeout: [], closed: [] };
+    itProjects.forEach(p => {
+      const stage = ROADMAP_STATUS_MAP[p.status?.value] || 'pipeline';
+      grouped[stage].push({
+        id:          p.id,
+        title:       p.title || '—',
+        description: p.description || '',
+        status:      p.status?.value || '',
+        dates: {
+          pipeline: p.sfa6ec0fec?.date  || null,
+          wip:      p.s7e23170f2?.date  || null,
+          close:    p.secceac461?.date  || null,
+        },
+        sbosUrl: `https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=${p.id}`,
+      });
+    });
+    res.json({ groups: grouped, total: itProjects.length });
+  } catch (err) {
+    console.error('Roadmap error:', err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // POST /api/snapshot
 // Creates Stats records in SmartSuite for the current dashboard state.
 // v1: writes Stats records + returns HTML string for client-side download.

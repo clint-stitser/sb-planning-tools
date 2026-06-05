@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S-BOS Roadmap — Stitser Built Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+  /* ── ROADMAP BOARD ── */
+  .roadmap-section {
+    padding: 48px 40px 64px;
+    background: var(--light);
+  }
+
+  .roadmap-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .roadmap-total {
+    font-family: var(--font-sub);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--dark);
+    opacity: 0.6;
+  }
+
+  .roadmap-refreshed {
+    font-family: var(--font-sub);
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    color: var(--dark);
+    opacity: 0.45;
+  }
+
+  /* ── BOARD GRID ── */
+  .board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3px;
+    align-items: start;
+  }
+
+  /* ── COLUMN ── */
+  .board-col {
+    background: var(--white);
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+  }
+
+  .col-header {
+    padding: 18px 20px 16px;
+    border-top: 4px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .col-header.pipeline  { border-top-color: var(--orange); }
+  .col-header.wip       { border-top-color: var(--blue); }
+  .col-header.closeout  { border-top-color: #0d8a7c; }
+  .col-header.closed    { border-top-color: #2ecc71; }
+
+  .col-title {
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--dark);
+  }
+
+  .col-title.pipeline { color: var(--orange); }
+  .col-title.wip      { color: var(--blue); }
+  .col-title.closeout { color: #0d8a7c; }
+  .col-title.closed   { color: #27ae60; }
+
+  .col-subtitle {
+    font-family: var(--font-sub);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    color: var(--dark);
+    opacity: 0.5;
+    margin-top: 2px;
+  }
+
+  .col-count {
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: 14px;
+    color: var(--white);
+    background: var(--dark);
+    opacity: 0.3;
+    min-width: 24px;
+    height: 24px;
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+    flex-shrink: 0;
+  }
+
+  .col-count.pipeline { background: var(--orange); opacity: 1; }
+  .col-count.wip      { background: var(--blue);   opacity: 1; }
+  .col-count.closeout { background: #0d8a7c;       opacity: 1; }
+  .col-count.closed   { background: #27ae60;       opacity: 1; }
+
+  .col-divider {
+    height: 1px;
+    background: var(--light);
+    margin: 0 20px;
+  }
+
+  /* ── CARDS ── */
+  .col-cards {
+    padding: 16px 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+  }
+
+  .project-card {
+    background: var(--light);
+    padding: 16px 18px;
+    border-left: 3px solid transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+
+  .project-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.10); }
+
+  .project-card.pipeline { border-left-color: var(--orange); }
+  .project-card.wip      { border-left-color: var(--blue); }
+  .project-card.closeout { border-left-color: #0d8a7c; }
+  .project-card.closed   { border-left-color: #27ae60; }
+
+  .project-title {
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: 14px;
+    color: var(--dark);
+    line-height: 1.3;
+    letter-spacing: -0.2px;
+  }
+
+  .project-desc {
+    font-family: var(--font-sub);
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--dark);
+    opacity: 0.7;
+  }
+
+  .project-link {
+    font-family: var(--font-sub);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--blue);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+    transition: color 0.2s;
+  }
+
+  .project-link:hover { color: var(--orange); }
+
+  .project-link.pipeline:hover { color: var(--orange); }
+  .project-link.wip:hover      { color: var(--orange); }
+  .project-link.closeout:hover { color: #0d8a7c; }
+  .project-link.closed:hover   { color: #27ae60; }
+
+  /* ── EMPTY STATE ── */
+  .col-empty {
+    padding: 20px 18px 8px;
+    font-family: var(--font-sub);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--dark);
+    opacity: 0.35;
+    letter-spacing: 0.3px;
+    font-style: italic;
+  }
+
+  /* ── LOADING STATE ── */
+  .board-loading {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px 40px;
+    gap: 16px;
+  }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--light);
+    border-top-color: var(--blue);
+    border-radius: 50%;
+    animation: spin 0.75s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  .loading-text {
+    font-family: var(--font-sub);
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--dark);
+    opacity: 0.4;
+  }
+
+  /* ── ERROR STATE ── */
+  .board-error {
+    grid-column: 1 / -1;
+    background: var(--white);
+    border-left: 4px solid #e74c3c;
+    padding: 28px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .error-label {
+    font-family: var(--font-sub);
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #e74c3c;
+  }
+
+  .error-msg {
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: 16px;
+    color: var(--dark);
+  }
+
+  .error-detail {
+    font-family: var(--font-sub);
+    font-size: 13px;
+    color: var(--dark);
+    opacity: 0.65;
+    line-height: 1.5;
+  }
+
+  .error-retry {
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-sub);
+    font-weight: 700;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--blue);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+  }
+  .error-retry:hover { color: var(--orange); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .roadmap-section { padding: 32px 24px 48px; }
+
+    .board {
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .board {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+</head>
+<body data-section="whats-new">
+
+<header>
+  <a class="logo-lockup" href="../">
+    <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+      <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+    </svg>
+    <div class="logo-text">
+      <span class="brand">Stitser Built</span>
+      <span class="sub">S-BOS Knowledge Base</span>
+    </div>
+  </a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+
+<div class="nav-overlay">
+  <div class="nav-overlay-header">
+    <a class="logo-lockup" href="../">
+      <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+        <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Stitser Built</span>
+        <span class="sub">S-BOS Knowledge Base</span>
+      </div>
+    </a>
+    <button class="nav-overlay-close" aria-label="Close menu">&#10005;</button>
+  </div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<div class="page-hero">
+  <div class="page-hero-eyebrow">Section 5</div>
+  <h1 class="page-hero-title">S-BOS Roadmap</h1>
+  <p class="page-hero-subtitle">What's being built, what's live, and what's next for the S-BOS platform.</p>
+</div>
+
+<div class="orange-bar"></div>
+
+<div class="breadcrumb-bar">
+  <div class="breadcrumb">
+    <a href="../">Home</a>
+    <span class="sep">→</span>
+    <span class="cur">Roadmap</span>
+  </div>
+</div>
+
+<section class="roadmap-section">
+  <div class="roadmap-meta">
+    <div class="roadmap-total" id="roadmap-total"></div>
+    <div class="roadmap-refreshed" id="roadmap-refreshed"></div>
+  </div>
+
+  <div class="board" id="roadmap-board">
+    <div class="board-loading">
+      <div class="spinner"></div>
+      <div class="loading-text">Loading projects&hellip;</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
+  <div class="footer-version">v1.0 · Internal Use Only</div>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/article-editor.js"></script>
+<script>
+(function () {
+  const COLUMNS = [
+    {
+      key:      'pipeline',
+      label:    'Pipeline',
+      subtitle: 'In the queue, not started',
+    },
+    {
+      key:      'wip',
+      label:    'Active Development',
+      subtitle: 'Currently being built',
+    },
+    {
+      key:      'closeout',
+      label:    'Closeout & Warranty',
+      subtitle: 'Shipping, final testing',
+    },
+    {
+      key:      'closed',
+      label:    'Live',
+      subtitle: 'Shipped and running',
+    },
+  ];
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function renderCard(project, colKey) {
+    const title    = escapeHtml(project.title);
+    const desc     = escapeHtml(project.description);
+    const href     = escapeHtml(project.sbosUrl);
+
+    return `
+      <div class="project-card ${colKey}">
+        <div class="project-title">${title}</div>
+        ${desc ? `<div class="project-desc">${desc}</div>` : ''}
+        <a class="project-link ${colKey}" href="${href}" target="_blank" rel="noopener noreferrer">
+          View in S-BOS &rarr;
+        </a>
+      </div>
+    `;
+  }
+
+  function renderColumn(col, projects) {
+    const count = projects.length;
+
+    const cardsHtml = count === 0
+      ? `<div class="col-empty">Nothing here yet</div>`
+      : projects.map(p => renderCard(p, col.key)).join('');
+
+    return `
+      <div class="board-col">
+        <div class="col-header ${col.key}">
+          <div>
+            <div class="col-title ${col.key}">${col.label}</div>
+            <div class="col-subtitle">${col.subtitle}</div>
+          </div>
+          <div class="col-count ${col.key}">${count}</div>
+        </div>
+        <div class="col-divider"></div>
+        <div class="col-cards">
+          ${cardsHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  function renderBoard(data) {
+    const board   = document.getElementById('roadmap-board');
+    const total   = document.getElementById('roadmap-total');
+    const refresh = document.getElementById('roadmap-refreshed');
+
+    const groups  = data.groups || { pipeline: [], wip: [], closeout: [], closed: [] };
+
+    board.innerHTML = COLUMNS.map(col => renderColumn(col, groups[col.key] || [])).join('');
+
+    if (data.total != null) {
+      total.textContent = data.total + ' IT/S-BOS project' + (data.total === 1 ? '' : 's') + ' tracked';
+    }
+
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const dateStr = now.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+    refresh.textContent = 'Last refreshed ' + dateStr + ' at ' + timeStr;
+  }
+
+  function renderError(msg) {
+    const board = document.getElementById('roadmap-board');
+    board.innerHTML = `
+      <div class="board-error">
+        <div class="error-label">Unable to load</div>
+        <div class="error-msg">Could not fetch roadmap data</div>
+        <div class="error-detail">${escapeHtml(msg)}</div>
+        <button class="error-retry" onclick="location.reload()">
+          &#8635; Retry
+        </button>
+      </div>
+    `;
+  }
+
+  async function load() {
+    try {
+      const res = await fetch('/api/roadmap');
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        throw new Error('Server returned ' + res.status + (body ? ': ' + body : ''));
+      }
+      const data = await res.json();
+      renderBoard(data);
+    } catch (err) {
+      renderError(err.message || 'Unknown error');
+    }
+  }
+
+  load();
+})();
+</script>
+</body>
+</html>

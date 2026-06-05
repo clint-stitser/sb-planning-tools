@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Learning Tracks — S-BOS Knowledge Base</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/global.css">
+<style>
+
+/* ══════════════════════════════════════════════════════════════
+   PAGE HERO
+   ══════════════════════════════════════════════════════════════ */
+.learn-hero {
+  background: var(--dark);
+  color: #fff;
+  padding: 56px 40px 48px;
+  text-align: center;
+}
+.learn-hero-eyebrow {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 10px;
+}
+.learn-hero-title {
+  font-family: var(--font-head);
+  font-size: 2.6rem;
+  font-weight: 900;
+  margin: 0 0 14px;
+  line-height: 1.1;
+}
+.learn-hero-sub {
+  font-family: var(--font-sub);
+  font-size: 1.05rem;
+  color: rgba(255,255,255,0.7);
+  max-width: 560px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   MAIN CONTENT CONTAINER
+   ══════════════════════════════════════════════════════════════ */
+.learn-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 48px 40px 80px;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   LOADING / ERROR STATES
+   ══════════════════════════════════════════════════════════════ */
+.state-center {
+  text-align: center;
+  padding: 80px 40px;
+}
+.spinner {
+  display: inline-block;
+  width: 40px;
+  height: 40px;
+  border: 4px solid #BCBEC0;
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 16px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.state-label {
+  font-family: var(--font-sub);
+  font-size: 1rem;
+  color: #58595B;
+}
+.error-icon {
+  font-size: 2.5rem;
+  margin-bottom: 12px;
+}
+.error-msg {
+  font-family: var(--font-sub);
+  font-size: 1rem;
+  color: #DC2626;
+  margin-bottom: 8px;
+}
+.error-detail {
+  font-size: 0.875rem;
+  color: #BCBEC0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TRACK SECTION
+   ══════════════════════════════════════════════════════════════ */
+.track-section {
+  margin-bottom: 48px;
+}
+.track-header {
+  background: var(--dark);
+  color: #fff;
+  padding: 18px 24px;
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  cursor: pointer;
+  user-select: none;
+}
+.track-header:hover {
+  background: #3a3536;
+}
+.track-header-left {
+  flex: 1;
+  min-width: 0;
+}
+.track-title {
+  font-family: var(--font-head);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+}
+.track-meta {
+  font-family: var(--font-sub);
+  font-size: 12px;
+  color: rgba(255,255,255,0.6);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.track-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.track-toggle-btn {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.2s;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.track-toggle-btn:hover {
+  background: rgba(255,255,255,0.2);
+}
+.track-toggle-arrow {
+  display: inline-block;
+  transition: transform 0.2s;
+  font-size: 10px;
+}
+.track-section.collapsed .track-toggle-arrow {
+  transform: rotate(-90deg);
+}
+.track-body {
+  border: 1px solid #BCBEC0;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  background: #fff;
+  overflow: hidden;
+}
+.track-section.collapsed .track-body {
+  display: none;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   COURSE GRID
+   ══════════════════════════════════════════════════════════════ */
+.course-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 0;
+}
+@media (max-width: 700px) {
+  .course-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ══════════════════════════════════════════════════════════════
+   COURSE CARD
+   ══════════════════════════════════════════════════════════════ */
+.course-card {
+  border-right: 1px solid #BCBEC0;
+  border-bottom: 1px solid #BCBEC0;
+}
+.course-card:nth-child(even) {
+  border-right: none;
+}
+/* Remove bottom border from last row (last 1 or 2 cards) */
+.course-card:nth-last-child(-n+2):not(:nth-child(even) ~ *) {
+  border-bottom: none;
+}
+/* Simpler approach: just remove bottom border on last row with JS-added class */
+.course-card.last-row {
+  border-bottom: none;
+}
+
+.course-card-header {
+  padding: 20px 20px 14px;
+  cursor: pointer;
+  user-select: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  transition: background 0.15s;
+}
+.course-card-header:hover {
+  background: #F9F9F9;
+}
+.course-card-header-left {
+  flex: 1;
+  min-width: 0;
+}
+.course-title {
+  font-family: var(--font-head);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 0 0 6px;
+  line-height: 1.3;
+}
+.course-desc {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  color: #58595B;
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+.course-stats {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.course-stat {
+  font-family: var(--font-sub);
+  font-size: 12px;
+  color: #BCBEC0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Progress bar */
+.course-progress-wrap {
+  margin: 4px 0 0;
+}
+.course-progress-label {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  color: #BCBEC0;
+  margin-bottom: 4px;
+}
+.course-progress-bar-track {
+  height: 4px;
+  background: #E5E7EB;
+  border-radius: 2px;
+  overflow: hidden;
+  width: 100%;
+}
+.course-progress-bar-fill {
+  height: 100%;
+  background: #16A34A;
+  border-radius: 2px;
+  transition: width 0.4s;
+}
+
+.course-expand-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--light);
+  border: 1px solid #BCBEC0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  color: #58595B;
+  flex-shrink: 0;
+  margin-top: 2px;
+  transition: background 0.15s, transform 0.2s;
+}
+.course-card.expanded .course-expand-icon {
+  transform: rotate(180deg);
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+/* Lesson list */
+.lesson-list {
+  display: none;
+  border-top: 1px solid #BCBEC0;
+  background: #FAFAFA;
+}
+.course-card.expanded .lesson-list {
+  display: block;
+}
+
+.lesson-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #E5E7EB;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-decoration: none;
+  color: inherit;
+}
+.lesson-row:last-child {
+  border-bottom: none;
+}
+.lesson-row:hover:not(.lesson-row--coming-soon) {
+  background: #EFF6FF;
+}
+.lesson-row--coming-soon {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.lesson-num {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  color: #BCBEC0;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.lesson-title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+.lesson-title {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dark);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.lesson-row--coming-soon .lesson-title {
+  color: #BCBEC0;
+}
+.lesson-coming-label {
+  font-family: var(--font-sub);
+  font-size: 10px;
+  color: #BCBEC0;
+  font-style: italic;
+}
+.lesson-chips-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  line-height: 1;
+  white-space: nowrap;
+}
+.chip-pillar-people     { background: var(--blue);   color: #fff; }
+.chip-pillar-projects   { background: var(--orange); color: #fff; }
+.chip-pillar-finance    { background: #16A34A;        color: #fff; }
+.chip-pillar-compliance { background: #7C3AED;        color: #fff; }
+.chip-pillar-intelligence,
+.chip-pillar-systems    { background: #2A9D8F;        color: #fff; }
+.chip-pillar-default    { background: #58595B;        color: #fff; }
+
+.chip-type {
+  background: rgba(0,112,192,0.1);
+  color: var(--blue);
+}
+
+.lesson-time {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  color: #BCBEC0;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.lesson-check {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.lesson-check--done {
+  background: #16A34A;
+  color: #fff;
+  font-size: 10px;
+}
+.lesson-check--undone {
+  border: 2px solid #BCBEC0;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  .learn-hero { padding: 40px 20px 36px; }
+  .learn-hero-title { font-size: 2rem; }
+  .learn-main { padding: 32px 16px 60px; }
+  .track-header { padding: 14px 16px; }
+  .lesson-row { padding: 10px 14px; gap: 8px; }
+  .lesson-chips-row { display: none; }
+}
+
+</style>
+</head>
+
+<body data-section="system">
+
+<header>
+  <a class="logo-lockup" href="../">
+    <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
+      <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+      <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+    </svg>
+    <div class="logo-text">
+      <span class="brand">Stitser Built</span>
+      <span class="sub">S-BOS Knowledge Base</span>
+    </div>
+  </a>
+  <nav class="header-nav">
+    <a class="nav-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+  <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
+  <div class="header-badge">Team Resource</div>
+</header>
+
+<div class="nav-overlay">
+  <div class="nav-overlay-header">
+    <a class="logo-lockup" href="../">
+      <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
+        <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+        <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Stitser Built</span>
+        <span class="sub">S-BOS Knowledge Base</span>
+      </div>
+    </a>
+    <button class="nav-overlay-close" aria-label="Close menu">&#10005;</button>
+  </div>
+  <nav class="nav-overlay-links">
+    <a class="nav-overlay-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
+    <a class="nav-overlay-link" data-section="agents"    href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
+    <a class="nav-overlay-link" data-section="glossary"  href="../glossary/">Glossary</a>
+  </nav>
+</div>
+
+<!-- HERO -->
+<div class="learn-hero">
+  <div class="learn-hero-eyebrow">S-BOS Knowledge Base</div>
+  <h1 class="learn-hero-title">Learning Tracks</h1>
+  <p class="learn-hero-sub">Browse courses and lessons — track your progress through the S-BOS curriculum.</p>
+</div>
+
+<!-- MAIN -->
+<main class="learn-main" id="learn-main">
+  <!-- Populated by JS -->
+</main>
+
+<footer>
+  <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
+  <div class="footer-version">v1.0 · Internal Use Only</div>
+</footer>
+
+<script src="../assets/js/nav.js"></script>
+<script src="../assets/js/article-editor.js"></script>
+<script>
+(function () {
+  'use strict';
+
+  /* ── Helpers ──────────────────────────────────────────────── */
+  function el(tag, cls, html) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (html !== undefined) e.innerHTML = html;
+    return e;
+  }
+
+  function pillarChipClass(pillar) {
+    if (!pillar) return 'chip-pillar-default';
+    var key = pillar.toLowerCase().replace(/[^a-z]/g, '');
+    if (key === 'people')                          return 'chip-pillar-people';
+    if (key === 'projects')                        return 'chip-pillar-projects';
+    if (key === 'finance')                         return 'chip-pillar-finance';
+    if (key === 'compliance')                      return 'chip-pillar-compliance';
+    if (key === 'intelligence' || key === 'systems') return 'chip-pillar-intelligence';
+    return 'chip-pillar-default';
+  }
+
+  function formatMins(mins) {
+    if (!mins && mins !== 0) return '';
+    if (mins < 60) return mins + ' min';
+    var h = Math.floor(mins / 60);
+    var m = mins % 60;
+    return m ? h + 'h ' + m + 'm' : h + 'h';
+  }
+
+  /* ── Loading / Error states ───────────────────────────────── */
+  var main = document.getElementById('learn-main');
+
+  function showLoading() {
+    main.innerHTML = '<div class="state-center"><div class="spinner"></div><div class="state-label">Loading tracks…</div></div>';
+  }
+
+  function showError(msg, detail) {
+    main.innerHTML =
+      '<div class="state-center">' +
+        '<div class="error-icon">&#9888;</div>' +
+        '<div class="error-msg">' + (msg || 'Failed to load learning tracks.') + '</div>' +
+        (detail ? '<div class="error-detail">' + detail + '</div>' : '') +
+      '</div>';
+  }
+
+  /* ── Render ───────────────────────────────────────────────── */
+  function renderLesson(lesson) {
+    var hasUrl = lesson.url && lesson.url.trim();
+    var row = el('a', 'lesson-row' + (hasUrl ? '' : ' lesson-row--coming-soon'));
+    if (hasUrl) {
+      row.href = lesson.url;
+    } else {
+      row.setAttribute('role', 'listitem');
+    }
+
+    // Lesson number
+    var numEl = el('div', 'lesson-num', lesson.lessonNum || '·');
+    row.appendChild(numEl);
+
+    // Title + coming-soon label
+    var titleWrap = el('div', 'lesson-title-wrap');
+    var titleEl = el('div', 'lesson-title', escHtml(lesson.title || 'Untitled'));
+    titleWrap.appendChild(titleEl);
+    if (!hasUrl) {
+      var comingEl = el('div', 'lesson-coming-label', 'Coming soon');
+      titleWrap.appendChild(comingEl);
+    }
+    row.appendChild(titleWrap);
+
+    // Chips
+    var chipsRow = el('div', 'lesson-chips-row');
+    if (lesson.pillar) {
+      var pc = el('span', 'chip ' + pillarChipClass(lesson.pillar), escHtml(lesson.pillar));
+      chipsRow.appendChild(pc);
+    }
+    if (lesson.type) {
+      var tc = el('span', 'chip chip-type', escHtml(lesson.type));
+      chipsRow.appendChild(tc);
+    }
+    row.appendChild(chipsRow);
+
+    // Time
+    if (lesson.mins) {
+      var timeEl = el('div', 'lesson-time', formatMins(lesson.mins));
+      row.appendChild(timeEl);
+    }
+
+    // Checkmark
+    var checkEl = el('div', lesson.completed ? 'lesson-check lesson-check--done' : 'lesson-check lesson-check--undone', lesson.completed ? '&#10003;' : '');
+    row.appendChild(checkEl);
+
+    return row;
+  }
+
+  function renderCourse(course) {
+    var completedCount = 0;
+    var lessonCount = (course.lessons || []).length;
+    (course.lessons || []).forEach(function (l) { if (l.completed) completedCount++; });
+    var pct = lessonCount > 0 ? Math.round((completedCount / lessonCount) * 100) : 0;
+
+    var card = el('div', 'course-card');
+
+    // Header
+    var header = el('div', 'course-card-header');
+    var left = el('div', 'course-card-header-left');
+
+    var titleEl = el('div', 'course-title', escHtml(course.title || 'Untitled Course'));
+    left.appendChild(titleEl);
+
+    if (course.description) {
+      var descEl = el('div', 'course-desc', escHtml(course.description));
+      left.appendChild(descEl);
+    }
+
+    var statsRow = el('div', 'course-stats');
+    var lessonStat = el('div', 'course-stat',
+      '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:2px">' +
+        '<rect x="1" y="2" width="10" height="1.5" rx=".75" fill="#BCBEC0"/>' +
+        '<rect x="1" y="5.25" width="7" height="1.5" rx=".75" fill="#BCBEC0"/>' +
+        '<rect x="1" y="8.5" width="8.5" height="1.5" rx=".75" fill="#BCBEC0"/>' +
+      '</svg>' +
+      lessonCount + ' lesson' + (lessonCount !== 1 ? 's' : ''));
+    statsRow.appendChild(lessonStat);
+
+    if (course.totalMins) {
+      var timeStat = el('div', 'course-stat',
+        '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:2px">' +
+          '<circle cx="6" cy="6" r="4.5" stroke="#BCBEC0" stroke-width="1.2"/>' +
+          '<path d="M6 3.5V6l1.5 1.5" stroke="#BCBEC0" stroke-width="1.2" stroke-linecap="round"/>' +
+        '</svg>' +
+        formatMins(course.totalMins));
+      statsRow.appendChild(timeStat);
+    }
+    left.appendChild(statsRow);
+
+    // Progress bar (always render; meaningful when personId set)
+    var progWrap = el('div', 'course-progress-wrap');
+    var progLabel = el('div', 'course-progress-label', completedCount + ' of ' + lessonCount + ' completed');
+    progWrap.appendChild(progLabel);
+    var progTrack = el('div', 'course-progress-bar-track');
+    var progFill = el('div', 'course-progress-bar-fill');
+    progFill.style.width = pct + '%';
+    progTrack.appendChild(progFill);
+    progWrap.appendChild(progTrack);
+    left.appendChild(progWrap);
+
+    header.appendChild(left);
+
+    var iconEl = el('div', 'course-expand-icon', '&#9660;');
+    header.appendChild(iconEl);
+
+    card.appendChild(header);
+
+    // Lesson list
+    var lessonList = el('div', 'lesson-list');
+    lessonList.setAttribute('role', 'list');
+    (course.lessons || []).forEach(function (lesson) {
+      lessonList.appendChild(renderLesson(lesson));
+    });
+    card.appendChild(lessonList);
+
+    // Toggle expand on header click
+    header.addEventListener('click', function () {
+      var expanded = card.classList.contains('expanded');
+      if (expanded) {
+        card.classList.remove('expanded');
+      } else {
+        card.classList.add('expanded');
+      }
+    });
+
+    return card;
+  }
+
+  function renderTrack(track, defaultExpanded) {
+    var totalLessons = 0;
+    var totalMins = 0;
+    (track.courses || []).forEach(function (c) {
+      totalLessons += (c.lessons || []).length;
+      totalMins += c.totalMins || 0;
+    });
+
+    var section = el('div', 'track-section' + (defaultExpanded ? '' : ' collapsed'));
+
+    // Track header
+    var header = el('div', 'track-header');
+
+    var left = el('div', 'track-header-left');
+    var titleEl = el('div', 'track-title', escHtml(track.title || 'Untitled Track'));
+    left.appendChild(titleEl);
+
+    var meta = el('div', 'track-meta');
+    var coursesMeta = el('div', 'track-meta-item',
+      '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:2px">' +
+        '<rect x="1" y="1.5" width="10" height="9" rx="1.5" stroke="rgba(255,255,255,0.5)" stroke-width="1.1"/>' +
+        '<rect x="3" y="4" width="6" height="1.1" rx=".55" fill="rgba(255,255,255,0.5)"/>' +
+        '<rect x="3" y="6.4" width="4" height="1.1" rx=".55" fill="rgba(255,255,255,0.5)"/>' +
+      '</svg>' +
+      (track.courses || []).length + ' course' + ((track.courses || []).length !== 1 ? 's' : ''));
+    meta.appendChild(coursesMeta);
+
+    var lessonsMeta = el('div', 'track-meta-item',
+      '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:2px">' +
+        '<rect x="1" y="2" width="10" height="1.4" rx=".7" fill="rgba(255,255,255,0.5)"/>' +
+        '<rect x="1" y="5.3" width="7" height="1.4" rx=".7" fill="rgba(255,255,255,0.5)"/>' +
+        '<rect x="1" y="8.6" width="8.5" height="1.4" rx=".7" fill="rgba(255,255,255,0.5)"/>' +
+      '</svg>' +
+      totalLessons + ' lesson' + (totalLessons !== 1 ? 's' : ''));
+    meta.appendChild(lessonsMeta);
+
+    if (totalMins) {
+      var timeMeta = el('div', 'track-meta-item',
+        '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="margin-right:2px">' +
+          '<circle cx="6" cy="6" r="4.5" stroke="rgba(255,255,255,0.5)" stroke-width="1.1"/>' +
+          '<path d="M6 3.5V6l1.5 1.5" stroke="rgba(255,255,255,0.5)" stroke-width="1.1" stroke-linecap="round"/>' +
+        '</svg>' +
+        formatMins(totalMins));
+      meta.appendChild(timeMeta);
+    }
+
+    left.appendChild(meta);
+    header.appendChild(left);
+
+    var toggleBtn = el('button', 'track-toggle-btn');
+    toggleBtn.setAttribute('aria-label', 'Toggle track');
+    var arrowSpan = el('span', 'track-toggle-arrow', '&#9660;');
+    toggleBtn.appendChild(document.createTextNode(defaultExpanded ? 'Collapse' : 'Expand'));
+    toggleBtn.appendChild(arrowSpan);
+    header.appendChild(toggleBtn);
+
+    section.appendChild(header);
+
+    // Course grid
+    var body = el('div', 'track-body');
+    var grid = el('div', 'course-grid');
+    (track.courses || []).forEach(function (course, idx) {
+      var card = renderCourse(course);
+      // Mark last-row cards
+      var totalCourses = (track.courses || []).length;
+      var isLastRow;
+      if (totalCourses % 2 === 0) {
+        isLastRow = idx >= totalCourses - 2;
+      } else {
+        isLastRow = idx === totalCourses - 1;
+      }
+      if (isLastRow) card.classList.add('last-row');
+      grid.appendChild(card);
+    });
+    body.appendChild(grid);
+    section.appendChild(body);
+
+    // Toggle collapse
+    function doToggle() {
+      var isCollapsed = section.classList.contains('collapsed');
+      if (isCollapsed) {
+        section.classList.remove('collapsed');
+        toggleBtn.childNodes[0].nodeValue = 'Collapse';
+      } else {
+        section.classList.add('collapsed');
+        toggleBtn.childNodes[0].nodeValue = 'Expand';
+      }
+    }
+    header.addEventListener('click', function (e) {
+      // Don't double-fire if button itself is clicked
+      if (e.target === toggleBtn || toggleBtn.contains(e.target)) return;
+      doToggle();
+    });
+    toggleBtn.addEventListener('click', function (e) {
+      e.stopPropagation();
+      doToggle();
+    });
+
+    return section;
+  }
+
+  function renderTracks(data) {
+    main.innerHTML = '';
+    var tracks = data.tracks || [];
+    if (tracks.length === 0) {
+      main.innerHTML = '<div class="state-center"><div class="state-label">No learning tracks found.</div></div>';
+      return;
+    }
+    var defaultExpanded = tracks.length <= 3;
+    tracks.forEach(function (track) {
+      main.appendChild(renderTrack(track, defaultExpanded));
+    });
+  }
+
+  /* ── HTML escape ──────────────────────────────────────────── */
+  function escHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  /* ── Fetch ────────────────────────────────────────────────── */
+  var personId = new URLSearchParams(window.location.search).get('person_id') || '';
+  var apiUrl = '/api/learning-tracks' + (personId ? '?person_id=' + encodeURIComponent(personId) : '');
+
+  showLoading();
+
+  fetch(apiUrl)
+    .then(function (res) {
+      if (!res.ok) {
+        throw new Error('HTTP ' + res.status + ' ' + res.statusText);
+      }
+      return res.json();
+    })
+    .then(function (data) {
+      renderTracks(data);
+    })
+    .catch(function (err) {
+      showError('Could not load learning tracks.', err && err.message ? err.message : String(err));
+    });
+})();
+</script>
+</body>
+</html>
