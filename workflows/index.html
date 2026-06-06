@@ -3,15 +3,274 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Workflows & Value Chain — S-BOS Knowledge Base</title>
+<title>Workflow Library — S-BOS Knowledge Base</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/global.css">
+<style>
+
+/* ══════════════════════════════════════════════════════════
+   FILTER BAR
+   ══════════════════════════════════════════════════════════ */
+.wf-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 40px;
+  background: #fff;
+  border-bottom: 1px solid #E5E5E5;
+  flex-wrap: wrap;
+}
+.wf-filter-label {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #BCBEC0;
+  white-space: nowrap;
+}
+.wf-filter-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.wf-filter-chip {
+  padding: 5px 14px;
+  border-radius: 20px;
+  border: 1.5px solid #BCBEC0;
+  background: #fff;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 700;
+  color: #888;
+  cursor: pointer;
+  transition: border-color .15s, color .15s, background .15s;
+  letter-spacing: .03em;
+}
+.wf-filter-chip:hover { border-color: var(--dark); color: var(--dark); }
+.wf-filter-chip.active { background: var(--dark); border-color: var(--dark); color: #fff; }
+.wf-filter-chip[data-pl="disposition"].active  { background: var(--orange); border-color: var(--orange); }
+.wf-filter-chip[data-pl="construction"].active { background: var(--blue);   border-color: var(--blue);   }
+.wf-filter-chip[data-pl="brokerage"].active    { background: #2A9D8F;       border-color: #2A9D8F;       }
+
+/* ══════════════════════════════════════════════════════════
+   SITUATION MAP — 5-column grid
+   ══════════════════════════════════════════════════════════ */
+.wf-map-section {
+  padding: 32px 40px 0;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.wf-map-eyebrow {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 6px;
+}
+.wf-map-title {
+  font-family: var(--font-head);
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--dark);
+  margin: 0 0 20px;
+}
+
+/* Scroll wrapper on small screens */
+.situation-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
+}
+.situation-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(180px, 1fr));
+  gap: 12px;
+  min-width: 900px;
+}
+
+.situation-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.situation-header {
+  padding: 10px 14px;
+  background: var(--dark);
+  border-radius: 6px 6px 0 0;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #fff;
+  text-align: center;
+}
+
+.situation-chips {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 48px;
+}
+
+/* Empty column state */
+.sit-empty {
+  padding: 14px;
+  border: 1.5px dashed #E0E0E0;
+  border-radius: 6px;
+  font-family: var(--font-sub);
+  font-size: 11px;
+  color: #BCBEC0;
+  text-align: center;
+  letter-spacing: .03em;
+}
+
+/* Workflow chip */
+.wf-chip {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 1px solid #E5E5E5;
+  border-left: 3px solid var(--orange);
+  border-radius: 0 6px 6px 0;
+  text-decoration: none;
+  transition: box-shadow .12s, transform .1s;
+  cursor: pointer;
+}
+.wf-chip:hover {
+  box-shadow: 0 3px 12px rgba(0,0,0,.1);
+  transform: translateX(2px);
+}
+.wf-chip[data-pl*="construction"] { border-left-color: var(--blue); }
+.wf-chip[data-pl*="brokerage"]    { border-left-color: #2A9D8F; }
+
+.wf-chip-title {
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dark);
+  line-height: 1.2;
+}
+.wf-chip-pl {
+  font-family: var(--font-sub);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--orange);
+}
+.wf-chip[data-pl*="construction"] .wf-chip-pl { color: var(--blue); }
+.wf-chip[data-pl*="brokerage"]    .wf-chip-pl { color: #2A9D8F; }
+
+/* Hidden chips (filtered out) */
+.wf-chip.wf-hidden { display: none; }
+
+/* ══════════════════════════════════════════════════════════
+   FUNCTION ROWS — cross-cutting workflows
+   ══════════════════════════════════════════════════════════ */
+.functions-section {
+  max-width: 1200px;
+  margin: 24px auto 0;
+  padding: 0 40px;
+}
+.functions-eyebrow {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #BCBEC0;
+  margin-bottom: 8px;
+}
+.function-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  border: 1px solid #E5E5E5;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.function-label {
+  width: 120px;
+  min-width: 120px;
+  padding: 12px 14px;
+  background: #F8F8F8;
+  border-right: 1px solid #E5E5E5;
+  font-family: var(--font-sub);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: #888;
+  display: flex;
+  align-items: center;
+}
+.function-chips-wrap {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  min-height: 44px;
+}
+.fn-empty {
+  font-family: var(--font-sub);
+  font-size: 11px;
+  color: #BCBEC0;
+  font-style: italic;
+}
+/* Function workflow chip — horizontal style */
+.fn-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #fff;
+  border: 1.5px solid #E0E0E0;
+  border-radius: 20px;
+  text-decoration: none;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--dark);
+  transition: border-color .12s, background .12s;
+}
+.fn-chip:hover { border-color: var(--blue); background: #EFF6FF; }
+.fn-chip.wf-hidden { display: none; }
+
+/* ══════════════════════════════════════════════════════════
+   EXISTING SECTIONS (preserved from original)
+   ══════════════════════════════════════════════════════════ */
+.wf-divider {
+  max-width: 1200px;
+  margin: 40px auto 0;
+  padding: 0 40px;
+  border-top: 1px solid #E5E5E5;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE
+   ══════════════════════════════════════════════════════════ */
+@media (max-width: 900px) {
+  .wf-filter-bar, .wf-map-section, .functions-section { padding-left: 20px; padding-right: 20px; }
+  .function-label { width: 80px; min-width: 80px; font-size: 10px; }
+}
+
+</style>
 </head>
 <body data-section="workflows">
 
 <header>
   <a class="logo-lockup" href="../">
-    <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
       <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
       <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
     </svg>
@@ -35,7 +294,7 @@
 <div class="nav-overlay">
   <div class="nav-overlay-header">
     <a class="logo-lockup" href="../">
-      <svg class="logo-icon" viewBox="0 0 42 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
         <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
         <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
       </svg>
@@ -58,8 +317,8 @@
 
 <div class="page-hero">
   <div class="page-hero-eyebrow">Layer 02 — Workflows</div>
-  <h1 class="page-hero-title">Workflows & Value Chain</h1>
-  <p class="page-hero-subtitle">The escrow process from contract to nesting — stage by stage, role by role, value added at every step.</p>
+  <h1 class="page-hero-title">Workflow Library</h1>
+  <p class="page-hero-subtitle">Every documented workflow, organized by key situation and cross-cutting function. Filter by product line to see what applies to your work.</p>
 </div>
 
 <div class="orange-bar"></div>
@@ -72,20 +331,44 @@
   </div>
 </div>
 
-<!-- FEATURED: FULL VALUE CHAIN VIEW -->
-<section style="padding-bottom:0">
-  <div class="section-label">New Format</div>
-  <div class="section-title">Full Value Chain — All Three Layers</div>
-  <div class="tool-grid" style="margin-top:24px">
-    <a class="tool-card" href="escrow-process.html" style="text-decoration:none;border-top:4px solid var(--orange)">
-      <div class="tool-name" style="color:var(--blue)">Buyer Escrow Process</div>
-      <div class="tool-role">Interactive Value Chain · All 9 Stages</div>
-      <div class="tool-when">The complete escrow process in one page. Click any stage to see who does what — People, S-BOS records, and Claude assistance — all in one view. Use this as the template format for any process.</div>
-    </a>
+<!-- ── PRODUCT LINE FILTER ──────────────────────────────────── -->
+<div class="wf-filter-bar">
+  <span class="wf-filter-label">Product Line</span>
+  <div class="wf-filter-chips" id="filterChips">
+    <button class="wf-filter-chip active" data-pl="all">All</button>
+    <button class="wf-filter-chip" data-pl="disposition">Disposition</button>
+    <button class="wf-filter-chip" data-pl="construction">Construction</button>
+    <button class="wf-filter-chip" data-pl="brokerage">Brokerage</button>
+    <button class="wf-filter-chip" data-pl="property-mgmt">Property MGT</button>
   </div>
-</section>
+</div>
 
-<!-- VALUE CHAIN EXPLAINED -->
+<!-- ── SITUATION MAP ────────────────────────────────────────── -->
+<div class="wf-map-section">
+  <div class="wf-map-eyebrow">Documented Workflows by Key Situation</div>
+  <div class="wf-map-title">Situation Map</div>
+
+  <div class="situation-scroll">
+    <div class="situation-grid" id="situationGrid">
+      <!-- rendered by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- ── FUNCTION ROWS ─────────────────────────────────────────── -->
+<div class="functions-section">
+  <div class="functions-eyebrow">Cross-cutting functions — apply across all situations</div>
+  <div id="functionRows">
+    <!-- rendered by JS -->
+  </div>
+</div>
+
+<div class="wf-divider"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     PRESERVED: How the Value Chain Works + Stage Navigator
+     ══════════════════════════════════════════════════════════ -->
+
 <section>
   <div class="section-label">The Model</div>
   <div class="section-title">How the Value Chain Works</div>
@@ -97,7 +380,6 @@
   </div>
 </section>
 
-<!-- VALUE CHAIN NAVIGATOR -->
 <div class="chain-section">
   <div class="section-label" style="color:var(--orange)">Click a Stage</div>
   <div class="section-title">Value Chain Navigator</div>
@@ -144,7 +426,6 @@
   </div>
 </div>
 
-<!-- STAGE CARDS -->
 <section>
   <div class="section-label">All Stages</div>
   <div class="section-title">The Nine Escrow Stages</div>
@@ -212,5 +493,290 @@
 </footer>
 
 <script src="../assets/js/nav.js"></script>
+<script src="../assets/js/article-editor.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════
+   WORKFLOW MAP DATA
+   ─ To add a workflow: add an entry to WORKFLOWS array.
+   ─ situations: array of situation IDs the workflow appears in
+   ─ productLines: array of product line IDs for filtering
+   ─ To add a cross-cutting function workflow: add to FUNCTION_WORKFLOWS
+     and set functionId to the function's id below.
+   ═══════════════════════════════════════════════════════════ */
+
+const SITUATIONS = [
+  { id: 'biz-dev',  label: 'Biz Dev'  },
+  { id: 'pipeline', label: 'Pipeline' },
+  { id: 'wip',      label: 'WIP'      },
+  { id: 'closeout', label: 'Closeout' },
+  { id: 'asset',    label: 'Asset MGT'},
+];
+
+const FUNCTIONS = [
+  { id: 'finance',    label: 'Finance',    deptId: '6858d8a92cf2c40b25e20b03' },
+  { id: 'accounting', label: 'Accounting', deptId: '6858d8926657e54ecf074f86' },
+  { id: 'marketing',  label: 'Marketing',  deptId: '6858d88e705a9b40a3cb64f8' },
+  { id: 'compliance', label: 'Compliance', deptId: null },
+  { id: 'facilities', label: 'Facilities', deptId: '6858d8daba46cc811ccb650a' },
+];
+
+// Situation-based workflows — placed in Key Situation columns
+// No function assignment — the value chain already represents the intersection of functions
+const WORKFLOWS = [
+  {
+    id: 'buyer-escrow-process',
+    title: 'Buyer Escrow Process',
+    url: 'escrow-process.html',
+    productLines: ['disposition'],
+    situations: ['wip'],
+  },
+  {
+    id: 'file-setup',
+    title: 'File & Project Setup',
+    url: 'file-setup.html',
+    productLines: ['disposition'],
+    situations: ['pipeline'],
+  },
+  {
+    id: 'escrow-open',
+    title: 'Escrow Open',
+    url: 'escrow-open.html',
+    productLines: ['disposition'],
+    situations: ['pipeline'],
+  },
+  {
+    id: 'assemble-respond',
+    title: 'Assemble & Respond',
+    url: 'assemble-respond.html',
+    productLines: ['disposition'],
+    situations: ['pipeline'],
+  },
+  {
+    id: 'execute-diligence',
+    title: 'Execute Due Diligence',
+    url: 'execute-diligence.html',
+    productLines: ['disposition'],
+    situations: ['wip'],
+  },
+  {
+    id: 'reinspections',
+    title: 'Re-Inspections',
+    url: 'reinspections.html',
+    productLines: ['disposition'],
+    situations: ['wip'],
+  },
+  {
+    id: 'pre-closing',
+    title: 'Pre-Closing',
+    url: 'pre-closing.html',
+    productLines: ['disposition'],
+    situations: ['closeout'],
+  },
+  {
+    id: 'closing',
+    title: 'Closing',
+    url: 'closing.html',
+    productLines: ['disposition'],
+    situations: ['closeout'],
+  },
+  {
+    id: 'commission-distribution',
+    title: 'Commission Distribution',
+    url: 'commission-distribution.html',
+    productLines: ['disposition'],
+    situations: ['closeout'],
+  },
+  {
+    id: 'nesting',
+    title: 'Nesting',
+    url: 'nesting.html',
+    productLines: ['disposition'],
+    situations: ['closeout', 'asset'],
+  },
+];
+
+// Cross-cutting function workflows — span all situations, belong to a function row
+// Format: { id, title, url, productLines, functionId }
+const FUNCTION_WORKFLOWS = [
+  // Add cross-cutting workflows here as they are documented
+  // Example:
+  // { id: 'gyr-report', title: 'Weekly GYR Report', url: '../system/gyr.html', productLines: ['all'], functionId: 'compliance' },
+];
+
+/* ═══════════════════════════════════════════════════════════
+   RENDER + FILTER
+   ═══════════════════════════════════════════════════════════ */
+
+let activeFilters = new Set(['all']);
+
+function productLineLabel(pl) {
+  const map = { disposition: 'Disposition', construction: 'Construction', brokerage: 'Brokerage', 'property-mgmt': 'Property MGT' };
+  return map[pl] || pl;
+}
+
+function chipMatchesFilter(productLines) {
+  if (activeFilters.has('all')) return true;
+  return productLines.some(pl => activeFilters.has(pl));
+}
+
+function renderSituationGrid() {
+  const grid = document.getElementById('situationGrid');
+  grid.innerHTML = '';
+
+  SITUATIONS.forEach(sit => {
+    const col = document.createElement('div');
+    col.className = 'situation-col';
+    col.dataset.sit = sit.id;
+
+    const header = document.createElement('div');
+    header.className = 'situation-header';
+    header.textContent = sit.label;
+    col.appendChild(header);
+
+    const chipsWrap = document.createElement('div');
+    chipsWrap.className = 'situation-chips';
+
+    const matching = WORKFLOWS.filter(w => w.situations.includes(sit.id));
+
+    if (matching.length === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'sit-empty';
+      empty.textContent = 'Not yet documented';
+      chipsWrap.appendChild(empty);
+    } else {
+      matching.forEach(w => {
+        const chip = document.createElement('a');
+        chip.className = 'wf-chip';
+        chip.href = w.url;
+        chip.dataset.pl = w.productLines.join(' ');
+
+        if (!chipMatchesFilter(w.productLines)) chip.classList.add('wf-hidden');
+
+        const title = document.createElement('div');
+        title.className = 'wf-chip-title';
+        title.textContent = w.title;
+
+        const pl = document.createElement('div');
+        pl.className = 'wf-chip-pl';
+        pl.textContent = w.productLines.map(productLineLabel).join(' · ');
+
+        chip.appendChild(title);
+        chip.appendChild(pl);
+        chipsWrap.appendChild(chip);
+      });
+
+      // If all chips are hidden after filter, show empty state
+      const emptyFallback = document.createElement('div');
+      emptyFallback.className = 'sit-empty sit-filtered-empty';
+      emptyFallback.style.display = 'none';
+      emptyFallback.textContent = 'None for this product line';
+      chipsWrap.appendChild(emptyFallback);
+    }
+
+    col.appendChild(chipsWrap);
+    grid.appendChild(col);
+  });
+}
+
+function renderFunctionRows() {
+  const container = document.getElementById('functionRows');
+  container.innerHTML = '';
+
+  FUNCTIONS.forEach(fn => {
+    const fnWorkflows = FUNCTION_WORKFLOWS.filter(fw => fw.functionId === fn.id);
+
+    const row = document.createElement('div');
+    row.className = 'function-row';
+
+    const label = document.createElement('div');
+    label.className = 'function-label';
+    label.textContent = fn.label;
+
+    const chipsWrap = document.createElement('div');
+    chipsWrap.className = 'function-chips-wrap';
+
+    if (fnWorkflows.length === 0) {
+      const empty = document.createElement('span');
+      empty.className = 'fn-empty';
+      empty.textContent = 'No workflows documented yet';
+      chipsWrap.appendChild(empty);
+    } else {
+      fnWorkflows.forEach(fw => {
+        const chip = document.createElement('a');
+        chip.className = 'fn-chip';
+        chip.href = fw.url;
+        chip.dataset.pl = fw.productLines.join(' ');
+        if (!chipMatchesFilter(fw.productLines)) chip.classList.add('wf-hidden');
+        chip.textContent = fw.title;
+        chipsWrap.appendChild(chip);
+      });
+    }
+
+    row.appendChild(label);
+    row.appendChild(chipsWrap);
+    container.appendChild(row);
+  });
+}
+
+function applyFilter() {
+  // Update situation chips visibility
+  document.querySelectorAll('.wf-chip').forEach(chip => {
+    const pls = (chip.dataset.pl || '').split(' ');
+    const visible = chipMatchesFilter(pls);
+    chip.classList.toggle('wf-hidden', !visible);
+  });
+
+  // Update function chips visibility
+  document.querySelectorAll('.fn-chip').forEach(chip => {
+    const pls = (chip.dataset.pl || '').split(' ');
+    chip.classList.toggle('wf-hidden', !chipMatchesFilter(pls));
+  });
+
+  // Show "none for this product line" fallback per column
+  document.querySelectorAll('.situation-col').forEach(col => {
+    const visibleChips = col.querySelectorAll('.wf-chip:not(.wf-hidden)');
+    const fallback = col.querySelector('.sit-filtered-empty');
+    const staticEmpty = col.querySelector('.sit-empty:not(.sit-filtered-empty)');
+    if (fallback) {
+      fallback.style.display = visibleChips.length === 0 && !staticEmpty ? 'block' : 'none';
+    }
+  });
+}
+
+/* ─── Filter button wiring ──────────────────────────────── */
+document.getElementById('filterChips').addEventListener('click', e => {
+  const btn = e.target.closest('.wf-filter-chip');
+  if (!btn) return;
+  const pl = btn.dataset.pl;
+
+  if (pl === 'all') {
+    activeFilters = new Set(['all']);
+    document.querySelectorAll('.wf-filter-chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  } else {
+    activeFilters.delete('all');
+    document.querySelector('[data-pl="all"]').classList.remove('active');
+
+    if (activeFilters.has(pl)) {
+      activeFilters.delete(pl);
+      btn.classList.remove('active');
+      if (activeFilters.size === 0) {
+        activeFilters.add('all');
+        document.querySelector('[data-pl="all"]').classList.add('active');
+      }
+    } else {
+      activeFilters.add(pl);
+      btn.classList.add('active');
+    }
+  }
+  applyFilter();
+});
+
+/* ─── Init ──────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  renderSituationGrid();
+  renderFunctionRows();
+});
+</script>
 </body>
 </html>
