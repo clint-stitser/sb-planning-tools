@@ -68,7 +68,7 @@ A single, unambiguous **total target** — the number that defines a win for thi
 - Always period-specific — never cumulative project totals (see Period-Specific Scoring)
 - Shows gap: `Target − Projected Score = Remaining`
 - Shows implied run rate: `Remaining ÷ Days Remaining = weekly commitment needed`
-- Color is **pace-based**: Green ≥ 100% of expected / Yellow 75–99% / Red < 75%
+- Color is **coverage-based**: Green ≥ 90% of goal covered / Yellow 75–89% / Red < 75%
 
 ### 4. How do you win the situations?
 Each situation card surfaces its own score and contribution to the game total:
@@ -231,7 +231,7 @@ Generated entirely client-side as a Blob and downloaded directly. **Not sent to 
 ### PRINCIPLE 5 — Consistent Visual Grammar
 All dashboards use the same zone layout:
 
-- **Scoring arc** — days remaining, % elapsed arc bar, projected score vs. goal, run rate, pace badge
+- **Scoring arc** — days remaining, % elapsed arc bar, projected score, gap, pipeline coverage badge, run rate
 - **Goal tiles** — 4 tiles: [A] Billed / [B] WIP Capturable / [C] Pipeline Projected / Projected Score
 - **Deadline banners** — key deadline countdowns with urgency color
 - **Situation cards** — one per S-BOS status group (Biz Dev / Pipeline / WIP / Closeout), showing count, period contribution, deadline
@@ -244,19 +244,28 @@ All dashboards use the same zone layout:
 - Universal tooltip JS: **click-only** on `.explainer` badges (not hover). Popup follows cursor, stays in viewport, dismisses on click elsewhere or Escape.
 - Fuzzy title search on ledger
 
-**Color system (pace-based, not absolute):**
-- Green — on pace (current ≥ expected given elapsed time)
-- Yellow — at risk (75–99% of expected)
-- Red — behind pace (< 75% of expected)
+**Color system (coverage-based):**
+- Green — pipeline covers ≥ 90% of goal
+- Yellow — pipeline covers 75–89% of goal (gap needs attention)
+- Red — pipeline covers < 75% of goal (significant gap)
 - Gray — pillar incomplete, excluded from score
 
-### PRINCIPLE 6 — Implied Pace Visibility
+Coverage = Projected Total (A+B+C) ÷ Goal. Time-aware because [B] and [C] both use
+days-remaining math — the same pipeline covers less as December approaches.
+
+### PRINCIPLE 6 — Implied Pipeline Coverage
 ```
-Pace % = Projected Score (A+B+C) ÷ Expected Score at this point
-Expected = Target × (days elapsed ÷ total scoring period days)
+Coverage % = Projected Score (A+B+C) ÷ Goal
 ```
 
-Applied at every level: game, situation, project (vs. its own timeline). A job at 60% completion when 80% of its period has elapsed is behind pace — the dashboard says so without the user doing math.
+This answers: "Does the current pipeline cover the goal?" Not "are we billing fast enough
+right now?" Coverage is time-aware through [B] and [C]'s days-remaining formulas — no
+separate time-elapsed comparison needed, and no misleading thousands-of-percent readings
+early in the period.
+
+**Do not use time-elapsed pace** for the headline G/Y/R signal. Pace = Projected ÷ (Goal × %elapsed)
+produces values like 3,480% on Day 4 when projected is only 65% of goal — correct math,
+completely useless signal. Coverage is the right metric.
 
 ### PRINCIPLE 7 — Role-Appropriate Visibility
 Managed through Softr user group controls and separate homepages — not URL parameters or client-side logic.
@@ -375,7 +384,7 @@ Each Monday:
 - **12 PM PT** — Reminder email to product line team: complete S-BOS updates before 2 PM
 - **2 PM PT** — CoWork runs the full GYR workflow:
   1. Fetch live dashboard data
-  2. Compute GYR status from pace %
+  2. Compute GYR status from pipeline coverage
   3. Pull S-BOS activity from past 7 days
   4. Write Claude narrative (on track / needs attention / critical)
   5. Generate HTML snapshot
@@ -385,7 +394,14 @@ Each Monday:
 
 ### GYR Status Values (SmartSuite field `s3638e84d5` and `s8ow7due`)
 
-| Pace | Status Value | Label |
+Status is determined by **Pipeline Coverage** = projectedTotal ÷ goal.
+**Do not use time-elapsed pace** — it produces misleading readings early in the period
+(e.g., 3,480% on Day 4 when the actual pipeline only covers 65% of the goal).
+
+Coverage is time-aware: [B] and [C] both use days-remaining math, so the same pipeline
+naturally covers less of the goal as December approaches.
+
+| Coverage | Status Value | Label |
 |---|---|---|
 | ≥ 110% | `complete` | Exceeding Target |
 | 90–109% | `backlog` | On Track |

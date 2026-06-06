@@ -662,11 +662,16 @@ async function buildConstructionData() {
   const projectedTotal = bucketA + bucketB + bucketC;
 
   console.log(`Construction data built — ${annotated.length} projects, ${allBudgetRows.length} budget rows, ${allG702s.length} G-702s. Projected: $A=${bucketA.toLocaleString()} $B=${bucketB.toLocaleString()} $C=${bucketC.toLocaleString()} Total=$${projectedTotal.toLocaleString()}`);
+  // Pipeline Coverage: how much of the goal does the current projected pipeline cover?
+  // This is the GYR signal — replaces time-elapsed pace which produces misleading
+  // values early in the period (e.g., 3,480% on Day 4 is mathematically true but useless).
+  const coverage = projectedTotal / 4_500_000;
+
   return {
     projects:      annotated,
     scoringPeriod: { start: SCORING_PERIOD.start.toISOString(), end: SCORING_PERIOD.end.toISOString(), label: SCORING_PERIOD.label },
     periodRevenue: bucketA,  // legacy compat
-    score: { bucketA, bucketB, bucketC, projectedTotal },
+    score: { bucketA, bucketB, bucketC, projectedTotal, coverage },
   };
 }
 

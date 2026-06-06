@@ -484,26 +484,29 @@ function showError(show, msg = '') {
 
 // ── Scoring Arc ───────────────────────────────────────────────────────────
 function renderScoringArc(periodRevenue) {
-  const now          = new Date();
-  const totalMs      = SCORING_END - SCORING_START;
-  const elapsedMs    = Math.max(0, now - SCORING_START);
-  const pctElapsed   = Math.min(100, (elapsedMs / totalMs) * 100);
-  const daysTotal    = Math.ceil(totalMs / 86400000);
-  const daysElapsed  = Math.floor(elapsedMs / 86400000);
-  const daysLeft     = Math.max(0, daysTotal - daysElapsed);
+  const now         = new Date();
+  const totalMs     = SCORING_END - SCORING_START;
+  const elapsedMs   = Math.max(0, now - SCORING_START);
+  const pctElapsed  = Math.min(100, (elapsedMs / totalMs) * 100);
+  const daysTotal   = Math.ceil(totalMs / 86400000);
+  const daysElapsed = Math.floor(elapsedMs / 86400000);
+  const daysLeft    = Math.max(0, daysTotal - daysElapsed);
 
-  // Use projected total (A+B+C) for pace, not just actuals
-  const projectedTotal  = _score.projectedTotal || 0;
-  const expectedRevenue = GOAL_REVENUE * (pctElapsed / 100);
-  const paceRatio       = expectedRevenue > 0 ? projectedTotal / expectedRevenue : 0;
-  const pacePct         = Math.round(paceRatio * 100);
-  const paceColor       = paceRatio >= 1 ? 'var(--status-green)' : paceRatio >= 0.75 ? 'var(--status-yellow)' : 'var(--status-red)';
-  const paceLabel       = paceRatio >= 1 ? 'On Pace' : paceRatio >= 0.75 ? 'At Risk' : 'Behind';
+  const projectedTotal = _score.projectedTotal || 0;
+  const remaining      = Math.max(0, GOAL_REVENUE - projectedTotal);
+  const runRateWeek    = daysLeft > 0 ? (remaining / daysLeft) * 7 : 0;
 
-  // Run rate based on gap from projected total
-  const remaining   = Math.max(0, GOAL_REVENUE - projectedTotal);
-  const runRateDay  = daysLeft > 0 ? remaining / daysLeft : 0;
-  const runRateWeek = runRateDay * 7;
+  // Pipeline Coverage: how much of the goal does the current pipeline cover?
+  // This is the honest signal — does projected A+B+C reach $4.5M?
+  // Color: ≥90% green, 75–89% yellow, <75% red. No time-elapsed math.
+  const coverage      = projectedTotal / GOAL_REVENUE;
+  const coveragePct   = Math.round(coverage * 100);
+  const coverageColor = coverage >= 0.90 ? 'var(--status-green)'
+                      : coverage >= 0.75 ? 'var(--status-yellow)'
+                      : 'var(--status-red)';
+  const coverageLabel = coverage >= 0.90 ? 'Goal Covered'
+                      : coverage >= 0.75 ? 'Gap — At Risk'
+                      : 'Gap — Critical';
 
   document.getElementById('scoring-arc').innerHTML = `
     <div class="arc-stat">
@@ -516,25 +519,25 @@ function renderScoringArc(periodRevenue) {
       </div>
       <div class="arc-bar-label">
         <span>Jun 1</span>
-        <span style="color:var(--text-primary);font-weight:500">${pctElapsed.toFixed(0)}% elapsed · ${daysElapsed}d of ${daysTotal}d</span>
+        <span style="color:var(--text-primary);font-weight:500">${pctElapsed.toFixed(0)}% of period elapsed · ${daysElapsed}d of ${daysTotal}d</span>
         <span>Dec 31</span>
       </div>
     </div>
     <div class="arc-stat">
-      <div class="arc-stat-value" style="color:${paceColor}">${fmtMoney(projectedTotal, true)}</div>
+      <div class="arc-stat-value" style="color:${coverageColor}">${fmtMoney(projectedTotal, true)}</div>
       <div class="arc-stat-label">Projected Score</div>
     </div>
     <div class="arc-stat">
-      <div class="arc-stat-value" style="color:${remaining > 0 ? 'var(--status-red)' : 'var(--status-green)'}">${fmtMoney(remaining, true)}</div>
-      <div class="arc-stat-label">${remaining > 0 ? 'Projected Gap' : 'Surplus'}</div>
+      <div class="arc-stat-value" style="color:${remaining > 0 ? 'var(--status-red)' : 'var(--status-green)'}">${remaining > 0 ? fmtMoney(remaining, true) : '✓ Covered'}</div>
+      <div class="arc-stat-label">${remaining > 0 ? 'Still Needed' : 'Goal Covered'}</div>
     </div>
-    <div class="arc-pace" style="border-color:${paceColor}40"
-         data-tip="On Pace = Projected Score ÷ Expected Score at this point in time.\nExpected = $4.5M × % of period elapsed.\nGreen ≥100% · Yellow 75–99% · Red &lt;75%.\nUses A+B+C projected total, not just billed actuals.">
-      <div class="arc-pace-value" style="color:${paceColor}">${pacePct}%</div>
-      <div class="arc-pace-label">${paceLabel} <span class="explainer">?</span></div>
+    <div class="arc-pace" style="border-color:${coverageColor}40"
+         data-tip="Pipeline Coverage = Projected Score ÷ Goal\n= How much of the $4.5M goal is covered by current pipeline.\n\nGreen ≥90% · Yellow 75–89% · Red &lt;75%\n\nProjected Score = [A] G-702 actuals + [B] WIP capturable BTF + [C] Pipeline confidence-weighted.\nThis answers: does the current pipeline cover the goal?">
+      <div class="arc-pace-value" style="color:${coverageColor}">${coveragePct}%</div>
+      <div class="arc-pace-label">${coverageLabel} <span class="explainer">?</span></div>
     </div>
     <div class="arc-stat" style="min-width:120px"
-         data-tip="Required Run Rate = How much new contract revenue must be committed each week to close the projected gap by December 31.\nFormula: (Goal − Projected Total) ÷ Days Remaining × 7\nBased on A+B+C projected total, not just billed actuals.">
+         data-tip="Required Run Rate = New contract revenue needed per week to close the gap by December 31.\nFormula: (Goal − Projected Score) ÷ Days Remaining × 7">
       <div style="font-family:var(--font-mono);font-size:12px;color:var(--text-primary)">${fmtMoney(runRateWeek, true)}<span style="font-size:9px;color:var(--text-muted)">/wk</span></div>
       <div class="arc-stat-label">Run Rate Needed <span class="explainer">?</span></div>
     </div>
@@ -632,12 +635,10 @@ function renderTiles(byStage, goalProjects) {
   const pct  = v => Math.min(100, (v / GOAL_REVENUE) * 100);
   const gc   = v => v > 0 ? 'var(--status-red)' : 'var(--status-green)';
 
-  // Pace color for the projected total: are we on track vs. time elapsed?
-  const now        = new Date();
-  const pctElapsed = Math.min(1, Math.max(0, (now - SCORING_START) / (SCORING_END - SCORING_START)));
-  const expected   = GOAL_REVENUE * pctElapsed;
-  const paceRatio  = expected > 0 ? projectedTotal / expected : 1;
-  const paceColor  = paceRatio >= 1 ? 'var(--status-green)' : paceRatio >= 0.75 ? 'var(--status-yellow)' : 'var(--status-red)';
+  // Coverage color for the projected total: how much of the goal is covered?
+  // Consistent with the scoring arc. No time-elapsed math — just projected vs. goal.
+  const coverage     = projectedTotal / GOAL_REVENUE;
+  const coverageColor = coverage >= 0.90 ? 'var(--status-green)' : coverage >= 0.75 ? 'var(--status-yellow)' : 'var(--status-red)';
 
   document.getElementById('tiles').innerHTML = `
     <!-- Tile 1: Already billed (actuals) -->
@@ -668,16 +669,16 @@ function renderTiles(byStage, goalProjects) {
     </div>
 
     <!-- Tile 4: Total Projected Score -->
-    <div class="db-tile" style="border-color:${paceColor}30"
-         data-tip="Projected Score = [A] + [B] + [C]\n[A] Hard actuals: G-702 billings this period\n[B] WIP capturable: BTF prorated to Dec 31\n[C] Pipeline: confidence-weighted conversion estimate\n\nThis is the honest projected outcome if all current pipeline converts at rated confidence and all WIP completes on schedule.\nPace color: Green = projected covers goal given time elapsed.\nYellow = behind but catchable. Red = significant gap.">
-      <div class="db-tile-label" style="color:${paceColor}">PROJECTED SCORE (A+B+C) <span class="explainer">?</span></div>
-      <div class="db-tile-value" style="color:${paceColor}">${fmtMoney(projectedTotal, true)}</div>
+    <div class="db-tile" style="border-color:${coverageColor}30"
+         data-tip="Projected Score = [A] + [B] + [C]\n[A] Hard actuals: G-702 billings this period\n[B] WIP capturable: BTF prorated to Dec 31\n[C] Pipeline: confidence-weighted conversion estimate\n\nColor = Pipeline Coverage: how much of the $4.5M goal is covered.\nGreen ≥90% · Yellow 75–89% · Red &lt;75%">
+      <div class="db-tile-label" style="color:${coverageColor}">PROJECTED SCORE (A+B+C) <span class="explainer">?</span></div>
+      <div class="db-tile-value" style="color:${coverageColor}">${fmtMoney(projectedTotal, true)}</div>
       <div class="db-tile-goal" style="font-size:11px">
         <span style="color:${gap > 0 ? 'var(--status-red)' : 'var(--status-green)'}">
           ${gap > 0 ? '⚠ ' + fmtMoney(gap, true) + ' gap to goal' : '✓ Goal covered'}
         </span>
       </div>
-      <div class="db-tile-progress">${renderProgressBar(pct(projectedTotal), paceColor)}</div>
+      <div class="db-tile-progress">${renderProgressBar(pct(projectedTotal), coverageColor)}</div>
       <div style="font-size:10px;color:var(--text-muted);margin-top:4px">
         GP: ${fmtMoney(totalGP, true)} · ${totalRev ? ((totalGP/totalRev)*100).toFixed(1)+'%' : '—'} blended
       </div>
