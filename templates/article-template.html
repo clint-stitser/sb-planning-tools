@@ -732,7 +732,9 @@ const LESSON_CONFIG = {
   contentType:    'Reference',
   estimatedMins:  10,
   audience:       'Internal',
-  filePath:       'templates/article-template.html'  // repo-relative path for editor save
+  filePath:       'templates/article-template.html',  // repo-relative path for editor save
+  // driveUrl: 'https://drive.google.com/...',        // if set, shows Drive link-out instead of inline content
+  // docType:  'word',                                // 'word' | 'ppt' | 'sheet' | 'pdf'
 };
 
 const SMARTSUITE_CONFIG = {
@@ -785,6 +787,38 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('meta-time').textContent        = `⏱ ${LESSON_CONFIG.estimatedMins} min`;
   document.getElementById('meta-audience').textContent    = LESSON_CONFIG.audience;
   document.title = `${LESSON_CONFIG.lessonTitle} — S-BOS Knowledge Base`;
+
+  // Drive link-out mode — if driveUrl is set, swap article body for a link-out card
+  if (LESSON_CONFIG.driveUrl) {
+    const DOC_META = {
+      word:  { icon: '📝', label: 'Open in Microsoft Word',       color: '#103FA0' },
+      ppt:   { icon: '📊', label: 'Open in Microsoft PowerPoint', color: '#C13B1B' },
+      sheet: { icon: '📈', label: 'Open in Microsoft Excel',      color: '#0E7E4F' },
+      pdf:   { icon: '📄', label: 'Open PDF',                     color: '#C13B1B' },
+    };
+    const dm = DOC_META[LESSON_CONFIG.docType] || DOC_META.word;
+    const wrap = document.querySelector('.article-wrap');
+    if (wrap) {
+      wrap.innerHTML = `
+        <div style="grid-column:1/-1;padding:48px 0 80px;max-width:600px">
+          <p style="font-family:var(--font-sub);font-size:0.95rem;color:#555;line-height:1.7;margin:0 0 32px">
+            ${LESSON_CONFIG.description || 'This document is hosted in Google Drive. Click below to open it.'}
+          </p>
+          <a href="${LESSON_CONFIG.driveUrl}" target="_blank" rel="noopener"
+             style="display:inline-flex;align-items:center;gap:10px;padding:14px 28px;
+                    background:${dm.color};color:#fff;border-radius:8px;text-decoration:none;
+                    font-family:var(--font-sub);font-size:14px;font-weight:700;letter-spacing:.04em;
+                    transition:opacity .15s;margin-bottom:12px">
+            <span style="font-size:1.2rem">${dm.icon}</span>${dm.label}
+          </a><br>
+          <a href="${LESSON_CONFIG.driveUrl}" target="_blank" rel="noopener"
+             style="font-family:var(--font-sub);font-size:12px;color:#BCBEC0;text-decoration:none">
+            View in Google Drive →
+          </a>
+        </div>`;
+    }
+    return; // skip TOC + scrollspy — no article body
+  }
 
   buildTOC();
   initScrollSpy();

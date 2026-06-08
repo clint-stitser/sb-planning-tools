@@ -3,16 +3,196 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Execute Diligence & Contingencies — S-BOS Knowledge Base</title>
+<title>Execute Due Diligence & Contingencies — S-BOS Knowledge Base</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/global.css">
+<style>
+
+/* ── LESSON META BAR ──────────────────────────────────────── */
+.lesson-meta-bar {
+  display: flex; align-items: center; gap: 20px;
+  padding: 0 40px; height: 56px;
+  background: #fff; border-bottom: 1px solid #BCBEC0;
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.lesson-breadcrumb {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--font-sub); font-size: 13px; color: #BCBEC0;
+  flex: 1; min-width: 0;
+}
+.breadcrumb-sep { font-size: 16px; }
+.breadcrumb-course { color: var(--dark); }
+.breadcrumb-lesson { color: var(--blue); font-weight: 700; }
+.lesson-chips { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.chip {
+  display: inline-flex; align-items: center; padding: 4px 12px;
+  border-radius: 20px; font-family: var(--font-sub); font-size: 12px;
+  font-weight: 700; letter-spacing: .04em; line-height: 1;
+}
+.chip-pillar   { background: var(--blue);   color: #fff; }
+.chip-type     { background: var(--orange); color: #fff; }
+.chip-time     { background: var(--light);  color: var(--dark); border: 1px solid #BCBEC0; }
+.chip-audience { background: var(--light);  color: var(--dark); border: 1px solid #BCBEC0; }
+
+.btn-complete {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 18px; background: var(--orange); color: #fff;
+  border: none; border-radius: 6px; font-family: var(--font-sub);
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: background .2s; flex-shrink: 0; letter-spacing: .04em;
+}
+.btn-complete:hover:not(:disabled) { background: #e08810; }
+.btn-complete:disabled { opacity: .7; cursor: not-allowed; }
+.btn-complete.completed { background: #27ae60; }
+
+/* ── DOCUMENT ACCESS AREA ─────────────────────────────────── */
+.doc-body {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 56px 40px 80px;
+}
+
+.doc-icon-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.doc-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  flex-shrink: 0;
+}
+.doc-icon.word { background: #103FA0; }
+.doc-icon.ppt  { background: #C13B1B; }
+.doc-icon.pdf  { background: #C13B1B; }
+.doc-icon.sheet { background: #0E7E4F; }
+
+.doc-title {
+  font-family: var(--font-head);
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: var(--dark);
+  line-height: 1.15;
+  margin: 0;
+}
+
+.doc-meta-strip {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.doc-meta-item {
+  font-family: var(--font-sub);
+  font-size: 12px;
+  color: #BCBEC0;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.doc-meta-item strong { color: var(--dark); }
+
+.doc-description {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.75;
+  margin: 0 0 36px;
+}
+
+/* Primary CTA — Open document */
+.btn-open-doc {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  background: var(--dark);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-sub);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-decoration: none;
+  transition: background .15s, transform .1s;
+  cursor: pointer;
+  margin-bottom: 12px;
+  display: block;
+  width: fit-content;
+}
+.btn-open-doc:hover { background: #444; transform: translateY(-1px); }
+.btn-open-doc.word-btn { background: #103FA0; }
+.btn-open-doc.word-btn:hover { background: #0d3487; }
+.btn-open-doc.ppt-btn  { background: #C13B1B; }
+.btn-open-doc.ppt-btn:hover  { background: #a33116; }
+
+.btn-open-doc-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+/* Drive secondary link */
+.drive-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-sub);
+  font-size: 12px;
+  font-weight: 700;
+  color: #BCBEC0;
+  text-decoration: none;
+  transition: color .15s;
+  margin-top: 4px;
+}
+.drive-link:hover { color: var(--blue); }
+
+/* Divider before Mark Complete */
+.doc-divider {
+  border: none;
+  border-top: 1px solid #E5E5E5;
+  margin: 40px 0;
+}
+
+/* Mark complete section */
+.doc-complete-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.doc-complete-label {
+  font-family: var(--font-sub);
+  font-size: 13px;
+  color: #888;
+}
+
+/* ── RESPONSIVE ───────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .doc-body { padding: 32px 20px 60px; }
+  .lesson-meta-bar { height: auto; padding: 12px 20px; gap: 10px; }
+  .doc-title { font-size: 1.4rem; }
+}
+
+</style>
 </head>
-<body data-section="workflows">
+<body data-section="system">
 
 <header>
   <a class="logo-lockup" href="../">
-    <svg class="logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/><text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text></svg>
-    <div class="logo-text"><span class="brand">Stitser Built</span><span class="sub">S-BOS Knowledge Base</span></div>
+    <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
+      <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+      <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+    </svg>
+    <div class="logo-text">
+      <span class="brand">Stitser Built</span>
+      <span class="sub">S-BOS Knowledge Base</span>
+    </div>
   </a>
   <nav class="header-nav">
     <a class="nav-link" data-section="system"    href="../system/">System</a>
@@ -25,9 +205,19 @@
   <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
   <div class="header-badge">Team Resource</div>
 </header>
+
 <div class="nav-overlay">
   <div class="nav-overlay-header">
-    <a class="logo-lockup" href="../"><svg class="logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/><text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text></svg><div class="logo-text"><span class="brand">Stitser Built</span><span class="sub">S-BOS Knowledge Base</span></div></a>
+    <a class="logo-lockup" href="../">
+      <svg class="logo-icon" viewBox="0 0 42 42" fill="none">
+        <circle cx="21" cy="21" r="21" fill="rgba(255,255,255,0.15)"/>
+        <text x="21" y="28" text-anchor="middle" font-family="Montserrat,sans-serif" font-weight="900" font-size="22" fill="white">S</text>
+      </svg>
+      <div class="logo-text">
+        <span class="brand">Stitser Built</span>
+        <span class="sub">S-BOS Knowledge Base</span>
+      </div>
+    </a>
     <button class="nav-overlay-close" aria-label="Close menu">&#10005;</button>
   </div>
   <nav class="nav-overlay-links">
@@ -40,135 +230,209 @@
   </nav>
 </div>
 
-<div class="page-hero">
-  <div class="page-hero-eyebrow">Stage 03 — Value Chain</div>
-  <h1 class="page-hero-title">Execute Diligence & Contingencies</h1>
-  <p class="page-hero-subtitle">Request all diligence documents, initiate contingency timelines, and order inspections — two distinct steps, both critical.</p>
-  <div class="audit-badge">&#9679; Audit Required</div>
-  <div class="stage-nav">
-    <a class="stage-nav-link" href="escrow-open.html">← Escrow Open</a>
-    <a class="stage-nav-link" href="assemble-respond.html">Assemble & Respond →</a>
+<!-- LESSON META BAR -->
+<div class="lesson-meta-bar">
+  <div class="lesson-breadcrumb">
+    <span class="breadcrumb-track" id="meta-track">Learning Track</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-course" id="meta-course">Course Name</span>
+    <span class="breadcrumb-sep">›</span>
+    <span class="breadcrumb-lesson" id="meta-lesson-name">Document Title</span>
   </div>
+  <div class="lesson-chips">
+    <span class="chip chip-pillar"   id="meta-pillar">Pillar</span>
+    <span class="chip chip-type"     id="meta-type">Word</span>
+    <span class="chip chip-time"     id="meta-time">⏱ 10 min</span>
+    <span class="chip chip-audience" id="meta-audience">Internal</span>
+  </div>
+  <button class="btn-complete" id="btn-complete" onclick="markComplete()">Mark Complete</button>
 </div>
+
+<div class="page-hero">
+  <div class="page-hero-eyebrow" id="hero-eyebrow">Word Document · Systems Pillar</div>
+  <h1 class="page-hero-title" id="hero-title">Document Title Here</h1>
+  <p class="page-hero-subtitle" id="hero-subtitle">A one-sentence description of what this document contains and who it's for.</p>
+</div>
+
 <div class="orange-bar"></div>
 
 <div class="breadcrumb-bar">
   <div class="breadcrumb">
-    <a href="../">Home</a><span class="sep">→</span>
-    <a href="../workflows/">Workflows</a><span class="sep">→</span>
-    <span class="cur">Execute Diligence</span>
+    <a href="../">Home</a>
+    <span class="sep">→</span>
+    <a href="../" id="breadcrumb-section">Section</a>
+    <span class="sep">→</span>
+    <span class="cur" id="breadcrumb-title">Document Title</span>
   </div>
 </div>
 
-<section>
-  <div class="section-label">Step 1 of 2</div>
-  <div class="section-title">Request Diligence Documents & Initiate Contingency Timelines</div>
-</section>
+<!-- DOCUMENT ACCESS -->
+<div class="doc-body">
 
-<div class="supply-receive">
-  <div class="supply-col">
-    <div class="col-label">Supplies</div>
-    <div class="col-role">Production Manager</div>
-    <ul class="col-items">
-      <li>Audit required docs checklist against what's on file</li>
-      <li>Send formal document request to Title and Partner Agent</li>
-      <li>Request timeline updates from all parties</li>
-      <li>Add Practitioner notes to FUB and Smartsheet</li>
-    </ul>
+  <div class="doc-icon-row">
+    <div class="doc-icon" id="doc-icon-box">
+      <span id="doc-icon-glyph">📄</span>
+    </div>
+    <h1 class="doc-title" id="doc-main-title">Document Title</h1>
   </div>
-  <div class="cv-center">
-    <div class="cv-label">Clarify &amp; Verify</div>
-    <div class="cv-arrow">&#8645;</div>
-    <div style="font-family:var(--font-sub);font-size:12px;color:var(--mid);text-align:center;">Confirm all requests sent and acknowledged before moving to Step 2</div>
+
+  <div class="doc-meta-strip">
+    <span class="doc-meta-item">⏱ <strong id="doc-time">10 min read</strong></span>
+    <span class="doc-meta-item">Pillar: <strong id="doc-pillar">Systems</strong></span>
+    <span class="doc-meta-item">Audience: <strong id="doc-audience">Internal</strong></span>
   </div>
-  <div class="receive-col">
-    <div class="col-label">Receives</div>
-    <div class="col-role">Title & Escrow</div>
-    <ul class="col-items">
-      <li>Preliminary title report</li>
-      <li>HOA documents</li>
-      <li>CC&amp;Rs</li>
-      <li>Settlement statements</li>
-    </ul>
-    <div class="col-role" style="margin-top:16px">Partner Agent</div>
-    <ul class="col-items">
-      <li>Seller disclosures</li>
-      <li>Inspection reports (if any)</li>
-    </ul>
-    <div class="col-role" style="margin-top:16px">Lender</div>
-    <ul class="col-items">
-      <li>Pre-qualification / 1003</li>
-      <li>Loan status update</li>
-    </ul>
+
+  <p class="doc-description" id="doc-description">
+    Replace this with a 2–3 sentence description of what the document covers, who should read it, and what they'll be able to do after reading it.
+  </p>
+
+  <a class="btn-open-doc" id="btn-open-doc" href="#" target="_blank" rel="noopener">
+    <span class="btn-open-doc-icon" id="btn-doc-icon">📝</span>
+    <span id="btn-doc-label">Open Document</span>
+  </a>
+
+  <a class="drive-link" id="drive-secondary-link" href="#" target="_blank" rel="noopener">
+    <svg width="14" height="14" viewBox="0 0 87.3 78" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6.6 66.85l3.85 6.65c.8 1.4 1.95 2.5 3.3 3.3L29 48H0c0 1.55.4 3.1 1.2 4.5z" fill="#0066DA"/><path d="M43.65 25L29 0c-1.35.8-2.5 1.9-3.3 3.3l-25.45 44a9.06 9.06 0 00-1.2 4.5H29z" fill="#00AC47"/><path d="M73.55 76.8c1.35-.8 2.5-1.9 3.3-3.3l1.6-2.75L86.1 57c.8-1.4 1.2-2.95 1.2-4.5H58.3l6.35 12.5z" fill="#EA4335"/><path d="M43.65 25L58.3 52.5h29.05c0-1.55-.4-3.1-1.2-4.5l-25.45-44c-.8-1.4-1.95-2.5-3.3-3.3z" fill="#00832D"/><path d="M58.3 52.5H29L13.75 76.8c1.35.8 2.95 1.2 4.5 1.2h50.8c1.55 0 3.1-.4 4.5-1.2z" fill="#2684FC"/><path d="M73.4 26.5L60.05 3.3c-.8-1.4-1.95-2.5-3.3-3.3L43.65 25l14.65 27.5h28.95c0-1.55-.4-3.1-1.2-4.5z" fill="#FFBA00"/></svg>
+    View in Google Drive
+  </a>
+
+  <hr class="doc-divider">
+
+  <div class="doc-complete-section">
+    <span class="doc-complete-label">Finished reading?</span>
+    <button class="btn-complete" id="btn-complete-2" onclick="markComplete()">Mark Complete</button>
   </div>
+
 </div>
-
-<section>
-  <div class="section-label">Step 2 of 2</div>
-  <div class="section-title">Order Inspections</div>
-</section>
-
-<div class="supply-receive">
-  <div class="supply-col">
-    <div class="col-label">Supplies</div>
-    <div class="col-role">Practitioner</div>
-    <ul class="col-items">
-      <li>Confirm client strategy and desired inspection timing</li>
-      <li>Confirm vendor selection and payment method</li>
-      <li>Check all party calendars for availability</li>
-      <li>Confirm utilities are on at property</li>
-      <li>Order inspections with confirmed vendors</li>
-    </ul>
-  </div>
-  <div class="cv-center">
-    <div class="cv-label">Clarify &amp; Verify</div>
-    <div class="cv-arrow">&#8645;</div>
-    <div style="font-family:var(--font-sub);font-size:12px;color:var(--mid);text-align:center;">Confirm inspector, date, time, payment, and access are all locked before proceeding</div>
-  </div>
-  <div class="receive-col">
-    <div class="col-label">Receives</div>
-    <div class="col-role">Partner Agent</div>
-    <ul class="col-items">
-      <li>Confirms property availability for inspection</li>
-    </ul>
-    <div class="col-role" style="margin-top:16px">Escrow / Mortgage</div>
-    <ul class="col-items">
-      <li>Provide payment details for inspection fees</li>
-    </ul>
-    <div class="col-role" style="margin-top:16px">Production Manager</div>
-    <ul class="col-items">
-      <li>Update FUB action plan with inspection details</li>
-    </ul>
-  </div>
-</div>
-
-<section>
-  <div class="section-label">Outputs</div>
-  <div class="section-title">Key Deliverables</div>
-  <ul class="bullet-list">
-    <li>Document request sent — formal request logged in FUB and Smartsheet</li>
-    <li>All FUB and Smartsheet notes updated with Practitioner guidance</li>
-    <li>Inspector confirmed — name, date, timeframe, payment on file</li>
-    <li>Utilities confirmed on at property</li>
-  </ul>
-</section>
-
-<section>
-  <div class="section-label">Related</div>
-  <div class="section-title">Resources</div>
-  <ul class="bullet-list">
-    <li><a href="../glossary/#A" style="color:var(--blue)">Audit Stage</a> — what Ops Manager checks at this stage</li>
-    <li><a href="../roles/production-manager.html" style="color:var(--blue)">Production Manager Role Guide</a></li>
-    <li><a href="../roles/practitioner.html" style="color:var(--blue)">Practitioner Role Guide</a></li>
-    <li><a href="../workflows/" style="color:var(--blue)">← Back to Workflows</a></li>
-  </ul>
-</section>
 
 <footer>
   <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
   <div class="footer-version">v1.0 · Internal Use Only</div>
 </footer>
+
 <script src="../assets/js/nav.js"></script>
-<script src="../assets/js/article-editor.js"></script>
+<script>
+/* ════════════════════════════════════════════════════════════
+   LESSON CONFIG — update these fields when creating a new page
+   ════════════════════════════════════════════════════════════
+
+   docType options:
+     'word'  → Word document (.docx) — blue button
+     'ppt'   → PowerPoint presentation (.pptx) — red button
+     'sheet' → Excel spreadsheet (.xlsx) — green button
+     'pdf'   → PDF document — red button
+
+   driveUrl → full Google Drive sharing link for the file
+   ════════════════════════════════════════════════════════════ */
+const LESSON_CONFIG = {
+  lessonId:       'TBD_ADD_LESSON_ID',         // create record in SmartSuite Lesson Catalog, paste ID here
+  lessonTitle:    'Execute Due Diligence & Contingencies',
+  trackName:      'S-BOS Foundations',
+  courseName:     'Disposition Workflows',
+  pillar:         'Projects',
+  contentType:    'PowerPoint',
+  estimatedMins:  20,
+  audience:       'Internal',
+  filePath:       'workflows/execute-diligence.html',
+  docType:        'ppt',                        // PowerPoint deck hosted in Google Drive
+  driveUrl:       '',                           // paste Google Drive sharing link when deck is ready
+  description:    'How to manage the due diligence period — inspections, disclosures, contingency review, buyer requests, and how to protect the seller's position through the process.',
+};
+
+/* SmartSuite progress config — do not edit */
+const SMARTSUITE_CONFIG = {
+  apiKey:        window.SMARTSUITE_API_KEY   || '',
+  workspaceId:   window.SMARTSUITE_WORKSPACE || '',
+  progressAppId: '6a18ad82e630be8e82a202ea',
+  personId:      new URLSearchParams(window.location.search).get('person_id') || ''
+};
+
+/* ── Doc type metadata ──────────────────────────────────── */
+const DOC_TYPES = {
+  word:  { icon: '📝', label: 'Open in Microsoft Word',       btnClass: 'word-btn', boxClass: 'word', glyph: 'W' },
+  ppt:   { icon: '📊', label: 'Open in Microsoft PowerPoint', btnClass: 'ppt-btn',  boxClass: 'ppt',  glyph: 'P' },
+  sheet: { icon: '📈', label: 'Open in Microsoft Excel',      btnClass: '',         boxClass: 'sheet',glyph: 'X' },
+  pdf:   { icon: '📄', label: 'Open PDF',                     btnClass: 'ppt-btn',  boxClass: 'pdf',  glyph: '⬡' },
+};
+
+/* ── Mark Complete ──────────────────────────────────────── */
+function syncComplete() {
+  const b1 = document.getElementById('btn-complete');
+  const b2 = document.getElementById('btn-complete-2');
+  [b1, b2].forEach(b => {
+    if (!b) return;
+    b.textContent = '✓ Completed';
+    b.classList.add('completed');
+    b.disabled = false;
+  });
+}
+
+async function markComplete() {
+  const btns = [document.getElementById('btn-complete'), document.getElementById('btn-complete-2')];
+  btns.forEach(b => { if (b) { b.textContent = 'Saving…'; b.disabled = true; } });
+  if (!SMARTSUITE_CONFIG.apiKey) { syncComplete(); return; }
+  try {
+    const today   = new Date().toISOString().split('T')[0];
+    const payload = {
+      title:      `${SMARTSUITE_CONFIG.personId || 'Anonymous'} — ${LESSON_CONFIG.lessonTitle}`,
+      s795f4d404: [LESSON_CONFIG.lessonId],
+      s56ad0c6cc: { value: 'Completed' },
+      s47e7db00b: { date: today, include_time: false },
+      s971159143: 1
+    };
+    if (SMARTSUITE_CONFIG.personId) payload.s43b519ec1 = [SMARTSUITE_CONFIG.personId];
+    const res = await fetch(
+      `https://app.smartsuite.com/api/v1/applications/${SMARTSUITE_CONFIG.progressAppId}/records/`,
+      { method: 'POST', headers: { 'Authorization': `Token ${SMARTSUITE_CONFIG.apiKey}`, 'Account-Id': SMARTSUITE_CONFIG.workspaceId, 'Content-Type': 'application/json' }, body: JSON.stringify(payload) }
+    );
+    if (res.ok) { syncComplete(); } else { btns.forEach(b => { if(b){ b.textContent='Mark Complete'; b.disabled=false; } }); }
+  } catch { syncComplete(); }
+}
+
+/* ── Populate page from LESSON_CONFIG ───────────────────── */
+document.addEventListener('DOMContentLoaded', () => {
+  const dt = DOC_TYPES[LESSON_CONFIG.docType] || DOC_TYPES.word;
+  const cfg = LESSON_CONFIG;
+
+  // Meta bar
+  document.getElementById('meta-track').textContent       = cfg.trackName;
+  document.getElementById('meta-course').textContent      = cfg.courseName;
+  document.getElementById('meta-lesson-name').textContent = cfg.lessonTitle;
+  document.getElementById('meta-pillar').textContent      = cfg.pillar;
+  document.getElementById('meta-type').textContent        = cfg.contentType;
+  document.getElementById('meta-time').textContent        = `⏱ ${cfg.estimatedMins} min`;
+  document.getElementById('meta-audience').textContent    = cfg.audience;
+  document.title = `${cfg.lessonTitle} — S-BOS Knowledge Base`;
+
+  // Hero
+  document.getElementById('hero-eyebrow').textContent = `${cfg.contentType} · ${cfg.pillar} Pillar`;
+  document.getElementById('hero-title').textContent   = cfg.lessonTitle;
+  document.getElementById('breadcrumb-title').textContent = cfg.lessonTitle;
+
+  // Doc icon box
+  const iconBox = document.getElementById('doc-icon-box');
+  iconBox.classList.add(dt.boxClass);
+  document.getElementById('doc-icon-glyph').textContent = dt.glyph;
+
+  // Main title + meta
+  document.getElementById('doc-main-title').textContent = cfg.lessonTitle;
+  document.getElementById('doc-time').textContent       = `${cfg.estimatedMins} min`;
+  document.getElementById('doc-pillar').textContent     = cfg.pillar;
+  document.getElementById('doc-audience').textContent   = cfg.audience;
+  document.getElementById('doc-description').textContent = cfg.description;
+
+  // Open button
+  const openBtn = document.getElementById('btn-open-doc');
+  openBtn.href = cfg.driveUrl || '#';
+  openBtn.classList.add(dt.btnClass);
+  document.getElementById('btn-doc-icon').textContent  = dt.icon;
+  document.getElementById('btn-doc-label').textContent = dt.label;
+
+  // Drive secondary link
+  const driveLink = document.getElementById('drive-secondary-link');
+  driveLink.href = cfg.driveUrl || '#';
+  if (!cfg.driveUrl) driveLink.style.display = 'none';
+});
+</script>
 </body>
 </html>

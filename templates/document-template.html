@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Assemble & Respond — S-BOS Knowledge Base</title>
+<title>Document Title — S-BOS Knowledge Base</title>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/global.css">
 <style>
@@ -325,18 +325,18 @@
    driveUrl → full Google Drive sharing link for the file
    ════════════════════════════════════════════════════════════ */
 const LESSON_CONFIG = {
-  lessonId:       'TBD_ADD_LESSON_ID',         // create record in SmartSuite Lesson Catalog, paste ID here
-  lessonTitle:    'Assemble & Respond',
-  trackName:      'S-BOS Foundations',
-  courseName:     'Disposition Workflows',
-  pillar:         'Projects',
-  contentType:    'PowerPoint',
-  estimatedMins:  20,
+  lessonId:       'LESSON_RECORD_ID',
+  lessonTitle:    'Document Title Here',
+  trackName:      'Learning Track Name',
+  courseName:     'Course Name',
+  pillar:         'Systems',
+  contentType:    'Word Document',
+  estimatedMins:  10,
   audience:       'Internal',
-  filePath:       'workflows/assemble-respond.html',
-  docType:        'ppt',                        // PowerPoint deck hosted in Google Drive
-  driveUrl:       '',                           // paste Google Drive sharing link when deck is ready
-  description:    'The step-by-step process for assembling an offer package and responding to a seller — including pricing strategy, due diligence requirements, and submission checklist.',
+  filePath:       'lessons/FILENAME.html',          // repo-relative path
+  docType:        'word',                            // 'word' | 'ppt' | 'sheet' | 'pdf'
+  driveUrl:       'https://drive.google.com/...',    // Google Drive sharing link
+  description:    'Replace this with a 2–3 sentence description of what the document covers, who should read it, and what they\'ll be able to do after reading it.',
 };
 
 /* SmartSuite progress config — do not edit */
@@ -421,17 +421,29 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('doc-audience').textContent   = cfg.audience;
   document.getElementById('doc-description').textContent = cfg.description;
 
-  // Open button
+  // Open button — show "coming soon" state if no Drive URL yet
   const openBtn = document.getElementById('btn-open-doc');
-  openBtn.href = cfg.driveUrl || '#';
-  openBtn.classList.add(dt.btnClass);
-  document.getElementById('btn-doc-icon').textContent  = dt.icon;
-  document.getElementById('btn-doc-label').textContent = dt.label;
+  if (cfg.driveUrl) {
+    openBtn.href = cfg.driveUrl;
+    openBtn.classList.add(dt.btnClass);
+    document.getElementById('btn-doc-icon').textContent  = dt.icon;
+    document.getElementById('btn-doc-label').textContent = dt.label;
+  } else {
+    openBtn.removeAttribute('href');
+    openBtn.style.background   = '#BCBEC0';
+    openBtn.style.cursor       = 'not-allowed';
+    openBtn.style.pointerEvents = 'none';
+    document.getElementById('btn-doc-icon').textContent  = '🔜';
+    document.getElementById('btn-doc-label').textContent = 'Document Coming Soon';
+  }
 
   // Drive secondary link
   const driveLink = document.getElementById('drive-secondary-link');
-  driveLink.href = cfg.driveUrl || '#';
-  if (!cfg.driveUrl) driveLink.style.display = 'none';
+  if (cfg.driveUrl) {
+    driveLink.href = cfg.driveUrl;
+  } else {
+    driveLink.style.display = 'none';
+  }
 });
 </script>
 </body>
