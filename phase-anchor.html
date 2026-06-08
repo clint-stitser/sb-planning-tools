@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phase Anchor (Personal) — Stitser BUILT</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e8eaf0;min-height:100vh}
+    :root{
+      --p1:#22c55e;--p1-bg:#052e16;--p1-border:#166534;--p1-muted:#4ade80;
+      --p2:#f97316;--p2-bg:#1c1007;--p2-border:#7c2d12;--p2-muted:#fb923c;
+      --p3:#a855f7;--p3-bg:#1a0a2e;--p3-border:#581c87;--p3-muted:#c084fc;
+      --g:#22c55e;--y:#f59e0b;--r:#ef4444;
+    }
+    /* ── HEADER ── */
+    .hdr{background:#0a0d14;border-bottom:1px solid #1e2336;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;gap:12px;flex-wrap:wrap}
+    .hdr-left{display:flex;align-items:center;gap:10px}
+    .hdr-logo{font-size:10px;font-weight:700;letter-spacing:.15em;color:#4b5563;text-transform:uppercase}
+    .hdr-title{font-size:15px;font-weight:700;color:#f1f5f9}
+    .hdr-sub{font-size:10px;color:#6b7280;margin-top:1px}
+    .hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    /* view toggle */
+    .vtog{display:flex;background:#1a1f2e;border:1px solid #2d3555;border-radius:8px;overflow:hidden}
+    .vtog-btn{padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;border:none;background:transparent;color:#6b7280;letter-spacing:.04em;transition:all .15s}
+    .vtog-btn.active{background:#2d3555;color:#f1f5f9}
+    /* snapshot btn */
+    .snap-btn{padding:6px 14px;font-size:11px;font-weight:700;background:#1e2336;border:1px solid #2d3555;border-radius:7px;color:#94a3b8;cursor:pointer;transition:all .15s;white-space:nowrap}
+    .snap-btn:hover{border-color:#c9a84c;color:#c9a84c}
+    .snap-btn:disabled{opacity:.4;cursor:not-allowed}
+    /* overall badge */
+    .ovr{background:#1e2336;border:1px solid #2d3555;border-radius:8px;padding:5px 12px;text-align:center}
+    .ovr-pct{font-size:18px;font-weight:800;color:#f1f5f9;line-height:1}
+    .ovr-lbl{font-size:9px;color:#6b7280;margin-top:2px}
+    /* ── LEGEND ── */
+    .leg{display:flex;gap:14px;padding:8px 18px;background:#0a0d14;border-bottom:1px solid #1e2336;flex-wrap:wrap;align-items:center}
+    .leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#94a3b8}
+    .leg-dot{width:9px;height:9px;border-radius:50%}
+    .leg-right{margin-left:auto;font-size:10px;color:#374151}
+    /* ── GRID ── */
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:11px;padding:14px;max-width:1600px;margin:0 auto}
+    /* ── CARD ── */
+    .card{border-radius:12px;overflow:hidden;border:1px solid;transition:transform .15s,box-shadow .15s}
+    .card.p1{background:var(--p1-bg);border-color:var(--p1-border)}
+    .card.p2{background:var(--p2-bg);border-color:var(--p2-border)}
+    .card.p3{background:var(--p3-bg);border-color:var(--p3-border)}
+    .card-head{padding:13px 15px 8px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .card-id{font-size:10px;font-weight:700;letter-spacing:.1em;opacity:.5;text-transform:uppercase;margin-bottom:2px}
+    .card-name{font-size:14px;font-weight:700;color:#f1f5f9;line-height:1.3}
+    .pbadge{flex-shrink:0;border-radius:20px;padding:3px 9px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+    .p1 .pbadge{background:#166534;color:#4ade80}
+    .p2 .pbadge{background:#7c2d12;color:#fb923c}
+    .p3 .pbadge{background:#581c87;color:#c084fc}
+    /* progress */
+    .prog{padding:0 15px 9px}
+    .prog-row{display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px;color:#94a3b8}
+    .prog-row span:last-child{font-weight:700}
+    .prog-track{height:5px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden}
+    .prog-fill{height:100%;border-radius:3px;transition:width .4s}
+    .p1 .prog-fill{background:linear-gradient(90deg,#166534,#22c55e)}
+    .p2 .prog-fill{background:linear-gradient(90deg,#7c2d12,#f97316)}
+    .p3 .prog-fill{background:linear-gradient(90deg,#581c87,#a855f7)}
+    /* target date */
+    .target-date{padding:4px 15px 8px;font-size:10px;color:#6b7280;display:flex;align-items:center;gap:5px;border-top:1px solid rgba(255,255,255,.04);margin-top:2px}
+    .target-date:hover{background:rgba(255,255,255,.02)}
+    /* hwk */
+    .hwk{padding:0 15px 10px}
+    .hwk-lbl{font-size:9px;font-weight:700;letter-spacing:.08em;color:#6b7280;text-transform:uppercase;margin-bottom:5px}
+    .hwk-item{display:flex;align-items:flex-start;gap:7px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer}
+    .hwk-item:last-child{border:none}
+    .chk{width:15px;height:15px;border-radius:4px;border:1.5px solid;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+    .p1 .chk{border-color:var(--p1-border)}
+    .p2 .chk{border-color:var(--p2-border)}
+    .p3 .chk{border-color:var(--p3-border)}
+    .chk.on{border-color:transparent}
+    .p1 .chk.on{background:var(--p1)}
+    .p2 .chk.on{background:var(--p2)}
+    .p3 .chk.on{background:var(--p3)}
+    .chk svg{width:9px;height:9px}
+    .hwk-txt{font-size:11px;line-height:1.4;color:#d1d5db;flex:1}
+    .hwk-txt.done{text-decoration:line-through;opacity:.45}
+    /* card actions */
+    .card-actions{padding:0 15px 10px;display:flex;gap:7px}
+    .act-btn{flex:1;padding:5px 6px;border-radius:6px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);font-size:10px;font-weight:700;color:#6b7280;cursor:pointer;text-align:center;transition:all .15s;letter-spacing:.03em}
+    .act-btn:hover{color:#d1d5db;border-color:#374151}
+    /* expand toggle */
+    .exp-tog{padding:7px 15px;border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;gap:5px;font-size:10px;color:#4b5563;cursor:pointer;transition:color .15s}
+    .card:hover .exp-tog{color:#6b7280}
+    .exp-tog.open svg{transform:rotate(180deg)}
+    .exp-tog svg{transition:transform .2s;width:11px;height:11px}
+    /* expanded */
+    .exp-detail{padding:0 15px 14px}
+    .pnav{display:flex;gap:7px;margin-bottom:12px}
+    .pnav-btn{flex:1;padding:5px 3px;border-radius:6px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);font-size:9px;font-weight:700;color:#6b7280;cursor:pointer;text-align:center;transition:all .15s;letter-spacing:.04em}
+    .pnav-btn.a1{border-color:var(--p1-border);background:var(--p1-bg);color:var(--p1-muted)}
+    .pnav-btn.a2{border-color:var(--p2-border);background:var(--p2-bg);color:var(--p2-muted)}
+    .pnav-btn.a3{border-color:var(--p3-border);background:var(--p3-bg);color:var(--p3-muted)}
+    .psec{margin-bottom:14px}
+    .psec-hd{display:flex;align-items:center;gap:7px;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,.05)}
+    .psec-badge{font-size:8px;font-weight:800;letter-spacing:.1em;padding:2px 6px;border-radius:9px;text-transform:uppercase}
+    .psec-badge.b1{background:#166534;color:#4ade80}
+    .psec-badge.b2{background:#7c2d12;color:#fb923c}
+    .psec-badge.b3{background:#581c87;color:#c084fc}
+    .psec-ttl{font-size:10px;font-weight:600;color:#94a3b8}
+    .pbullets{list-style:none}
+    .pbullets li{font-size:10px;color:#9ca3af;padding:2px 0 2px 11px;position:relative;line-height:1.4}
+    .pbullets li::before{content:'·';position:absolute;left:2px;color:#374151}
+    .hwk-callout{background:rgba(255,255,255,.03);border-radius:5px;padding:7px 9px;margin-top:5px;font-size:10px;color:#94a3b8;line-height:1.5}
+    .hwk-callout strong{color:#f1f5f9;font-size:9px;letter-spacing:.05em;text-transform:uppercase}
+    /* ── EDIT MODAL ── */
+    .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
+    .modal{background:#131720;border:1px solid #2d3555;border-radius:14px;width:100%;max-width:560px;max-height:85vh;overflow-y:auto}
+    .modal-hd{padding:18px 20px 12px;border-bottom:1px solid #1e2336;display:flex;align-items:center;justify-content:space-between}
+    .modal-title{font-size:15px;font-weight:700;color:#f1f5f9}
+    .modal-close{background:none;border:none;color:#6b7280;font-size:20px;cursor:pointer;line-height:1;padding:2px 6px}
+    .modal-close:hover{color:#f1f5f9}
+    .modal-body{padding:16px 20px}
+    .modal-section{margin-bottom:20px}
+    .modal-section-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:10px}
+    .date-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+    .date-field label{display:block;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:5px}
+    .date-field.f1 label{color:var(--p1-muted)}
+    .date-field.f2 label{color:var(--p2-muted)}
+    .date-field.f3 label{color:var(--p3-muted)}
+    .date-field input[type=date]{width:100%;background:#1e2336;border:1px solid #2d3555;border-radius:6px;padding:6px 8px;font-size:11px;color:#f1f5f9;outline:none}
+    .date-field input[type=date]:focus{border-color:#4b5563}
+    .outcome-list{display:flex;flex-direction:column;gap:4px;margin-bottom:10px}
+    .outcome-item{display:flex;align-items:center;gap:7px;padding:6px 9px;background:#1a1f2e;border-radius:7px;border:1px solid #2d3555}
+    .outcome-item input[type=text]{flex:1;background:transparent;border:none;color:#f1f5f9;font-size:12px;outline:none}
+    .outcome-item input[type=text]::placeholder{color:#4b5563}
+    .out-del{background:none;border:none;color:#4b5563;font-size:16px;cursor:pointer;line-height:1;padding:0 2px;flex-shrink:0}
+    .out-del:hover{color:#ef4444}
+    .add-outcome-btn{width:100%;padding:7px;border:1px dashed #2d3555;border-radius:7px;background:transparent;color:#6b7280;font-size:11px;cursor:pointer;transition:all .15s}
+    .add-outcome-btn:hover{border-color:#4b5563;color:#94a3b8}
+    .modal-tabs{display:flex;gap:6px;margin-bottom:12px}
+    .modal-tab{padding:4px 12px;border-radius:6px;border:1px solid #2d3555;background:transparent;font-size:10px;font-weight:700;color:#6b7280;cursor:pointer;letter-spacing:.04em}
+    .modal-tab.at1{border-color:var(--p1-border);background:var(--p1-bg);color:var(--p1-muted)}
+    .modal-tab.at2{border-color:var(--p2-border);background:var(--p2-bg);color:var(--p2-muted)}
+    .modal-tab.at3{border-color:var(--p3-border);background:var(--p3-bg);color:var(--p3-muted)}
+    .modal-foot{padding:12px 20px 16px;border-top:1px solid #1e2336;display:flex;justify-content:flex-end;gap:8px}
+    .btn-save{padding:7px 18px;background:#2d3555;border:1px solid #4b5563;border-radius:7px;color:#f1f5f9;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
+    .btn-save:hover{background:#374151}
+    .btn-cancel{padding:7px 18px;background:transparent;border:1px solid #2d3555;border-radius:7px;color:#6b7280;font-size:12px;cursor:pointer}
+    /* ── DETAIL PAGE ── */
+    .detail-page{max-width:1000px;margin:0 auto;padding:18px}
+    .detail-back{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;cursor:pointer;margin-bottom:16px;background:none;border:none}
+    .detail-back:hover{color:#94a3b8}
+    .detail-back svg{width:12px;height:12px}
+    .detail-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px}
+    .detail-id{font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.5;text-transform:uppercase}
+    .detail-name{font-size:22px;font-weight:800;color:#f1f5f9;margin-bottom:12px}
+    /* timeline */
+    .timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid #1e2336;border-radius:12px;overflow:hidden;margin-bottom:20px}
+    .tl-phase{padding:16px;border-right:1px solid #1e2336;position:relative}
+    .tl-phase:last-child{border-right:none}
+    .tl-phase.tl-current{outline:2px solid;outline-offset:-2px}
+    .tl-phase.tl-p1{background:var(--p1-bg)}
+    .tl-phase.tl-p2{background:var(--p2-bg)}
+    .tl-phase.tl-p3{background:var(--p3-bg)}
+    .tl-phase.tl-current.tl-p1{outline-color:var(--p1)}
+    .tl-phase.tl-current.tl-p2{outline-color:var(--p2)}
+    .tl-phase.tl-current.tl-p3{outline-color:var(--p3)}
+    .tl-num{font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;opacity:.5;margin-bottom:3px}
+    .tl-pname{font-size:13px;font-weight:700;margin-bottom:8px}
+    .tl-p1 .tl-pname{color:var(--p1-muted)}
+    .tl-p2 .tl-pname{color:var(--p2-muted)}
+    .tl-p3 .tl-pname{color:var(--p3-muted)}
+    .tl-current-badge{position:absolute;top:12px;right:12px;font-size:8px;font-weight:800;padding:2px 7px;border-radius:8px;text-transform:uppercase;letter-spacing:.07em}
+    .tl-p1 .tl-current-badge{background:#166534;color:#4ade80}
+    .tl-p2 .tl-current-badge{background:#7c2d12;color:#fb923c}
+    .tl-p3 .tl-current-badge{background:#581c87;color:#c084fc}
+    .tl-date-lbl{font-size:9px;color:#6b7280;margin-bottom:2px}
+    .tl-date-val{font-size:13px;font-weight:700;color:#94a3b8}
+    .tl-prog{margin-top:10px}
+    .tl-prog-bar{height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden;margin-top:4px}
+    .tl-prog-fill{height:100%;border-radius:2px}
+    .tl-p1 .tl-prog-fill{background:var(--p1)}
+    .tl-p2 .tl-prog-fill{background:var(--p2)}
+    .tl-p3 .tl-prog-fill{background:var(--p3)}
+    .tl-pct{font-size:10px;font-weight:700;color:#94a3b8}
+    /* full roadmap table */
+    .roadmap-table{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;margin-bottom:20px}
+    .roadmap-table th{padding:10px 14px;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;text-align:left}
+    .roadmap-table th.h1{background:#166534;color:#4ade80}
+    .roadmap-table th.h2{background:#7c2d12;color:#fb923c}
+    .roadmap-table th.h3{background:#581c87;color:#c084fc}
+    .roadmap-table td{padding:6px 14px;font-size:11px;line-height:1.5;vertical-align:top;border-bottom:1px solid rgba(255,255,255,.05)}
+    .roadmap-table td.c1{background:var(--p1-bg);color:#d1d5db;border-right:1px solid rgba(255,255,255,.05)}
+    .roadmap-table td.c2{background:var(--p2-bg);color:#d1d5db;border-right:1px solid rgba(255,255,255,.05)}
+    .roadmap-table td.c3{background:var(--p3-bg);color:#d1d5db}
+    .roadmap-table tr:last-child td{border-bottom:none}
+    .roadmap-hwk-row td{padding:10px 14px;font-size:10px;font-style:italic;color:#94a3b8;border-top:1px solid rgba(255,255,255,.08)}
+    .roadmap-hwk-row td strong{display:block;font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;font-style:normal;margin-bottom:3px}
+    .roadmap-hwk-row td.c1 strong{color:var(--p1-muted)}
+    .roadmap-hwk-row td.c2 strong{color:var(--p2-muted)}
+    .roadmap-hwk-row td.c3 strong{color:var(--p3-muted)}
+    /* snapshot GYR */
+    .gyr-row{display:flex;align-items:center;gap:8px;padding:8px 15px;border-top:1px solid rgba(255,255,255,.05)}
+    .gyr-lbl{font-size:10px;color:#6b7280;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-right:4px}
+    .gyr-btn{padding:3px 10px;border-radius:5px;border:1px solid;font-size:10px;font-weight:800;cursor:pointer;transition:all .15s;letter-spacing:.04em}
+    .gyr-btn.G{border-color:var(--g);color:var(--g);background:rgba(34,197,94,.1)}
+    .gyr-btn.G.sel{background:rgba(34,197,94,.25)}
+    .gyr-btn.Y{border-color:var(--y);color:var(--y);background:rgba(245,158,11,.1)}
+    .gyr-btn.Y.sel{background:rgba(245,158,11,.25)}
+    .gyr-btn.R{border-color:var(--r);color:var(--r);background:rgba(239,68,68,.1)}
+    .gyr-btn.R.sel{background:rgba(239,68,68,.25)}
+    .gyr-btn:not(.sel){opacity:.4}
+    .gyr-notes{flex:1}
+    .gyr-notes input{width:100%;background:transparent;border:none;border-bottom:1px solid #2d3555;color:#d1d5db;font-size:11px;padding:2px 0;outline:none}
+    .gyr-notes input::placeholder{color:#4b5563}
+    /* saved */
+    .save-toast{position:fixed;bottom:20px;right:20px;background:#1e2336;border:1px solid #374151;border-radius:8px;padding:8px 16px;font-size:11px;color:#94a3b8;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+    .save-toast.show{opacity:1}
+    /* misc */
+    .last-saved{font-size:10px;color:#374151;text-align:center;padding:8px}
+    @media(max-width:640px){
+      .grid{grid-template-columns:1fr;padding:10px;gap:9px}
+      .hdr{padding:9px 13px}
+      .timeline{grid-template-columns:1fr}
+      .tl-phase{border-right:none;border-bottom:1px solid #1e2336}
+      .tl-phase:last-child{border-bottom:none}
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useCallback, useRef } = React;
+const STORAGE_KEY = 'sb_phase_anchor_v2';
+
+// ── DOMAIN DATA ──────────────────────────────────────────────────────────────
+const DOMAINS = [
+  {
+    id:'1A', label:'S-BOS Platform', fullName:'S-BOS Platform Implementation', team:true,
+    phases:{
+      1:{name:'Foundation',hwk:'Dashboard checked daily. Every active project has People, Alignment, Schedule, Budget & Checklists populated.',
+         bullets:['Dashboard is live and read regularly','Every project has all 5 pillars in place','System is source of truth: game, score, time, and next steps','People know where to go to create project pillars','Decision-making, tasks, budget, schedule, and people on every project','All active product lines and projects tracked inside S-BOS']},
+      2:{name:'Operating',hwk:'Team runs Tuesday meetings from S-BOS. Decisions tracked, tasks assigned, and reports generated without pulling Clint in.',
+         bullets:['Team identifies and flags system improvement opportunities','S-BOS self-measuring: team reports against the system, not just to Clint','Tuesday meeting = decision points surfaced by S-BOS, not manually compiled','Overhead tracked; team capacity visible at a glance']},
+      3:{name:'Optimizing',hwk:"No shadow systems. Zero exceptions. Andy surveys the team: 'Is there anything you track outside S-BOS?' Answer: No.",
+         bullets:['No shadow systems anywhere in the org — S-BOS is the only system','Team cannot imagine doing their job without S-BOS','Full migration confirmed by Andy\'s survey','S-BOS is a life skill, not a tool — default behavior for every team member']},
+    },
+    hwkItems:['Dashboard checked daily','Every active project has all 5 pillars populated','People, Alignment, Schedule, Budget & Checklists on every project'],
+  },
+  {
+    id:'1B', label:'Knowledge Base', fullName:'Knowledge Base (S-BOS Organizational Brain)', team:true,
+    phases:{
+      1:{name:'Foundation',hwk:'New hire handed a single link. No Clint involvement. They complete onboarding, understand the game, know their role, and can find their first workflow — independently.',
+         bullets:[
+           'SmartSuite Training & Certifications: courses, lessons, and learning tracks live',
+           'S-BOS Feature Map: every app, its purpose, and how it connects — navigable by role',
+           'Workflow Visual: all 5 product lines × 5 key situations, each linked to a workflow or course',
+           'Core Documents: who we are, what we do, how we win — the game document',
+           'Glossary: Terms & Earn + Winner\'s Vocabulary linked throughout',
+           'User Skill: standardized template to create and submit new KB articles',
+           'Backend Routine: new SmartSuite article submission auto-publishes to the KB site',
+           'Team Onboarding Complete: every team member completes 2 courses + 2 relevant workflows',
+         ]},
+      2:{name:'Operating',hwk:'When someone has a question, the first action is opening the Knowledge Base. AI search returns the answer in under 30 seconds.',
+         bullets:[
+           'Kompass AI embedded — ask a question, get an answer with source links',
+           'AI search spans courses, workflows, core docs, and glossary simultaneously',
+           'Automated audit flags broken links, outdated articles, and missing workflow docs',
+           'Plugin or scheduled skill keeps course completion tracking current without manual effort',
+           'At least one team member per product line has submitted a new article',
+           'Peer review process in place before new articles go live',
+         ]},
+      3:{name:'Optimizing',hwk:"Andy surveys the team: 'Where do you go first when you have a question?' Answer: The Knowledge Base. New articles appearing from team members weekly. AI flagging and filling gaps without prompting.",
+         bullets:[
+           'AI identifies gaps and flags them as tasks — no human curator required',
+           'AI drafts article shells from observed workflows and submits for team review',
+           'Team members across all roles submitting new articles, workflows, and tools regularly',
+           'New hires contributing within their first 30 days',
+           'Culture of capture: "If it\'s not in the KB, it doesn\'t exist"',
+           'S-BOS apps, skills, and automations update in response to KB changes — one connected organism',
+         ]},
+    },
+    hwkItems:[
+      'Every team member has completed onboarding via the KB (2 courses + 2 workflows)',
+      'New hire can onboard end-to-end from a single link with zero Clint involvement',
+      'KB is the first place team goes before asking a colleague or Clint',
+    ],
+  },
+  {
+    id:'2', label:'Finance & Accounting', fullName:'Finance & Accounting', team:true,
+    phases:{
+      1:{name:'Foundation',hwk:'Signed contract with accounting expert. Two months of closes complete. Tuesday reports arriving without being pulled.',
+         bullets:['Outsource CFO / Controller signed and onboarded','Complete 6-month forward cash flow projection','Lisa & Linda\'s processes meaningfully improved','Accurate reports delivered every Tuesday','WIP schedule and 6-month forecast in place per company']},
+      2:{name:'Operating',hwk:"Can answer 'How much cash do we have and what does the next 6 months look like?' in under 5 minutes.",
+         bullets:['Reconciliation practices routine and timely','12-month budget accurate and reliable','Cash availability visibility — real-time','Tools identified to optimize cash deployment']},
+      3:{name:'Optimizing',hwk:'Product line leads can read and act on financial reports independently. No manual pulling required.',
+         bullets:['Product line leaders understand financial levers','Team uses financial reports to drive decisions','Intacct and S-BOS integrated and self-reporting','Finance function is self-multiplying']},
+    },
+    hwkItems:['Signed contract with accounting expert','Two months of closes complete','Tuesday reports arriving without being pulled'],
+  },
+  {
+    id:'3A', label:'General Contracting', fullName:'General Contracting (Third-Party Construction)', team:true,
+    phases:{
+      1:{name:'Foundation',hwk:'Weekly gear report readable on dashboard. Tuesday meeting: "Here\'s where we\'re at. Here are the decisions."',
+         bullets:['Full clarity on active WIP and pipeline','Prioritized list of estimates to convert','Break-even target identified and tracked','Resource allocation aligned to highest value projects','Decision matrix and quality checklist per project type']},
+      2:{name:'Operating',hwk:'Team arrives at Tuesday meeting with decision points — not just updates.',
+         bullets:['Continuous disciplined execution using S-BOS tools','Weekly gear reports visible on dashboard','Tuesday meeting = decisions needed, not just status updates','Overhead covered, team stable','Defined size and deliverable expectations']},
+      3:{name:'Optimizing',hwk:'GC division operates without pulling Clint into daily decisions.',
+         bullets:['Either: internal projects only + strategic outside partnerships','Or: self-multiplying team with own BD, estimating, production','Does NOT cannibalize development resources']},
+    },
+    hwkItems:['Weekly gear report readable on dashboard','Tuesday meeting has decision points — not just status','Break-even target identified and tracked'],
+  },
+  {
+    id:'3B', label:'Retail Development', fullName:'Retail Development', team:true,
+    phases:{
+      1:{name:'Foundation',hwk:'Three target retail projects in contract. CRM with retail audience is live and being worked.',
+         bullets:['Project-by-project CRM stood up','Outreach to retail audience systematized','Talus Valley, Sierra Center, Upper Parcel in contract','Undeniable audience of retail companies and users built','Decision matrix and project quality checklist in place']},
+      2:{name:'Operating',hwk:'First lease signed. TICK disposition model documented with requirements and process.',
+         bullets:['Convert relationships to leases','CRM pipeline generating consistent leads','Fractional / TICK takeout model established for disposition','Covered plays: tenants committed before breaking ground']},
+      3:{name:'Optimizing',hwk:'Capital waiting for projects — not the other way around.',
+         bullets:['Pipeline of referral partners feeding deal flow','Pipeline of takeout capital (TICK buyers) always available','More capital partners than project opportunities','Expand to stabilized or light value-add acquisitions']},
+    },
+    hwkItems:['Three target retail projects in contract','CRM with retail audience live and being worked','Decision matrix and quality checklist in place'],
+  },
+  {
+    id:'3C', label:'Midsize Multifamily', fullName:'Midsize Multifamily', team:true,
+    phases:{
+      1:{name:'Foundation',hwk:'Pac West agreement signed. Management partner in place. Riverside reporting weekly.',
+         bullets:['Strategic partnership with Pac West formalized (Riverside)','Day-to-day management partner established','Riverside stabilization plan in execution','Capital allocation for acquisition fully visible']},
+      2:{name:'Operating',hwk:'Riverside operating without firefighting. Second opportunity being evaluated.',
+         bullets:['Riverside stabilized and cash-flowing','Next acquisition opportunity evaluated using proven model','Management platform replicable to new properties']},
+      3:{name:'Optimizing',hwk:'Multiple assets operating. Acquisition pipeline is always active.',
+         bullets:['Self-managing portfolio of infill multifamily assets','Development and management partners engaged as standard','Acquisition pipeline fed by relationships and market position','Infill development model repeatable','Win-win operating structure with subject matter expert']},
+    },
+    hwkItems:['Pac West agreement signed','Management partner in place','Riverside reporting weekly'],
+  },
+  {
+    id:'3D', label:'Entry-Level Housing', fullName:'Entry-Level Housing (Formation Homes / CRF)', team:true,
+    phases:{
+      1:{name:'Foundation',hwk:'NAHA signed. Alyssa actively sourcing. Weekly status report on dashboard. Land lease documents complete.',
+         bullets:['NAHA public-private partnership signed and inked','Alyssa in field — hunting and finding deals as buyer\'s rep','Internal team pipeline and underwriting process active','Roles and responsibilities chart documented','Land lease legal framework documented (whole vs. partial ownership)','Weekly project status report running against 25-unit goal']},
+      2:{name:'Operating',hwk:'First land lease executed. PR campaign launched. Backlog of projects in contract.',
+         bullets:['Two-part offering live: whole ownership OR land lease','PR and marketing campaign launched','Real estate professionals and end users educated on model','Pipeline of projects in contract for development','Land lease asset servicing platform operational','Financing structure for long-term land ownership established']},
+      3:{name:'Optimizing',hwk:'Recurring land lease income. Referral pipeline active. Audience built.',
+         bullets:['Proven model attracting referral partners','Portfolio of land lease lots generating recurring income','Audience of end users and capital partners established','Fractional land model recognized as market standard','Moat identified, clarified, documented — why no one else can replicate']},
+    },
+    hwkItems:['NAHA signed','Alyssa actively sourcing deals','Weekly status report live on dashboard','Land lease documents complete'],
+  },
+  {
+    id:'3E', label:'Asset Disposition', fullName:'Asset Disposition / Fractional (Second Home)', team:true,
+    phases:{
+      1:{name:'Foundation',hwk:'Mic-drop game plan delivered. Gino owns it. Dashboard shows status weekly. No additional capital required.',
+         bullets:['Updated game plan from Gino — stop/start/continue format','Simple, single-view dashboard for all active milestones','Clear priorities with deadlines through year-end','Gino owns the execution — clearly organized by situation and department','Operating cash flow funds project completion (no new capital needed)']},
+      2:{name:'Operating',hwk:'Weekly report shows green on revenue targets. Operating without external capital infusion.',
+         bullets:['Execution of Phase 1 plan in full sprint','Weekly reporting tied to exact milestones','Revenue generated to fund operations','What\'s working and what\'s not visible in real time']},
+      3:{name:'Optimizing',hwk:'Project closed. Go/No-Go decision made with data.',
+         bullets:['Project complete and evaluated','Decision: continue product line OR shelve and refocus','If continued: TICK/fractional disposition model fully operational','If shelved: resources reallocated to Entry-Level, Retail, Multifamily']},
+    },
+    hwkItems:['Game plan from Gino delivered (stop/start/continue)','Gino owns execution with clear milestones','No additional capital required to complete'],
+  },
+  {
+    id:'4', label:'Marketing & CRM', fullName:'Marketing & CRM', team:true,
+    phases:{
+      1:{name:'Foundation',hwk:'Weekly PN outreach running. Message is clear. Audience knows what we stand for.',
+         bullets:['Newspaper communication model running consistently','CRM audience evolution: connecting to "Fractional is the Future"','Zone of focus normalized — message and ask are clear','Staying in flow with key people using Stitser BUILT CRM','Follow-up Boss phase-out plan in motion','All projects connected to audience pipeline']},
+      2:{name:'Operating',hwk:'Zero competing CRM systems. All lead activity in S-BOS. Past clients receiving communication.',
+         bullets:['Follow-up Boss fully shut down','S-BOS CRM is the single system of record','Sphere connected, leads captured, nurtured, converted','Past client database active and working']},
+      3:{name:'Optimizing',hwk:'Team survey confirms CRM as default tool. Inbound leads sourced through audience, not outbound hustle.',
+         bullets:['Everyone on team using CRM as life skill','Self-multiplying: team can\'t imagine working without it','Fractional audience of buyers and users growing organically','Magnetic marketing — attracting, not chasing']},
+    },
+    hwkItems:['Weekly PN outreach running consistently','Message is clear — audience knows what we stand for','All projects connected to audience pipeline'],
+  },
+  {
+    id:'5', label:'Personal — Being', fullName:'Personal — Being', team:false,
+    phases:{
+      1:{name:'Foundation',hwk:'Rituals running daily. Capture → triage → schedule workflow operating. Phase context always visible.',
+         bullets:['Daily Stitser Way commitment — morning and evening ritual','Second brain infrastructure in place and being used','RPM framework operating: What do I want? Why? What\'s the 80/20?','Phase-based roadmap built and normalized across all life categories','Claude / Compass trained as triage partner','Tasks bucketed: Do, Delegate, Defer, Delete']},
+      2:{name:'Operating',hwk:'Calendar reflects day-type structure. Deep work happening in designated blocks.',
+         bullets:['Full sprint mode leveraging non-linear thinking strengths','CEO / Allocator skills accelerating: cash, people, strategy','Stepping away from screen to think is normalized and protected','Flow states scheduled and defended','Focus Day / Buffer Day / Free Day structure honored']},
+      3:{name:'Optimizing',hwk:'Operating as pure Allocator. Vision alive. Rituals unbreakable.',
+         bullets:['Fully integrated Dreamer — non-linear mind is the asset','Second brain self-multiplying: Claude captures, phases, and surfaces','Team fills in execution detail. Clint provides phase direction only.','Wise, Connected, Aligned — living toward 2036 Vivid Vision']},
+    },
+    hwkItems:['Morning & Evening ritual running daily','Capture → triage → schedule workflow operating','Phase context always visible'],
+  },
+  {
+    id:'6', label:'Personal — Body', fullName:'Personal — Body', team:false,
+    phases:{
+      1:{name:'Foundation',hwk:'3 rides done. Body moving without restriction before departure.',
+         bullets:['3 rides completed before leaving for vacation','Hot spots in legs and back addressed via stretching and trigger points','Signal unjammed — body moving freely']},
+      2:{name:'Operating',hwk:'Return from trip at or under 210 lbs. Felt present and in control during vacation.',
+         bullets:['Joyous, reasonable consumption on vacation','Alcohol: limited — controls salt/fat/sugar cravings','Return weight: 210 lbs or under','Savoring unique food experiences without overconsumption']},
+      3:{name:'Optimizing',hwk:'Both races completed. Race weight achieved. Body performing at 2036 Vivid Vision standard.',
+         bullets:['Hard training block begins post-vacation','Race 1: Downieville Cross Country — competitive finish','Race 2: Southern California race — competitive finish','Race weight: at or near 200 lbs for both','Flexible, fluid, powerful']},
+    },
+    hwkItems:['3 rides completed before vacation','Body moving without restriction','Hot spots addressed via stretching/trigger points'],
+  },
+  {
+    id:'7', label:'Personal — Balance', fullName:'Personal — Balance', team:false,
+    phases:{
+      1:{name:'Foundation',hwk:'Weekly connection with Christie. Kids engaged. PN list worked consistently.',
+         bullets:['Christie and kids: number one priority, fully connected','Business partners and immediate family: consistent rhythm','Near-term friends and sphere: regular visits and connection','PN outreach running — staying in flow with key people']},
+      2:{name:'Operating',hwk:'Christie and Clint doing monthly long lunches. Annual collage updated. Family culture celebrated.',
+         bullets:['Relationships feel joyful, not managed','Strengths of those closest celebrated actively','Monthly strategy lunches with Christie (Vivid Vision alive)','Annual collage updated']},
+      3:{name:'Optimizing',hwk:'Living the 2036 Vivid Vision indicators across family and relationships.',
+         bullets:['Interdependence mastered — together, honoring independent paths','Kids launched and connected to family culture','Deep holiday traditions — family comes home by desire','Refuge for friends. Steward for family. Leader for industry.']},
+    },
+    hwkItems:['Weekly connection with Christie','Kids engaged and connected','PN outreach running consistently'],
+  },
+];
+
+const PCFG = {
+  1:{cls:'p1',badge:'P1 · Foundation',tl:'tl-p1',bcls:'b1'},
+  2:{cls:'p2',badge:'P2 · Operating',tl:'tl-p2',bcls:'b2'},
+  3:{cls:'p3',badge:'P3 · Optimizing',tl:'tl-p3',bcls:'b3'},
+};
+const GYR_AUTO = (pct) => pct >= 67 ? 'G' : pct >= 33 ? 'Y' : 'R';
+const GYR_COLOR = {G:'var(--g)',Y:'var(--y)',R:'var(--r)'};
+const GYR_LABEL = {G:'On Track',Y:'At Risk',R:'Behind'};
+const PhaseColor = {1:'var(--p1-muted)',2:'var(--p2-muted)',3:'var(--p3-muted)'};
+
+// ── ICONS ─────────────────────────────────────────────────────────────────────
+const CheckIco = () => <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+const ChevIco = () => <svg viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+const BackIco = () => <svg viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+const EditIco = () => <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M9 2l1 1-7 7H2V9l7-7z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>;
+
+// ── CONFIG (change per file) ──────────────────────────────────────────────────
+const TEAM_ONLY = false;
+const SHOW_SWITCH_LINK = true;
+const OTHER_VIEW_HREF = '/phase-anchor-team.html';
+const OTHER_VIEW_LABEL = 'Team View →';
+const VIEW_LABEL = 'Personal Scoreboard';
+
+// ── HELPERS ───────────────────────────────────────────────────────────────────
+function getHwkItems(domain, ds) {
+  return ds.customHwkItems || domain.hwkItems;
+}
+function getPhaseHwk(domain, ds, p) {
+  return (ds.customPhaseHwk && ds.customPhaseHwk[p] != null)
+    ? ds.customPhaseHwk[p]
+    : domain.phases[p].hwk;
+}
+
+// ── LOAD / SAVE ───────────────────────────────────────────────────────────────
+function loadState() {
+  try { const s = localStorage.getItem(STORAGE_KEY); if(s) return JSON.parse(s); } catch{}
+  return {};
+}
+function saveState(s) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch{}
+}
+
+// ── EDIT MODAL ────────────────────────────────────────────────────────────────
+function EditModal({ domain, ds, onSave, onClose }) {
+  const [tab, setTab] = useState(1);
+  const [dates, setDates] = useState({
+    1: ds.phaseTargetDates?.[1] || '',
+    2: ds.phaseTargetDates?.[2] || '',
+    3: ds.phaseTargetDates?.[3] || '',
+  });
+  const [custom, setCustom] = useState(() => {
+    const base = {};
+    [1,2,3].forEach(p => {
+      base[p] = (ds.customOutcomes?.[p] || domain.phases[p].bullets.map(t=>({text:t,locked:true})));
+    });
+    return base;
+  });
+
+  const addItem = () => setCustom(c => ({...c, [tab]: [...c[tab], {text:'',locked:false}]}));
+  const delItem = (i) => setCustom(c => ({...c, [tab]: c[tab].filter((_,j)=>j!==i)}));
+  const editItem = (i, val) => setCustom(c => ({...c, [tab]: c[tab].map((it,j)=>j===i?{...it,text:val}:it)}));
+
+  const save = () => {
+    onSave({ phaseTargetDates: dates, customOutcomes: custom });
+    onClose();
+  };
+
+  const phase = (ds.currentPhase || domain.currentPhase);
+  const pcfg = PCFG[tab];
+
+  return (
+    <div className="modal-overlay" onClick={e => e.target===e.currentTarget && onClose()}>
+      <div className="modal">
+        <div className="modal-hd">
+          <div className="modal-title">{domain.label} · Edit Outcomes</div>
+          <button className="modal-close" onClick={onClose}>×</button>
+        </div>
+        <div className="modal-body">
+          <div className="modal-section">
+            <div className="modal-section-title">Phase Target Dates</div>
+            <div className="date-grid">
+              {[1,2,3].map(p => (
+                <div key={p} className={`date-field f${p}`}>
+                  <label>Phase {p} · {domain.phases[p].name}</label>
+                  <input type="date" value={dates[p]} onChange={e=>setDates(d=>({...d,[p]:e.target.value}))} />
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="modal-section">
+            <div className="modal-section-title">Outcomes by Phase</div>
+            <div className="modal-tabs">
+              {[1,2,3].map(p => (
+                <button key={p} className={`modal-tab ${tab===p?`at${p}`:''}`} onClick={()=>setTab(p)}>
+                  Phase {p} · {domain.phases[p].name}
+                </button>
+              ))}
+            </div>
+            <div className="outcome-list">
+              {custom[tab].map((item, i) => (
+                <div key={i} className="outcome-item">
+                  <input
+                    type="text"
+                    value={item.text}
+                    placeholder="Add outcome..."
+                    onChange={e => editItem(i, e.target.value)}
+                    readOnly={item.locked}
+                    style={item.locked ? {opacity:.6} : {}}
+                  />
+                  {!item.locked && <button className="out-del" onClick={()=>delItem(i)}>×</button>}
+                </div>
+              ))}
+            </div>
+            <button className="add-outcome-btn" onClick={addItem}>+ Add outcome to Phase {tab}</button>
+          </div>
+        </div>
+        <div className="modal-foot">
+          <button className="btn-cancel" onClick={onClose}>Cancel</button>
+          <button className="btn-save" onClick={save}>Save Changes</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── DOMAIN CARD ───────────────────────────────────────────────────────────────
+function DomainCard({ domain, ds, onToggleHwk, onSetPhase, onOpenDetail, onEdit, onSetGyr, onSetGyrNotes, showGyr }) {
+  const [expanded, setExpanded] = useState(false);
+  const phase = ds.currentPhase || 1;
+  const pcfg = PCFG[phase];
+  const hwkChecked = ds.hwkChecked || [];
+  const hwkItems = getHwkItems(domain, ds);
+  const pct = hwkItems.length > 0
+    ? Math.round((hwkChecked.filter(Boolean).length / hwkItems.length) * 100) : 0;
+  const targetDate = ds.phaseTargetDates?.[phase];
+  const autoGyr = GYR_AUTO(pct);
+  const gyr = ds.gyrOverride || autoGyr;
+
+  // Date status for card display
+  const dateStatus = (() => {
+    if (!targetDate) return { label: 'No target date set', color: '#374151', icon: '📅' };
+    const today = new Date(); today.setHours(0,0,0,0);
+    const target = new Date(targetDate + 'T12:00:00');
+    const diffDays = Math.round((target - today) / 86400000);
+    const fmt = target.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+    if (diffDays < 0)  return { label: fmt, color: '#ef4444', icon: '⚠', note: `${Math.abs(diffDays)}d overdue` };
+    if (diffDays <= 14) return { label: fmt, color: '#f59e0b', icon: '🔥', note: `${diffDays}d away` };
+    if (diffDays <= 30) return { label: fmt, color: '#f97316', icon: '📅', note: `${diffDays}d away` };
+    return { label: fmt, color: '#94a3b8', icon: '📅', note: `${diffDays}d away` };
+  })();
+
+  return (
+    <div className={`card ${pcfg.cls}`}>
+      <div className="card-head">
+        <div style={{flex:1,minWidth:0}}>
+          <div className="card-id">{domain.id}</div>
+          <div className="card-name">{domain.label}</div>
+        </div>
+        <div className="pbadge">{pcfg.badge}</div>
+      </div>
+
+      <div className="prog">
+        <div className="prog-row"><span>Phase Gate Progress</span><span>{pct}%</span></div>
+        <div className="prog-track"><div className="prog-fill" style={{width:`${pct}%`}}/></div>
+      </div>
+
+      <div className="target-date" onClick={()=>onOpenDetail(domain.id)}
+        style={{cursor:'pointer', justifyContent:'space-between'}} title="Open details to edit date">
+        <div style={{display:'flex',alignItems:'center',gap:5}}>
+          <span style={{fontSize:11}}>{dateStatus.icon}</span>
+          <span style={{color:'#6b7280'}}>Phase {phase} target:</span>
+          <span style={{color:dateStatus.color, fontWeight:700}}>{dateStatus.label}</span>
+        </div>
+        {dateStatus.note && targetDate && (
+          <span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:4,
+            background: dateStatus.color==='#ef4444'?'rgba(239,68,68,.12)':dateStatus.color==='#f59e0b'?'rgba(245,158,11,.12)':'rgba(255,255,255,.06)',
+            color: dateStatus.color, letterSpacing:'.04em'}}>
+            {dateStatus.note}
+          </span>
+        )}
+      </div>
+
+      <div className="hwk" onClick={e=>e.stopPropagation()}>
+        <div className="hwk-lbl">✓ How We Know</div>
+        {hwkItems.map((item, i) => (
+          <div key={i} className="hwk-item" onClick={()=>onToggleHwk(domain.id, i)}>
+            <div className={`chk ${hwkChecked[i]?'on':''}`}>{hwkChecked[i]&&<CheckIco/>}</div>
+            <div className={`hwk-txt ${hwkChecked[i]?'done':''}`}>{item}</div>
+          </div>
+        ))}
+      </div>
+
+      {showGyr && (
+        <div className="gyr-row" onClick={e=>e.stopPropagation()}>
+          <span className="gyr-lbl">Status</span>
+          {['G','Y','R'].map(g => (
+            <button key={g} className={`gyr-btn ${g} ${gyr===g?'sel':''}`}
+              onClick={()=>onSetGyr(domain.id, ds.gyrOverride===g ? null : g)}>
+              {g==='G'?'Green':g==='Y'?'Yellow':'Red'}
+            </button>
+          ))}
+          <div className="gyr-notes">
+            <input placeholder="Note for snapshot…" value={ds.gyrNotes||''} onChange={e=>onSetGyrNotes(domain.id, e.target.value)}/>
+          </div>
+        </div>
+      )}
+
+      <div className="card-actions" onClick={e=>e.stopPropagation()}>
+        <button className="act-btn" onClick={()=>onEdit(domain.id)}>✏ Edit Outcomes</button>
+        <button className="act-btn" onClick={()=>onOpenDetail(domain.id)}>↗ Open Details</button>
+      </div>
+
+      {expanded && (
+        <div className="exp-detail" onClick={e=>e.stopPropagation()}>
+          <div className="pnav">
+            {[1,2,3].map(p => (
+              <button key={p} className={`pnav-btn ${phase===p?`a${p}`:''}`} onClick={()=>onSetPhase(domain.id,p)}>
+                Phase {p}
+              </button>
+            ))}
+          </div>
+          {[1,2,3].map(p => (
+            <div key={p} className="psec">
+              <div className="psec-hd">
+                <span className={`psec-badge ${PCFG[p].bcls}`}>P{p}</span>
+                <span className="psec-ttl">{domain.phases[p].name}</span>
+              </div>
+              <ul className="pbullets">
+                {domain.phases[p].bullets.map((b,i)=><li key={i}>{b}</li>)}
+              </ul>
+              <div className="hwk-callout"><strong>How We Know · </strong>{domain.phases[p].hwk}</div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className={`exp-tog ${expanded?'open':''}`} onClick={()=>setExpanded(e=>!e)}>
+        {expanded?'Collapse':'View full roadmap'}<ChevIco/>
+      </div>
+    </div>
+  );
+}
+
+// ── DETAIL PAGE ───────────────────────────────────────────────────────────────
+function DetailPage({ domain, ds, onBack, onToggleHwk, onSetPhase, onSaveHwk, onSavePhaseHwk, onSaveDates }) {
+  const phase = ds.currentPhase || 1;
+  const hwkChecked = ds.hwkChecked || [];
+  const hwkItems = getHwkItems(domain, ds);
+  const pct = hwkItems.length > 0 ? Math.round((hwkChecked.filter(Boolean).length / hwkItems.length) * 100) : 0;
+  const dates = ds.phaseTargetDates || {};
+  const [editingHwk, setEditingHwk] = useState(false);
+  const [draftHwk, setDraftHwk] = useState([...hwkItems]);
+  // Inline editing for phase HWK narrative cells
+  const [editingPhaseHwk, setEditingPhaseHwk] = useState(null); // 1|2|3|null
+  const [draftPhaseHwk, setDraftPhaseHwk] = useState('');
+  // Inline date editing in timeline
+  const [editingDate, setEditingDate] = useState(null); // 1|2|3|null
+
+  // Compute max bullet count for table rows
+  const maxBullets = Math.max(...[1,2,3].map(p => domain.phases[p].bullets.length));
+
+  return (
+    <div className="detail-page">
+      <button className="detail-back" onClick={onBack}><BackIco/> Back to Scoreboard</button>
+
+      <div className="detail-hd">
+        <div>
+          <div className="detail-id">{domain.id}</div>
+          <div className="detail-name">{domain.fullName}</div>
+        </div>
+        <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
+          <span className={`pbadge ${PCFG[phase].cls}`}>{PCFG[phase].badge}</span>
+        </div>
+      </div>
+
+      {/* Phase Timeline */}
+      <div className="timeline">
+        {[1,2,3].map(p => {
+          const isCurrentPhase = phase === p;
+          const isDone = p < phase;
+          const phasePct = p === phase ? pct : (isDone ? 100 : 0);
+          const d = dates[p];
+          return (
+            <div key={p} className={`tl-phase tl-p${p} ${isCurrentPhase?'tl-current':''}`}>
+              {isCurrentPhase && <div className="tl-current-badge">Current</div>}
+              <div className="tl-num">Phase {p}</div>
+              <div className="tl-pname">{domain.phases[p].name}</div>
+              <div className="tl-date-lbl" style={{marginBottom:4}}>{isDone?'Completed':'Target date'}</div>
+              {editingDate===p ? (
+                <div onClick={e=>e.stopPropagation()}>
+                  <input
+                    type="date"
+                    autoFocus
+                    defaultValue={d||''}
+                    style={{background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.2)',borderRadius:6,padding:'4px 8px',color:'#f1f5f9',fontSize:12,outline:'none',width:'100%',marginBottom:5}}
+                    onChange={e=>{
+                      const newDates={...(ds.phaseTargetDates||{}),[p]:e.target.value};
+                      onSaveDates(domain.id, newDates);
+                    }}
+                    onBlur={()=>setEditingDate(null)}
+                    onKeyDown={e=>e.key==='Escape'&&setEditingDate(null)}
+                  />
+                </div>
+              ) : (
+                <div className="tl-date-val" title="Click to edit"
+                  onClick={()=>setEditingDate(p)}
+                  style={{cursor:'pointer',display:'flex',alignItems:'center',gap:6,borderRadius:5,padding:'2px 4px',margin:'-2px -4px',transition:'background .15s'}}
+                  onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,.06)'}
+                  onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
+                  {d ? new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
+                    : <span style={{opacity:.3}}>Not set</span>}
+                  <span style={{fontSize:8,opacity:.4,letterSpacing:'.05em'}}>✎</span>
+                </div>
+              )}
+              <div className="tl-prog">
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',fontSize:10,color:'#94a3b8',marginBottom:3}}>
+                  <span>{isDone?'✓ Complete':isCurrentPhase?'In Progress':'Upcoming'}</span>
+                  <span className="tl-pct">{phasePct}%</span>
+                </div>
+                <div className="tl-prog-bar"><div className={`tl-prog-fill`} style={{width:`${phasePct}%`}}/></div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Phase navigator */}
+      <div style={{display:'flex',gap:8,marginBottom:16}}>
+        <span style={{fontSize:11,color:'#6b7280',alignSelf:'center'}}>Set current phase:</span>
+        {[1,2,3].map(p => (
+          <button key={p} className={`pnav-btn ${phase===p?`a${p}`:''}`} style={{flex:'none',padding:'5px 16px'}}
+            onClick={()=>onSetPhase(domain.id,p)}>
+            Phase {p}
+          </button>
+        ))}
+      </div>
+
+      {/* Full Roadmap Table */}
+      <div style={{fontSize:11,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#6b7280',marginBottom:8}}>Full Roadmap</div>
+      <table className="roadmap-table">
+        <thead>
+          <tr>
+            <th className="h1">Phase 1 — Foundation</th>
+            <th className="h2">Phase 2 — Operating</th>
+            <th className="h3">Phase 3 — Optimizing</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.from({length: maxBullets}).map((_,i) => (
+            <tr key={i}>
+              <td className="c1">{domain.phases[1].bullets[i] || ''}</td>
+              <td className="c2">{domain.phases[2].bullets[i] || ''}</td>
+              <td className="c3">{domain.phases[3].bullets[i] || ''}</td>
+            </tr>
+          ))}
+          <tr className="roadmap-hwk-row">
+            {[1,2,3].map(p => (
+              <td key={p} className={`c${p}`} style={{cursor:'pointer',position:'relative'}}>
+                <strong style={{display:'flex',alignItems:'center',gap:6}}>
+                  ✓ How We Know
+                  <span style={{fontSize:8,fontWeight:700,padding:'1px 5px',borderRadius:4,background:'rgba(255,255,255,.08)',color:'#6b7280',letterSpacing:'.05em'}}
+                    onClick={e=>{e.stopPropagation();setEditingPhaseHwk(p);setDraftPhaseHwk(getPhaseHwk(domain,ds,p));}}>
+                    EDIT
+                  </span>
+                </strong>
+                {editingPhaseHwk===p ? (
+                  <div onClick={e=>e.stopPropagation()}>
+                    <textarea
+                      autoFocus
+                      value={draftPhaseHwk}
+                      onChange={e=>setDraftPhaseHwk(e.target.value)}
+                      style={{width:'100%',marginTop:5,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.15)',borderRadius:5,padding:'6px 8px',color:'#f1f5f9',fontSize:11,lineHeight:1.5,resize:'vertical',minHeight:70,outline:'none',fontFamily:'inherit'}}
+                    />
+                    <div style={{display:'flex',gap:6,marginTop:5}}>
+                      <button className="act-btn" style={{flex:'none',padding:'3px 10px',color:'var(--p1)',borderColor:'var(--p1-border)'}}
+                        onClick={()=>{onSavePhaseHwk(domain.id,p,draftPhaseHwk);setEditingPhaseHwk(null);}}>Save</button>
+                      <button className="act-btn" style={{flex:'none',padding:'3px 10px'}}
+                        onClick={()=>setEditingPhaseHwk(null)}>Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <span onClick={()=>{setEditingPhaseHwk(p);setDraftPhaseHwk(getPhaseHwk(domain,ds,p));}}>
+                    {getPhaseHwk(domain,ds,p)}
+                  </span>
+                )}
+              </td>
+            ))}
+          </tr>
+        </tbody>
+      </table>
+
+      {/* HWK Checklist */}
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+        <div style={{fontSize:11,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#6b7280'}}>Phase Gate Checklist</div>
+        {!editingHwk
+          ? <button className="act-btn" style={{flex:'none',padding:'4px 12px'}} onClick={()=>{setDraftHwk([...hwkItems]);setEditingHwk(true);}}>✏ Edit</button>
+          : <div style={{display:'flex',gap:6}}>
+              <button className="act-btn" style={{flex:'none',padding:'4px 12px',color:'var(--p1)',borderColor:'var(--p1-border)'}}
+                onClick={()=>{onSaveHwk(domain.id, draftHwk.filter(t=>t.trim()));setEditingHwk(false);}}>Save</button>
+              <button className="act-btn" style={{flex:'none',padding:'4px 12px'}} onClick={()=>setEditingHwk(false)}>Cancel</button>
+            </div>
+        }
+      </div>
+      <div className={`card ${PCFG[phase].cls}`} style={{marginBottom:20}}>
+        <div className="hwk" style={{paddingTop:12}}>
+          {editingHwk ? (
+            <>
+              {draftHwk.map((item, i) => (
+                <div key={i} className="hwk-item" style={{cursor:'default'}}>
+                  <input
+                    type="text"
+                    value={item}
+                    onChange={e=>setDraftHwk(d=>d.map((v,j)=>j===i?e.target.value:v))}
+                    style={{flex:1,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',borderRadius:5,padding:'3px 8px',color:'#f1f5f9',fontSize:12,outline:'none'}}
+                  />
+                  <button className="out-del" onClick={()=>setDraftHwk(d=>d.filter((_,j)=>j!==i))}>×</button>
+                </div>
+              ))}
+              <div style={{padding:'6px 0'}}>
+                <button className="add-outcome-btn" onClick={()=>setDraftHwk(d=>[...d,''])}>+ Add criteria</button>
+              </div>
+            </>
+          ) : (
+            hwkItems.map((item, i) => (
+              <div key={i} className="hwk-item" onClick={()=>onToggleHwk(domain.id, i)}>
+                <div className={`chk ${hwkChecked[i]?'on':''}`}>{hwkChecked[i]&&<CheckIco/>}</div>
+                <div className={`hwk-txt ${hwkChecked[i]?'done':''}`}>{item}</div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── SNAPSHOT ──────────────────────────────────────────────────────────────────
+function captureSnapshot(domains, states, viewMode) {
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0,10);
+  const label = viewMode === 'team' ? 'Team' : 'Personal';
+
+  const rows = domains.map(d => {
+    const ds = states[d.id] || {};
+    const phase = ds.currentPhase || d.currentPhase;
+    const hwkChecked = ds.hwkChecked || [];
+    const pct = Math.round((hwkChecked.filter(Boolean).length / d.hwkItems.length)*100);
+    const gyr = ds.gyrOverride || GYR_AUTO(pct);
+    const notes = ds.gyrNotes || '';
+    return { d, phase, pct, gyr, notes };
+  });
+
+  const G = rows.filter(r=>r.gyr==='G').length;
+  const Y = rows.filter(r=>r.gyr==='Y').length;
+  const R = rows.filter(r=>r.gyr==='R').length;
+
+  const html = `<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<title>Phase Anchor Snapshot — ${dateStr}</title>
+<style>
+*{box-sizing:border-box}body{font-family:system-ui,sans-serif;background:#0f1117;color:#e8eaf0;padding:24px;max-width:960px;margin:0 auto}
+h1{font-size:22px;font-weight:800;margin-bottom:4px}h1 span{color:#c9a84c}
+.meta{font-size:12px;color:#6b7280;margin-bottom:22px}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+.tile{background:#131720;border:1px solid #1e2336;border-radius:10px;padding:14px;text-align:center}
+.tile-val{font-size:28px;font-weight:800}.tile-lbl{font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-top:3px}
+.green{color:#22c55e}.yellow{color:#f59e0b}.red{color:#ef4444}.muted{color:#6b7280}
+table{width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;font-size:12px;margin-bottom:20px}
+th{background:#1e2336;padding:9px 12px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8}
+td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.05)}
+tr:last-child td{border:none}
+.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+.bG{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3)}
+.bY{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3)}
+.bR{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)}
+.bp1{background:#052e16;color:#4ade80;border:1px solid #166534}
+.bp2{background:#1c1007;color:#fb923c;border:1px solid #7c2d12}
+.bp3{background:#1a0a2e;color:#c084fc;border:1px solid #581c87}
+.pbar-track{height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;min-width:60px}
+.pbar-fill{height:100%;border-radius:3px}
+</style></head><body>
+<h1>Phase Anchor <span>Snapshot</span></h1>
+<div class="meta">${label} View · ${now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})} · ${now.toLocaleTimeString()}</div>
+<div class="summary">
+  <div class="tile"><div class="tile-val">${rows.length}</div><div class="tile-lbl">Domains</div></div>
+  <div class="tile"><div class="tile-val green">${G}</div><div class="tile-lbl">Green · On Track</div></div>
+  <div class="tile"><div class="tile-val yellow">${Y}</div><div class="tile-lbl">Yellow · At Risk</div></div>
+  <div class="tile"><div class="tile-val red">${R}</div><div class="tile-lbl">Red · Behind</div></div>
+</div>
+<table>
+<thead><tr><th>Domain</th><th>Phase</th><th>Gate Progress</th><th>Status</th><th>Notes</th></tr></thead>
+<tbody>
+${rows.map(({d,phase,pct,gyr,notes})=>{
+  const phaseName = ['Foundation','Operating','Optimizing'][phase-1];
+  const barColor = phase===1?'#22c55e':phase===2?'#f97316':'#a855f7';
+  return `<tr>
+  <td><strong>${d.fullName}</strong></td>
+  <td><span class="badge bp${phase}">P${phase} · ${phaseName}</span></td>
+  <td>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div class="pbar-track" style="flex:1"><div class="pbar-fill" style="width:${pct}%;background:${barColor}"></div></div>
+      <span style="font-size:11px;font-weight:700;color:#94a3b8;white-space:nowrap">${pct}%</span>
+    </div>
+  </td>
+  <td><span class="badge b${gyr}">${gyr==='G'?'Green':gyr==='Y'?'Yellow':'Red'}</span></td>
+  <td style="color:#94a3b8">${notes||'—'}</td>
+</tr>`;}).join('')}
+</tbody></table>
+<div style="font-size:10px;color:#374151;margin-top:24px">Stitser BUILT · Phase Anchor · Generated ${now.toISOString()}</div>
+</body></html>`;
+
+  const blob = new Blob([html],{type:'text/html'});
+  const url = URL.createObjectURL(blob);
+  const a = Object.assign(document.createElement('a'),{href:url,download:`phase-snapshot-${viewMode}-${dateStr}.html`});
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── ROOT APP ──────────────────────────────────────────────────────────────────
+function App() {
+  const [states, setStates] = useState(loadState);
+  const [detail, setDetail] = useState(null);
+  const [editId, setEditId] = useState(null);
+  const [showGyr, setShowGyr] = useState(false);
+  const [toast, setToast] = useState(false);
+  const toastTimer = useRef(null);
+
+  useEffect(() => { saveState(states); showToast(); }, [states]);
+
+  function showToast() {
+    setToast(true);
+    clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(false), 1800);
+  }
+
+  const patchDs = useCallback((domainId, patch) => {
+    setStates(prev => {
+      const ds = prev[domainId] || {};
+      return { ...prev, [domainId]: { ...ds, ...patch } };
+    });
+  }, []);
+
+  const toggleHwk = useCallback((domainId, i) => {
+    setStates(prev => {
+      const ds = prev[domainId] || {};
+      const c = [...(ds.hwkChecked || [])];
+      c[i] = !c[i];
+      return { ...prev, [domainId]: { ...ds, hwkChecked: c } };
+    });
+  }, []);
+
+  const saveHwk = useCallback((domainId, items) => {
+    setStates(prev => {
+      const ds = prev[domainId] || {};
+      return { ...prev, [domainId]: { ...ds, customHwkItems: items, hwkChecked: [] } };
+    });
+  }, []);
+
+  const savePhaseHwk = useCallback((domainId, phaseNum, text) => {
+    setStates(prev => {
+      const ds = prev[domainId] || {};
+      const customPhaseHwk = { ...(ds.customPhaseHwk || {}), [phaseNum]: text };
+      return { ...prev, [domainId]: { ...ds, customPhaseHwk } };
+    });
+  }, []);
+
+  const saveDates = useCallback((domainId, dates) => {
+    patchDs(domainId, { phaseTargetDates: dates });
+  }, [patchDs]);
+
+  const setPhase = useCallback((domainId, p) => patchDs(domainId, {currentPhase:p}), [patchDs]);
+  const setGyr   = useCallback((domainId, g) => patchDs(domainId, {gyrOverride:g}), [patchDs]);
+  const setGyrNotes = useCallback((domainId, n) => patchDs(domainId, {gyrNotes:n}), [patchDs]);
+
+  const domains = TEAM_ONLY ? DOMAINS.filter(d=>d.team) : DOMAINS;
+
+  const totalHwk = domains.reduce((s,d)=>s+getHwkItems(d,states[d.id]||{}).length,0);
+  const checkedHwk = domains.reduce((s,d)=>{
+    const c=(states[d.id]||{}).hwkChecked||[];
+    return s+c.filter(Boolean).length;
+  },0);
+  const overallPct = Math.round((checkedHwk/totalHwk)*100)||0;
+  const phaseCounts = domains.reduce((acc,d)=>{
+    const p=(states[d.id]||{}).currentPhase||1;
+    acc[p]=(acc[p]||0)+1; return acc;
+  },{});
+
+  if (detail) {
+    const dom = DOMAINS.find(d=>d.id===detail);
+    return (
+      <div>
+        <div className="hdr">
+          <div className="hdr-left">
+            <div><div className="hdr-logo">Stitser BUILT</div><div className="hdr-title">Phase Anchor</div><div className="hdr-sub">{VIEW_LABEL}</div></div>
+          </div>
+          <div className="hdr-right">
+            {SHOW_SWITCH_LINK && <a href={OTHER_VIEW_HREF} className="snap-btn" style={{textDecoration:'none'}}>{OTHER_VIEW_LABEL}</a>}
+            <button className="detail-back" onClick={()=>setDetail(null)}><BackIco/> Back</button>
+          </div>
+        </div>
+        <DetailPage domain={dom} ds={states[dom.id]||{}} onBack={()=>setDetail(null)}
+          onToggleHwk={toggleHwk} onSetPhase={setPhase} onSaveHwk={saveHwk} onSavePhaseHwk={savePhaseHwk} onSaveDates={saveDates}/>
+        <div className={`save-toast ${toast?'show':''}`}>Auto-saved</div>
+      </div>
+    );
+  }
+
+  const editDomain = editId ? DOMAINS.find(d=>d.id===editId) : null;
+
+  return (
+    <>
+      <div className="hdr">
+        <div className="hdr-left">
+          <div>
+            <div className="hdr-logo">Stitser BUILT</div>
+            <div className="hdr-title">Phase Anchor</div>
+            <div className="hdr-sub">{VIEW_LABEL}</div>
+          </div>
+        </div>
+        <div className="hdr-right">
+          {SHOW_SWITCH_LINK && <a href={OTHER_VIEW_HREF} className="snap-btn" style={{textDecoration:'none'}}>{OTHER_VIEW_LABEL}</a>}
+          <button className={`snap-btn ${showGyr?'active':''}`} onClick={()=>setShowGyr(g=>!g)}>
+            {showGyr?'✓ GYR Mode':'⬤ GYR Mode'}
+          </button>
+          <button className="snap-btn" onClick={()=>captureSnapshot(domains,states,TEAM_ONLY?'team':'personal')}>
+            📸 Snapshot
+          </button>
+          <div className="ovr">
+            <div className="ovr-pct">{overallPct}%</div>
+            <div className="ovr-lbl">Phase 1 complete</div>
+          </div>
+        </div>
+      </div>
+
+      <div className="leg">
+        <div className="leg-item"><div className="leg-dot" style={{background:'var(--p1)'}}/><span>Phase 1 — Foundation ({phaseCounts[1]||0})</span></div>
+        <div className="leg-item"><div className="leg-dot" style={{background:'var(--p2)'}}/><span>Phase 2 — Operating ({phaseCounts[2]||0})</span></div>
+        <div className="leg-item"><div className="leg-dot" style={{background:'var(--p3)'}}/><span>Phase 3 — Optimizing ({phaseCounts[3]||0})</span></div>
+        <div className="leg-right">{checkedHwk}/{totalHwk} criteria met</div>
+      </div>
+
+      <div className="grid">
+        {domains.map(domain => (
+          <DomainCard key={domain.id} domain={domain} ds={states[domain.id]||{}}
+            onToggleHwk={toggleHwk} onSetPhase={setPhase} onOpenDetail={setDetail}
+            onEdit={setEditId} onSetGyr={setGyr} onSetGyrNotes={setGyrNotes} showGyr={showGyr}/>
+        ))}
+      </div>
+
+      {editDomain && (
+        <EditModal domain={editDomain} ds={states[editId]||{}}
+          onSave={patch=>patchDs(editId,patch)} onClose={()=>setEditId(null)}/>
+      )}
+
+      <div className={`save-toast ${toast?'show':''}`}>Auto-saved</div>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
