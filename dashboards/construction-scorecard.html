@@ -268,10 +268,24 @@
   display: flex; align-items: center; justify-content: center;
 }
 .drill-modal-close:hover { border-color: var(--status-red); color: var(--status-red); }
-.drill-modal-body { overflow-y: auto; padding: 20px; flex: 1; }
-.drill-chips {
-  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;
+/* Chips bar: pinned between title and scroll area, never scrolls away */
+.drill-modal-chips-bar {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-subtle);
+  display: flex; gap: 10px; flex-wrap: wrap; flex-shrink: 0;
+  background: var(--surface-1);
 }
+.drill-modal-body { overflow-y: auto; padding: 0; flex: 1; }
+.drill-body-inner { padding: 16px 20px 24px; }
+/* Sticky column headers inside modal scroll area */
+.drill-modal-body table thead th {
+  position: sticky; top: 0; z-index: 2;
+  background: var(--surface-2);
+  cursor: pointer; user-select: none; white-space: nowrap;
+}
+.drill-modal-body table thead th:hover { background: #1e3347; }
+.dsort { display: inline-block; margin-left: 3px; font-size: 9px; opacity: 0.3; vertical-align: middle; }
+.dsort.on { opacity: 1; color: var(--sb-gold); }
 .drill-chip {
   padding: 8px 14px; border-radius: var(--r-md);
   border: 1px solid var(--border-subtle);
@@ -487,6 +501,7 @@
       </div>
       <button class="drill-modal-close" onclick="closeDrillDown()">&times;</button>
     </div>
+    <div class="drill-modal-chips-bar" id="drill-chips"></div>
     <div class="drill-modal-body" id="drill-body"></div>
   </div>
 </div>
@@ -1744,247 +1759,345 @@ async function captureSnapshot() {
 }
 
 // ── Drill-down Modal ─────────────────────────────────────────────────────
-// Opens a modal with the underlying records driving each scorecard bucket.
-// Mirrors the QuickBooks "click a number, see the ledger" pattern.
-function openDrillDown(bucket) {
-  const modal    = document.getElementById('drill-modal');
-  const titleEl  = document.getElementById('drill-title');
-  const subEl    = document.getElementById('drill-subtitle');
-  const bodyEl   = document.getElementById('drill-body');
+// Chips bar is pinned (non-scrolling). Column headers are sticky. Columns
+// are sortable. Row data lives in _drillRows so sort just rebuilds tbody.
 
-  let titleText = '', subText = '', bodyHTML = '';
+let _drillRows   = [];   // raw project data for current open bucket
+let _drillBucket = null; // 'A' | 'B' | 'C' | 'SCORE'
+const _drillSort = { col: '', dir: 'desc' };
+
+// Extract sort value from a project for a given column key
+function _drillSortVal(p, col) {
+  switch (col) {
+    case 'title':      return (p.title || '').toLowerCase();
+    case 'stage':      return p.stage || '';
+    case 'periodRev':  return p.g702?.periodRevenue       ?? -Infinity;
+    case 'btf':        return p.budget?.btf               ?? -Infinity;
+    case 'factor': {
+      const btf = p.budget?.btf || 0, cap = p.period?.capturableBTF || 0;
+      return btf > 0 ? cap / btf : -Infinity;
+    }
+    case 'capturable': return p.period?.capturableBTF     ?? -Infinity;
+    case 'freshness':  return p.freshness?.budget         || '';
+    case 'contractRev':return p.budget?.contractRevenue   ?? -Infinity;
+    case 'rating':     return p.conversion?.confidenceRating  ?? -Infinity;
+    case 'convRate':   return p.conversion?.conversionRate    ?? -Infinity;
+    case 'projected':  return p.period?.pipelineProjected     ?? -Infinity;
+    default:           return 0;
+  }
+}
+
+function sortDrillCol(col) {
+  const textCols = new Set(['title', 'stage', 'freshness']);
+  if (_drillSort.col === col) {
+    _drillSort.dir = _drillSort.dir === 'asc' ? 'desc' : 'asc';
+  } else {
+    _drillSort.col = col;
+    _drillSort.dir = textCols.has(col) ? 'asc' : 'desc';
+  }
+  renderDrillTbody();
+  updateDrillSortUI();
+}
+
+function updateDrillSortUI() {
+  document.querySelectorAll('#drill-thead th[data-drill-col]').forEach(th => {
+    const icon = th.querySelector('.dsort');
+    if (!icon) return;
+    const active = th.dataset.drillCol === _drillSort.col;
+    icon.className = 'dsort' + (active ? ' on' : '');
+    icon.textContent = active ? (_drillSort.dir === 'asc' ? '↑' : '↓') : '↕';
+  });
+}
+
+function _sortedDrillRows() {
+  const col = _drillSort.col, dir = _drillSort.dir === 'asc' ? 1 : -1;
+  return [..._drillRows].sort((a, b) => {
+    const av = _drillSortVal(a, col), bv = _drillSortVal(b, col);
+    return av < bv ? -dir : av > bv ? dir : 0;
+  });
+}
+
+// Format BTF freshness date: colored dot + date + age
+function fmtBtfDate(dateStr) {
+  if (!dateStr) return '<span style="color:var(--text-muted);font-family:var(--font-mono);font-size:10px">—</span>';
+  const d    = new Date(dateStr);
+  const days = Math.floor((Date.now() - d) / 86400000);
+  const col  = days <= 7  ? 'var(--status-green)'
+             : days <= 21 ? 'var(--status-yellow)'
+             : 'var(--status-red)';
+  const lbl  = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+  const ago  = days === 0 ? 'today' : `${days}d ago`;
+  return `<span style="font-family:var(--font-mono);font-size:10px;color:${col}">● ${lbl}</span><span style="font-size:9px;color:var(--text-muted);margin-left:4px">${ago}</span>`;
+}
+
+// Rebuild just the tbody when sort changes — no full modal redraw
+function renderDrillTbody() {
+  const tbody = document.getElementById('drill-tbody');
+  if (!tbody) return;
+  const rows   = _sortedDrillRows();
   const fmtPct = v => Math.round((v / GOAL_REVENUE) * 100) + '%';
 
-  // ── [A] G-702 Actuals ───────────────────────────────────────────────────
-  if (bucket === 'A') {
-    titleText = '[A] Billed This Period — G-702 Actuals';
-    subText   = 'Pay applications submitted within the scoring window (Jun 1 – today) · Hard actuals only · No estimates';
-    const billed = _projects
-      .filter(p => (p.g702?.periodRevenue || 0) > 0)
-      .sort((a, b) => (b.g702.periodRevenue) - (a.g702.periodRevenue));
+  if (_drillBucket === 'A') {
+    tbody.innerHTML = rows.map(p => `
+      <tr>
+        <td><a href="${p.sbosUrl}" target="_blank" style="color:var(--text-primary);text-decoration:none"
+            onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-primary)'"
+            >${p.title} <span style="opacity:.35;font-size:10px">↗</span></a></td>
+        <td><span class="chip" style="color:${STATUS_CHIP_COLORS[p.stage]};border-color:${STATUS_CHIP_COLORS[p.stage]}40;background:${STATUS_CHIP_COLORS[p.stage]}12;font-size:9px">${p.subLabel}</span></td>
+        <td class="num" style="color:var(--status-green)">${fmtMoney(p.g702.periodRevenue, true)}</td>
+        <td class="num" style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">${fmtPct(p.g702.periodRevenue)}</td>
+      </tr>`).join('');
 
-    bodyHTML = `
-      <div class="drill-chips">
-        <div class="drill-chip">
-          <div class="drill-chip-value" style="color:var(--status-green)">${fmtMoney(_score.bucketA, true)}</div>
-          <div class="drill-chip-label">Total Billed</div>
-        </div>
-        <div class="drill-chip">
-          <div class="drill-chip-value">${billed.length}</div>
-          <div class="drill-chip-label">Jobs w/ Activity</div>
-        </div>
-        <div class="drill-chip">
-          <div class="drill-chip-value" style="color:var(--status-green)">${fmtPct(_score.bucketA)}</div>
-          <div class="drill-chip-label">of $4.5M Goal</div>
-        </div>
-      </div>`;
-
-    if (billed.length === 0) {
-      bodyHTML += `<div class="drill-empty">
-        No G-702 billings on record for the Jun 1 – Dec 31 scoring window yet.<br>
-        <span style="font-size:11px;color:var(--text-muted)">This means: no G-702 pay apps have been submitted within the period, line items have no period-specific dates, or G-702 app data was unavailable during the last fetch.</span>
-      </div>`;
-    } else {
-      const rows = billed.map(p => `
+  } else if (_drillBucket === 'B') {
+    tbody.innerHTML = rows.map(p => {
+      const btf        = p.budget?.btf || 0;
+      const capturable = p.period?.capturableBTF || 0;
+      const factor     = btf > 0 ? capturable / btf : null;
+      const extends_   = p.period?.extendsOutOfPeriod;
+      const factorColor = factor === null      ? 'var(--text-muted)'
+                        : factor < 0.6         ? 'var(--status-yellow)'
+                        : 'var(--status-green)';
+      return `
         <tr>
           <td><a href="${p.sbosUrl}" target="_blank" style="color:var(--text-primary);text-decoration:none"
               onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-primary)'"
               >${p.title} <span style="opacity:.35;font-size:10px">↗</span></a></td>
           <td><span class="chip" style="color:${STATUS_CHIP_COLORS[p.stage]};border-color:${STATUS_CHIP_COLORS[p.stage]}40;background:${STATUS_CHIP_COLORS[p.stage]}12;font-size:9px">${p.subLabel}</span></td>
-          <td class="num" style="color:var(--status-green)">${fmtMoney(p.g702.periodRevenue, true)}</td>
-          <td class="num" style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">${fmtPct(p.g702.periodRevenue)}</td>
-        </tr>`).join('');
-      bodyHTML += `
-        <table class="db-table" style="font-size:11px">
-          <thead><tr><th>Job</th><th>Stage</th><th class="text-right">G-702 Period Revenue</th><th class="text-right">% of Goal</th></tr></thead>
-          <tbody>${rows}</tbody>
-          <tfoot><tr>
-            <td colspan="2" style="color:var(--text-accent);font-family:var(--font-display);letter-spacing:.04em">TOTAL [A]</td>
-            <td class="num" style="color:var(--status-green);font-family:var(--font-display)">${fmtMoney(_score.bucketA, true)}</td>
-            <td class="num" style="color:var(--status-green);font-family:var(--font-mono);font-size:11px">${fmtPct(_score.bucketA)}</td>
-          </tr></tfoot>
-        </table>
-        <div class="drill-note">
-          Period Revenue = G-702 field s0592aef02 (period-specific billing amount), not cumulative billings to date.<br>
-          Pay apps are filtered to those where the billing period falls within Jun 1 – Dec 31, 2026.
+          <td class="num">${btf ? fmtMoney(btf, true) : '<span style="color:var(--text-muted)">—</span>'}</td>
+          <td class="num" style="font-family:var(--font-mono);font-size:10px;color:${factorColor}">
+            ${factor !== null ? Math.round(factor * 100) + '%' : '—'}
+          </td>
+          <td class="num" style="color:${capturable ? 'var(--sb-gold)' : 'var(--text-muted)'}">${capturable ? fmtMoney(capturable, true) : '—'}</td>
+          <td>${fmtBtfDate(p.freshness?.budget)}</td>
+          <td style="font-family:var(--font-mono);font-size:9px;color:${extends_ ? 'var(--status-yellow)' : 'var(--text-muted)'}">
+            ${extends_ ? '⚠ extends past Dec 31' : '✓ within period'}
+          </td>
+        </tr>`;
+    }).join('');
+
+  } else if (_drillBucket === 'C') {
+    tbody.innerHTML = rows.map(p => {
+      const conv  = p.conversion || {};
+      const proj  = p.period?.pipelineProjected || 0;
+      const isHot = p.stage === 'BIZ_DEV';
+      const ratingColor = !conv.confidenceRating             ? 'var(--status-yellow)'
+                        : conv.confidenceRating >= 7          ? 'var(--status-green)'
+                        : conv.confidenceRating >= 5          ? 'var(--status-yellow)'
+                        : 'var(--status-red)';
+      return `
+        <tr${proj === 0 ? ' style="opacity:0.55"' : ''}>
+          <td>
+            <a href="${p.sbosUrl}" target="_blank" style="color:var(--text-primary);text-decoration:none"
+               onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-primary)'"
+               >${p.title} <span style="opacity:.35;font-size:10px">↗</span></a>
+            ${isHot ? '<span style="font-size:9px;margin-left:5px;padding:1px 5px;background:rgba(231,76,60,0.12);border:1px solid rgba(231,76,60,0.3);border-radius:3px;color:var(--status-red);font-family:var(--font-mono)">HOT</span>' : ''}
+          </td>
+          <td class="num">${p.budget?.contractRevenue ? fmtMoney(p.budget.contractRevenue, true) : '<span style="color:var(--text-muted)">—</span>'}</td>
+          <td class="num" style="font-family:var(--font-mono);font-size:10px;color:${ratingColor}">
+            ${conv.confidenceRating ? conv.confidenceRating + '/10' : '⚠ unrated'}
+          </td>
+          <td class="num" style="font-family:var(--font-mono);font-size:10px">
+            ${conv.isDefaultRating
+              ? `<span style="color:var(--status-yellow)">${Math.round((conv.conversionRate||0)*100)}% <span style="font-size:9px">(default)</span></span>`
+              : Math.round((conv.conversionRate||0)*100) + '%'}
+          </td>
+          <td class="num" style="color:${proj > 0 ? 'var(--status-blue)' : 'var(--text-muted)'}">
+            ${proj > 0 ? fmtMoney(proj, true) : '—'}
+          </td>
+        </tr>`;
+    }).join('');
+  }
+}
+
+// ── Open the modal for a given bucket ────────────────────────────────────
+function openDrillDown(bucket) {
+  const modal   = document.getElementById('drill-modal');
+  const titleEl = document.getElementById('drill-title');
+  const subEl   = document.getElementById('drill-subtitle');
+  const chipsEl = document.getElementById('drill-chips');
+  const bodyEl  = document.getElementById('drill-body');
+  const fmtPct  = v => Math.round((v / GOAL_REVENUE) * 100) + '%';
+
+  _drillBucket = bucket;
+
+  // ── [A] G-702 Actuals ───────────────────────────────────────────────────
+  if (bucket === 'A') {
+    titleEl.textContent = '[A] Billed This Period — G-702 Actuals';
+    subEl.textContent   = 'Pay applications submitted within the scoring window (Jun 1 – today) · Hard actuals only · No estimates';
+
+    _drillRows = _projects.filter(p => (p.g702?.periodRevenue || 0) > 0);
+    _drillSort.col = 'periodRev'; _drillSort.dir = 'desc';
+
+    chipsEl.innerHTML = `
+      <div class="drill-chip">
+        <div class="drill-chip-value" style="color:var(--status-green)">${fmtMoney(_score.bucketA, true)}</div>
+        <div class="drill-chip-label">Total Billed</div>
+      </div>
+      <div class="drill-chip">
+        <div class="drill-chip-value">${_drillRows.length}</div>
+        <div class="drill-chip-label">Jobs w/ Activity</div>
+      </div>
+      <div class="drill-chip">
+        <div class="drill-chip-value" style="color:var(--status-green)">${fmtPct(_score.bucketA)}</div>
+        <div class="drill-chip-label">of $4.5M Goal</div>
+      </div>`;
+
+    if (_drillRows.length === 0) {
+      bodyEl.innerHTML = `<div class="drill-body-inner"><div class="drill-empty">
+        No G-702 billings on record for the Jun 1 – Dec 31 scoring window yet.<br>
+        <span style="font-size:11px;color:var(--text-muted)">This means: no G-702 pay apps have been submitted within the period, line items have no period-specific dates, or G-702 app data was unavailable during the last fetch.</span>
+      </div></div>`;
+    } else {
+      bodyEl.innerHTML = `
+        <div class="drill-body-inner">
+          <table class="db-table" style="font-size:11px">
+            <thead id="drill-thead"><tr>
+              <th data-drill-col="title"     onclick="sortDrillCol('title')">Job <span class="dsort">↕</span></th>
+              <th data-drill-col="stage"     onclick="sortDrillCol('stage')">Stage <span class="dsort">↕</span></th>
+              <th class="text-right" data-drill-col="periodRev" onclick="sortDrillCol('periodRev')">G-702 Period Revenue <span class="dsort on">↓</span></th>
+              <th class="text-right">% of Goal</th>
+            </tr></thead>
+            <tbody id="drill-tbody"></tbody>
+            <tfoot><tr>
+              <td colspan="2" style="color:var(--text-accent);font-family:var(--font-display);letter-spacing:.04em">TOTAL [A]</td>
+              <td class="num" style="color:var(--status-green);font-family:var(--font-display)">${fmtMoney(_score.bucketA, true)}</td>
+              <td class="num" style="color:var(--status-green);font-family:var(--font-mono);font-size:11px">${fmtPct(_score.bucketA)}</td>
+            </tr></tfoot>
+          </table>
+          <div class="drill-note">
+            Period Revenue = G-702 field s0592aef02 (period-specific billing amount), not cumulative billings to date.<br>
+            Pay apps are filtered to those where the billing period falls within Jun 1 – Dec 31, 2026.
+          </div>
         </div>`;
+      renderDrillTbody();
     }
 
   // ── [B] WIP Capturable ──────────────────────────────────────────────────
   } else if (bucket === 'B') {
-    titleText = '[B] WIP Capturable by Dec 31 — Balance to Finish Proration';
-    subText   = 'Each WIP + Closeout job\'s BTF prorated by how much of its construction window falls before Dec 31';
-    const wip = _projects
-      .filter(p => p.stage === 'WIP' || p.stage === 'CLOSEOUT')
-      .sort((a, b) => (b.period?.capturableBTF || 0) - (a.period?.capturableBTF || 0));
-    const overrunCount = wip.filter(p => p.period?.extendsOutOfPeriod).length;
+    titleEl.textContent = '[B] WIP Capturable by Dec 31 — Balance to Finish Proration';
+    subEl.textContent   = 'Each WIP + Closeout job\'s BTF prorated by how much of its construction window falls before Dec 31';
 
-    bodyHTML = `
-      <div class="drill-chips">
-        <div class="drill-chip">
-          <div class="drill-chip-value" style="color:var(--sb-gold)">${fmtMoney(_score.bucketB, true)}</div>
-          <div class="drill-chip-label">Total Capturable</div>
-        </div>
-        <div class="drill-chip">
-          <div class="drill-chip-value">${wip.length}</div>
-          <div class="drill-chip-label">WIP + Closeout Jobs</div>
-        </div>
-        <div class="drill-chip">
-          <div class="drill-chip-value" style="color:var(--sb-gold)">${fmtPct(_score.bucketB)}</div>
-          <div class="drill-chip-label">of $4.5M Goal</div>
-        </div>
-        ${overrunCount > 0 ? `
-        <div class="drill-chip" style="border-color:rgba(243,156,18,0.35)">
-          <div class="drill-chip-value" style="color:var(--status-yellow)">${overrunCount}</div>
-          <div class="drill-chip-label">Extend Past Dec 31</div>
-        </div>` : ''}
-      </div>`;
+    _drillRows = _projects.filter(p => p.stage === 'WIP' || p.stage === 'CLOSEOUT');
+    _drillSort.col = 'capturable'; _drillSort.dir = 'desc';
+    const overrunCount = _drillRows.filter(p => p.period?.extendsOutOfPeriod).length;
 
-    if (wip.length === 0) {
-      bodyHTML += `<div class="drill-empty">No WIP or Closeout jobs in the current pipeline.</div>`;
+    chipsEl.innerHTML = `
+      <div class="drill-chip">
+        <div class="drill-chip-value" style="color:var(--sb-gold)">${fmtMoney(_score.bucketB, true)}</div>
+        <div class="drill-chip-label">Total Capturable</div>
+      </div>
+      <div class="drill-chip">
+        <div class="drill-chip-value">${_drillRows.length}</div>
+        <div class="drill-chip-label">WIP + Closeout Jobs</div>
+      </div>
+      <div class="drill-chip">
+        <div class="drill-chip-value" style="color:var(--sb-gold)">${fmtPct(_score.bucketB)}</div>
+        <div class="drill-chip-label">of $4.5M Goal</div>
+      </div>
+      ${overrunCount > 0 ? `
+      <div class="drill-chip" style="border-color:rgba(243,156,18,0.35)">
+        <div class="drill-chip-value" style="color:var(--status-yellow)">${overrunCount}</div>
+        <div class="drill-chip-label">Extend Past Dec 31</div>
+      </div>` : ''}`;
+
+    if (_drillRows.length === 0) {
+      bodyEl.innerHTML = `<div class="drill-body-inner"><div class="drill-empty">No WIP or Closeout jobs in the current pipeline.</div></div>`;
     } else {
-      const rows = wip.map(p => {
-        const btf        = p.budget.btf || 0;
-        const capturable = p.period?.capturableBTF || 0;
-        const factor     = btf > 0 ? capturable / btf : null;
-        const extends_   = p.period?.extendsOutOfPeriod;
-        const factorColor = factor === null ? 'var(--text-muted)'
-                          : factor < 0.6   ? 'var(--status-yellow)'
-                          : 'var(--status-green)';
-        return `
-          <tr>
-            <td><a href="${p.sbosUrl}" target="_blank" style="color:var(--text-primary);text-decoration:none"
-                onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-primary)'"
-                >${p.title} <span style="opacity:.35;font-size:10px">↗</span></a></td>
-            <td><span class="chip" style="color:${STATUS_CHIP_COLORS[p.stage]};border-color:${STATUS_CHIP_COLORS[p.stage]}40;background:${STATUS_CHIP_COLORS[p.stage]}12;font-size:9px">${p.subLabel}</span></td>
-            <td class="num">${btf ? fmtMoney(btf, true) : '<span style="color:var(--text-muted)">—</span>'}</td>
-            <td class="num" style="font-family:var(--font-mono);font-size:10px;color:${factorColor}">
-              ${factor !== null ? Math.round(factor * 100) + '%' : '—'}
-            </td>
-            <td class="num" style="color:${capturable ? 'var(--sb-gold)' : 'var(--text-muted)'}">${capturable ? fmtMoney(capturable, true) : '—'}</td>
-            <td style="font-family:var(--font-mono);font-size:9px;color:${extends_ ? 'var(--status-yellow)' : 'var(--text-muted)'}">
-              ${extends_ ? '⚠ extends past Dec 31' : '✓ within period'}
-            </td>
-          </tr>`;
-      }).join('');
-      bodyHTML += `
-        <table class="db-table" style="font-size:11px">
-          <thead><tr>
-            <th>Job</th><th>Stage</th>
-            <th class="text-right">BTF</th>
-            <th class="text-right">Capture %</th>
-            <th class="text-right">Capturable by Dec 31</th>
-            <th>Period Status</th>
-          </tr></thead>
-          <tbody>${rows}</tbody>
-          <tfoot><tr>
-            <td colspan="4" style="color:var(--text-accent);font-family:var(--font-display);letter-spacing:.04em">TOTAL [B]</td>
-            <td class="num" style="color:var(--sb-gold);font-family:var(--font-display)">${fmtMoney(_score.bucketB, true)}</td>
-            <td></td>
-          </tr></tfoot>
-        </table>
-        <div class="drill-note">
-          Capturable = BTF × min(1, Days Until Dec 31 ÷ Days Until Project Completion)<br>
-          Jobs finishing before Dec 31 → 100% captured. Jobs extending into 2027 → only the portion billable by Dec 31 counts.
+      bodyEl.innerHTML = `
+        <div class="drill-body-inner">
+          <table class="db-table" style="font-size:11px">
+            <thead id="drill-thead"><tr>
+              <th data-drill-col="title"      onclick="sortDrillCol('title')">Job <span class="dsort">↕</span></th>
+              <th data-drill-col="stage"      onclick="sortDrillCol('stage')">Stage <span class="dsort">↕</span></th>
+              <th class="text-right" data-drill-col="btf"        onclick="sortDrillCol('btf')">BTF <span class="dsort">↕</span></th>
+              <th class="text-right" data-drill-col="factor"     onclick="sortDrillCol('factor')">Capture % <span class="dsort">↕</span></th>
+              <th class="text-right" data-drill-col="capturable" onclick="sortDrillCol('capturable')">Capturable by Dec 31 <span class="dsort on">↓</span></th>
+              <th data-drill-col="freshness"  onclick="sortDrillCol('freshness')">BTF As Of <span class="dsort">↕</span></th>
+              <th>Period Status</th>
+            </tr></thead>
+            <tbody id="drill-tbody"></tbody>
+            <tfoot><tr>
+              <td colspan="4" style="color:var(--text-accent);font-family:var(--font-display);letter-spacing:.04em">TOTAL [B]</td>
+              <td class="num" style="color:var(--sb-gold);font-family:var(--font-display)">${fmtMoney(_score.bucketB, true)}</td>
+              <td colspan="2"></td>
+            </tr></tfoot>
+          </table>
+          <div class="drill-note">
+            Capturable = BTF × min(1, Days Until Dec 31 ÷ Days Until Project Completion)<br>
+            Jobs finishing before Dec 31 → 100% captured. Jobs extending into 2027 → only the portion billable by Dec 31 counts.
+          </div>
         </div>`;
+      renderDrillTbody();
     }
 
   // ── [C] Pipeline Projected ──────────────────────────────────────────────
   } else if (bucket === 'C') {
-    titleText = '[C] Pipeline Projected — Confidence-Weighted Conversion';
-    subText   = 'Active Pipeline + Hot Biz Dev (≥50% conv.) confidence-weighted by billing fraction · Warm/Nurture/New excluded';
-    const included = _projects
-      .filter(p => p.stage === 'PIPELINE' || (p.stage === 'BIZ_DEV' && p.subLabel === 'Hot'))
-      .sort((a, b) => (b.period?.pipelineProjected || 0) - (a.period?.pipelineProjected || 0));
+    titleEl.textContent = '[C] Pipeline Projected — Confidence-Weighted Conversion';
+    subEl.textContent   = 'Active Pipeline + Hot Biz Dev (≥50% conv.) confidence-weighted by billing fraction · Warm/Nurture/New excluded';
+
+    _drillRows = _projects.filter(p => p.stage === 'PIPELINE' || (p.stage === 'BIZ_DEV' && p.subLabel === 'Hot'));
+    _drillSort.col = 'projected'; _drillSort.dir = 'desc';
     const excluded = _projects.filter(p => p.stage === 'BIZ_DEV' && p.subLabel !== 'Hot');
 
-    bodyHTML = `
-      <div class="drill-chips">
-        <div class="drill-chip">
-          <div class="drill-chip-value" style="color:var(--status-blue)">${fmtMoney(_score.bucketC, true)}</div>
-          <div class="drill-chip-label">Total Projected</div>
-        </div>
-        <div class="drill-chip">
-          <div class="drill-chip-value">${included.length}</div>
-          <div class="drill-chip-label">Jobs Included</div>
-        </div>
-        <div class="drill-chip">
-          <div class="drill-chip-value" style="color:var(--status-blue)">${fmtPct(_score.bucketC)}</div>
-          <div class="drill-chip-label">of $4.5M Goal</div>
-        </div>
-        ${excluded.length > 0 ? `
-        <div class="drill-chip">
-          <div class="drill-chip-value" style="color:var(--text-muted)">${excluded.length}</div>
-          <div class="drill-chip-label">Excluded (Warm+)</div>
-        </div>` : ''}
-      </div>`;
+    chipsEl.innerHTML = `
+      <div class="drill-chip">
+        <div class="drill-chip-value" style="color:var(--status-blue)">${fmtMoney(_score.bucketC, true)}</div>
+        <div class="drill-chip-label">Total Projected</div>
+      </div>
+      <div class="drill-chip">
+        <div class="drill-chip-value">${_drillRows.length}</div>
+        <div class="drill-chip-label">Jobs Included</div>
+      </div>
+      <div class="drill-chip">
+        <div class="drill-chip-value" style="color:var(--status-blue)">${fmtPct(_score.bucketC)}</div>
+        <div class="drill-chip-label">of $4.5M Goal</div>
+      </div>
+      ${excluded.length > 0 ? `
+      <div class="drill-chip">
+        <div class="drill-chip-value" style="color:var(--text-muted)">${excluded.length}</div>
+        <div class="drill-chip-label">Excluded (Warm+)</div>
+      </div>` : ''}`;
 
-    if (included.length === 0) {
-      bodyHTML += `<div class="drill-empty">
+    if (_drillRows.length === 0) {
+      bodyEl.innerHTML = `<div class="drill-body-inner"><div class="drill-empty">
         No Pipeline or Hot Biz Dev jobs currently contribute to [C].<br>
         <span style="font-size:11px;color:var(--text-muted)">Hot jobs are included when confidence rating produces ≥50% conversion. Warm, Nurture, and New Opportunity are always excluded.</span>
-      </div>`;
+      </div></div>`;
     } else {
-      const rows = included.map(p => {
-        const conv  = p.conversion || {};
-        const proj  = p.period?.pipelineProjected || 0;
-        const isHot = p.stage === 'BIZ_DEV';
-        const ratingColor = !conv.confidenceRating ? 'var(--status-yellow)'
-                          : conv.confidenceRating >= 7 ? 'var(--status-green)'
-                          : conv.confidenceRating >= 5 ? 'var(--status-yellow)'
-                          : 'var(--status-red)';
-        return `
-          <tr${proj === 0 ? ' style="opacity:0.55"' : ''}>
-            <td>
-              <a href="${p.sbosUrl}" target="_blank" style="color:var(--text-primary);text-decoration:none"
-                 onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-primary)'"
-                 >${p.title} <span style="opacity:.35;font-size:10px">↗</span></a>
-              ${isHot ? '<span style="font-size:9px;margin-left:5px;padding:1px 5px;background:rgba(231,76,60,0.12);border:1px solid rgba(231,76,60,0.3);border-radius:3px;color:var(--status-red);font-family:var(--font-mono)">HOT</span>' : ''}
-            </td>
-            <td class="num">${p.budget.contractRevenue ? fmtMoney(p.budget.contractRevenue, true) : '<span style="color:var(--text-muted)">—</span>'}</td>
-            <td class="num" style="font-family:var(--font-mono);font-size:10px;color:${ratingColor}">
-              ${conv.confidenceRating ? conv.confidenceRating + '/10' : '⚠ unrated'}
-            </td>
-            <td class="num" style="font-family:var(--font-mono);font-size:10px">
-              ${conv.isDefaultRating
-                ? `<span style="color:var(--status-yellow)">${Math.round((conv.conversionRate||0)*100)}% <span style="font-size:9px">(default)</span></span>`
-                : Math.round((conv.conversionRate||0)*100) + '%'}
-            </td>
-            <td class="num" style="color:${proj > 0 ? 'var(--status-blue)' : 'var(--text-muted)'}">
-              ${proj > 0 ? fmtMoney(proj, true) : '—'}
-            </td>
-          </tr>`;
-      }).join('');
-      bodyHTML += `
-        <table class="db-table" style="font-size:11px">
-          <thead><tr>
-            <th>Job</th>
-            <th class="text-right">Contract Rev</th>
-            <th class="text-right">Rating</th>
-            <th class="text-right">Conv. Rate</th>
-            <th class="text-right">Projected</th>
-          </tr></thead>
-          <tbody>${rows}</tbody>
-          <tfoot><tr>
-            <td colspan="4" style="color:var(--text-accent);font-family:var(--font-display);letter-spacing:.04em">TOTAL [C]</td>
-            <td class="num" style="color:var(--status-blue);font-family:var(--font-display)">${fmtMoney(_score.bucketC, true)}</td>
-          </tr></tfoot>
-        </table>
-        ${excluded.length > 0 ? `
-        <div style="margin-top:14px;padding:10px 14px;background:var(--surface-2);border-radius:var(--r-sm);font-size:11px">
-          <span style="font-family:var(--font-mono);font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">Excluded — ${excluded.length} job${excluded.length!==1?'s':''} (Warm / Nurture / New Opportunity → $0 until moved to active Pipeline or Hot)</span>
-          <div style="margin-top:5px;color:var(--text-secondary)">${excluded.map(p => p.title).join(' · ')}</div>
-        </div>` : ''}
-        <div class="drill-note">
-          Projected = Contract Rev × (Days Remaining in Period ÷ Est. Job Duration) × Conversion Rate<br>
-          Conversion Rate = Confidence Rating ÷ 10 · Unrated Pipeline = 30% default · Unrated Hot = 55% default
+      bodyEl.innerHTML = `
+        <div class="drill-body-inner">
+          <table class="db-table" style="font-size:11px">
+            <thead id="drill-thead"><tr>
+              <th data-drill-col="title"       onclick="sortDrillCol('title')">Job <span class="dsort">↕</span></th>
+              <th class="text-right" data-drill-col="contractRev" onclick="sortDrillCol('contractRev')">Contract Rev <span class="dsort">↕</span></th>
+              <th class="text-right" data-drill-col="rating"      onclick="sortDrillCol('rating')">Rating <span class="dsort">↕</span></th>
+              <th class="text-right" data-drill-col="convRate"    onclick="sortDrillCol('convRate')">Conv. Rate <span class="dsort">↕</span></th>
+              <th class="text-right" data-drill-col="projected"   onclick="sortDrillCol('projected')">Projected <span class="dsort on">↓</span></th>
+            </tr></thead>
+            <tbody id="drill-tbody"></tbody>
+            <tfoot><tr>
+              <td colspan="4" style="color:var(--text-accent);font-family:var(--font-display);letter-spacing:.04em">TOTAL [C]</td>
+              <td class="num" style="color:var(--status-blue);font-family:var(--font-display)">${fmtMoney(_score.bucketC, true)}</td>
+            </tr></tfoot>
+          </table>
+          ${excluded.length > 0 ? `
+          <div style="margin-top:14px;padding:10px 14px;background:var(--surface-2);border-radius:var(--r-sm);font-size:11px">
+            <span style="font-family:var(--font-mono);font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">Excluded — ${excluded.length} job${excluded.length!==1?'s':''} (Warm / Nurture / New Opportunity → $0 until moved to active Pipeline or Hot)</span>
+            <div style="margin-top:5px;color:var(--text-secondary)">${excluded.map(p => p.title).join(' · ')}</div>
+          </div>` : ''}
+          <div class="drill-note">
+            Projected = Contract Rev × (Days Remaining in Period ÷ Est. Job Duration) × Conversion Rate<br>
+            Conversion Rate = Confidence Rating ÷ 10 · Unrated Pipeline = 30% default · Unrated Hot = 55% default
+          </div>
         </div>`;
+      renderDrillTbody();
     }
 
   // ── Score Tile: Full A+B+C Breakdown ────────────────────────────────────
   } else if (bucket === 'SCORE') {
-    titleText = 'Projected Score (A+B+C) — Full Breakdown';
-    subText   = 'Pipeline Coverage: how much of the $4.5M goal is covered by current projected pipeline · All three buckets explained';
+    titleEl.textContent = 'Projected Score (A+B+C) — Full Breakdown';
+    subEl.textContent   = 'Pipeline Coverage: how much of the $4.5M goal is covered by current projected pipeline · All three buckets explained';
+    _drillRows = [];
     const { bucketA, bucketB, bucketC, projectedTotal } = _score;
     const coverage   = projectedTotal / GOAL_REVENUE;
     const covPct     = Math.round(coverage * 100);
@@ -2002,28 +2115,27 @@ function openDrillDown(bucket) {
     const gpRate       = totalRev > 0 ? totalGP / totalRev : 0;
     const gpGap        = Math.max(0, GOAL_GP - totalGP);
 
-    bodyHTML = `
-      <div class="drill-chips">
-        <div class="drill-chip" style="border-color:${covColor}30">
-          <div class="drill-chip-value" style="color:${covColor}">${fmtMoney(projectedTotal, true)}</div>
-          <div class="drill-chip-label">Projected Total</div>
-        </div>
-        <div class="drill-chip" style="border-color:${covColor}30">
-          <div class="drill-chip-value" style="color:${covColor}">${covPct}%</div>
-          <div class="drill-chip-label">Pipeline Coverage</div>
-        </div>
-        <div class="drill-chip" style="border-color:${covColor}30">
-          <div class="drill-chip-value" style="color:${covColor};font-size:14px;line-height:1.4">${gyrLabel}</div>
-          <div class="drill-chip-label">GYR Status</div>
-        </div>
-        <div class="drill-chip">
-          <div class="drill-chip-value" style="color:${gap > 0 ? 'var(--status-red)' : 'var(--status-green)'}">
-            ${gap > 0 ? fmtMoney(gap, true) : '✓'}
-          </div>
-          <div class="drill-chip-label">${gap > 0 ? 'Gap to Goal' : 'Goal Covered'}</div>
-        </div>
+    chipsEl.innerHTML = `
+      <div class="drill-chip" style="border-color:${covColor}30">
+        <div class="drill-chip-value" style="color:${covColor}">${fmtMoney(projectedTotal, true)}</div>
+        <div class="drill-chip-label">Projected Total</div>
       </div>
+      <div class="drill-chip" style="border-color:${covColor}30">
+        <div class="drill-chip-value" style="color:${covColor}">${covPct}%</div>
+        <div class="drill-chip-label">Pipeline Coverage</div>
+      </div>
+      <div class="drill-chip" style="border-color:${covColor}30">
+        <div class="drill-chip-value" style="color:${covColor};font-size:14px;line-height:1.4">${gyrLabel}</div>
+        <div class="drill-chip-label">GYR Status</div>
+      </div>
+      <div class="drill-chip">
+        <div class="drill-chip-value" style="color:${gap > 0 ? 'var(--status-red)' : 'var(--status-green)'}">
+          ${gap > 0 ? fmtMoney(gap, true) : '✓'}
+        </div>
+        <div class="drill-chip-label">${gap > 0 ? 'Gap to Goal' : 'Goal Covered'}</div>
+      </div>`;
 
+    bodyEl.innerHTML = `<div class="drill-body-inner">
       <table class="db-table" style="font-size:12px;margin-bottom:14px">
         <thead><tr><th>Bucket</th><th>Description</th><th class="text-right">Amount</th><th class="text-right">% of Goal</th></tr></thead>
         <tbody>
@@ -2095,12 +2207,11 @@ function openDrillDown(bucket) {
       <div class="drill-note">
         Pipeline Coverage = Projected Total ÷ Goal ($4.5M). Time-aware: [B] and [C] both use days-remaining math — the same pipeline covers less as December approaches, without any time-elapsed division.<br>
         GYR thresholds: ≥110% Exceeding · 90–109% On Track · 75–89% At Risk · &lt;75% Critical
-      </div>`;
+      </div>
+    </div>`;
   }
 
-  titleEl.textContent = titleText;
-  subEl.textContent   = subText;
-  bodyEl.innerHTML    = bodyHTML;
+  updateDrillSortUI();
   modal.classList.add('open');
   document.body.style.overflow = 'hidden';
   document.addEventListener('keydown', _drillEscHandler);
