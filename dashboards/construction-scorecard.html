@@ -1886,12 +1886,10 @@ function renderDrillTbody() {
                         : 'var(--status-red)';
       return `
         <tr${proj === 0 ? ' style="opacity:0.55"' : ''}>
-          <td>
-            <a href="${p.sbosUrl}" target="_blank" style="color:var(--text-primary);text-decoration:none"
-               onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-primary)'"
-               >${p.title} <span style="opacity:.35;font-size:10px">↗</span></a>
-            ${isHot ? '<span style="font-size:9px;margin-left:5px;padding:1px 5px;background:rgba(231,76,60,0.12);border:1px solid rgba(231,76,60,0.3);border-radius:3px;color:var(--status-red);font-family:var(--font-mono)">HOT</span>' : ''}
-          </td>
+          <td><a href="${p.sbosUrl}" target="_blank" style="color:var(--text-primary);text-decoration:none"
+              onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-primary)'"
+              >${p.title} <span style="opacity:.35;font-size:10px">↗</span></a></td>
+          <td><span class="chip" style="color:${STATUS_CHIP_COLORS[p.stage]};border-color:${STATUS_CHIP_COLORS[p.stage]}40;background:${STATUS_CHIP_COLORS[p.stage]}12;font-size:9px">${p.subLabel}</span></td>
           <td class="num">${p.budget?.contractRevenue ? fmtMoney(p.budget.contractRevenue, true) : '<span style="color:var(--text-muted)">—</span>'}</td>
           <td class="num" style="font-family:var(--font-mono);font-size:10px;color:${ratingColor}">
             ${conv.confidenceRating ? conv.confidenceRating + '/10' : '⚠ unrated'}
@@ -2069,6 +2067,7 @@ function openDrillDown(bucket) {
           <table class="db-table" style="font-size:11px">
             <thead id="drill-thead"><tr>
               <th data-drill-col="title"       onclick="sortDrillCol('title')">Job <span class="dsort">↕</span></th>
+              <th data-drill-col="stage"       onclick="sortDrillCol('stage')">Stage <span class="dsort">↕</span></th>
               <th class="text-right" data-drill-col="contractRev" onclick="sortDrillCol('contractRev')">Contract Rev <span class="dsort">↕</span></th>
               <th class="text-right" data-drill-col="rating"      onclick="sortDrillCol('rating')">Rating <span class="dsort">↕</span></th>
               <th class="text-right" data-drill-col="convRate"    onclick="sortDrillCol('convRate')">Conv. Rate <span class="dsort">↕</span></th>
@@ -2076,7 +2075,7 @@ function openDrillDown(bucket) {
             </tr></thead>
             <tbody id="drill-tbody"></tbody>
             <tfoot><tr>
-              <td colspan="4" style="color:var(--text-accent);font-family:var(--font-display);letter-spacing:.04em">TOTAL [C]</td>
+              <td colspan="5" style="color:var(--text-accent);font-family:var(--font-display);letter-spacing:.04em">TOTAL [C]</td>
               <td class="num" style="color:var(--status-blue);font-family:var(--font-display)">${fmtMoney(_score.bucketC, true)}</td>
             </tr></tfoot>
           </table>
