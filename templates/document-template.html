@@ -313,6 +313,13 @@
 <script src="../assets/js/nav.js"></script>
 <script>
 /* ════════════════════════════════════════════════════════════
+   SHARED DRIVE FOLDER — all KB documents live here
+   https://drive.google.com/drive/folders/1j9yOJY92o74yOHktNV69q4DSffcR7I7w
+   Folder name: 7-SB Knowledgebase
+   ════════════════════════════════════════════════════════════ */
+const KB_DRIVE_FOLDER = 'https://drive.google.com/drive/folders/1j9yOJY92o74yOHktNV69q4DSffcR7I7w';
+
+/* ════════════════════════════════════════════════════════════
    LESSON CONFIG — update these fields when creating a new page
    ════════════════════════════════════════════════════════════
 
@@ -322,7 +329,8 @@
      'sheet' → Excel spreadsheet (.xlsx) — green button
      'pdf'   → PDF document — red button
 
-   driveUrl → full Google Drive sharing link for the file
+   driveUrl → full Google Drive sharing link for the specific file
+              (get this from Drive: Share → Copy link)
    ════════════════════════════════════════════════════════════ */
 const LESSON_CONFIG = {
   lessonId:       'LESSON_RECORD_ID',
@@ -430,11 +438,19 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('btn-doc-label').textContent = dt.label;
   } else {
     openBtn.removeAttribute('href');
-    openBtn.style.background   = '#BCBEC0';
-    openBtn.style.cursor       = 'not-allowed';
+    openBtn.style.background    = '#BCBEC0';
+    openBtn.style.cursor        = 'not-allowed';
     openBtn.style.pointerEvents = 'none';
     document.getElementById('btn-doc-icon').textContent  = '🔜';
     document.getElementById('btn-doc-label').textContent = 'Document Coming Soon';
+    // Show folder link so team can browse or upload
+    const folderHint = document.createElement('a');
+    folderHint.href   = KB_DRIVE_FOLDER;
+    folderHint.target = '_blank';
+    folderHint.rel    = 'noopener';
+    folderHint.style.cssText = 'display:inline-block;margin-top:10px;font-family:var(--font-sub);font-size:12px;color:#BCBEC0;text-decoration:none;';
+    folderHint.textContent = 'Browse 7-SB Knowledgebase folder →';
+    openBtn.insertAdjacentElement('afterend', folderHint);
   }
 
   // Drive secondary link
