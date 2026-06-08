@@ -9,9 +9,14 @@ const { fetchSmartSuiteData } = require('./refresh-data');
 // ── SmartSuite constants (shared with refresh-data.js) ────────────────────
 const SS_ACCOUNT_ID  = 's71hvw05';
 const SS_BASE_URL    = 'https://app.smartsuite.com/api/v1';
-const SS_PROJECTS_ID = '68216a706900e8eaf75a05a7';
-const SS_BUDGET_APP  = '69bb89ebf6a195c2c73a3b3e';
-const SS_G702_APP    = '68a8c3d2bba73ca6e62d0cb5';
+const SS_PROJECTS_ID       = '68216a706900e8eaf75a05a7';
+const SS_BUDGET_APP        = '69bb89ebf6a195c2c73a3b3e';
+const SS_G702_APP          = '68a8c3d2bba73ca6e62d0cb5';
+const SS_PROJECT_DATES_APP = '69bb7d64740e0e696d88c47f';
+
+// Project Dates event-type values (sc632a4d66 single-select)
+const PROJ_DATE_CONST_START = 'PPaox';
+const PROJ_DATE_CONST_END   = 'exoZI';
 
 // ── Scoring period ─────────────────────────────────────────────────────────
 // TODO: source these from a S-BOS Goals/Targets record instead of hardcoding.
@@ -371,6 +376,57 @@ async function fetchG702Records(projIdSet) {
   return all;
 }
 
+// Fetch all Construction Start + Construction End records from the Project Dates app.
+// Returns a map keyed by project record ID:
+//   { [projectId]: { constStart: string|null, constEnd: string|null } }
+// Date priority: Actual → Estimated → Baseline.
+async function fetchProjectDatesMap() {
+  const headers = {
+    'Authorization': `Token ${API_KEY}`,
+    'ACCOUNT-ID':    SS_ACCOUNT_ID,
+    'Content-Type':  'application/json',
+  };
+  const fields  = ['sc632a4d66', 's147d5462c', 's8ca756976', 's7c51ac6b5', 'sde9ad11a3'];
+  const filter  = {
+    operator: 'or',
+    fields: [
+      { field: 'sc632a4d66', comparison: 'is', value: PROJ_DATE_CONST_START },
+      { field: 'sc632a4d66', comparison: 'is', value: PROJ_DATE_CONST_END   },
+    ],
+  };
+  const all = [];
+  let offset = 0;
+  while (true) {
+    const res = await fetch(`${SS_BASE_URL}/applications/${SS_PROJECT_DATES_APP}/records/list/`, {
+      method: 'POST', headers,
+      body: JSON.stringify({ limit: 500, offset, fields, filter }),
+    });
+    if (!res.ok) {
+      console.error(`Project Dates fetch error ${res.status}:`, (await res.text()).slice(0, 200));
+      break;
+    }
+    const data  = await res.json();
+    const items = data.items || [];
+    all.push(...items);
+    offset += items.length;
+    if (!data.has_more || items.length === 0) break;
+  }
+
+  // Build map: projectId → { constStart, constEnd }
+  const map = {};
+  for (const r of all) {
+    const projectId = Array.isArray(r.sde9ad11a3) ? r.sde9ad11a3[0] : r.sde9ad11a3;
+    if (!projectId) continue;
+    const eventVal = r.sc632a4d66?.value || r.sc632a4d66 || '';
+    // Resolve date: Actual → Estimated → Baseline
+    const date = r.s7c51ac6b5?.date || r.s147d5462c?.date || r.s8ca756976?.date || null;
+    if (!map[projectId]) map[projectId] = { constStart: null, constEnd: null };
+    if (eventVal === PROJ_DATE_CONST_START) map[projectId].constStart = date;
+    if (eventVal === PROJ_DATE_CONST_END)   map[projectId].constEnd   = date;
+  }
+  return map;
+}
+
 // Summarise G-702s for one project: period-specific and cumulative amounts
 function summariseG702s(g702Records, periodStart, periodEnd) {
   let periodRevenue  = 0, hasPeriodData = false;
@@ -461,10 +517,14 @@ let constPromise   = null;
 const CONST_TTL    = 5 * 60 * 1000;
 
 async function buildConstructionData() {
-  // Fetch projects + budget rows in parallel; then G-702s once we have project IDs
-  const [allProjects, allBudgetRows] = await Promise.all([
+  // Fetch projects + budget rows + project dates in parallel; then G-702s once we have project IDs
+  const [allProjects, allBudgetRows, projectDatesMap] = await Promise.all([
     fetchDashboardProjects(),
     fetchAllBudgetRows(),
+    fetchProjectDatesMap().catch(err => {
+      console.error('Project Dates fetch failed (non-fatal):', err.message);
+      return {};
+    }),
   ]);
 
   // Filter to Construction type
@@ -624,6 +684,8 @@ async function buildConstructionData() {
         estClose:    p.secceac461?.date  || null,
         actClose:    p.s17kv07k?.date    || null,
         estConstEnd,
+        constStart:  (projectDatesMap[p.id] || {}).constStart || null,
+        constEnd:    (projectDatesMap[p.id] || {}).constEnd   || null,
       },
       budget,
       g702,

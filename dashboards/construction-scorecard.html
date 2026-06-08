@@ -1777,13 +1777,15 @@ function _drillSortVal(p, col) {
       const btf = p.budget?.btf || 0, cap = p.period?.capturableBTF || 0;
       return btf > 0 ? cap / btf : -Infinity;
     }
-    case 'capturable': return p.period?.capturableBTF     ?? -Infinity;
-    case 'freshness':  return p.freshness?.budget         || '';
-    case 'contractRev':return p.budget?.contractRevenue   ?? -Infinity;
-    case 'rating':     return p.conversion?.confidenceRating  ?? -Infinity;
-    case 'convRate':   return p.conversion?.conversionRate    ?? -Infinity;
-    case 'projected':  return p.period?.pipelineProjected     ?? -Infinity;
-    default:           return 0;
+    case 'capturable':  return p.period?.capturableBTF        ?? -Infinity;
+    case 'freshness':   return p.freshness?.budget            || '';
+    case 'constStart':  return p.dates?.constStart            || '';
+    case 'constEnd':    return p.dates?.constEnd              || '';
+    case 'contractRev': return p.budget?.contractRevenue      ?? -Infinity;
+    case 'rating':      return p.conversion?.confidenceRating ?? -Infinity;
+    case 'convRate':    return p.conversion?.conversionRate   ?? -Infinity;
+    case 'projected':   return p.period?.pipelineProjected    ?? -Infinity;
+    default:            return 0;
   }
 }
 
@@ -1830,6 +1832,20 @@ function fmtBtfDate(dateStr) {
   return `<span style="font-family:var(--font-mono);font-size:10px;color:${col}">● ${lbl}</span><span style="font-size:9px;color:var(--text-muted);margin-left:4px">${ago}</span>`;
 }
 
+// Format a construction start/end date from p.dates.constStart / constEnd.
+// If missing, renders a clickable "Add" prompt linking to the project's dates tab.
+function fmtConstDate(dateStr, projectId, label) {
+  if (dateStr) {
+    const d = new Date(dateStr);
+    return `<span style="font-family:var(--font-mono);font-size:10px;color:var(--text-secondary)">${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}</span>`;
+  }
+  const url = `https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=${projectId}#tab4`;
+  return `<a href="${url}" target="_blank"
+     style="font-size:9px;font-family:var(--font-mono);color:var(--status-yellow);text-decoration:none;white-space:nowrap;border:1px solid rgba(243,156,18,0.3);border-radius:3px;padding:1px 5px"
+     onmouseover="this.style.borderColor='rgba(243,156,18,0.7)'" onmouseout="this.style.borderColor='rgba(243,156,18,0.3)'"
+     >+ ${label}</a>`;
+}
+
 // Rebuild just the tbody when sort changes — no full modal redraw
 function renderDrillTbody() {
   const tbody = document.getElementById('drill-tbody');
@@ -1868,6 +1884,8 @@ function renderDrillTbody() {
             ${factor !== null ? Math.round(factor * 100) + '%' : '—'}
           </td>
           <td class="num" style="color:${capturable ? 'var(--sb-gold)' : 'var(--text-muted)'}">${capturable ? fmtMoney(capturable, true) : '—'}</td>
+          <td>${fmtConstDate(p.dates?.constStart, p.id, 'const. start')}</td>
+          <td>${fmtConstDate(p.dates?.constEnd,   p.id, 'const. end')}</td>
           <td>${fmtBtfDate(p.freshness?.budget)}</td>
           <td style="font-family:var(--font-mono);font-size:9px;color:${extends_ ? 'var(--status-yellow)' : 'var(--text-muted)'}">
             ${extends_ ? '⚠ extends past Dec 31' : '✓ within period'}
@@ -1902,6 +1920,8 @@ function renderDrillTbody() {
           <td class="num" style="color:${proj > 0 ? 'var(--status-blue)' : 'var(--text-muted)'}">
             ${proj > 0 ? fmtMoney(proj, true) : '—'}
           </td>
+          <td>${fmtConstDate(p.dates?.constStart, p.id, 'const. start')}</td>
+          <td>${fmtConstDate(p.dates?.constEnd,   p.id, 'const. end')}</td>
         </tr>`;
     }).join('');
   }
@@ -2010,6 +2030,8 @@ function openDrillDown(bucket) {
               <th class="text-right" data-drill-col="btf"        onclick="sortDrillCol('btf')">BTF <span class="dsort">↕</span></th>
               <th class="text-right" data-drill-col="factor"     onclick="sortDrillCol('factor')">Capture % <span class="dsort">↕</span></th>
               <th class="text-right" data-drill-col="capturable" onclick="sortDrillCol('capturable')">Capturable by Dec 31 <span class="dsort on">↓</span></th>
+              <th data-drill-col="constStart" onclick="sortDrillCol('constStart')">Const. Start <span class="dsort">↕</span></th>
+              <th data-drill-col="constEnd"   onclick="sortDrillCol('constEnd')">Const. End <span class="dsort">↕</span></th>
               <th data-drill-col="freshness"  onclick="sortDrillCol('freshness')">BTF As Of <span class="dsort">↕</span></th>
               <th>Period Status</th>
             </tr></thead>
@@ -2017,7 +2039,7 @@ function openDrillDown(bucket) {
             <tfoot><tr>
               <td colspan="4" style="color:var(--text-accent);font-family:var(--font-display);letter-spacing:.04em">TOTAL [B]</td>
               <td class="num" style="color:var(--sb-gold);font-family:var(--font-display)">${fmtMoney(_score.bucketB, true)}</td>
-              <td colspan="2"></td>
+              <td colspan="4"></td>
             </tr></tfoot>
           </table>
           <div class="drill-note">
@@ -2072,10 +2094,12 @@ function openDrillDown(bucket) {
               <th class="text-right" data-drill-col="rating"      onclick="sortDrillCol('rating')">Rating <span class="dsort">↕</span></th>
               <th class="text-right" data-drill-col="convRate"    onclick="sortDrillCol('convRate')">Conv. Rate <span class="dsort">↕</span></th>
               <th class="text-right" data-drill-col="projected"   onclick="sortDrillCol('projected')">Projected <span class="dsort on">↓</span></th>
+              <th data-drill-col="constStart"  onclick="sortDrillCol('constStart')">Const. Start <span class="dsort">↕</span></th>
+              <th data-drill-col="constEnd"    onclick="sortDrillCol('constEnd')">Const. End <span class="dsort">↕</span></th>
             </tr></thead>
             <tbody id="drill-tbody"></tbody>
             <tfoot><tr>
-              <td colspan="5" style="color:var(--text-accent);font-family:var(--font-display);letter-spacing:.04em">TOTAL [C]</td>
+              <td colspan="7" style="color:var(--text-accent);font-family:var(--font-display);letter-spacing:.04em">TOTAL [C]</td>
               <td class="num" style="color:var(--status-blue);font-family:var(--font-display)">${fmtMoney(_score.bucketC, true)}</td>
             </tr></tfoot>
           </table>
