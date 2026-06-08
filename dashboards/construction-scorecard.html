@@ -227,6 +227,128 @@
   padding: 5px 14px;
 }
 .agg-row td.agg-num { text-align: right; }
+
+/* ── Drill-down Modal ── */
+.drill-modal {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.72);
+  backdrop-filter: blur(3px);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1000;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.2s;
+}
+.drill-modal.open { opacity: 1; pointer-events: all; }
+.drill-modal-panel {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  width: min(900px, 94vw); max-height: 80vh;
+  display: flex; flex-direction: column; overflow: hidden;
+  transform: translateY(14px); transition: transform 0.2s;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+}
+.drill-modal.open .drill-modal-panel { transform: translateY(0); }
+.drill-modal-hdr {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 18px 20px 14px;
+  border-bottom: 1px solid var(--border-subtle); flex-shrink: 0;
+}
+.drill-modal-title-wrap { flex: 1; }
+.drill-modal-title {
+  font-family: var(--font-display); font-size: 16px;
+  letter-spacing: 0.06em; color: var(--text-accent); line-height: 1.2;
+}
+.drill-modal-subtitle { font-size: 11px; color: var(--text-muted); margin-top: 4px; line-height: 1.5; }
+.drill-modal-close {
+  background: none; border: 1px solid var(--border-subtle);
+  color: var(--text-muted); width: 28px; height: 28px;
+  border-radius: var(--r-sm); cursor: pointer;
+  font-size: 15px; flex-shrink: 0; transition: all 0.15s;
+  display: flex; align-items: center; justify-content: center;
+}
+.drill-modal-close:hover { border-color: var(--status-red); color: var(--status-red); }
+.drill-modal-body { overflow-y: auto; padding: 20px; flex: 1; }
+.drill-chips {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px;
+}
+.drill-chip {
+  padding: 8px 14px; border-radius: var(--r-md);
+  border: 1px solid var(--border-subtle);
+  background: var(--surface-2); min-width: 90px;
+}
+.drill-chip-value { font-family: var(--font-display); font-size: 22px; line-height: 1; }
+.drill-chip-label { font-family: var(--font-mono); font-size: 9px; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); margin-top: 3px; }
+.drill-note {
+  font-size: 10px; color: var(--text-muted);
+  background: var(--surface-2); border-radius: var(--r-sm);
+  padding: 8px 12px; margin-top: 14px; line-height: 1.7;
+  font-family: var(--font-mono);
+}
+.drill-empty {
+  padding: 32px; text-align: center;
+  color: var(--text-muted); font-size: 13px; line-height: 1.7;
+}
+
+/* Make tiles clickable */
+.db-tile.drill-trigger { cursor: pointer; }
+.db-tile.drill-trigger:hover {
+  border-color: rgba(201,168,76,0.35) !important;
+  box-shadow: 0 0 0 1px rgba(201,168,76,0.12);
+}
+.drill-hint {
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--text-muted); margin-top: 8px; letter-spacing: 0.04em;
+  opacity: 0; transition: opacity 0.15s;
+}
+.db-tile.drill-trigger:hover .drill-hint { opacity: 1; }
+
+/* ── Situation Room (secondary collapsible) ── */
+.situation-room {
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--r-md);
+  overflow: hidden;
+}
+.situation-room-hdr {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 14px;
+  cursor: pointer; user-select: none;
+  transition: background 0.15s;
+}
+.situation-room-hdr:hover { background: var(--surface-2); }
+.situation-room-eyebrow {
+  font-family: var(--font-mono); font-size: 9px;
+  text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--text-muted); white-space: nowrap;
+}
+.situation-room-desc { font-size: 11px; color: var(--text-secondary); flex: 1; }
+.situation-room-caret { font-family: var(--font-mono); font-size: 9px; color: var(--text-muted); white-space: nowrap; }
+.situation-room-body { max-height: 0; overflow: hidden; transition: max-height 0.32s ease; }
+.situation-room-body.open { max-height: 500px; }
+.situation-room-content {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: var(--border-subtle);
+  border-top: 1px solid var(--border-subtle);
+}
+.situation-room-stat {
+  background: var(--surface-1);
+  padding: 14px 18px;
+  display: flex; align-items: flex-start; gap: 14px;
+}
+.situation-stat-icon { font-size: 20px; flex-shrink: 0; margin-top: 2px; }
+.situation-stat-body { flex: 1; }
+.situation-stat-label {
+  font-family: var(--font-mono); font-size: 9px;
+  letter-spacing: .1em; text-transform: uppercase;
+  margin-bottom: 2px; color: var(--text-muted);
+}
+.situation-stat-value {
+  font-family: var(--font-display); font-size: 32px;
+  line-height: 1; margin-bottom: 5px;
+}
+.situation-stat-sub { font-size: 11px; color: var(--text-secondary); line-height: 1.6; }
+.situation-stat-note { font-size: 10px; color: var(--text-muted); margin-top: 5px; font-style: italic; }
 </style>
 </head>
 <body>
@@ -270,12 +392,9 @@
     </div>
   </div>
 
-  <!-- ── Section 2: Dual Deadline Banners ── -->
-  <div class="db-section">
-    <div class="db-dual-banner" id="deadline-banners">
-      <div class="skeleton skeleton-banner"></div>
-      <div class="skeleton skeleton-banner"></div>
-    </div>
+  <!-- ── Section 2: Situation Room (secondary — contextual deadline stats, collapsed by default) ── -->
+  <div class="db-section" style="padding-bottom:0">
+    <div id="situation-room-wrap"></div>
   </div>
 
   <!-- ── Section 3: Pipeline by Stage ── -->
@@ -356,6 +475,20 @@
     </div>
   </div>
 
+</div>
+
+<!-- ── Drill-down Modal ── -->
+<div id="drill-modal" class="drill-modal" onclick="if(event.target===this)closeDrillDown()">
+  <div class="drill-modal-panel">
+    <div class="drill-modal-hdr">
+      <div class="drill-modal-title-wrap">
+        <div id="drill-title" class="drill-modal-title"></div>
+        <div id="drill-subtitle" class="drill-modal-subtitle"></div>
+      </div>
+      <button class="drill-modal-close" onclick="closeDrillDown()">&times;</button>
+    </div>
+    <div class="drill-modal-body" id="drill-body"></div>
+  </div>
 </div>
 
 <script src="js/dashboard-shared.js"></script>
@@ -593,7 +726,7 @@ function renderAll(projects) {
   renderScoringArc(_periodRevenue);
   renderPendingSetup(projects);
   renderTiles(byStage, goalProjects);
-  renderDeadlineBanners();
+  renderSituationRoom();
   renderStageCards(byStage);
   renderLedger(projects, byStage);
   renderTargets(byStage, goalProjects);
@@ -641,37 +774,39 @@ function renderTiles(byStage, goalProjects) {
   const coverageColor = coverage >= 0.90 ? 'var(--status-green)' : coverage >= 0.75 ? 'var(--status-yellow)' : 'var(--status-red)';
 
   document.getElementById('tiles').innerHTML = `
-    <!-- Tile 1: Already billed (actuals) -->
-    <div class="db-tile" data-tip="[A] Hard actuals only.\nG-702 pay applications submitted within the scoring window (Jun 1–Dec 31).\nThis is money already earned — no estimates involved.">
-      <div class="db-tile-label">🟢 [A] Billed This Period <span class="explainer">?</span></div>
+    <!-- Tile 1: Already billed (actuals) — click to drill down -->
+    <div class="db-tile drill-trigger" onclick="openDrillDown('A')">
+      <div class="db-tile-label">🟢 [A] Billed This Period</div>
       <div class="db-tile-value" style="color:var(--status-green)">${fmtMoney(bucketA, true)}</div>
       <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">G-702 actuals · Jun 1–today</div>
       <div class="db-tile-progress">${renderProgressBar(pct(bucketA), 'var(--status-green)')}</div>
       <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${pct(bucketA).toFixed(0)}% of $4.5M goal</div>
+      <div class="drill-hint">↗ click to see underlying pay apps</div>
     </div>
 
-    <!-- Tile 2: WIP capturable BTF -->
-    <div class="db-tile" data-tip="[B] Firm estimate from in-progress jobs.\nBalance to Finish (BTF) for each WIP + Closeout job, prorated by:\nBTF × min(1, Days until Dec 31 ÷ Days until project completion)\nJobs finishing before Dec 31 = 100% capturable.\nJobs extending into 2027 = partial capture only.">
-      <div class="db-tile-label">🟡 [B] WIP: Capturable by Dec 31 <span class="explainer">?</span></div>
+    <!-- Tile 2: WIP capturable BTF — click to drill down -->
+    <div class="db-tile drill-trigger" onclick="openDrillDown('B')">
+      <div class="db-tile-label">🟡 [B] WIP: Capturable by Dec 31</div>
       <div class="db-tile-value" style="color:var(--sb-gold)">${fmtMoney(bucketB, true)}</div>
       <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">BTF × time-proration · ${wipCount} WIP + ${coCount} Closeout jobs</div>
       <div class="db-tile-progress">${renderProgressBar(pct(bucketB), 'var(--sb-gold)')}</div>
       <div style="font-size:10px;color:var(--text-muted);margin-top:4px">${pct(bucketB).toFixed(0)}% of $4.5M goal</div>
+      <div class="drill-hint">↗ click to see job-by-job proration</div>
     </div>
 
-    <!-- Tile 3: Pipeline projected -->
-    <div class="db-tile" data-tip="[C] Soft estimate — pipeline conversion.\nActive Pipeline: Contract Rev × billing fraction × conversion rate\nHot Biz Dev (≥50% confidence): same formula\nWarm / Nurture / New: excluded (too far out)\n\nBilling fraction = Days remaining ÷ Estimated job duration\nConversion rate = Confidence Rating ÷ 10 (set per job in S-BOS)\nUnrated Pipeline = 30% default · Unrated Hot = 55% default">
-      <div class="db-tile-label">🔵 [C] Pipeline: Projected <span class="explainer">?</span></div>
+    <!-- Tile 3: Pipeline projected — click to drill down -->
+    <div class="db-tile drill-trigger" onclick="openDrillDown('C')">
+      <div class="db-tile-label">🔵 [C] Pipeline: Projected</div>
       <div class="db-tile-value" style="color:var(--status-blue)">${fmtMoney(bucketC, true)}</div>
       <div class="db-tile-goal" style="font-size:11px;color:var(--text-secondary)">Active Pipeline + Hot (≥50% conv.) · Warm/Nurture/New excluded</div>
       <div class="db-tile-progress">${renderProgressBar(pct(bucketC), 'var(--status-blue)')}</div>
       <div style="font-size:10px;color:var(--text-muted);margin-top:4px">Progress billing: jobs starting any time still earn partial period revenue · weighted by ★ confidence rating</div>
+      <div class="drill-hint">↗ click to see confidence-weighted breakdown</div>
     </div>
 
-    <!-- Tile 4: Total Projected Score -->
-    <div class="db-tile" style="border-color:${coverageColor}30"
-         data-tip="Projected Score = [A] + [B] + [C]\n[A] Hard actuals: G-702 billings this period\n[B] WIP capturable: BTF prorated to Dec 31\n[C] Pipeline: confidence-weighted conversion estimate\n\nColor = Pipeline Coverage: how much of the $4.5M goal is covered.\nGreen ≥90% · Yellow 75–89% · Red &lt;75%">
-      <div class="db-tile-label" style="color:${coverageColor}">PROJECTED SCORE (A+B+C) <span class="explainer">?</span></div>
+    <!-- Tile 4: Total Projected Score — click to drill down -->
+    <div class="db-tile drill-trigger" style="border-color:${coverageColor}30" onclick="openDrillDown('SCORE')">
+      <div class="db-tile-label" style="color:${coverageColor}">PROJECTED SCORE (A+B+C)</div>
       <div class="db-tile-value" style="color:${coverageColor}">${fmtMoney(projectedTotal, true)}</div>
       <div class="db-tile-goal" style="font-size:11px">
         <span style="color:${gap > 0 ? 'var(--status-red)' : 'var(--status-green)'}">
@@ -682,40 +817,69 @@ function renderTiles(byStage, goalProjects) {
       <div style="font-size:10px;color:var(--text-muted);margin-top:4px">
         GP: ${fmtMoney(totalGP, true)} · ${totalRev ? ((totalGP/totalRev)*100).toFixed(1)+'%' : '—'} blended
       </div>
+      <div class="drill-hint">↗ click for full A+B+C breakdown</div>
     </div>
   `;
 }
 
-// ── Section 2: Deadline Banners ───────────────────────────────────────────
-function renderDeadlineBanners() {
-  function makeBanner(icon, headline, sub, deadline) {
+// ── Section 2: Situation Room ─────────────────────────────────────────────
+// Secondary collapsible panel — situational deadline stats, collapsed by default.
+// Not a scoreboard element. Context surfaced on-demand, like a broadcast sidebar.
+function renderSituationRoom() {
+  const wrap = document.getElementById('situation-room-wrap');
+  if (!wrap) return;
+
+  const bidDays = daysRemaining(DEADLINES.BID_READY);
+  const mobDays = daysRemaining(DEADLINES.MOBILIZE);
+
+  const bidLabel = bidDays < 0 ? 'Bid window closed' : `${bidDays}d to Bid-Ready`;
+  const mobLabel = mobDays < 0 ? 'Mobilize window closed' : `${mobDays}d to Full Billing`;
+
+  function statCard(icon, label, deadline, sub, note) {
     const days   = daysRemaining(deadline);
     const color  = urgencyColor(days);
-    const bg     = days < 0  ? 'rgba(231,76,60,0.16)' :
-                   days < 30 ? 'rgba(231,76,60,0.10)' :
-                   days < 60 ? 'rgba(243,156,18,0.08)' : 'rgba(46,204,113,0.06)';
-    const dLabel = days < 0 ? 'WINDOW CLOSED' : `${days} days`;
+    const dVal   = days < 0 ? 'CLOSED' : days;
+    const dUnit  = days < 0 ? '' : '<span style="font-size:14px;color:var(--text-muted)"> days</span>';
     return `
-      <div class="db-banner" style="background:${bg};border:1px solid ${color}40">
-        <div class="db-banner-icon">${icon}</div>
-        <div class="db-banner-body">
-          <div class="db-banner-headline" style="color:${color}">${headline}</div>
-          <div class="db-banner-sub">${sub.replace('{{D}}', `<strong style="color:${color}">${dLabel}</strong>`)}</div>
+      <div class="situation-room-stat">
+        <div class="situation-stat-icon">${icon}</div>
+        <div class="situation-stat-body">
+          <div class="situation-stat-label">${label}</div>
+          <div class="situation-stat-value" style="color:${color}">${dVal}${dUnit}</div>
+          <div class="situation-stat-sub">${sub}</div>
+          <div class="situation-stat-note">${note}</div>
         </div>
-        <div class="db-banner-right">${renderCountdown(deadline, 'DAYS LEFT')}</div>
       </div>`;
   }
 
-  document.getElementById('deadline-banners').innerHTML = [
-    makeBanner('🔨', 'BID-READY DEADLINE',
-      'Jobs must enter active bidding by <strong>July 4, 2026</strong> — {{D}}<br>'
-    + 'Standard relationship pipeline is <em>closed for 2026</em>. Warm referrals and bid-ready only.',
-      DEADLINES.BID_READY),
-    makeBanner('🏗️', 'FULL BILLING TARGET',
-      'Mobilize by <strong>Sep 2, 2026</strong> — {{D}} — to fully bill a 90-day job before Dec 31<br>'
-    + 'Jobs mobilizing later still earn partial period revenue (progress billing accrues until Dec 31).',
-      DEADLINES.MOBILIZE),
-  ].join('');
+  wrap.innerHTML = `
+    <div class="situation-room">
+      <div class="situation-room-hdr" onclick="toggleSituationRoom()">
+        <span class="situation-room-eyebrow">📡 Situation Room</span>
+        <span class="situation-room-desc">${bidLabel} · ${mobLabel}</span>
+        <span class="situation-room-caret" id="situation-caret">▼ expand</span>
+      </div>
+      <div class="situation-room-body" id="situation-body">
+        <div class="situation-room-content">
+          ${statCard('🔨', 'BID-READY DEADLINE', DEADLINES.BID_READY,
+            `Jobs must enter active bidding by <strong>July 4, 2026</strong>.<br>
+             Standard relationship pipeline is <em>closed for 2026</em>. Warm referrals and bid-ready only.`,
+            'Hot jobs not yet in active pipeline must move by this date or miss the 2026 scoring period.')}
+          ${statCard('🏗️', 'FULL BILLING TARGET', DEADLINES.MOBILIZE,
+            `Mobilize by <strong>Sep 2, 2026</strong> to fully bill a 90-day job before Dec 31.<br>
+             Jobs starting later still earn partial period revenue — progress billing accrues until Dec 31.`,
+            'Sep 2 is not a hard cutoff. A December start still earns one month. Later starts earn less.')}
+        </div>
+      </div>
+    </div>`;
+}
+
+function toggleSituationRoom() {
+  const body  = document.getElementById('situation-body');
+  const caret = document.getElementById('situation-caret');
+  if (!body) return;
+  const isOpen = body.classList.toggle('open');
+  if (caret) caret.textContent = isOpen ? '▲ collapse' : '▼ expand';
 }
 
 // ── Section 3: Stage Cards ────────────────────────────────────────────────
@@ -1577,6 +1741,380 @@ async function captureSnapshot() {
     btn.textContent = `⚠ ${err.message}`;
     setTimeout(() => { btn.disabled = false; btn.textContent = '📸 Capture Snapshot'; }, 4000);
   }
+}
+
+// ── Drill-down Modal ─────────────────────────────────────────────────────
+// Opens a modal with the underlying records driving each scorecard bucket.
+// Mirrors the QuickBooks "click a number, see the ledger" pattern.
+function openDrillDown(bucket) {
+  const modal    = document.getElementById('drill-modal');
+  const titleEl  = document.getElementById('drill-title');
+  const subEl    = document.getElementById('drill-subtitle');
+  const bodyEl   = document.getElementById('drill-body');
+
+  let titleText = '', subText = '', bodyHTML = '';
+  const fmtPct = v => Math.round((v / GOAL_REVENUE) * 100) + '%';
+
+  // ── [A] G-702 Actuals ───────────────────────────────────────────────────
+  if (bucket === 'A') {
+    titleText = '[A] Billed This Period — G-702 Actuals';
+    subText   = 'Pay applications submitted within the scoring window (Jun 1 – today) · Hard actuals only · No estimates';
+    const billed = _projects
+      .filter(p => (p.g702?.periodRevenue || 0) > 0)
+      .sort((a, b) => (b.g702.periodRevenue) - (a.g702.periodRevenue));
+
+    bodyHTML = `
+      <div class="drill-chips">
+        <div class="drill-chip">
+          <div class="drill-chip-value" style="color:var(--status-green)">${fmtMoney(_score.bucketA, true)}</div>
+          <div class="drill-chip-label">Total Billed</div>
+        </div>
+        <div class="drill-chip">
+          <div class="drill-chip-value">${billed.length}</div>
+          <div class="drill-chip-label">Jobs w/ Activity</div>
+        </div>
+        <div class="drill-chip">
+          <div class="drill-chip-value" style="color:var(--status-green)">${fmtPct(_score.bucketA)}</div>
+          <div class="drill-chip-label">of $4.5M Goal</div>
+        </div>
+      </div>`;
+
+    if (billed.length === 0) {
+      bodyHTML += `<div class="drill-empty">
+        No G-702 billings on record for the Jun 1 – Dec 31 scoring window yet.<br>
+        <span style="font-size:11px;color:var(--text-muted)">This means: no G-702 pay apps have been submitted within the period, line items have no period-specific dates, or G-702 app data was unavailable during the last fetch.</span>
+      </div>`;
+    } else {
+      const rows = billed.map(p => `
+        <tr>
+          <td><a href="${p.sbosUrl}" target="_blank" style="color:var(--text-primary);text-decoration:none"
+              onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-primary)'"
+              >${p.title} <span style="opacity:.35;font-size:10px">↗</span></a></td>
+          <td><span class="chip" style="color:${STATUS_CHIP_COLORS[p.stage]};border-color:${STATUS_CHIP_COLORS[p.stage]}40;background:${STATUS_CHIP_COLORS[p.stage]}12;font-size:9px">${p.subLabel}</span></td>
+          <td class="num" style="color:var(--status-green)">${fmtMoney(p.g702.periodRevenue, true)}</td>
+          <td class="num" style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">${fmtPct(p.g702.periodRevenue)}</td>
+        </tr>`).join('');
+      bodyHTML += `
+        <table class="db-table" style="font-size:11px">
+          <thead><tr><th>Job</th><th>Stage</th><th class="text-right">G-702 Period Revenue</th><th class="text-right">% of Goal</th></tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot><tr>
+            <td colspan="2" style="color:var(--text-accent);font-family:var(--font-display);letter-spacing:.04em">TOTAL [A]</td>
+            <td class="num" style="color:var(--status-green);font-family:var(--font-display)">${fmtMoney(_score.bucketA, true)}</td>
+            <td class="num" style="color:var(--status-green);font-family:var(--font-mono);font-size:11px">${fmtPct(_score.bucketA)}</td>
+          </tr></tfoot>
+        </table>
+        <div class="drill-note">
+          Period Revenue = G-702 field s0592aef02 (period-specific billing amount), not cumulative billings to date.<br>
+          Pay apps are filtered to those where the billing period falls within Jun 1 – Dec 31, 2026.
+        </div>`;
+    }
+
+  // ── [B] WIP Capturable ──────────────────────────────────────────────────
+  } else if (bucket === 'B') {
+    titleText = '[B] WIP Capturable by Dec 31 — Balance to Finish Proration';
+    subText   = 'Each WIP + Closeout job\'s BTF prorated by how much of its construction window falls before Dec 31';
+    const wip = _projects
+      .filter(p => p.stage === 'WIP' || p.stage === 'CLOSEOUT')
+      .sort((a, b) => (b.period?.capturableBTF || 0) - (a.period?.capturableBTF || 0));
+    const overrunCount = wip.filter(p => p.period?.extendsOutOfPeriod).length;
+
+    bodyHTML = `
+      <div class="drill-chips">
+        <div class="drill-chip">
+          <div class="drill-chip-value" style="color:var(--sb-gold)">${fmtMoney(_score.bucketB, true)}</div>
+          <div class="drill-chip-label">Total Capturable</div>
+        </div>
+        <div class="drill-chip">
+          <div class="drill-chip-value">${wip.length}</div>
+          <div class="drill-chip-label">WIP + Closeout Jobs</div>
+        </div>
+        <div class="drill-chip">
+          <div class="drill-chip-value" style="color:var(--sb-gold)">${fmtPct(_score.bucketB)}</div>
+          <div class="drill-chip-label">of $4.5M Goal</div>
+        </div>
+        ${overrunCount > 0 ? `
+        <div class="drill-chip" style="border-color:rgba(243,156,18,0.35)">
+          <div class="drill-chip-value" style="color:var(--status-yellow)">${overrunCount}</div>
+          <div class="drill-chip-label">Extend Past Dec 31</div>
+        </div>` : ''}
+      </div>`;
+
+    if (wip.length === 0) {
+      bodyHTML += `<div class="drill-empty">No WIP or Closeout jobs in the current pipeline.</div>`;
+    } else {
+      const rows = wip.map(p => {
+        const btf        = p.budget.btf || 0;
+        const capturable = p.period?.capturableBTF || 0;
+        const factor     = btf > 0 ? capturable / btf : null;
+        const extends_   = p.period?.extendsOutOfPeriod;
+        const factorColor = factor === null ? 'var(--text-muted)'
+                          : factor < 0.6   ? 'var(--status-yellow)'
+                          : 'var(--status-green)';
+        return `
+          <tr>
+            <td><a href="${p.sbosUrl}" target="_blank" style="color:var(--text-primary);text-decoration:none"
+                onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-primary)'"
+                >${p.title} <span style="opacity:.35;font-size:10px">↗</span></a></td>
+            <td><span class="chip" style="color:${STATUS_CHIP_COLORS[p.stage]};border-color:${STATUS_CHIP_COLORS[p.stage]}40;background:${STATUS_CHIP_COLORS[p.stage]}12;font-size:9px">${p.subLabel}</span></td>
+            <td class="num">${btf ? fmtMoney(btf, true) : '<span style="color:var(--text-muted)">—</span>'}</td>
+            <td class="num" style="font-family:var(--font-mono);font-size:10px;color:${factorColor}">
+              ${factor !== null ? Math.round(factor * 100) + '%' : '—'}
+            </td>
+            <td class="num" style="color:${capturable ? 'var(--sb-gold)' : 'var(--text-muted)'}">${capturable ? fmtMoney(capturable, true) : '—'}</td>
+            <td style="font-family:var(--font-mono);font-size:9px;color:${extends_ ? 'var(--status-yellow)' : 'var(--text-muted)'}">
+              ${extends_ ? '⚠ extends past Dec 31' : '✓ within period'}
+            </td>
+          </tr>`;
+      }).join('');
+      bodyHTML += `
+        <table class="db-table" style="font-size:11px">
+          <thead><tr>
+            <th>Job</th><th>Stage</th>
+            <th class="text-right">BTF</th>
+            <th class="text-right">Capture %</th>
+            <th class="text-right">Capturable by Dec 31</th>
+            <th>Period Status</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot><tr>
+            <td colspan="4" style="color:var(--text-accent);font-family:var(--font-display);letter-spacing:.04em">TOTAL [B]</td>
+            <td class="num" style="color:var(--sb-gold);font-family:var(--font-display)">${fmtMoney(_score.bucketB, true)}</td>
+            <td></td>
+          </tr></tfoot>
+        </table>
+        <div class="drill-note">
+          Capturable = BTF × min(1, Days Until Dec 31 ÷ Days Until Project Completion)<br>
+          Jobs finishing before Dec 31 → 100% captured. Jobs extending into 2027 → only the portion billable by Dec 31 counts.
+        </div>`;
+    }
+
+  // ── [C] Pipeline Projected ──────────────────────────────────────────────
+  } else if (bucket === 'C') {
+    titleText = '[C] Pipeline Projected — Confidence-Weighted Conversion';
+    subText   = 'Active Pipeline + Hot Biz Dev (≥50% conv.) confidence-weighted by billing fraction · Warm/Nurture/New excluded';
+    const included = _projects
+      .filter(p => p.stage === 'PIPELINE' || (p.stage === 'BIZ_DEV' && p.subLabel === 'Hot'))
+      .sort((a, b) => (b.period?.pipelineProjected || 0) - (a.period?.pipelineProjected || 0));
+    const excluded = _projects.filter(p => p.stage === 'BIZ_DEV' && p.subLabel !== 'Hot');
+
+    bodyHTML = `
+      <div class="drill-chips">
+        <div class="drill-chip">
+          <div class="drill-chip-value" style="color:var(--status-blue)">${fmtMoney(_score.bucketC, true)}</div>
+          <div class="drill-chip-label">Total Projected</div>
+        </div>
+        <div class="drill-chip">
+          <div class="drill-chip-value">${included.length}</div>
+          <div class="drill-chip-label">Jobs Included</div>
+        </div>
+        <div class="drill-chip">
+          <div class="drill-chip-value" style="color:var(--status-blue)">${fmtPct(_score.bucketC)}</div>
+          <div class="drill-chip-label">of $4.5M Goal</div>
+        </div>
+        ${excluded.length > 0 ? `
+        <div class="drill-chip">
+          <div class="drill-chip-value" style="color:var(--text-muted)">${excluded.length}</div>
+          <div class="drill-chip-label">Excluded (Warm+)</div>
+        </div>` : ''}
+      </div>`;
+
+    if (included.length === 0) {
+      bodyHTML += `<div class="drill-empty">
+        No Pipeline or Hot Biz Dev jobs currently contribute to [C].<br>
+        <span style="font-size:11px;color:var(--text-muted)">Hot jobs are included when confidence rating produces ≥50% conversion. Warm, Nurture, and New Opportunity are always excluded.</span>
+      </div>`;
+    } else {
+      const rows = included.map(p => {
+        const conv  = p.conversion || {};
+        const proj  = p.period?.pipelineProjected || 0;
+        const isHot = p.stage === 'BIZ_DEV';
+        const ratingColor = !conv.confidenceRating ? 'var(--status-yellow)'
+                          : conv.confidenceRating >= 7 ? 'var(--status-green)'
+                          : conv.confidenceRating >= 5 ? 'var(--status-yellow)'
+                          : 'var(--status-red)';
+        return `
+          <tr${proj === 0 ? ' style="opacity:0.55"' : ''}>
+            <td>
+              <a href="${p.sbosUrl}" target="_blank" style="color:var(--text-primary);text-decoration:none"
+                 onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-primary)'"
+                 >${p.title} <span style="opacity:.35;font-size:10px">↗</span></a>
+              ${isHot ? '<span style="font-size:9px;margin-left:5px;padding:1px 5px;background:rgba(231,76,60,0.12);border:1px solid rgba(231,76,60,0.3);border-radius:3px;color:var(--status-red);font-family:var(--font-mono)">HOT</span>' : ''}
+            </td>
+            <td class="num">${p.budget.contractRevenue ? fmtMoney(p.budget.contractRevenue, true) : '<span style="color:var(--text-muted)">—</span>'}</td>
+            <td class="num" style="font-family:var(--font-mono);font-size:10px;color:${ratingColor}">
+              ${conv.confidenceRating ? conv.confidenceRating + '/10' : '⚠ unrated'}
+            </td>
+            <td class="num" style="font-family:var(--font-mono);font-size:10px">
+              ${conv.isDefaultRating
+                ? `<span style="color:var(--status-yellow)">${Math.round((conv.conversionRate||0)*100)}% <span style="font-size:9px">(default)</span></span>`
+                : Math.round((conv.conversionRate||0)*100) + '%'}
+            </td>
+            <td class="num" style="color:${proj > 0 ? 'var(--status-blue)' : 'var(--text-muted)'}">
+              ${proj > 0 ? fmtMoney(proj, true) : '—'}
+            </td>
+          </tr>`;
+      }).join('');
+      bodyHTML += `
+        <table class="db-table" style="font-size:11px">
+          <thead><tr>
+            <th>Job</th>
+            <th class="text-right">Contract Rev</th>
+            <th class="text-right">Rating</th>
+            <th class="text-right">Conv. Rate</th>
+            <th class="text-right">Projected</th>
+          </tr></thead>
+          <tbody>${rows}</tbody>
+          <tfoot><tr>
+            <td colspan="4" style="color:var(--text-accent);font-family:var(--font-display);letter-spacing:.04em">TOTAL [C]</td>
+            <td class="num" style="color:var(--status-blue);font-family:var(--font-display)">${fmtMoney(_score.bucketC, true)}</td>
+          </tr></tfoot>
+        </table>
+        ${excluded.length > 0 ? `
+        <div style="margin-top:14px;padding:10px 14px;background:var(--surface-2);border-radius:var(--r-sm);font-size:11px">
+          <span style="font-family:var(--font-mono);font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted)">Excluded — ${excluded.length} job${excluded.length!==1?'s':''} (Warm / Nurture / New Opportunity → $0 until moved to active Pipeline or Hot)</span>
+          <div style="margin-top:5px;color:var(--text-secondary)">${excluded.map(p => p.title).join(' · ')}</div>
+        </div>` : ''}
+        <div class="drill-note">
+          Projected = Contract Rev × (Days Remaining in Period ÷ Est. Job Duration) × Conversion Rate<br>
+          Conversion Rate = Confidence Rating ÷ 10 · Unrated Pipeline = 30% default · Unrated Hot = 55% default
+        </div>`;
+    }
+
+  // ── Score Tile: Full A+B+C Breakdown ────────────────────────────────────
+  } else if (bucket === 'SCORE') {
+    titleText = 'Projected Score (A+B+C) — Full Breakdown';
+    subText   = 'Pipeline Coverage: how much of the $4.5M goal is covered by current projected pipeline · All three buckets explained';
+    const { bucketA, bucketB, bucketC, projectedTotal } = _score;
+    const coverage   = projectedTotal / GOAL_REVENUE;
+    const covPct     = Math.round(coverage * 100);
+    const gap        = Math.max(0, GOAL_REVENUE - projectedTotal);
+    const covColor   = coverage >= 0.90 ? 'var(--status-green)'
+                     : coverage >= 0.75 ? 'var(--status-yellow)'
+                     : 'var(--status-red)';
+    const gyrLabel   = coverage >= 1.10 ? 'Exceeding Target'
+                     : coverage >= 0.90 ? 'On Track'
+                     : coverage >= 0.75 ? 'At Risk'
+                     : 'Critical';
+    const goalProjects = _projects.filter(p => GOAL_STAGES.has(p.stage));
+    const totalGP      = goalProjects.reduce((s, p) => s + (p.budget.contractGP || 0), 0);
+    const totalRev     = goalProjects.reduce((s, p) => s + (p.budget.contractRevenue || 0), 0);
+    const gpRate       = totalRev > 0 ? totalGP / totalRev : 0;
+    const gpGap        = Math.max(0, GOAL_GP - totalGP);
+
+    bodyHTML = `
+      <div class="drill-chips">
+        <div class="drill-chip" style="border-color:${covColor}30">
+          <div class="drill-chip-value" style="color:${covColor}">${fmtMoney(projectedTotal, true)}</div>
+          <div class="drill-chip-label">Projected Total</div>
+        </div>
+        <div class="drill-chip" style="border-color:${covColor}30">
+          <div class="drill-chip-value" style="color:${covColor}">${covPct}%</div>
+          <div class="drill-chip-label">Pipeline Coverage</div>
+        </div>
+        <div class="drill-chip" style="border-color:${covColor}30">
+          <div class="drill-chip-value" style="color:${covColor};font-size:14px;line-height:1.4">${gyrLabel}</div>
+          <div class="drill-chip-label">GYR Status</div>
+        </div>
+        <div class="drill-chip">
+          <div class="drill-chip-value" style="color:${gap > 0 ? 'var(--status-red)' : 'var(--status-green)'}">
+            ${gap > 0 ? fmtMoney(gap, true) : '✓'}
+          </div>
+          <div class="drill-chip-label">${gap > 0 ? 'Gap to Goal' : 'Goal Covered'}</div>
+        </div>
+      </div>
+
+      <table class="db-table" style="font-size:12px;margin-bottom:14px">
+        <thead><tr><th>Bucket</th><th>Description</th><th class="text-right">Amount</th><th class="text-right">% of Goal</th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="font-family:var(--font-display);font-size:15px;color:var(--status-green)">[A]</td>
+            <td style="color:var(--text-secondary)">G-702 actuals billed Jun 1–today · Hard numbers, no estimation</td>
+            <td class="num" style="color:var(--status-green)">${fmtMoney(bucketA, true)}</td>
+            <td class="num" style="color:var(--status-green);font-family:var(--font-mono)">${fmtPct(bucketA)}</td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-display);font-size:15px;color:var(--sb-gold)">[B]</td>
+            <td style="color:var(--text-secondary)">WIP + Closeout BTF prorated to Dec 31 · Firm estimate</td>
+            <td class="num" style="color:var(--sb-gold)">${fmtMoney(bucketB, true)}</td>
+            <td class="num" style="color:var(--sb-gold);font-family:var(--font-mono)">${fmtPct(bucketB)}</td>
+          </tr>
+          <tr>
+            <td style="font-family:var(--font-display);font-size:15px;color:var(--status-blue)">[C]</td>
+            <td style="color:var(--text-secondary)">Pipeline + Hot Biz Dev confidence-weighted · Soft estimate</td>
+            <td class="num" style="color:var(--status-blue)">${fmtMoney(bucketC, true)}</td>
+            <td class="num" style="color:var(--status-blue);font-family:var(--font-mono)">${fmtPct(bucketC)}</td>
+          </tr>
+          <tr style="background:rgba(201,168,76,0.04)">
+            <td colspan="2" style="font-family:var(--font-display);color:${covColor}">PROJECTED TOTAL (A+B+C)</td>
+            <td class="num" style="color:${covColor};font-family:var(--font-display);font-size:17px">${fmtMoney(projectedTotal, true)}</td>
+            <td class="num" style="color:${covColor};font-family:var(--font-display)">${covPct}%</td>
+          </tr>
+          <tr>
+            <td colspan="2" style="color:var(--text-muted)">Goal</td>
+            <td class="num" style="color:var(--text-secondary)">${fmtMoney(GOAL_REVENUE, true)}</td>
+            <td class="num" style="color:var(--text-secondary);font-family:var(--font-mono)">100%</td>
+          </tr>
+          <tr>
+            <td colspan="2" style="color:${gap>0?'var(--status-red)':'var(--status-green)'};font-weight:600">
+              ${gap > 0 ? '⚠ Gap Remaining' : '✓ Goal Covered'}
+            </td>
+            <td class="num" style="color:${gap>0?'var(--status-red)':'var(--status-green)'};font-weight:600">
+              ${gap > 0 ? '− ' + fmtMoney(gap, true) : '+ ' + fmtMoney(projectedTotal - GOAL_REVENUE, true)}
+            </td>
+            <td class="num" style="color:${gap>0?'var(--status-red)':'var(--status-green)'};font-family:var(--font-mono)">
+              ${covPct}% covered
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="db-table" style="font-size:12px">
+        <thead><tr><th colspan="2">GP Analysis — Contracted Pipeline (Pipeline + WIP + Closeout)</th></tr></thead>
+        <tbody>
+          <tr>
+            <td style="color:var(--text-secondary)">Contract GP (projected)</td>
+            <td class="num" style="color:${totalGP >= GOAL_GP ? 'var(--status-green)' : 'var(--status-yellow)'}">${fmtMoney(totalGP, true)}</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-secondary)">GP Goal (9% of $4.5M)</td>
+            <td class="num">${fmtMoney(GOAL_GP, true)}</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-secondary)">Blended GP Rate</td>
+            <td class="num" style="color:${gpRate >= 0.09 ? 'var(--status-green)' : 'var(--status-yellow)'}">${(gpRate * 100).toFixed(1)}%${gpRate < 0.09 ? ' <span style="font-size:10px;color:var(--text-muted)">below 9% target</span>' : ''}</td>
+          </tr>
+          <tr>
+            <td style="color:var(--text-secondary)">GP Gap</td>
+            <td class="num" style="color:${gpGap === 0 ? 'var(--status-green)' : 'var(--status-yellow)'}">
+              ${gpGap === 0 ? '✓ GP goal met' : '− ' + fmtMoney(gpGap, true) + ' short'}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="drill-note">
+        Pipeline Coverage = Projected Total ÷ Goal ($4.5M). Time-aware: [B] and [C] both use days-remaining math — the same pipeline covers less as December approaches, without any time-elapsed division.<br>
+        GYR thresholds: ≥110% Exceeding · 90–109% On Track · 75–89% At Risk · &lt;75% Critical
+      </div>`;
+  }
+
+  titleEl.textContent = titleText;
+  subEl.textContent   = subText;
+  bodyEl.innerHTML    = bodyHTML;
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.addEventListener('keydown', _drillEscHandler);
+}
+
+function _drillEscHandler(e) {
+  if (e.key === 'Escape') closeDrillDown();
+}
+
+function closeDrillDown() {
+  const modal = document.getElementById('drill-modal');
+  modal.classList.remove('open');
+  document.body.style.overflow = '';
+  document.removeEventListener('keydown', _drillEscHandler);
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────
