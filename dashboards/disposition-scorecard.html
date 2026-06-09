@@ -12,6 +12,25 @@
   margin-bottom: 0;
 }
 .s5-homes-table .db-tile-value { color: var(--status-green); }
+
+/* ── Situation Room ── */
+.situation-room { background: var(--surface-1); border: 1px solid var(--border-subtle); border-radius: var(--r-md); overflow: hidden; }
+.situation-room-hdr { display: flex; align-items: center; gap: 10px; padding: 9px 14px; cursor: pointer; user-select: none; transition: background 0.15s; }
+.situation-room-hdr:hover { background: var(--surface-2); }
+.situation-room-hdr .sr-toggle { font-size: 11px; opacity: 0.5; margin-left: auto; transition: transform 0.25s; }
+.situation-room-body { max-height: 0; overflow: hidden; transition: max-height 0.32s ease; }
+.situation-room-body.open { max-height: 500px; }
+.situation-room-content { padding: 14px 16px; border-top: 1px solid var(--border-subtle); }
+
+/* ── Ledger toolbar ── */
+.ledger-toolbar { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+.search-input { background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: var(--r-sm); color: var(--text-primary); font-size: 12px; padding: 5px 10px; width: 220px; outline: none; }
+.search-input:focus { border-color: var(--sb-gold); }
+
+/* ── Sort icon active state ── */
+th[data-col] .sort-icon::after         { content: '↕'; opacity: 0.3; font-size: 9px; color: var(--text-secondary); }
+th[data-col].sort-asc  .sort-icon::after { content: '↑'; opacity: 1; color: var(--sb-gold); }
+th[data-col].sort-desc .sort-icon::after { content: '↓'; opacity: 1; color: var(--sb-gold); }
 </style>
 </head>
 <body>
@@ -47,11 +66,9 @@
     </div>
   </div>
 
-  <!-- ── Section 2: Critical Deadline Banner ── -->
-  <div class="db-section">
-    <div id="deadline-banner" class="db-banner referral-banner">
-      <div class="skeleton skeleton-banner" style="width:100%"></div>
-    </div>
+  <!-- ── Section 2: Referral Window (Situation Room) ── -->
+  <div class="db-section" id="deadline-section">
+    <div class="skeleton skeleton-banner" style="width:100%"></div>
   </div>
 
   <!-- ── Section 3: Pipeline Funnel ── -->
@@ -96,19 +113,23 @@
   <!-- ── Section 5: Active Homes ── -->
   <div class="db-section">
     <div class="db-section-title">📋 Active Homes <span style="font-size:12px;color:var(--text-secondary);font-family:var(--font-body)">— click column headers to sort</span></div>
+    <div class="ledger-toolbar">
+      <input class="search-input" id="homes-search" type="text" placeholder="🔍  Filter homes…" oninput="onSearchInput(this.value)">
+      <span id="homes-count" style="font-size:11px;color:var(--text-secondary);font-family:var(--font-mono)"></span>
+    </div>
     <div class="db-table-wrap">
       <table class="db-table" id="homes-table">
         <thead>
           <tr>
-            <th data-col="title" class="sorted">Address / Name <span class="sort-icon">↕</span></th>
-            <th data-col="stage">Stage <span class="sort-icon">↕</span></th>
-            <th data-col="pipelineDate">Pipeline Date <span class="sort-icon">↕</span></th>
-            <th data-col="daysInStage">Days in Stage <span class="sort-icon">↕</span></th>
-            <th class="text-right" data-col="estCloseDate">Est. Close Date <span class="sort-icon">↕</span></th>
-            <th class="text-right" data-col="daysToDeadline">Days to Deadline <span class="sort-icon">↕</span></th>
-            <th class="text-right" data-col="estRevenue">Est. Revenue <span class="sort-icon">↕</span></th>
-            <th class="text-right" data-col="estGP">Est. GP <span class="sort-icon">↕</span></th>
-            <th>Status <span class="sort-icon">↕</span></th>
+            <th data-col="title">Address / Name <span class="sort-icon"></span></th>
+            <th data-col="stage">Stage <span class="sort-icon"></span></th>
+            <th data-col="pipelineDate">Pipeline Date <span class="sort-icon"></span></th>
+            <th data-col="daysInStage">Days in Stage <span class="sort-icon"></span></th>
+            <th class="text-right" data-col="estCloseDate">Est. Close Date <span class="sort-icon"></span></th>
+            <th class="text-right" data-col="daysToDeadline">Days to Deadline <span class="sort-icon"></span></th>
+            <th class="text-right" data-col="estRevenue">Est. Revenue <span class="sort-icon"></span></th>
+            <th class="text-right" data-col="estGP">Est. GP <span class="sort-icon"></span></th>
+            <th>Status <span class="sort-icon"></span></th>
           </tr>
         </thead>
         <tbody id="homes-body">
@@ -129,6 +150,39 @@
 <script>
 'use strict';
 
+// ── S-BOS Deep-Link Helpers ───────────────────────────────────────────────
+const SBOS_BASE = 'https://app.stitserbuilt.com/sb-crm-projects-list-details';
+function tabUrl(projectId, tab) { return `${SBOS_BASE}?recordId=${projectId}${tab}`; }
+function tabLink(innerHtml, projectId, tab, extraStyle = '') {
+  return `<a href="${tabUrl(projectId, tab)}" target="_blank"
+     style="color:inherit;text-decoration:none;${extraStyle}"
+     onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'"
+     >${innerHtml}</a>`;
+}
+function fmtDispDate(dateObj, projectId, addLabel) {
+  const url = tabUrl(projectId, '#tab4');
+  if (dateObj) {
+    const lbl = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    return `<a href="${url}" target="_blank"
+       style="color:var(--text-secondary);text-decoration:none;font-family:var(--font-mono);font-size:11px"
+       onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-secondary)'"
+       >${lbl}</a>`;
+  }
+  if (!addLabel) return '—';
+  return `<a href="${url}" target="_blank"
+     style="font-size:9px;font-family:var(--font-mono);color:var(--status-yellow);text-decoration:none;white-space:nowrap;border:1px solid rgba(243,156,18,0.3);border-radius:3px;padding:1px 5px"
+     onmouseover="this.style.borderColor='rgba(243,156,18,0.7)'" onmouseout="this.style.borderColor='rgba(243,156,18,0.3)'"
+     >+ ${addLabel}</a>`;
+}
+
+// ── Situation Room Toggle ─────────────────────────────────────────────────
+function toggleSituationRoom(hdr) {
+  const body = hdr.nextElementSibling;
+  const toggle = hdr.querySelector('.sr-toggle');
+  const isOpen = body.classList.toggle('open');
+  toggle.style.transform = isOpen ? 'rotate(90deg)' : '';
+}
+
 const DISP_TYPE_IDS = [
   PRODUCT_TYPE_IDS.DISPOSITION_CM,
   PRODUCT_TYPE_IDS.DISPOSITION_ONLY,
@@ -136,6 +190,7 @@ const DISP_TYPE_IDS = [
 
 let _currentSort = { col: 'daysToDeadline', dir: 'asc' };
 let _homeRows = [];
+let _searchQuery = '';
 
 // ── Load Data ─────────────────────────────────────────────────────────────
 async function loadData(force = false) {
@@ -255,28 +310,40 @@ function renderTiles(byStage) {
   `).join('');
 }
 
-// ── Section 2: Deadline Banner ────────────────────────────────────────────
+// ── Section 2: Referral Window (Situation Room) ──────────────────────────
 function renderDeadlineBanner() {
   const deadline = CONSTANTS.DISPOSITION.STAGE_DEADLINES.S2;
   const days = daysRemaining(deadline);
   const color = urgencyColor(days);
-  const bgColor = days < 0 ? 'rgba(231,76,60,0.2)' :
-                  days <= 30 ? 'rgba(231,76,60,0.15)' :
-                  days <= 60 ? 'rgba(243,156,18,0.12)' : 'rgba(46,204,113,0.08)';
+  const bgColor = days < 0 ? 'rgba(231,76,60,0.18)' :
+                  days <= 30 ? 'rgba(231,76,60,0.12)' :
+                  days <= 60 ? 'rgba(243,156,18,0.10)' : 'rgba(46,204,113,0.07)';
   const daysDisplay = days < 0 ? 'WINDOW CLOSED' : `${days} days remaining`;
 
-  document.getElementById('deadline-banner').innerHTML = `
-    <div class="db-banner referral-banner" style="background:${bgColor}; border:1px solid ${color}40;">
-      <div class="db-banner-icon">⚡</div>
-      <div class="db-banner-body">
-        <div class="db-banner-headline" style="color:${color}">REFERRAL WINDOW</div>
-        <div class="db-banner-sub">
-          New referrals must be secured by <strong>August 3, 2026</strong> — <strong style="color:${color}">${daysDisplay}</strong><br>
-          Homes referred after this date will not close in 2026.
-        </div>
+  document.getElementById('deadline-section').innerHTML = `
+    <div class="situation-room" style="border-color:${color}30">
+      <div class="situation-room-hdr" onclick="toggleSituationRoom(this)">
+        <span style="font-size:13px;font-weight:700;color:${color};letter-spacing:.05em">⚡ REFERRAL WINDOW</span>
+        <span style="font-size:12px;color:var(--text-secondary)">New referrals due by <strong style="color:var(--text-primary)">August 3, 2026</strong></span>
+        <span style="font-family:var(--font-mono);font-size:12px;color:${color}">${daysDisplay}</span>
+        <span class="sr-toggle">▶</span>
       </div>
-      <div class="db-banner-right">
-        ${renderCountdown(deadline, 'DAYS LEFT')}
+      <div class="situation-room-body">
+        <div class="situation-room-content" style="background:${bgColor}">
+          <div class="db-banner referral-banner" style="background:transparent;border:none;padding:0;margin:0">
+            <div class="db-banner-icon" style="font-size:28px">⚡</div>
+            <div class="db-banner-body">
+              <div class="db-banner-headline" style="color:${color}">REFERRAL WINDOW CLOSES AUGUST 3, 2026</div>
+              <div class="db-banner-sub">
+                Homes must be <strong>referred and in pipeline</strong> by this date to realistically close in 2026.<br>
+                After Aug 3, the typical 90–120 day escrow timeline pushes past December 31.
+              </div>
+            </div>
+            <div class="db-banner-right">
+              ${renderCountdown(deadline, 'DAYS LEFT')}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   `;
@@ -403,48 +470,73 @@ function renderTargetsTable(byStage) {
   document.getElementById('targets-body').innerHTML = alsoClosedRow + tbody + summary;
 }
 
+// ── Search Input Handler ──────────────────────────────────────────────────
+function onSearchInput(val) {
+  _searchQuery = val.trim().toLowerCase();
+  renderHomesTable();
+}
+
 // ── Section 5: Active Homes Table ────────────────────────────────────────
 function renderHomesTable() {
-  const rows = sortRows([..._homeRows], _currentSort.col, _currentSort.dir);
+  let rows = sortRows([..._homeRows], _currentSort.col, _currentSort.dir);
+
+  // Apply search filter
+  if (_searchQuery) {
+    rows = rows.filter(r => r.title.toLowerCase().includes(_searchQuery));
+  }
+
+  // Update count badge
+  const countEl = document.getElementById('homes-count');
+  if (countEl) {
+    const total = _homeRows.length;
+    countEl.textContent = _searchQuery ? `${rows.length} of ${total} homes` : `${total} homes`;
+  }
 
   if (rows.length === 0) {
     document.getElementById('homes-body').innerHTML = `
       <tr><td colspan="9" style="text-align:center;padding:32px;color:var(--text-muted)">
-        No active Disposition homes found
+        ${_searchQuery ? `No homes matching "${_searchQuery}"` : 'No active Disposition homes found'}
       </td></tr>
     `;
-    return;
+  } else {
+    document.getElementById('homes-body').innerHTML = rows.map(r => {
+      const stageColor = r.stage.color;
+      const chipCls = urgencyChipClass(r.daysToDeadline);
+      const sbosUrl = tabUrl(r.id, '');
+
+      return `
+        <tr>
+          <td class="name">
+            <a href="${sbosUrl}" target="_blank"
+               style="color:var(--text-primary);text-decoration:none;font-weight:600"
+               onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-primary)'"
+               >${r.title}</a>
+          </td>
+          <td>
+            <span class="chip" style="color:${stageColor};border-color:${stageColor}40;background:${stageColor}10">
+              ${r.stage.id}
+            </span>
+          </td>
+          <td class="mono">${fmtDispDate(r.pipelineDate, r.id, 'pipeline date')}</td>
+          <td class="mono">${r.daysInStage != null ? r.daysInStage + 'd' : '—'}</td>
+          <td class="mono text-right">${fmtDispDate(r.estCloseDate, r.id, 'close date')}</td>
+          <td class="mono text-right" style="color:${urgencyColor(r.daysToDeadline)}">
+            ${r.daysToDeadline != null ? (r.daysToDeadline < 0 ? 'PAST' : r.daysToDeadline + 'd') : '—'}
+          </td>
+          <td class="num">${r.estRevenue ? tabLink(fmtMoney(r.estRevenue, true), r.id, '#pay-app') : '<span class="dimmed">—</span>'}</td>
+          <td class="num">${r.estGP ? tabLink(fmtMoney(r.estGP, true), r.id, '#pay-app') : '<span class="dimmed">—</span>'}</td>
+          <td><span class="${chipCls}">${r.statusLabel}</span></td>
+        </tr>
+      `;
+    }).join('');
   }
 
-  document.getElementById('homes-body').innerHTML = rows.map(r => {
-    const stageColor = r.stage.color;
-    const chipCls = urgencyChipClass(r.daysToDeadline);
-
-    return `
-      <tr>
-        <td class="name">${r.title}</td>
-        <td>
-          <span class="chip" style="color:${stageColor};border-color:${stageColor}40;background:${stageColor}10">
-            ${r.stage.id}
-          </span>
-        </td>
-        <td class="mono">${r.pipelineDate ? r.pipelineDate.toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '—'}</td>
-        <td class="mono">${r.daysInStage != null ? r.daysInStage + 'd' : '—'}</td>
-        <td class="mono text-right">${r.estCloseDate ? r.estCloseDate.toLocaleDateString('en-US', {month:'short',day:'numeric',year:'numeric'}) : '—'}</td>
-        <td class="mono text-right" style="color:${urgencyColor(r.daysToDeadline)}">
-          ${r.daysToDeadline != null ? (r.daysToDeadline < 0 ? 'PAST' : r.daysToDeadline + 'd') : '—'}
-        </td>
-        <td class="num">${r.estRevenue ? fmtMoney(r.estRevenue, true) : '<span class="dimmed">—</span>'}</td>
-        <td class="num">${r.estGP ? fmtMoney(r.estGP, true) : '<span class="dimmed">—</span>'}</td>
-        <td><span class="${chipCls}">${r.statusLabel}</span></td>
-      </tr>
-    `;
-  }).join('');
-
   // Update sort indicators
-  document.querySelectorAll('#homes-table thead th').forEach(th => {
-    th.classList.remove('sorted');
-    if (th.dataset.col === _currentSort.col) th.classList.add('sorted');
+  document.querySelectorAll('#homes-table thead th[data-col]').forEach(th => {
+    th.classList.remove('sort-asc', 'sort-desc');
+    if (th.dataset.col === _currentSort.col) {
+      th.classList.add(_currentSort.dir === 'asc' ? 'sort-asc' : 'sort-desc');
+    }
   });
 }
 
@@ -464,6 +556,7 @@ function sortRows(rows, col, dir) {
 
 // ── Sort Handler ─────────────────────────────────────────────────────────
 document.querySelectorAll('#homes-table thead th[data-col]').forEach(th => {
+  th.style.cursor = 'pointer';
   th.addEventListener('click', () => {
     const col = th.dataset.col;
     if (_currentSort.col === col) {
