@@ -1251,12 +1251,16 @@ function buildRow(p) {
         ${p.isMultiType ? '<span title="Multi-product-line — KCS-Homes rows only" style="font-size:9px;color:var(--sb-gold);margin-left:5px;opacity:0.7;cursor:help">⬡</span>' : ''}
         ${(p.stage === 'PIPELINE' || p.stage === 'BIZ_DEV') ? `
           <div style="margin-top:3px;display:flex;align-items:center;gap:5px">
-            ${renderRating(conv.confidenceRating, conv.conversionRate)}
-            <span style="font-family:var(--font-mono);font-size:9px;color:var(--text-muted)">
-              ${conv.isDefaultRating
-                ? '<span style="color:var(--status-yellow)">⚠ needs rating</span>'
-                : Math.round(conv.conversionRate*100)+'% conv.'}
-            </span>
+            <a href="${tabUrl(p.id, '#decision-gates')}" target="_blank" style="color:inherit;text-decoration:none" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+              ${renderRating(conv.confidenceRating, conv.conversionRate)}
+            </a>
+            <a href="${tabUrl(p.id, '#decision-gates')}" target="_blank" style="text-decoration:none" onmouseover="this.style.opacity='0.7'" onmouseout="this.style.opacity='1'">
+              <span style="font-family:var(--font-mono);font-size:9px;color:var(--text-muted)">
+                ${conv.isDefaultRating
+                  ? '<span style="color:var(--status-yellow)">⚠ needs rating</span>'
+                  : Math.round(conv.conversionRate*100)+'% conv.'}
+              </span>
+            </a>
           </div>` : ''}
       </td>
       <td style="max-width:90px">
@@ -1270,14 +1274,14 @@ function buildRow(p) {
       </td>
       <td><span class="budget-state-chip bstate-${stateKey}">${STATE_LABELS[stateKey]}</span></td>
       <td class="num" style="color:${periodRev != null ? 'var(--status-green)' : 'var(--text-muted)'}">
-        ${periodRev != null ? fmtMoney(periodRev, true) : '<span class="dimmed">—</span>'}
+        ${periodRev != null ? tabLink(fmtMoney(periodRev, true), p.id, '#pay-app') : '<span class="dimmed">—</span>'}
       </td>
-      <td class="num">${fmt(b.contractRevenue)}</td>
-      <td class="num" style="color:${gpColor}">${fmt(b.contractGP)}</td>
+      <td class="num">${b.contractRevenue ? tabLink(fmt(b.contractRevenue), p.id, '#pay-app') : fmt(b.contractRevenue)}</td>
+      <td class="num" style="color:${gpColor}">${b.contractGP ? tabLink(fmt(b.contractGP), p.id, '#pay-app') : fmt(b.contractGP)}</td>
       <td class="num" style="color:${gpColor}">
-        ${gpRate != null ? (gpRate*100).toFixed(1)+'%' : '<span class="dimmed">—</span>'}
+        ${gpRate != null ? tabLink((gpRate*100).toFixed(1)+'%', p.id, '#pay-app') : '<span class="dimmed">—</span>'}
       </td>
-      <td class="num">${fmt(b.btf)}</td>
+      <td class="num">${b.btf ? tabLink(fmt(b.btf), p.id, '#pay-app') : fmt(b.btf)}</td>
       <td>
         ${b.hasBudget ? `<div class="rev-bar">
           <div class="rev-bar-track"><div class="rev-bar-fill" style="width:${pctFill}%"></div></div>
@@ -1298,7 +1302,9 @@ function buildRow(p) {
           </div>
         </div>
       </td>
-      <td class="mono">${fmtD(p.dates.wip)}</td>
+      <td class="mono">${p.dates.wip
+        ? tabLink(fmtD(p.dates.wip), p.id, '#tab4', 'font-family:var(--font-mono);font-size:11px')
+        : '<span class="dimmed">—</span>'}</td>
     </tr>`;
 }
 
@@ -1832,14 +1838,30 @@ function fmtBtfDate(dateStr) {
   return `<span style="font-family:var(--font-mono);font-size:10px;color:${col}">● ${lbl}</span><span style="font-size:9px;color:var(--text-muted);margin-left:4px">${ago}</span>`;
 }
 
-// Format a construction start/end date from p.dates.constStart / constEnd.
-// If missing, renders a clickable "Add" prompt linking to the project's dates tab.
+// ── Tab-link helpers ─────────────────────────────────────────────────────
+const SBOS_BASE = 'https://app.stitserbuilt.com/sb-crm-projects-list-details';
+function tabUrl(projectId, tab) { return `${SBOS_BASE}?recordId=${projectId}${tab}`; }
+
+// Wrap any HTML snippet in a subtle link to a project tab.
+function tabLink(innerHtml, projectId, tab, extraStyle = '') {
+  return `<a href="${tabUrl(projectId, tab)}" target="_blank"
+     style="color:inherit;text-decoration:none;${extraStyle}"
+     onmouseover="this.style.opacity='0.75'" onmouseout="this.style.opacity='1'"
+     >${innerHtml}</a>`;
+}
+
+// Construction start/end date — always links to #tab4 (dates tab).
+// When date is missing: shows a yellow "⊕ const. start/end" add-prompt.
 function fmtConstDate(dateStr, projectId, label) {
+  const url = tabUrl(projectId, '#tab4');
   if (dateStr) {
     const d = new Date(dateStr);
-    return `<span style="font-family:var(--font-mono);font-size:10px;color:var(--text-secondary)">${d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' })}</span>`;
+    const lbl = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+    return `<a href="${url}" target="_blank"
+       style="font-family:var(--font-mono);font-size:10px;color:var(--text-secondary);text-decoration:none"
+       onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-secondary)'"
+       >${lbl}</a>`;
   }
-  const url = `https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=${projectId}#tab4`;
   return `<a href="${url}" target="_blank"
      style="font-size:9px;font-family:var(--font-mono);color:var(--status-yellow);text-decoration:none;white-space:nowrap;border:1px solid rgba(243,156,18,0.3);border-radius:3px;padding:1px 5px"
      onmouseover="this.style.borderColor='rgba(243,156,18,0.7)'" onmouseout="this.style.borderColor='rgba(243,156,18,0.3)'"
@@ -1860,7 +1882,7 @@ function renderDrillTbody() {
             onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-primary)'"
             >${p.title} <span style="opacity:.35;font-size:10px">↗</span></a></td>
         <td><span class="chip" style="color:${STATUS_CHIP_COLORS[p.stage]};border-color:${STATUS_CHIP_COLORS[p.stage]}40;background:${STATUS_CHIP_COLORS[p.stage]}12;font-size:9px">${p.subLabel}</span></td>
-        <td class="num" style="color:var(--status-green)">${fmtMoney(p.g702.periodRevenue, true)}</td>
+        <td class="num" style="color:var(--status-green)">${tabLink(fmtMoney(p.g702.periodRevenue, true), p.id, '#pay-app')}</td>
         <td class="num" style="font-family:var(--font-mono);font-size:10px;color:var(--text-muted)">${fmtPct(p.g702.periodRevenue)}</td>
       </tr>`).join('');
 
@@ -1879,7 +1901,7 @@ function renderDrillTbody() {
               onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-primary)'"
               >${p.title} <span style="opacity:.35;font-size:10px">↗</span></a></td>
           <td><span class="chip" style="color:${STATUS_CHIP_COLORS[p.stage]};border-color:${STATUS_CHIP_COLORS[p.stage]}40;background:${STATUS_CHIP_COLORS[p.stage]}12;font-size:9px">${p.subLabel}</span></td>
-          <td class="num">${btf ? fmtMoney(btf, true) : '<span style="color:var(--text-muted)">—</span>'}</td>
+          <td class="num">${btf ? tabLink(fmtMoney(btf, true), p.id, '#pay-app') : '<span style="color:var(--text-muted)">—</span>'}</td>
           <td class="num" style="font-family:var(--font-mono);font-size:10px;color:${factorColor}">
             ${factor !== null ? Math.round(factor * 100) + '%' : '—'}
           </td>
@@ -1908,14 +1930,14 @@ function renderDrillTbody() {
               onmouseover="this.style.color='var(--sb-gold)'" onmouseout="this.style.color='var(--text-primary)'"
               >${p.title} <span style="opacity:.35;font-size:10px">↗</span></a></td>
           <td><span class="chip" style="color:${STATUS_CHIP_COLORS[p.stage]};border-color:${STATUS_CHIP_COLORS[p.stage]}40;background:${STATUS_CHIP_COLORS[p.stage]}12;font-size:9px">${p.subLabel}</span></td>
-          <td class="num">${p.budget?.contractRevenue ? fmtMoney(p.budget.contractRevenue, true) : '<span style="color:var(--text-muted)">—</span>'}</td>
+          <td class="num">${p.budget?.contractRevenue ? tabLink(fmtMoney(p.budget.contractRevenue, true), p.id, '#pay-app') : '<span style="color:var(--text-muted)">—</span>'}</td>
           <td class="num" style="font-family:var(--font-mono);font-size:10px;color:${ratingColor}">
-            ${conv.confidenceRating ? conv.confidenceRating + '/10' : '⚠ unrated'}
+            ${tabLink(conv.confidenceRating ? conv.confidenceRating + '/10' : '⚠ unrated', p.id, '#decision-gates')}
           </td>
           <td class="num" style="font-family:var(--font-mono);font-size:10px">
-            ${conv.isDefaultRating
+            ${tabLink(conv.isDefaultRating
               ? `<span style="color:var(--status-yellow)">${Math.round((conv.conversionRate||0)*100)}% <span style="font-size:9px">(default)</span></span>`
-              : Math.round((conv.conversionRate||0)*100) + '%'}
+              : Math.round((conv.conversionRate||0)*100) + '%', p.id, '#decision-gates')}
           </td>
           <td class="num" style="color:${proj > 0 ? 'var(--status-blue)' : 'var(--text-muted)'}">
             ${proj > 0 ? fmtMoney(proj, true) : '—'}
