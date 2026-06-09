@@ -1210,13 +1210,13 @@ app.get('/api/data', async (req, res) => {
   }
 });
 
-app.use('/snapshots', express.static(path.join(__dirname, 'snapshots')));
-app.use(express.static(path.join(__dirname)));
-
-// ── Hub Pages (clean URLs) ─────────────────────────────────────────────────
+// ── Hub Pages — must be before express.static to win over /team /executive dirs ──
 app.get('/team',      (req, res) => res.sendFile(path.join(__dirname, 'dashboards/team.html')));
 app.get('/executive', (req, res) => res.sendFile(path.join(__dirname, 'dashboards/executive.html')));
 app.get('/personal',  (req, res) => res.sendFile(path.join(__dirname, 'dashboards/personal.html')));
+
+app.use('/snapshots', express.static(path.join(__dirname, 'snapshots')));
+app.use(express.static(path.join(__dirname)));
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
