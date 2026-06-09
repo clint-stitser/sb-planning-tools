@@ -347,7 +347,7 @@ function setLastUpdated(elementId) {
 
 // ── Auto-refresh ─────────────────────────────────────────────────────────────
 function startAutoRefresh(refreshFn, intervalMs = 5 * 60 * 1000) {
-  setInterval(() => refreshFn(true), intervalMs);
+  setInterval(() => refreshFn(false), intervalMs);
 }
 
 // ── Universal Tooltip System ──────────────────────────────────────────────────

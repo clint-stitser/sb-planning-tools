@@ -136,7 +136,7 @@ const CACHE_TTL  = 30 * 60 * 1000; // 30 minutes
 let dashCache     = null;
 let dashCacheTime = null;
 let dashPromise   = null;
-const DASH_TTL    = 5 * 60 * 1000; // 5 minutes (matches frontend auto-refresh)
+const DASH_TTL    = 20 * 60 * 1000; // 20 minutes
 
 async function fetchDashboardProjects() {
   const headers = {
@@ -514,7 +514,7 @@ function computePillars(p, budget) {
 let constCache     = null;
 let constCacheTime = null;
 let constPromise   = null;
-const CONST_TTL    = 5 * 60 * 1000;
+const CONST_TTL    = 20 * 60 * 1000; // 20 minutes
 
 async function buildConstructionData() {
   // Fetch projects + budget rows + project dates in parallel; then G-702s once we have project IDs
