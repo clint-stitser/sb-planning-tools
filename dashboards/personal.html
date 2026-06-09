@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stitser BUILT — Personal Dashboards</title>
+<link rel="stylesheet" href="css/dashboard-shared.css">
+<style>
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  max-width: 320px;
+}
+.hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 22px 18px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-top: 3px solid var(--text-secondary);
+  border-radius: var(--r-md);
+  text-decoration: none;
+  transition: background .15s, border-color .15s, transform .12s;
+}
+.hub-card:hover {
+  background: var(--surface-2);
+  border-color: rgba(138,155,173,.5);
+  transform: translateY(-2px);
+}
+.hub-card-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  opacity: .8;
+}
+.hub-card-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: .02em;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+.hub-card-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  flex: 1;
+}
+.hub-card-cta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  opacity: .5;
+  margin-top: 2px;
+}
+.hub-card:hover .hub-card-cta { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="db-page">
+
+  <div class="db-header">
+    <div class="db-header-left">
+      <div class="db-title">PERSONAL DASHBOARDS</div>
+      <div class="db-subtitle">Stitser BUILT · Personal Focus View</div>
+    </div>
+  </div>
+
+  <div class="hub-grid">
+
+    <a class="hub-card" href="../phase-anchor.html">
+      <div class="hub-card-eyebrow">Personal · Focus</div>
+      <div class="hub-card-title">Phase Anchor</div>
+      <div class="hub-card-desc">Your personal phase anchor view. Where you are in the cycle, what demands your attention now, and what to defer until next phase.</div>
+      <div class="hub-card-cta">Open →</div>
+    </a>
+
+  </div>
+
+</div>
+</body>
+</html>

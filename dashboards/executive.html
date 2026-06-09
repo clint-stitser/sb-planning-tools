@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stitser BUILT — Executive Dashboards</title>
+<link rel="stylesheet" href="css/dashboard-shared.css">
+<style>
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  max-width: 620px;
+}
+.hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 22px 18px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-top: 3px solid var(--sb-gold);
+  border-radius: var(--r-md);
+  text-decoration: none;
+  transition: background .15s, border-color .15s, transform .12s;
+}
+.hub-card:hover {
+  background: var(--surface-2);
+  border-color: rgba(201,168,76,.4);
+  transform: translateY(-2px);
+}
+.hub-card-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+  color: var(--sb-gold);
+  opacity: .7;
+}
+.hub-card-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: .02em;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+.hub-card-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  flex: 1;
+}
+.hub-card-cta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--sb-gold);
+  opacity: .5;
+  margin-top: 2px;
+}
+.hub-card:hover .hub-card-cta { opacity: 1; }
+.live-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 2px 7px;
+  border-radius: 3px;
+  background: rgba(46,204,113,.1);
+  color: #2ECC71;
+  border: 1px solid rgba(46,204,113,.2);
+  align-self: flex-start;
+}
+</style>
+</head>
+<body>
+<div class="db-page">
+
+  <div class="db-header">
+    <div class="db-header-left">
+      <div class="db-title">EXECUTIVE DASHBOARDS</div>
+      <div class="db-subtitle">Stitser BUILT · Financial Overview</div>
+    </div>
+  </div>
+
+  <div class="hub-grid">
+
+    <a class="hub-card" href="../entity-reporting.html">
+      <span class="live-badge">Live Data</span>
+      <div class="hub-card-eyebrow">Finance · Entity Level</div>
+      <div class="hub-card-title">Entity Reporting</div>
+      <div class="hub-card-desc">Cross-entity financial reporting. Revenue, GP, and performance metrics rolled up by legal entity for ownership-level review.</div>
+      <div class="hub-card-cta">Open →</div>
+    </a>
+
+    <a class="hub-card" href="../financials.html">
+      <span class="live-badge">Live Data</span>
+      <div class="hub-card-eyebrow">Finance · Operations</div>
+      <div class="hub-card-title">Financials</div>
+      <div class="hub-card-desc">Operational financial dashboard. P&amp;L visibility across the active portfolio with budget-to-actual comparisons and GP trend tracking.</div>
+      <div class="hub-card-cta">Open →</div>
+    </a>
+
+  </div>
+
+</div>
+</body>
+</html>

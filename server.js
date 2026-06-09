@@ -1213,6 +1213,11 @@ app.get('/api/data', async (req, res) => {
 app.use('/snapshots', express.static(path.join(__dirname, 'snapshots')));
 app.use(express.static(path.join(__dirname)));
 
+// ── Hub Pages (clean URLs) ─────────────────────────────────────────────────
+app.get('/team',      (req, res) => res.sendFile(path.join(__dirname, 'dashboards/team.html')));
+app.get('/executive', (req, res) => res.sendFile(path.join(__dirname, 'dashboards/executive.html')));
+app.get('/personal',  (req, res) => res.sendFile(path.join(__dirname, 'dashboards/personal.html')));
+
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
