@@ -806,7 +806,9 @@ async function getData(force) {
 // Flat JSON file. CFO plugin writes via POST; dashboard reads via GET.
 // Railway note: file persists across restarts but resets on redeploy.
 // The CFO plugin's daily email scan re-populates within 24 h of any reset.
-const REPORTING_PATH = path.join(__dirname, 'entity-reporting.json');
+const REPORTING_PATH = process.env.RAILWAY_VOLUME_MOUNT_PATH
+  ? path.join(process.env.RAILWAY_VOLUME_MOUNT_PATH, 'entity-reporting.json')
+  : path.join(__dirname, 'entity-reporting.json'); // local fallback
 
 function loadReporting() {
   try {
