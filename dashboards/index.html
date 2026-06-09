@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Stitser BUILT — Dashboards</title>
+<link rel="stylesheet" href="css/dashboard-shared.css">
+<style>
+
+/* ── Hub Layout ── */
+.hub-group { margin-bottom: 48px; }
+.hub-group-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.hub-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+
+/* ── Hub Card ── */
+.hub-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 22px 18px;
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
+  border-top: 3px solid var(--sb-gold);
+  border-radius: var(--r-md);
+  text-decoration: none;
+  transition: background .15s, border-color .15s, transform .12s;
+  cursor: pointer;
+}
+.hub-card:hover {
+  background: var(--surface-2);
+  border-color: rgba(201,168,76,.35);
+  transform: translateY(-2px);
+}
+.hub-card.teal  { border-top-color: #3498DB; }
+.hub-card.green { border-top-color: #2ECC71; }
+.hub-card.gray  { border-top-color: var(--text-secondary); }
+
+.hub-card-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--sb-gold);
+  opacity: .75;
+}
+.hub-card.teal  .hub-card-eyebrow { color: #3498DB; }
+.hub-card.green .hub-card-eyebrow { color: #2ECC71; }
+.hub-card.gray  .hub-card-eyebrow { color: var(--text-secondary); }
+
+.hub-card-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  letter-spacing: .02em;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+.hub-card-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  flex: 1;
+}
+.hub-card-cta {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--sb-gold);
+  opacity: .6;
+  margin-top: 2px;
+}
+.hub-card.teal  .hub-card-cta { color: #3498DB; }
+.hub-card.green .hub-card-cta { color: #2ECC71; }
+.hub-card.gray  .hub-card-cta { color: var(--text-secondary); }
+.hub-card:hover .hub-card-cta { opacity: 1; }
+
+/* ── Badge ── */
+.hub-badge {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: var(--sb-gold-dim);
+  color: var(--sb-gold);
+  border: 1px solid rgba(201,168,76,.2);
+  align-self: flex-start;
+}
+.hub-badge.live { background: rgba(46,204,113,.1); color: #2ECC71; border-color: rgba(46,204,113,.2); }
+
+</style>
+</head>
+<body>
+
+<div class="db-page">
+
+  <!-- ── Header ── -->
+  <div class="db-header">
+    <div class="db-header-left">
+      <div class="db-title">DASHBOARDS</div>
+      <div class="db-subtitle">Stitser BUILT · Planning &amp; Operations Tools</div>
+    </div>
+  </div>
+
+  <!-- ── Team ── -->
+  <div class="hub-group">
+    <div class="hub-group-label">Team</div>
+    <div class="hub-grid">
+
+      <a class="hub-card" href="construction-scorecard.html">
+        <span class="hub-badge live">Live Data</span>
+        <div class="hub-card-eyebrow">Construction · Scorecard</div>
+        <div class="hub-card-title">Construction Scorecard</div>
+        <div class="hub-card-desc">G-702 revenue, WIP pipeline, and project-level budget health. Drill into any bucket for deep-linked rows back to S-BOS.</div>
+        <div class="hub-card-cta">Open →</div>
+      </a>
+
+      <a class="hub-card teal" href="disposition-scorecard.html">
+        <span class="hub-badge live" style="background:rgba(52,152,219,.1);color:#3498DB;border-color:rgba(52,152,219,.2)">Live Data</span>
+        <div class="hub-card-eyebrow">Disposition · Scorecard</div>
+        <div class="hub-card-title">Asset Disposition</div>
+        <div class="hub-card-desc">Year-end goal tracking for 30 home closes. Pipeline funnel by stage, deadline countdown, and active homes table with S-BOS deep links.</div>
+        <div class="hub-card-cta">Open →</div>
+      </a>
+
+      <a class="hub-card green" href="../phase-anchor-team.html">
+        <div class="hub-card-eyebrow">Operations · Team View</div>
+        <div class="hub-card-title">Phase Anchor — Team</div>
+        <div class="hub-card-desc">Team-level phase and workload snapshot. Tracks where each team member sits across active projects and operational priorities.</div>
+        <div class="hub-card-cta">Open →</div>
+      </a>
+
+      <a class="hub-card" href="../manpower.html">
+        <div class="hub-card-eyebrow">Operations · Capacity</div>
+        <div class="hub-card-title">Manpower Planner</div>
+        <div class="hub-card-desc">Labor capacity planning across active and upcoming projects. Spot overloads and coverage gaps before they become schedule problems.</div>
+        <div class="hub-card-cta">Open →</div>
+      </a>
+
+      <a class="hub-card" href="../pillar-matrix.html">
+        <div class="hub-card-eyebrow">Strategy · Reference</div>
+        <div class="hub-card-title">Pillar Matrix</div>
+        <div class="hub-card-desc">Side-by-side view of all active projects mapped against the six operational pillars. Surfaces which pillars are at risk across the portfolio.</div>
+        <div class="hub-card-cta">Open →</div>
+      </a>
+
+      <a class="hub-card" href="../planning-tools.html">
+        <div class="hub-card-eyebrow">Operations · Planning</div>
+        <div class="hub-card-title">Planning Tools</div>
+        <div class="hub-card-desc">Pre-construction and pursuit planning utilities. Supports scope development, schedule building, and milestone coordination.</div>
+        <div class="hub-card-cta">Open →</div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- ── Executive ── -->
+  <div class="hub-group">
+    <div class="hub-group-label">Executive</div>
+    <div class="hub-grid">
+
+      <a class="hub-card" href="../entity-reporting.html">
+        <span class="hub-badge live">Live Data</span>
+        <div class="hub-card-eyebrow">Finance · Entity Level</div>
+        <div class="hub-card-title">Entity Reporting</div>
+        <div class="hub-card-desc">Cross-entity financial reporting. Revenue, GP, and performance metrics rolled up by legal entity for ownership-level review.</div>
+        <div class="hub-card-cta">Open →</div>
+      </a>
+
+      <a class="hub-card" href="../financials.html">
+        <span class="hub-badge live">Live Data</span>
+        <div class="hub-card-eyebrow">Finance · Operations</div>
+        <div class="hub-card-title">Financials</div>
+        <div class="hub-card-desc">Operational financial dashboard. P&amp;L visibility across the active portfolio with budget-to-actual comparisons and GP trend tracking.</div>
+        <div class="hub-card-cta">Open →</div>
+      </a>
+
+    </div>
+  </div>
+
+  <!-- ── Personal ── -->
+  <div class="hub-group">
+    <div class="hub-group-label">Personal</div>
+    <div class="hub-grid" style="max-width:320px">
+
+      <a class="hub-card gray" href="../phase-anchor.html">
+        <div class="hub-card-eyebrow">Personal · Focus</div>
+        <div class="hub-card-title">Phase Anchor</div>
+        <div class="hub-card-desc">Your personal phase anchor view. Where you are in the cycle, what demands your attention now, and what to defer until next phase.</div>
+        <div class="hub-card-cta">Open →</div>
+      </a>
+
+    </div>
+  </div>
+
+</div><!-- /db-page -->
+
+</body>
+</html>
