@@ -14,6 +14,37 @@
   --light:  #F4F4F4;
   --white:  #fff;
 }
+
+/* ── PAGE TABS ── */
+.page-tabs {
+  display: flex;
+  background: var(--dark);
+  padding: 0 20px;
+  gap: 2px;
+}
+.page-tab {
+  padding: 13px 20px;
+  font-family: var(--font-head);
+  font-weight: 900;
+  font-size: 12px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.5);
+  cursor: pointer;
+  border: none;
+  background: none;
+  border-bottom: 3px solid transparent;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.page-tab:hover { color: rgba(255,255,255,.8); }
+.page-tab.active { color: #fff; border-bottom-color: var(--orange); }
+
+/* ── VIEW PANEL ── */
+.view-panel { display: none; }
+.view-panel.active { display: block; }
+
+/* ── CONTROLS ── */
 .controls-bar { background: var(--white); border-bottom: 1px solid #E5E5E5; padding: 0 20px; }
 .controls-row { display: flex; align-items: center; gap: 8px; padding: 10px 0; flex-wrap: wrap; border-bottom: 1px solid #F0F0F0; }
 .controls-row:last-child { border-bottom: none; }
@@ -28,10 +59,12 @@
 .clear-btn:hover { opacity: 1; color: var(--orange); }
 .filter-count { font-family: var(--font-sub); font-size: 10px; font-weight: 700; color: var(--dark); opacity: .45; margin-left: 2px; }
 
+/* ── META ── */
 .roadmap-meta { display: flex; align-items: center; justify-content: space-between; padding: 8px 20px; flex-wrap: wrap; gap: 6px; background: var(--white); border-bottom: 1px solid #F0F0F0; }
 .roadmap-total { font-family: var(--font-sub); font-weight: 700; font-size: 12px; letter-spacing: .5px; color: var(--dark); opacity: .55; }
 .roadmap-refreshed { font-family: var(--font-sub); font-size: 11px; color: var(--dark); opacity: .35; }
 
+/* ── BOARD ── */
 .board-wrap { padding: 0 12px 60px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 .board { display: grid; gap: 3px; align-items: start; min-width: 0; padding-top: 12px; }
 .board.cols-2 { grid-template-columns: repeat(2, minmax(260px, 1fr)); min-width: 520px; }
@@ -40,18 +73,30 @@
 .board.cols-5 { grid-template-columns: repeat(5, minmax(200px, 1fr)); min-width: 1000px; }
 .board.cols-6 { grid-template-columns: repeat(6, minmax(190px, 1fr)); min-width: 1140px; }
 
-/* Unassigned column */
-.board.has-unassigned .board-col:last-child .col-header { border-top-color: #BCBEC0; }
-
+/* ── COLUMN ── */
 .board-col { background: var(--white); display: flex; flex-direction: column; min-height: 160px; }
 .col-header { padding: 14px 14px 12px; border-top: 4px solid var(--blue); display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
-.col-header.biz-dev    { border-top-color: #0C41F3; } .col-header.pipeline   { border-top-color: var(--orange); }
-.col-header.wip        { border-top-color: var(--blue); } .col-header.closeout   { border-top-color: #0d8a7c; }
-.col-header.asset-mgt  { border-top-color: #2ecc71; } .col-header.feature    { border-top-color: #0C41F3; }
-.col-header.workflow   { border-top-color: #00B3FA; } .col-header.data-layer { border-top-color: #199A27; }
-.col-header.integration{ border-top-color: #F1273F; } .col-header.skill      { border-top-color: #FF702E; }
-.col-header.training   { border-top-color: #FDA80D; } .col-header.budget     { border-top-color: #0C41F3; }
-.col-header.schedule   { border-top-color: #00B3FA; } .col-header.alignment  { border-top-color: #199A27; }
+/* Production columns */
+.col-header.queued    { border-top-color: #BCBEC0; }
+.col-header.in-design { border-top-color: #FDA80D; }
+.col-header.building  { border-top-color: var(--blue); }
+.col-header.launching { border-top-color: var(--orange); }
+.col-header.live      { border-top-color: #2ecc71; }
+/* Item columns */
+.col-header.biz-dev    { border-top-color: #0C41F3; }
+.col-header.pipeline   { border-top-color: var(--orange); }
+.col-header.wip        { border-top-color: var(--blue); }
+.col-header.closeout   { border-top-color: #0d8a7c; }
+.col-header.asset-mgt  { border-top-color: #2ecc71; }
+.col-header.feature    { border-top-color: #0C41F3; }
+.col-header.workflow   { border-top-color: #00B3FA; }
+.col-header.data-layer { border-top-color: #199A27; }
+.col-header.integration{ border-top-color: #F1273F; }
+.col-header.skill      { border-top-color: #FF702E; }
+.col-header.training   { border-top-color: #FDA80D; }
+.col-header.budget     { border-top-color: #0C41F3; }
+.col-header.schedule   { border-top-color: #00B3FA; }
+.col-header.alignment  { border-top-color: #199A27; }
 .col-header.checklists { border-top-color: #F1273F; }
 .col-header.unassigned { border-top-color: #BCBEC0; }
 
@@ -62,20 +107,34 @@
 .col-divider { height: 1px; background: var(--light); margin: 0 14px; }
 .col-cards { padding: 10px 10px 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
 
+/* ── SUB-GROUPS ── */
 .subgroup { margin-bottom: 4px; }
 .subgroup-header { font-family: var(--font-sub); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--dark); opacity: .45; padding: 6px 2px 4px; display: flex; align-items: center; gap: 6px; }
 .subgroup-header::after { content: ''; flex: 1; height: 1px; background: #E8E8E8; }
 .subgroup-cards { display: flex; flex-direction: column; gap: 6px; }
 
+/* ── CARD ── */
 .project-card { background: var(--light); padding: 10px 12px; border-left: 3px solid var(--blue); display: flex; flex-direction: column; gap: 5px; transition: box-shadow .13s; }
 .project-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,.09); }
-.project-card.biz-dev    { border-left-color: #0C41F3; } .project-card.pipeline   { border-left-color: var(--orange); }
-.project-card.wip        { border-left-color: var(--blue); } .project-card.closeout   { border-left-color: #0d8a7c; }
-.project-card.asset-mgt  { border-left-color: #2ecc71; } .project-card.feature    { border-left-color: #0C41F3; }
-.project-card.workflow   { border-left-color: #00B3FA; } .project-card.data-layer { border-left-color: #199A27; }
-.project-card.integration{ border-left-color: #F1273F; } .project-card.skill      { border-left-color: #FF702E; }
-.project-card.training   { border-left-color: #FDA80D; } .project-card.budget     { border-left-color: #0C41F3; }
-.project-card.schedule   { border-left-color: #00B3FA; } .project-card.alignment  { border-left-color: #199A27; }
+.project-card.queued    { border-left-color: #BCBEC0; }
+.project-card.in-design { border-left-color: #FDA80D; }
+.project-card.building  { border-left-color: var(--blue); }
+.project-card.launching { border-left-color: var(--orange); }
+.project-card.live      { border-left-color: #2ecc71; }
+.project-card.biz-dev    { border-left-color: #0C41F3; }
+.project-card.pipeline   { border-left-color: var(--orange); }
+.project-card.wip        { border-left-color: var(--blue); }
+.project-card.closeout   { border-left-color: #0d8a7c; }
+.project-card.asset-mgt  { border-left-color: #2ecc71; }
+.project-card.feature    { border-left-color: #0C41F3; }
+.project-card.workflow   { border-left-color: #00B3FA; }
+.project-card.data-layer { border-left-color: #199A27; }
+.project-card.integration{ border-left-color: #F1273F; }
+.project-card.skill      { border-left-color: #FF702E; }
+.project-card.training   { border-left-color: #FDA80D; }
+.project-card.budget     { border-left-color: #0C41F3; }
+.project-card.schedule   { border-left-color: #00B3FA; }
+.project-card.alignment  { border-left-color: #199A27; }
 .project-card.checklists { border-left-color: #F1273F; }
 .project-card.unassigned { border-left-color: #BCBEC0; }
 
@@ -84,6 +143,25 @@
 .card-title-link:hover { color: var(--blue); text-decoration: underline; }
 .card-edit-btn { flex-shrink: 0; width: 26px; height: 26px; border-radius: 4px; border: 1.5px solid #DEDEDE; background: var(--white); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all .13s; font-size: 13px; line-height: 1; color: #888; padding: 0; }
 .card-edit-btn:hover { border-color: var(--blue); color: var(--blue); background: #EBF3F8; }
+
+/* Production status badge */
+.prod-status-badge {
+  display: inline-block;
+  font-family: var(--font-sub);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-bottom: 2px;
+  align-self: flex-start;
+}
+.badge-queued    { background: #F0F0F0; color: #888; }
+.badge-in-design { background: #FFF3D0; color: #b35c00; }
+.badge-building  { background: #E0EEF5; color: #2a5a72; }
+.badge-launching { background: #FEE8CC; color: #b35c00; }
+.badge-live      { background: #D5F5E3; color: #1a7a3c; }
 
 .card-desc { font-family: var(--font-sub); font-size: 11px; line-height: 1.5; color: var(--dark); opacity: .6; }
 .card-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 1px; }
@@ -98,13 +176,14 @@
 .qc-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; border: 1.5px solid #ccc; background: var(--white); }
 .qc-dot.done        { background: #2ecc71; border-color: #2ecc71; }
 .qc-dot.in-progress { background: var(--orange); border-color: var(--orange); }
-.qc-label { opacity: .75; } .qc-status { margin-left: auto; font-size: 9px; font-weight: 700; opacity: .5; text-transform: uppercase; }
+.qc-label { opacity: .75; }
+.qc-status { margin-left: auto; font-size: 9px; font-weight: 700; opacity: .5; text-transform: uppercase; }
 
 .card-links { display: flex; gap: 10px; margin-top: 2px; }
 .card-link { font-family: var(--font-sub); font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--blue); text-decoration: none; opacity: .7; }
 .card-link:hover { opacity: 1; color: var(--orange); }
 
-/* DRAWER */
+/* ── DRAWER ── */
 .drawer-overlay { display: none; position: fixed; inset: 0; z-index: 200; background: rgba(0,0,0,.45); }
 .drawer-overlay.open { display: block; }
 .drawer { position: fixed; bottom: 0; left: 0; right: 0; z-index: 201; background: var(--white); border-radius: 16px 16px 0 0; box-shadow: 0 -4px 24px rgba(0,0,0,.18); padding: 0 0 env(safe-area-inset-bottom, 16px); transform: translateY(100%); transition: transform .25s cubic-bezier(.32,1,.3,1); max-height: 88vh; overflow-y: auto; -webkit-overflow-scrolling: touch; }
@@ -130,12 +209,13 @@
 .edit-chip.incl-KjXTw.selected { background: #0C41F3; } .edit-chip.incl-Yxrq4.selected { background: #00B3FA; }
 .edit-chip.incl-AI1Q0.selected { background: #199A27; } .edit-chip.incl-izl9N.selected { background: #F1273F; }
 .drawer-actions { display: flex; gap: 10px; padding: 0 20px 16px; border-top: 1px solid #F0F0F0; padding-top: 14px; }
-.btn-save { flex: 1; padding: 13px; background: var(--blue); color: #fff; border: none; border-radius: 8px; font-family: var(--font-head); font-weight: 900; font-size: 14px; letter-spacing: .5px; cursor: pointer; transition: background .13s; -webkit-tap-highlight-color: transparent; }
+.btn-save { flex: 1; padding: 13px; background: var(--blue); color: #fff; border: none; border-radius: 8px; font-family: var(--font-head); font-weight: 900; font-size: 14px; letter-spacing: .5px; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 .btn-save:hover { background: #2e5a6e; } .btn-save:disabled { background: #BCBEC0; cursor: default; }
 .btn-cancel { padding: 13px 20px; background: var(--light); border: none; border-radius: 8px; font-family: var(--font-sub); font-weight: 700; font-size: 13px; color: var(--dark); cursor: pointer; }
 .save-status { font-family: var(--font-sub); font-size: 11px; text-align: center; padding: 0 20px 10px; }
 .save-status.ok { color: #2ecc71; } .save-status.err { color: #e74c3c; }
 
+/* ── STATE ── */
 .col-empty { padding: 14px 10px 6px; font-family: var(--font-sub); font-size: 11px; font-style: italic; color: var(--dark); opacity: .3; }
 .board-loading { grid-column: 1 / -1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 20px; gap: 14px; }
 .spinner { width: 30px; height: 30px; border: 3px solid var(--light); border-top-color: var(--blue); border-radius: 50%; animation: spin .75s linear infinite; }
@@ -147,7 +227,10 @@
 .error-detail { font-family: var(--font-sub); font-size: 11px; color: var(--dark); opacity: .6; line-height: 1.5; }
 .error-retry { margin-top: 6px; font-family: var(--font-sub); font-weight: 700; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue); background: none; border: none; cursor: pointer; padding: 0; }
 
+/* ── RESPONSIVE ── */
 @media (max-width: 680px) {
+  .page-tabs { padding: 0 12px; }
+  .page-tab { padding: 11px 14px; font-size: 11px; }
   .controls-bar { padding: 0 12px; }
   .board-wrap { padding: 0 8px 40px; }
   .board.cols-2,.board.cols-3,.board.cols-4,.board.cols-5,.board.cols-6 { grid-template-columns: 1fr; min-width: 0; }
@@ -169,12 +252,12 @@
     <div class="logo-text"><span class="brand">Stitser Built</span><span class="sub">S-BOS Knowledge Base</span></div>
   </a>
   <nav class="header-nav">
-    <a class="nav-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-link" data-section="system" href="../system/">System</a>
     <a class="nav-link" data-section="workflows" href="../workflows/">Workflows</a>
-    <a class="nav-link" data-section="agents"    href="../agents/">Agents</a>
-    <a class="nav-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-link" data-section="agents" href="../agents/">Agents</a>
+    <a class="nav-link" data-section="roles" href="../roles/">Roles</a>
     <a class="nav-link" data-section="whats-new" href="../whats-new/">What's New</a>
-    <a class="nav-link" data-section="glossary"  href="../glossary/">Glossary</a>
+    <a class="nav-link" data-section="glossary" href="../glossary/">Glossary</a>
   </nav>
   <button class="nav-hamburger" aria-label="Open menu">&#9776;</button>
   <div class="header-badge">Team Resource</div>
@@ -189,79 +272,103 @@
     <button class="nav-overlay-close" aria-label="Close menu">&#10005;</button>
   </div>
   <nav class="nav-overlay-links">
-    <a class="nav-overlay-link" data-section="system"    href="../system/">System</a>
+    <a class="nav-overlay-link" data-section="system" href="../system/">System</a>
     <a class="nav-overlay-link" data-section="workflows" href="../workflows/">Workflows</a>
-    <a class="nav-overlay-link" data-section="agents"    href="../agents/">Agents</a>
-    <a class="nav-overlay-link" data-section="roles"     href="../roles/">Roles</a>
+    <a class="nav-overlay-link" data-section="agents" href="../agents/">Agents</a>
+    <a class="nav-overlay-link" data-section="roles" href="../roles/">Roles</a>
     <a class="nav-overlay-link" data-section="whats-new" href="../whats-new/">What's New</a>
-    <a class="nav-overlay-link" data-section="glossary"  href="../glossary/">Glossary</a>
+    <a class="nav-overlay-link" data-section="glossary" href="../glossary/">Glossary</a>
   </nav>
 </div>
 
 <div class="page-hero">
   <div class="page-hero-eyebrow">Section 5</div>
   <h1 class="page-hero-title">S-BOS Roadmap</h1>
-  <p class="page-hero-subtitle">What's being built, what's live, and what's next. Tap ✏️ to tag any item.</p>
+  <p class="page-hero-subtitle">Track what's being built and where every item stands.</p>
 </div>
 <div class="orange-bar"></div>
 <div class="breadcrumb-bar"><div class="breadcrumb"><a href="../">Home</a><span class="sep">→</span><span class="cur">Roadmap</span></div></div>
 
-<div class="controls-bar">
-  <div class="controls-row">
-    <span class="ctrl-label">Group by</span>
-    <div class="chip-group" id="group-primary">
-      <button class="chip active" data-value="stage">Stage</button>
-      <button class="chip" data-value="kind">Kind</button>
-      <button class="chip" data-value="pillar">Pillar</button>
-    </div>
-    <div class="chip-sep"></div>
-    <span class="ctrl-label" style="min-width:40px">then by</span>
-    <div class="chip-group" id="group-secondary">
-      <button class="chip active" data-value="none">None</button>
-      <button class="chip" data-value="kind">Kind</button>
-      <button class="chip" data-value="pillar">Pillar</button>
-      <button class="chip" data-value="stage">Stage</button>
-    </div>
+<!-- PAGE TABS -->
+<div class="page-tabs">
+  <button class="page-tab active" data-tab="production">🟢 Production Status</button>
+  <button class="page-tab" data-tab="items">🗂 Item View</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════
+     PRODUCTION VIEW
+═══════════════════════════════════════════════════════ -->
+<div class="view-panel active" id="panel-production">
+  <div class="roadmap-meta">
+    <div class="roadmap-total" id="prod-total"></div>
+    <div class="roadmap-refreshed" id="prod-refreshed"></div>
   </div>
-  <div class="controls-row">
-    <span class="ctrl-label">Filter</span>
-    <div class="chip-group" id="filter-kind">
-      <button class="chip" data-dim="kind" data-value="qrt21">Feature</button>
-      <button class="chip" data-dim="kind" data-value="WkstT">Workflow</button>
-      <button class="chip" data-dim="kind" data-value="EOw0c">Data Layer</button>
-      <button class="chip" data-dim="kind" data-value="n89Yl">Integration</button>
-      <button class="chip" data-dim="kind" data-value="Nn6M0">Skill</button>
-      <button class="chip" data-dim="kind" data-value="JGMYu">Training</button>
+  <div class="board-wrap">
+    <div class="board cols-5" id="prod-board">
+      <div class="board-loading"><div class="spinner"></div><div class="loading-text">Loading&hellip;</div></div>
     </div>
-    <div class="chip-sep"></div>
-    <div class="chip-group" id="filter-stage">
-      <button class="chip" data-dim="stage" data-value="10ilB">Biz Dev</button>
-      <button class="chip" data-dim="stage" data-value="XWpjX">Pipeline</button>
-      <button class="chip" data-dim="stage" data-value="YHm9w">WIP</button>
-      <button class="chip" data-dim="stage" data-value="dxvgP">Closeout</button>
-      <button class="chip" data-dim="stage" data-value="qWFP5">Asset MGT</button>
-    </div>
-    <div class="chip-sep"></div>
-    <div class="chip-group" id="filter-pillar">
-      <button class="chip" data-dim="pillar" data-value="KJrUR">Budget</button>
-      <button class="chip" data-dim="pillar" data-value="58TQw">Schedule</button>
-      <button class="chip" data-dim="pillar" data-value="da2kh">Alignment</button>
-      <button class="chip" data-dim="pillar" data-value="egBQV">Checklists</button>
-    </div>
-    <div class="chip-sep"></div>
-    <button class="clear-btn" id="clear-filters">Clear</button>
-    <span class="filter-count" id="filter-count"></span>
   </div>
 </div>
 
-<div class="roadmap-meta">
-  <div class="roadmap-total" id="roadmap-total"></div>
-  <div class="roadmap-refreshed" id="roadmap-refreshed"></div>
-</div>
-
-<div class="board-wrap">
-  <div class="board cols-5" id="roadmap-board">
-    <div class="board-loading"><div class="spinner"></div><div class="loading-text">Loading roadmap&hellip;</div></div>
+<!-- ═══════════════════════════════════════════════════════
+     ITEM VIEW
+═══════════════════════════════════════════════════════ -->
+<div class="view-panel" id="panel-items">
+  <div class="controls-bar">
+    <div class="controls-row">
+      <span class="ctrl-label">Group by</span>
+      <div class="chip-group" id="group-primary">
+        <button class="chip active" data-value="stage">Stage</button>
+        <button class="chip" data-value="kind">Kind</button>
+        <button class="chip" data-value="pillar">Pillar</button>
+      </div>
+      <div class="chip-sep"></div>
+      <span class="ctrl-label" style="min-width:40px">then by</span>
+      <div class="chip-group" id="group-secondary">
+        <button class="chip active" data-value="none">None</button>
+        <button class="chip" data-value="kind">Kind</button>
+        <button class="chip" data-value="pillar">Pillar</button>
+        <button class="chip" data-value="stage">Stage</button>
+      </div>
+    </div>
+    <div class="controls-row">
+      <span class="ctrl-label">Filter</span>
+      <div class="chip-group" id="filter-kind">
+        <button class="chip" data-dim="kind" data-value="qrt21">Feature</button>
+        <button class="chip" data-dim="kind" data-value="WkstT">Workflow</button>
+        <button class="chip" data-dim="kind" data-value="EOw0c">Data Layer</button>
+        <button class="chip" data-dim="kind" data-value="n89Yl">Integration</button>
+        <button class="chip" data-dim="kind" data-value="Nn6M0">Skill</button>
+        <button class="chip" data-dim="kind" data-value="JGMYu">Training</button>
+      </div>
+      <div class="chip-sep"></div>
+      <div class="chip-group" id="filter-stage">
+        <button class="chip" data-dim="stage" data-value="10ilB">Biz Dev</button>
+        <button class="chip" data-dim="stage" data-value="XWpjX">Pipeline</button>
+        <button class="chip" data-dim="stage" data-value="YHm9w">WIP</button>
+        <button class="chip" data-dim="stage" data-value="dxvgP">Closeout</button>
+        <button class="chip" data-dim="stage" data-value="qWFP5">Asset MGT</button>
+      </div>
+      <div class="chip-sep"></div>
+      <div class="chip-group" id="filter-pillar">
+        <button class="chip" data-dim="pillar" data-value="KJrUR">Budget</button>
+        <button class="chip" data-dim="pillar" data-value="58TQw">Schedule</button>
+        <button class="chip" data-dim="pillar" data-value="da2kh">Alignment</button>
+        <button class="chip" data-dim="pillar" data-value="egBQV">Checklists</button>
+      </div>
+      <div class="chip-sep"></div>
+      <button class="clear-btn" id="clear-filters">Clear</button>
+      <span class="filter-count" id="filter-count"></span>
+    </div>
+  </div>
+  <div class="roadmap-meta">
+    <div class="roadmap-total" id="item-total"></div>
+    <div class="roadmap-refreshed" id="item-refreshed"></div>
+  </div>
+  <div class="board-wrap">
+    <div class="board cols-5" id="item-board">
+      <div class="board-loading"><div class="spinner"></div><div class="loading-text">Loading&hellip;</div></div>
+    </div>
   </div>
 </div>
 
@@ -274,8 +381,7 @@
     <button class="drawer-close" id="drawer-close">&#10005;</button>
   </div>
   <div class="drawer-body">
-    <div>
-      <div class="drawer-section-label">Kind</div>
+    <div><div class="drawer-section-label">Kind</div>
       <div class="edit-chips" id="edit-kind">
         <button class="edit-chip kind-qrt21" data-dim="kind" data-val="qrt21">Feature</button>
         <button class="edit-chip kind-WkstT" data-dim="kind" data-val="WkstT">Workflow</button>
@@ -285,8 +391,7 @@
         <button class="edit-chip kind-JGMYu" data-dim="kind" data-val="JGMYu">Training</button>
       </div>
     </div>
-    <div>
-      <div class="drawer-section-label">Applicable Stage</div>
+    <div><div class="drawer-section-label">Applicable Stage</div>
       <div class="edit-chips" id="edit-stage">
         <button class="edit-chip stage-10ilB" data-dim="stage" data-val="10ilB">Biz Dev</button>
         <button class="edit-chip stage-XWpjX" data-dim="stage" data-val="XWpjX">Pipeline</button>
@@ -295,8 +400,7 @@
         <button class="edit-chip stage-qWFP5" data-dim="stage" data-val="qWFP5">Asset MGT</button>
       </div>
     </div>
-    <div>
-      <div class="drawer-section-label">Applicable Pillar</div>
+    <div><div class="drawer-section-label">Applicable Pillar</div>
       <div class="edit-chips" id="edit-pillar">
         <button class="edit-chip pillar-KJrUR" data-dim="pillar" data-val="KJrUR">Budget</button>
         <button class="edit-chip pillar-58TQw" data-dim="pillar" data-val="58TQw">Schedule</button>
@@ -304,8 +408,7 @@
         <button class="edit-chip pillar-egBQV" data-dim="pillar" data-val="egBQV">Checklists/QC</button>
       </div>
     </div>
-    <div>
-      <div class="drawer-section-label">Inclusions</div>
+    <div><div class="drawer-section-label">Inclusions</div>
       <div class="edit-chips" id="edit-incl">
         <button class="edit-chip incl-KjXTw" data-dim="incl" data-val="KjXTw">Design Doc</button>
         <button class="edit-chip incl-Yxrq4" data-dim="incl" data-val="Yxrq4">Claude Skill</button>
@@ -323,7 +426,7 @@
 
 <footer>
   <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
-  <div class="footer-version">v2.3 · Internal Use Only</div>
+  <div class="footer-version">v2.4 · Internal Use Only</div>
 </footer>
 
 <script src="../assets/js/nav.js"></script>
@@ -331,6 +434,63 @@
 <script>
 (function () {
 
+// ── PRODUCTION STATUS MAP ──────────────────────────────────────────────
+// Maps S-BOS status values → production column
+var PROD_COLS = [
+  {
+    key:      'queued',
+    label:    'Queued to Start',
+    subtitle: 'Warm, Hot, or Nurture',
+    cls:      'queued',
+    badge:    'badge-queued',
+    values:   [
+      'ready_for_review',                          // New Opportunity
+      'complete',                                  // Nurture 12+ months
+      '21c0705b-0c3b-45cd-9e93-07672fac949d',     // Warm 6-12 months
+      'fb5677b7-3e68-4705-86af-abb8745a43f7',     // Hot 0-6 months
+    ],
+  },
+  {
+    key:      'in-design',
+    label:    'In Design',
+    subtitle: 'Active in Pipeline',
+    cls:      'in-design',
+    badge:    'badge-in-design',
+    values:   ['backlog'],
+  },
+  {
+    key:      'building',
+    label:    'Being Built',
+    subtitle: 'Active in WIP',
+    cls:      'building',
+    badge:    'badge-building',
+    values:   ['zOlNR'],
+  },
+  {
+    key:      'launching',
+    label:    'Initial Launch',
+    subtitle: 'Closeout & bug fix',
+    cls:      'launching',
+    badge:    'badge-launching',
+    values:   ['Swowl'],
+  },
+  {
+    key:      'live',
+    label:    'Live',
+    subtitle: 'Serviced & running',
+    cls:      'live',
+    badge:    'badge-live',
+    values:   ['Dio3d'],
+  },
+];
+
+// Build reverse lookup: status value → prod col info
+var STATUS_TO_PROD = {};
+PROD_COLS.forEach(function(col) {
+  col.values.forEach(function(v) { STATUS_TO_PROD[v] = col; });
+});
+
+// ── ITEM VIEW MAPS ─────────────────────────────────────────────────────
 var KIND_MAP = {
   qrt21: { label: 'Feature',     cls: 'feature'    },
   WkstT: { label: 'Workflow',    cls: 'workflow'   },
@@ -340,10 +500,10 @@ var KIND_MAP = {
   JGMYu: { label: 'Training',    cls: 'training'   },
 };
 var PILLAR_MAP = {
-  KJrUR:   { label: 'Budget',       cls: 'budget'    },
-  '58TQw': { label: 'Schedule',     cls: 'schedule'  },
-  da2kh:   { label: 'Alignment',    cls: 'alignment' },
-  egBQV:   { label: 'Checklists/QC',cls: 'checklists'},
+  KJrUR:   { label: 'Budget',        cls: 'budget'    },
+  '58TQw': { label: 'Schedule',      cls: 'schedule'  },
+  da2kh:   { label: 'Alignment',     cls: 'alignment' },
+  egBQV:   { label: 'Checklists/QC', cls: 'checklists'},
 };
 var STAGE_MAP = {
   '10ilB': { label: 'Biz Dev',   cls: 'biz-dev'  },
@@ -352,320 +512,345 @@ var STAGE_MAP = {
   dxvgP:  { label: 'Closeout',  cls: 'closeout' },
   qWFP5:  { label: 'Asset MGT', cls: 'asset-mgt'},
 };
-
 var KIND_KEYS   = ['qrt21','WkstT','EOw0c','n89Yl','Nn6M0','JGMYu'];
 var PILLAR_KEYS = ['KJrUR','58TQw','da2kh','egBQV'];
 var STAGE_KEYS  = ['10ilB','XWpjX','YHm9w','dxvgP','qWFP5'];
 var UNASSIGNED  = '_unassigned';
 
-function dimMap(d)  { return d === 'kind' ? KIND_MAP  : d === 'pillar' ? PILLAR_MAP : STAGE_MAP; }
-function dimKeys(d) { return d === 'kind' ? KIND_KEYS : d === 'pillar' ? PILLAR_KEYS : STAGE_KEYS; }
-function projectDimValues(p, d) {
-  if (d === 'kind')   return p.sf7ec194d1 || [];
-  if (d === 'pillar') return p.sc25affb6d || [];
-  if (d === 'stage')  return p.sfdac4b613 || [];
-  return [];
+function dimMap(d)  { return d==='kind'?KIND_MAP:d==='pillar'?PILLAR_MAP:STAGE_MAP; }
+function dimKeys(d) { return d==='kind'?KIND_KEYS:d==='pillar'?PILLAR_KEYS:STAGE_KEYS; }
+function projectDimValues(p,d) {
+  return d==='kind'?p.sf7ec194d1||[]:d==='pillar'?p.sc25affb6d||[]:d==='stage'?p.sfdac4b613||[]:[];
 }
 
+// ── QC helpers ─────────────────────────────────────────────────────────
 var QC_SLOTS = [
-  { key: 'design',   label: 'Design / Spec Doc' },
-  { key: 'skill',    label: 'SKILL.md' },
-  { key: 'workflow', label: 'Workflow Diagram' },
-  { key: 'live',     label: 'Live in New System' },
+  { key:'design',   label:'Design / Spec Doc' },
+  { key:'skill',    label:'SKILL.md' },
+  { key:'workflow', label:'Workflow Diagram' },
+  { key:'live',     label:'Live in New System' },
 ];
 function matchSlot(t) {
-  t = (t||'').toLowerCase();
-  if (t.indexOf('design') >= 0 || t.indexOf('spec') >= 0) return 'design';
-  if (t.indexOf('skill') >= 0) return 'skill';
-  if (t.indexOf('workflow') >= 0 || t.indexOf('diagram') >= 0) return 'workflow';
-  if (t.indexOf('live') >= 0 || t.indexOf('supabase') >= 0) return 'live';
+  t=(t||'').toLowerCase();
+  if(t.indexOf('design')>=0||t.indexOf('spec')>=0) return 'design';
+  if(t.indexOf('skill')>=0) return 'skill';
+  if(t.indexOf('workflow')>=0||t.indexOf('diagram')>=0) return 'workflow';
+  if(t.indexOf('live')>=0||t.indexOf('supabase')>=0) return 'live';
   return null;
 }
 function taskDotClass(v) {
-  if (!v) return 'not-started';
-  var s = v.toLowerCase();
-  return s.indexOf('complete') >= 0 || s === 'done' ? 'done' :
-         s.indexOf('progress') >= 0 || s.indexOf('active') >= 0 ? 'in-progress' : 'not-started';
+  if(!v) return 'not-started';
+  var s=v.toLowerCase();
+  return s.indexOf('complete')>=0||s==='done'?'done':s.indexOf('progress')>=0||s.indexOf('active')>=0?'in-progress':'not-started';
 }
 function taskStatusLabel(v) {
-  if (!v) return '';
-  var s = v.toLowerCase();
-  return s.indexOf('complete') >= 0 || s === 'done' ? 'Done' : s.indexOf('progress') >= 0 ? 'Active' : '';
+  if(!v) return '';
+  var s=v.toLowerCase();
+  return s.indexOf('complete')>=0||s==='done'?'Done':s.indexOf('progress')>=0?'Active':'';
 }
 function renderQC(tasks) {
-  if (!tasks || !tasks.length) return '';
-  var slotMap = {};
-  tasks.forEach(function(t) { if (typeof t === 'object' && t.title) { var sl = matchSlot(t.title); if (sl) slotMap[sl] = (t.status && t.status.value) || ''; } });
-  return '<div class="card-qc">' + QC_SLOTS.map(function(s) {
-    var sv = slotMap[s.key] || '';
-    return '<div class="qc-row"><span class="qc-dot ' + taskDotClass(sv) + '"></span><span class="qc-label">' + esc(s.label) + '</span>' + (taskStatusLabel(sv) ? '<span class="qc-status">' + taskStatusLabel(sv) + '</span>' : '') + '</div>';
-  }).join('') + '</div>';
+  if(!tasks||!tasks.length) return '';
+  var slotMap={};
+  tasks.forEach(function(t){if(typeof t==='object'&&t.title){var sl=matchSlot(t.title);if(sl)slotMap[sl]=(t.status&&t.status.value)||'';}});
+  return '<div class="card-qc">'+QC_SLOTS.map(function(s){
+    var sv=slotMap[s.key]||'';
+    return '<div class="qc-row"><span class="qc-dot '+taskDotClass(sv)+'"></span><span class="qc-label">'+esc(s.label)+'</span>'+(taskStatusLabel(sv)?'<span class="qc-status">'+taskStatusLabel(sv)+'</span>':'')+'</div>';
+  }).join('')+'</div>';
 }
 
-function sbosUrl(id, tab) { return 'https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=' + id + '#tab' + (tab||1); }
-function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function sbosUrl(id,tab){return 'https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId='+id+'#tab'+(tab||1);}
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 
-function renderCard(p, borderCls) {
-  var id = p.id;
-  var title   = esc(p.title || '\u2014');
-  var desc    = esc(p.description || '');
-  var kinds   = p.sf7ec194d1 || [];
-  var pillars = p.sc25affb6d || [];
-  var stages  = p.sfdac4b613 || [];
-  var tasks   = p.synemrwc_tasks || [];
-
-  var kindTagsHtml   = kinds.slice(0,3).map(function(k) { var m = KIND_MAP[k];   return '<span class="tag tag-kind">'   + esc(m ? m.label : k) + '</span>'; }).join('');
-  var pillarTagsHtml = pillars.map(function(k)           { var m = PILLAR_MAP[k]; return '<span class="tag tag-pillar">'+esc(m ? m.label : k) + '</span>'; }).join('');
-  var stageTagsHtml  = stages.map(function(k)            { var m = STAGE_MAP[k];  return '<span class="tag tag-stage">'  + esc(m ? m.label : k) + '</span>'; }).join('');
-
-  // Show "untagged" hint on unassigned cards
-  var unsetHints = [];
-  if (!kinds.length)   unsetHints.push('<span class="tag tag-unset">no kind</span>');
-  if (!pillars.length) unsetHints.push('<span class="tag tag-unset">no pillar</span>');
-  if (!stages.length)  unsetHints.push('<span class="tag tag-unset">no stage</span>');
-  var tagsHtml = [kindTagsHtml, pillarTagsHtml, stageTagsHtml].filter(Boolean).join('');
-  if (!tagsHtml) tagsHtml = unsetHints.join('');
-
-  return '<div class="project-card ' + borderCls + '">'
-    + '<div class="card-header-row">'
-    + '<a class="card-title-link" href="' + sbosUrl(id,1) + '" target="_blank" rel="noopener noreferrer">' + title + ' \u2197</a>'
-    + '<button class="card-edit-btn" data-id="' + id + '" aria-label="Edit" title="Tag this item">\u270f\ufe0f</button>'
-    + '</div>'
-    + (desc ? '<div class="card-desc">' + desc + '</div>' : '')
-    + (tagsHtml ? '<div class="card-tags">' + tagsHtml + '</div>' : '')
-    + renderQC(tasks)
-    + '<div class="card-links"><a class="card-link" href="' + sbosUrl(id,5) + '" target="_blank" rel="noopener noreferrer">Edit tasks \u2197</a></div>'
-    + '</div>';
+// ── PRODUCTION CARD ────────────────────────────────────────────────────
+function renderProdCard(p) {
+  var id    = p.id;
+  var title = esc(p.title||'—');
+  var col   = STATUS_TO_PROD[p.status] || { cls:'queued', badge:'badge-queued', label:'Unknown' };
+  var kinds   = p.sf7ec194d1||[];
+  var pillars = p.sc25affb6d||[];
+  var kindTagsHtml   = kinds.slice(0,2).map(function(k){var m=KIND_MAP[k];return '<span class="tag tag-kind">'+esc(m?m.label:k)+'</span>';}).join('');
+  var pillarTagsHtml = pillars.slice(0,2).map(function(k){var m=PILLAR_MAP[k];return '<span class="tag tag-pillar">'+esc(m?m.label:k)+'</span>';}).join('');
+  var tagsHtml = [kindTagsHtml,pillarTagsHtml].filter(Boolean).join('');
+  return '<div class="project-card '+col.cls+'">'
+    +'<div class="card-header-row">'
+    +'<a class="card-title-link" href="'+sbosUrl(id,1)+'" target="_blank" rel="noopener noreferrer">'+title+' ↗</a>'
+    +'<button class="card-edit-btn" data-id="'+id+'" title="Edit metadata">✏️</button>'
+    +'</div>'
+    +(tagsHtml?'<div class="card-tags">'+tagsHtml+'</div>':'')
+    +'<div class="card-links"><a class="card-link" href="'+sbosUrl(id,5)+'" target="_blank" rel="noopener noreferrer">Edit tasks ↗</a></div>'
+    +'</div>';
 }
 
-var activeFilters = { kind: [], stage: [], pillar: [] };
-function projectPassesFilter(p) {
-  var fk = activeFilters.kind, fs = activeFilters.stage, fp = activeFilters.pillar;
-  if (fk.length > 0 && !(p.sf7ec194d1||[]).some(function(v){ return fk.indexOf(v) >= 0; })) return false;
-  if (fs.length > 0 && !(p.sfdac4b613||[]).some(function(v){ return fs.indexOf(v) >= 0; })) return false;
-  if (fp.length > 0 && !(p.sc25affb6d||[]).some(function(v){ return fp.indexOf(v) >= 0; })) return false;
+// ── ITEM CARD ──────────────────────────────────────────────────────────
+function renderItemCard(p, borderCls) {
+  var id=p.id, title=esc(p.title||'—'), desc=esc(p.description||'');
+  var kinds=p.sf7ec194d1||[], pillars=p.sc25affb6d||[], stages=p.sfdac4b613||[], tasks=p.synemrwc_tasks||[];
+  var kindTagsHtml   = kinds.slice(0,3).map(function(k){var m=KIND_MAP[k];return '<span class="tag tag-kind">'+esc(m?m.label:k)+'</span>';}).join('');
+  var pillarTagsHtml = pillars.map(function(k){var m=PILLAR_MAP[k];return '<span class="tag tag-pillar">'+esc(m?m.label:k)+'</span>';}).join('');
+  var stageTagsHtml  = stages.map(function(k){var m=STAGE_MAP[k];return '<span class="tag tag-stage">'+esc(m?m.label:k)+'</span>';}).join('');
+  var tagsHtml=[kindTagsHtml,pillarTagsHtml,stageTagsHtml].filter(Boolean).join('');
+  if(!tagsHtml){
+    var hints=[];
+    if(!kinds.length)hints.push('<span class="tag tag-unset">no kind</span>');
+    if(!pillars.length)hints.push('<span class="tag tag-unset">no pillar</span>');
+    if(!stages.length)hints.push('<span class="tag tag-unset">no stage</span>');
+    tagsHtml=hints.join('');
+  }
+  return '<div class="project-card '+borderCls+'">'
+    +'<div class="card-header-row">'
+    +'<a class="card-title-link" href="'+sbosUrl(id,1)+'" target="_blank" rel="noopener noreferrer">'+title+' ↗</a>'
+    +'<button class="card-edit-btn" data-id="'+id+'" title="Tag this item">✏️</button>'
+    +'</div>'
+    +(desc?'<div class="card-desc">'+desc+'</div>':'')
+    +(tagsHtml?'<div class="card-tags">'+tagsHtml+'</div>':'')
+    +renderQC(tasks)
+    +'<div class="card-links"><a class="card-link" href="'+sbosUrl(id,5)+'" target="_blank" rel="noopener noreferrer">Edit tasks ↗</a></div>'
+    +'</div>';
+}
+
+// ── PRODUCTION BOARD ───────────────────────────────────────────────────
+function renderProdBoard(projects) {
+  var board = document.getElementById('prod-board');
+  board.className = 'board cols-5';
+  var buckets = {};
+  PROD_COLS.forEach(function(c){buckets[c.key]=[];});
+  var unknown = [];
+  projects.forEach(function(p){
+    var col = STATUS_TO_PROD[p.status];
+    if(col) buckets[col.key].push(p);
+    else unknown.push(p);
+  });
+  // Append unknowns to queued
+  unknown.forEach(function(p){buckets['queued'].push(p);});
+  board.innerHTML = PROD_COLS.map(function(col){
+    var items = buckets[col.key];
+    var cards = items.length
+      ? items.map(function(p){return renderProdCard(p);}).join('')
+      : '<div class="col-empty">Nothing here yet</div>';
+    return '<div class="board-col">'
+      +'<div class="col-header '+col.cls+'"><div>'
+      +'<div class="col-title">'+esc(col.label)+'</div>'
+      +'<div class="col-subtitle">'+esc(col.subtitle)+'</div>'
+      +'</div><div class="col-count">'+items.length+'</div></div>'
+      +'<div class="col-divider"></div>'
+      +'<div class="col-cards">'+cards+'</div></div>';
+  }).join('');
+  var tot = document.getElementById('prod-total');
+  if(tot) tot.textContent = projects.length+' items';
+}
+
+// ── FILTER STATE (item view) ───────────────────────────────────────────
+var activeFilters = { kind:[], stage:[], pillar:[] };
+function projectPassesFilter(p){
+  var fk=activeFilters.kind,fs=activeFilters.stage,fp=activeFilters.pillar;
+  if(fk.length>0&&!(p.sf7ec194d1||[]).some(function(v){return fk.indexOf(v)>=0;})) return false;
+  if(fs.length>0&&!(p.sfdac4b613||[]).some(function(v){return fs.indexOf(v)>=0;})) return false;
+  if(fp.length>0&&!(p.sc25affb6d||[]).some(function(v){return fp.indexOf(v)>=0;})) return false;
   return true;
 }
 
-var groupPrimary   = 'stage';
-var groupSecondary = 'none';
+// ── ITEM BOARD ─────────────────────────────────────────────────────────
+var groupPrimary='stage', groupSecondary='none';
 
-function renderBoard(allProjects) {
-  var projects = allProjects.filter(projectPassesFilter);
-  var board    = document.getElementById('roadmap-board');
-  var primKeys = dimKeys(groupPrimary);
-  var primMap  = dimMap(groupPrimary);
-
-  // Bucket — each item goes into matching columns ONLY.
-  // Items with NO value for this dimension go into Unassigned.
-  var primBuckets = {};
-  primKeys.forEach(function(k) { primBuckets[k] = []; });
-  primBuckets[UNASSIGNED] = [];
-
-  projects.forEach(function(p) {
-    var vals = projectDimValues(p, groupPrimary);
-    // Filter vals to only valid keys for this dim
-    var validVals = vals.filter(function(v) { return primBuckets[v] !== undefined && v !== UNASSIGNED; });
-    if (!validVals.length) {
-      primBuckets[UNASSIGNED].push(p);
-    } else {
-      var placed = {};
-      validVals.forEach(function(v) { if (!placed[v]) { primBuckets[v].push(p); placed[v] = true; } });
-    }
+function renderItemBoard(allProjects){
+  var projects=allProjects.filter(projectPassesFilter);
+  var board=document.getElementById('item-board');
+  var primKeys=dimKeys(groupPrimary), primMap=dimMap(groupPrimary);
+  var buckets={}, unassigned=[];
+  primKeys.forEach(function(k){buckets[k]=[];});
+  projects.forEach(function(p){
+    var vals=projectDimValues(p,groupPrimary).filter(function(v){return buckets[v]!==undefined;});
+    if(!vals.length){unassigned.push(p);}
+    else{var placed={};vals.forEach(function(v){if(!placed[v]){buckets[v].push(p);placed[v]=true;}});}
   });
-
-  var hasUnassigned = primBuckets[UNASSIGNED].length > 0;
-  var colCount = primKeys.length + (hasUnassigned ? 1 : 0);
-  board.className = 'board cols-' + Math.min(colCount, 6) + (hasUnassigned ? ' has-unassigned' : '');
-
-  var colsHtml = primKeys.map(function(pKey) {
-    var info  = primMap[pKey] || { label: pKey, cls: pKey };
-    var items = primBuckets[pKey];
-    var innerHtml = buildColInner(items, info.cls);
-    return buildCol(info.label, info.cls, groupPrimary, items.length, false, innerHtml);
+  var hasU=unassigned.length>0;
+  board.className='board cols-'+(Math.min(primKeys.length+(hasU?1:0),6));
+  var colsHtml=primKeys.map(function(pk){
+    var info=primMap[pk]||{label:pk,cls:pk};
+    return buildItemCol(info.label,info.cls,groupPrimary,buckets[pk]);
   });
-
-  // Unassigned column — only render if it has items
-  if (hasUnassigned) {
-    var uItems = primBuckets[UNASSIGNED];
-    var uHtml  = buildColInner(uItems, 'unassigned');
-    colsHtml.push(buildCol('Unassigned', 'unassigned', 'Needs tagging', uItems.length, true, uHtml));
-  }
-
-  board.innerHTML = colsHtml.join('');
-
-  var totalFilters = activeFilters.kind.length + activeFilters.stage.length + activeFilters.pillar.length;
-  var totalEl = document.getElementById('roadmap-total');
-  if (totalEl) totalEl.textContent = projects.length + ' item' + (projects.length !== 1 ? 's' : '') + (totalFilters > 0 ? ' (filtered)' : '');
-  var fc = document.getElementById('filter-count');
-  if (fc) fc.textContent = totalFilters > 0 ? totalFilters + ' active' : '';
+  if(hasU) colsHtml.push(buildItemCol('Unassigned','unassigned','Needs tagging',unassigned,true));
+  board.innerHTML=colsHtml.join('');
+  var tf=activeFilters.kind.length+activeFilters.stage.length+activeFilters.pillar.length;
+  var tot=document.getElementById('item-total');
+  if(tot) tot.textContent=projects.length+' item'+(projects.length!==1?'s':'')+(tf>0?' (filtered)':'');
+  var fc=document.getElementById('filter-count');
+  if(fc) fc.textContent=tf>0?tf+' active':'';
 }
 
-function buildColInner(items, borderCls) {
-  if (!items.length) return '<div class="col-empty">Nothing here yet</div>';
-  if (groupSecondary === 'none') return items.map(function(p) { return renderCard(p, borderCls); }).join('');
-
-  // Secondary grouping
-  var secKeys = dimKeys(groupSecondary);
-  var secMap  = dimMap(groupSecondary);
-  var secBuckets = {};
-  secKeys.forEach(function(k) { secBuckets[k] = []; });
-  var secUnassigned = [];
-
-  items.forEach(function(p) {
-    var vals = projectDimValues(p, groupSecondary);
-    var validVals = vals.filter(function(v) { return secBuckets[v] !== undefined; });
-    if (!validVals.length) { secUnassigned.push(p); }
-    else {
-      var placed = {};
-      validVals.forEach(function(v) { if (!placed[v]) { secBuckets[v].push(p); placed[v] = true; } });
-    }
-  });
-
-  var html = '';
-  secKeys.forEach(function(sk) {
-    var si = secBuckets[sk];
-    if (!si.length) return;
-    var siInfo = secMap[sk] || { label: sk };
-    html += '<div class="subgroup"><div class="subgroup-header">' + esc(siInfo.label) + '</div><div class="subgroup-cards">' + si.map(function(p) { return renderCard(p, borderCls); }).join('') + '</div></div>';
-  });
-  if (secUnassigned.length) {
-    html += '<div class="subgroup"><div class="subgroup-header">Untagged</div><div class="subgroup-cards">' + secUnassigned.map(function(p) { return renderCard(p, borderCls); }).join('') + '</div></div>';
+function buildItemCol(label,cls,subtitle,items,isWarn){
+  var innerHtml;
+  if(!items.length){
+    innerHtml='<div class="col-empty">Nothing here yet</div>';
+  } else if(groupSecondary==='none'){
+    innerHtml=items.map(function(p){return renderItemCard(p,cls);}).join('');
+  } else {
+    var secKeys=dimKeys(groupSecondary),secMap=dimMap(groupSecondary);
+    var secBuckets={},secNoVal=[];
+    secKeys.forEach(function(k){secBuckets[k]=[];});
+    items.forEach(function(p){
+      var vals=projectDimValues(p,groupSecondary).filter(function(v){return secBuckets[v]!==undefined;});
+      if(!vals.length){secNoVal.push(p);}
+      else{var placed={};vals.forEach(function(v){if(!placed[v]){secBuckets[v].push(p);placed[v]=true;}});}
+    });
+    var sub='';
+    secKeys.forEach(function(sk){
+      var si=secBuckets[sk]; if(!si.length) return;
+      var si_info=secMap[sk]||{label:sk};
+      sub+='<div class="subgroup"><div class="subgroup-header">'+esc(si_info.label)+'</div><div class="subgroup-cards">'+si.map(function(p){return renderItemCard(p,cls);}).join('')+'</div></div>';
+    });
+    if(secNoVal.length) sub+='<div class="subgroup"><div class="subgroup-header">Untagged</div><div class="subgroup-cards">'+secNoVal.map(function(p){return renderItemCard(p,cls);}).join('')+'</div></div>';
+    innerHtml=sub||'<div class="col-empty">Nothing here yet</div>';
   }
-  return html || '<div class="col-empty">Nothing here yet</div>';
-}
-
-function buildCol(label, cls, subtitle, count, isWarn, innerHtml) {
   return '<div class="board-col">'
-    + '<div class="col-header ' + cls + '">'
-    + '<div><div class="col-title">' + esc(label) + '</div><div class="col-subtitle">' + esc(subtitle) + '</div></div>'
-    + '<div class="col-count' + (isWarn && count > 0 ? ' warn' : '') + '">' + count + '</div>'
-    + '</div><div class="col-divider"></div>'
-    + '<div class="col-cards">' + innerHtml + '</div></div>';
+    +'<div class="col-header '+cls+'"><div>'
+    +'<div class="col-title">'+esc(label)+'</div>'
+    +'<div class="col-subtitle">'+esc(subtitle)+'</div>'
+    +'</div><div class="col-count'+(isWarn&&items.length>0?' warn':'')+'">'+items.length+'</div></div>'
+    +'<div class="col-divider"></div>'
+    +'<div class="col-cards">'+innerHtml+'</div></div>';
 }
 
-var allProjects = [];
+// ── DATA ───────────────────────────────────────────────────────────────
+var allProjects=[];
 
-function load() {
+function load(){
   fetch('/api/roadmap')
-    .then(function(r) { if (!r.ok) throw new Error('Server returned ' + r.status); return r.json(); })
-    .then(function(data) {
-      var g = data.groups || {};
-      allProjects = [].concat(g.pipeline||[], g.wip||[], g.closeout||[], g.closed||[]);
-      if (data.items) allProjects = data.items;
-      var rt = document.getElementById('roadmap-refreshed');
-      var now = new Date();
-      if (rt) rt.textContent = 'Refreshed ' + now.toLocaleDateString([],{month:'short',day:'numeric'}) + ' ' + now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-      renderBoard(allProjects);
+    .then(function(r){if(!r.ok)throw new Error('Server returned '+r.status);return r.json();})
+    .then(function(data){
+      var g=data.groups||{};
+      allProjects=[].concat(g.pipeline||[],g.wip||[],g.closeout||[],g.closed||[]);
+      if(data.items) allProjects=data.items;
+      var now=new Date();
+      var ts=now.toLocaleDateString([],{month:'short',day:'numeric'})+' '+now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+      var pr=document.getElementById('prod-refreshed'),ir=document.getElementById('item-refreshed');
+      if(pr) pr.textContent='Refreshed '+ts;
+      if(ir) ir.textContent='Refreshed '+ts;
+      renderProdBoard(allProjects);
+      renderItemBoard(allProjects);
     })
-    .catch(function(err) {
-      document.getElementById('roadmap-board').innerHTML = '<div class="board-error"><div class="error-label">Unable to load</div><div class="error-msg">Could not fetch roadmap data</div><div class="error-detail">' + esc(err.message) + '</div><button class="error-retry" onclick="location.reload()">↺ Retry</button></div>';
+    .catch(function(err){
+      var msg='<div class="board-error"><div class="error-label">Unable to load</div><div class="error-msg">Could not fetch roadmap data</div><div class="error-detail">'+esc(err.message)+'</div><button class="error-retry" onclick="location.reload()">↺ Retry</button></div>';
+      document.getElementById('prod-board').innerHTML=msg;
+      document.getElementById('item-board').innerHTML=msg;
     });
 }
 
-document.getElementById('group-primary').addEventListener('click', function(e) {
-  var btn = e.target.closest('.chip'); if (!btn) return;
-  document.querySelectorAll('#group-primary .chip').forEach(function(b) { b.classList.remove('active'); });
-  btn.classList.add('active'); groupPrimary = btn.dataset.value;
-  document.querySelectorAll('#group-secondary .chip').forEach(function(b) {
-    b.disabled = (b.dataset.value !== 'none' && b.dataset.value === groupPrimary);
-    if (b.disabled && b.classList.contains('active')) { b.classList.remove('active'); document.querySelector('#group-secondary .chip[data-value="none"]').classList.add('active'); groupSecondary = 'none'; }
-  });
-  if (allProjects.length) renderBoard(allProjects);
-});
-document.getElementById('group-secondary').addEventListener('click', function(e) {
-  var btn = e.target.closest('.chip'); if (!btn || btn.disabled) return;
-  document.querySelectorAll('#group-secondary .chip').forEach(function(b) { b.classList.remove('active'); });
-  btn.classList.add('active'); groupSecondary = btn.dataset.value;
-  if (allProjects.length) renderBoard(allProjects);
-});
-['filter-kind','filter-stage','filter-pillar'].forEach(function(gid) {
-  document.getElementById(gid).addEventListener('click', function(e) {
-    var btn = e.target.closest('.chip'); if (!btn) return;
-    var dim = btn.dataset.dim, val = btn.dataset.value;
-    var idx = activeFilters[dim].indexOf(val);
-    if (idx >= 0) { activeFilters[dim].splice(idx,1); btn.classList.remove('filter-active'); }
-    else          { activeFilters[dim].push(val);      btn.classList.add('filter-active'); }
-    if (allProjects.length) renderBoard(allProjects);
+// ── PAGE TABS ──────────────────────────────────────────────────────────
+document.querySelectorAll('.page-tab').forEach(function(tab){
+  tab.addEventListener('click',function(){
+    document.querySelectorAll('.page-tab').forEach(function(t){t.classList.remove('active');});
+    document.querySelectorAll('.view-panel').forEach(function(p){p.classList.remove('active');});
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('active');
   });
 });
-document.getElementById('clear-filters').addEventListener('click', function() {
-  activeFilters = { kind: [], stage: [], pillar: [] };
-  document.querySelectorAll('.controls-bar .chip[data-dim]').forEach(function(b) { b.classList.remove('filter-active'); });
-  if (allProjects.length) renderBoard(allProjects);
+
+// ── ITEM VIEW CONTROLS ─────────────────────────────────────────────────
+document.getElementById('group-primary').addEventListener('click',function(e){
+  var btn=e.target.closest('.chip'); if(!btn) return;
+  document.querySelectorAll('#group-primary .chip').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active'); groupPrimary=btn.dataset.value;
+  document.querySelectorAll('#group-secondary .chip').forEach(function(b){
+    b.disabled=(b.dataset.value!=='none'&&b.dataset.value===groupPrimary);
+    if(b.disabled&&b.classList.contains('active')){b.classList.remove('active');document.querySelector('#group-secondary .chip[data-value="none"]').classList.add('active');groupSecondary='none';}
+  });
+  if(allProjects.length) renderItemBoard(allProjects);
+});
+document.getElementById('group-secondary').addEventListener('click',function(e){
+  var btn=e.target.closest('.chip'); if(!btn||btn.disabled) return;
+  document.querySelectorAll('#group-secondary .chip').forEach(function(b){b.classList.remove('active');});
+  btn.classList.add('active'); groupSecondary=btn.dataset.value;
+  if(allProjects.length) renderItemBoard(allProjects);
+});
+['filter-kind','filter-stage','filter-pillar'].forEach(function(gid){
+  document.getElementById(gid).addEventListener('click',function(e){
+    var btn=e.target.closest('.chip'); if(!btn) return;
+    var dim=btn.dataset.dim,val=btn.dataset.value,idx=activeFilters[dim].indexOf(val);
+    if(idx>=0){activeFilters[dim].splice(idx,1);btn.classList.remove('filter-active');}
+    else{activeFilters[dim].push(val);btn.classList.add('filter-active');}
+    if(allProjects.length) renderItemBoard(allProjects);
+  });
+});
+document.getElementById('clear-filters').addEventListener('click',function(){
+  activeFilters={kind:[],stage:[],pillar:[]};
+  document.querySelectorAll('.controls-bar .chip[data-dim]').forEach(function(b){b.classList.remove('filter-active');});
+  if(allProjects.length) renderItemBoard(allProjects);
 });
 
-/* DRAWER */
-var drawerProject = null;
-var overlay  = document.getElementById('drawer-overlay');
-var drawer   = document.getElementById('drawer');
-var titleEl  = document.getElementById('drawer-title');
-var saveBtn  = document.getElementById('btn-save');
-var cancelBtn= document.getElementById('btn-cancel');
-var closeBtn = document.getElementById('drawer-close');
-var statusEl = document.getElementById('save-status');
+// ── EDIT DRAWER ────────────────────────────────────────────────────────
+var drawerProject=null;
+var overlay=document.getElementById('drawer-overlay');
+var drawer=document.getElementById('drawer');
+var titleEl=document.getElementById('drawer-title');
+var saveBtn=document.getElementById('btn-save');
+var cancelBtn=document.getElementById('btn-cancel');
+var closeBtn=document.getElementById('drawer-close');
+var statusEl=document.getElementById('save-status');
 
-function getEditState() {
-  var out = { kind: [], stage: [], pillar: [], incl: [] };
-  document.querySelectorAll('.edit-chip.selected').forEach(function(b) { if (out[b.dataset.dim]) out[b.dataset.dim].push(b.dataset.val); });
+function getEditState(){
+  var out={kind:[],stage:[],pillar:[],incl:[]};
+  document.querySelectorAll('.edit-chip.selected').forEach(function(b){if(out[b.dataset.dim])out[b.dataset.dim].push(b.dataset.val);});
   return out;
 }
-function openDrawer(p) {
-  drawerProject = p;
-  titleEl.textContent = p.title || 'Edit Item';
-  statusEl.textContent = ''; statusEl.className = 'save-status';
-  saveBtn.disabled = false; saveBtn.textContent = 'Save to S-BOS';
-  var kinds = p.sf7ec194d1||[], stages = p.sfdac4b613||[], pillars = p.sc25affb6d||[], incls = p.s1dbcd776a||[];
-  document.querySelectorAll('.edit-chip').forEach(function(b) {
-    var d = b.dataset.dim, v = b.dataset.val;
-    b.classList.toggle('selected',
-      (d==='kind' && kinds.indexOf(v)>=0) || (d==='stage' && stages.indexOf(v)>=0) ||
-      (d==='pillar' && pillars.indexOf(v)>=0) || (d==='incl' && incls.indexOf(v)>=0));
+function openDrawer(p){
+  drawerProject=p;
+  titleEl.textContent=p.title||'Edit Item';
+  statusEl.textContent=''; statusEl.className='save-status';
+  saveBtn.disabled=false; saveBtn.textContent='Save to S-BOS';
+  var kinds=p.sf7ec194d1||[],stages=p.sfdac4b613||[],pillars=p.sc25affb6d||[],incls=p.s1dbcd776a||[];
+  document.querySelectorAll('.edit-chip').forEach(function(b){
+    var d=b.dataset.dim,v=b.dataset.val;
+    b.classList.toggle('selected',(d==='kind'&&kinds.indexOf(v)>=0)||(d==='stage'&&stages.indexOf(v)>=0)||(d==='pillar'&&pillars.indexOf(v)>=0)||(d==='incl'&&incls.indexOf(v)>=0));
   });
   overlay.classList.add('open'); drawer.classList.add('open');
-  drawer.scrollTop = 0; document.body.style.overflow = 'hidden';
+  drawer.scrollTop=0; document.body.style.overflow='hidden';
 }
-function closeDrawer() {
+function closeDrawer(){
   overlay.classList.remove('open'); drawer.classList.remove('open');
-  document.body.style.overflow = ''; drawerProject = null;
+  document.body.style.overflow=''; drawerProject=null;
 }
-drawer.addEventListener('click', function(e) { var b = e.target.closest('.edit-chip'); if (b) b.classList.toggle('selected'); });
-overlay.addEventListener('click', closeDrawer);
-closeBtn.addEventListener('click', closeDrawer);
-cancelBtn.addEventListener('click', closeDrawer);
-var touchStartY = 0;
-drawer.addEventListener('touchstart', function(e) { touchStartY = e.touches[0].clientY; }, { passive: true });
-drawer.addEventListener('touchmove', function(e) { if (drawer.scrollTop > 0) return; if (e.touches[0].clientY - touchStartY > 60) closeDrawer(); }, { passive: true });
-document.getElementById('roadmap-board').addEventListener('click', function(e) {
-  var btn = e.target.closest('.card-edit-btn'); if (!btn) return;
-  var p = allProjects.find(function(x) { return x.id === btn.dataset.id; });
-  if (p) openDrawer(p);
+drawer.addEventListener('click',function(e){var b=e.target.closest('.edit-chip');if(b)b.classList.toggle('selected');});
+overlay.addEventListener('click',closeDrawer);
+closeBtn.addEventListener('click',closeDrawer);
+cancelBtn.addEventListener('click',closeDrawer);
+var tsy=0;
+drawer.addEventListener('touchstart',function(e){tsy=e.touches[0].clientY;},{passive:true});
+drawer.addEventListener('touchmove',function(e){if(drawer.scrollTop>0)return;if(e.touches[0].clientY-tsy>60)closeDrawer();},{passive:true});
+
+// Edit button works on both boards
+document.addEventListener('click',function(e){
+  var btn=e.target.closest('.card-edit-btn'); if(!btn) return;
+  var p=allProjects.find(function(x){return x.id===btn.dataset.id;});
+  if(p) openDrawer(p);
 });
-saveBtn.addEventListener('click', function() {
-  if (!drawerProject) return;
-  var state = getEditState();
-  saveBtn.disabled = true; saveBtn.textContent = 'Saving\u2026';
-  statusEl.textContent = ''; statusEl.className = 'save-status';
-  fetch('/api/roadmap/update', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ id: drawerProject.id, sf7ec194d1: state.kind, sc25affb6d: state.pillar, sfdac4b613: state.stage, s1dbcd776a: state.incl }),
+
+saveBtn.addEventListener('click',function(){
+  if(!drawerProject) return;
+  var state=getEditState();
+  saveBtn.disabled=true; saveBtn.textContent='Saving…';
+  statusEl.textContent=''; statusEl.className='save-status';
+  fetch('/api/roadmap/update',{
+    method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id:drawerProject.id,sf7ec194d1:state.kind,sc25affb6d:state.pillar,sfdac4b613:state.stage,s1dbcd776a:state.incl}),
   })
-    .then(function(r) { return r.json().then(function(d) { return { ok: r.ok, data: d }; }); })
-    .then(function(res) {
-      if (!res.ok) throw new Error(res.data.error || 'Save failed');
-      drawerProject.sf7ec194d1 = state.kind;
-      drawerProject.sc25affb6d = state.pillar;
-      drawerProject.sfdac4b613 = state.stage;
-      drawerProject.s1dbcd776a = state.incl;
-      renderBoard(allProjects);
-      statusEl.textContent = '\u2713 Saved!'; statusEl.className = 'save-status ok';
-      saveBtn.disabled = false; saveBtn.textContent = 'Save to S-BOS';
-      setTimeout(closeDrawer, 800);
-    })
-    .catch(function(err) {
-      statusEl.textContent = '\u2717 ' + esc(err.message); statusEl.className = 'save-status err';
-      saveBtn.disabled = false; saveBtn.textContent = 'Save to S-BOS';
-    });
+  .then(function(r){return r.json().then(function(d){return{ok:r.ok,data:d};});})
+  .then(function(res){
+    if(!res.ok) throw new Error(res.data.error||'Save failed');
+    drawerProject.sf7ec194d1=state.kind;
+    drawerProject.sc25affb6d=state.pillar;
+    drawerProject.sfdac4b613=state.stage;
+    drawerProject.s1dbcd776a=state.incl;
+    renderProdBoard(allProjects);
+    renderItemBoard(allProjects);
+    statusEl.textContent='✓ Saved!'; statusEl.className='save-status ok';
+    saveBtn.disabled=false; saveBtn.textContent='Save to S-BOS';
+    setTimeout(closeDrawer,800);
+  })
+  .catch(function(err){
+    statusEl.textContent='✗ '+esc(err.message); statusEl.className='save-status err';
+    saveBtn.disabled=false; saveBtn.textContent='Save to S-BOS';
+  });
 });
 
 load();
