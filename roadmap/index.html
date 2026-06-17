@@ -7,80 +7,113 @@
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../assets/css/global.css">
 <style>
-/* ── TOKENS ─────────────────────────────────────────────── */
 :root {
   --orange: #F8991D;
   --blue:   #3D6E87;
   --dark:   #58595B;
   --light:  #F4F4F4;
   --white:  #fff;
-  --radius: 4px;
 }
 
-/* ── VIEW TOGGLE ─────────────────────────────────────────── */
-.view-bar {
+/* ── CONTROLS BAR ── */
+.controls-bar {
+  background: var(--white);
+  border-bottom: 1px solid #E5E5E5;
+  padding: 0 20px;
+}
+.controls-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 16px 20px;
-  background: var(--white);
-  border-bottom: 1px solid #E5E5E5;
+  padding: 10px 0;
   flex-wrap: wrap;
+  border-bottom: 1px solid #F0F0F0;
 }
-.view-label {
+.controls-row:last-child { border-bottom: none; }
+.ctrl-label {
   font-family: var(--font-sub);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: .1em;
+  letter-spacing: .12em;
   text-transform: uppercase;
   color: #BCBEC0;
   white-space: nowrap;
-  margin-right: 4px;
+  min-width: 54px;
 }
-.view-btn {
-  padding: 6px 14px;
+.chip {
+  padding: 4px 12px;
   border-radius: 20px;
-  border: 1.5px solid #BCBEC0;
+  border: 1.5px solid #DEDEDE;
   background: var(--white);
   font-family: var(--font-sub);
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
   color: #888;
   cursor: pointer;
-  transition: all .15s;
-  letter-spacing: .03em;
+  transition: all .13s;
   white-space: nowrap;
+  letter-spacing: .02em;
 }
-.view-btn:hover { border-color: var(--dark); color: var(--dark); }
-.view-btn.active { background: var(--dark); border-color: var(--dark); color: #fff; }
+.chip:hover { border-color: var(--dark); color: var(--dark); }
+.chip.active { background: var(--dark); border-color: var(--dark); color: #fff; }
+.chip.filter-active { background: var(--blue); border-color: var(--blue); color: #fff; }
+.chip-group { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip-sep {
+  width: 1px; height: 18px; background: #E5E5E5;
+  align-self: center; margin: 0 4px; flex-shrink: 0;
+}
+.clear-btn {
+  font-family: var(--font-sub);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--blue);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px 6px;
+  opacity: .75;
+}
+.clear-btn:hover { opacity: 1; color: var(--orange); }
+.filter-count {
+  font-family: var(--font-sub);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--dark);
+  opacity: .45;
+  margin-left: 2px;
+}
 
-/* ── META BAR ────────────────────────────────────────────── */
+/* ── META BAR ── */
 .roadmap-meta {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 20px;
+  padding: 8px 20px;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
+  background: var(--white);
+  border-bottom: 1px solid #F0F0F0;
 }
 .roadmap-total {
   font-family: var(--font-sub);
   font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 1px;
+  font-size: 12px;
+  letter-spacing: .5px;
   color: var(--dark);
-  opacity: 0.6;
+  opacity: 0.55;
 }
 .roadmap-refreshed {
   font-family: var(--font-sub);
-  font-size: 12px;
+  font-size: 11px;
   color: var(--dark);
-  opacity: 0.4;
+  opacity: 0.35;
 }
 
-/* ── BOARD ───────────────────────────────────────────────── */
+/* ── BOARD ── */
 .board-wrap {
-  padding: 0 12px 48px;
+  padding: 0 12px 60px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -89,214 +122,238 @@
   gap: 3px;
   align-items: start;
   min-width: 0;
+  padding-top: 12px;
 }
+.board.cols-2 { grid-template-columns: repeat(2, minmax(260px, 1fr)); min-width: 520px; }
+.board.cols-3 { grid-template-columns: repeat(3, minmax(240px, 1fr)); min-width: 720px; }
 .board.cols-4 { grid-template-columns: repeat(4, minmax(220px, 1fr)); min-width: 880px; }
-.board.cols-6 { grid-template-columns: repeat(6, minmax(190px, 1fr)); min-width: 1140px; }
 .board.cols-5 { grid-template-columns: repeat(5, minmax(200px, 1fr)); min-width: 1000px; }
+.board.cols-6 { grid-template-columns: repeat(6, minmax(190px, 1fr)); min-width: 1140px; }
 
-/* ── COLUMN ──────────────────────────────────────────────── */
+/* ── COLUMN ── */
 .board-col { background: var(--white); display: flex; flex-direction: column; min-height: 160px; }
 .col-header {
-  padding: 16px 16px 14px;
+  padding: 14px 14px 12px;
   border-top: 4px solid var(--blue);
-  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
 }
-.col-header.pipeline  { border-top-color: var(--orange); }
-.col-header.wip       { border-top-color: var(--blue); }
-.col-header.closeout  { border-top-color: #0d8a7c; }
-.col-header.closed    { border-top-color: #2ecc71; }
-.col-header.feature       { border-top-color: #0C41F3; }
-.col-header.workflow      { border-top-color: #00B3FA; }
-.col-header.data-layer    { border-top-color: #199A27; }
-.col-header.integration   { border-top-color: #F1273F; }
-.col-header.skill         { border-top-color: #FF702E; }
-.col-header.training      { border-top-color: #FDA80D; }
-.col-header.budget        { border-top-color: #0C41F3; }
-.col-header.schedule      { border-top-color: #00B3FA; }
-.col-header.alignment     { border-top-color: #199A27; }
-.col-header.checklists    { border-top-color: #F1273F; }
+/* Stage colors */
+.col-header.biz-dev    { border-top-color: #0C41F3; }
+.col-header.pipeline   { border-top-color: var(--orange); }
+.col-header.wip        { border-top-color: var(--blue); }
+.col-header.closeout   { border-top-color: #0d8a7c; }
+.col-header.asset-mgt  { border-top-color: #2ecc71; }
+/* Kind colors */
+.col-header.feature    { border-top-color: #0C41F3; }
+.col-header.workflow   { border-top-color: #00B3FA; }
+.col-header.data-layer { border-top-color: #199A27; }
+.col-header.integration{ border-top-color: #F1273F; }
+.col-header.skill      { border-top-color: #FF702E; }
+.col-header.training   { border-top-color: #FDA80D; }
+/* Pillar colors */
+.col-header.budget     { border-top-color: #0C41F3; }
+.col-header.schedule   { border-top-color: #00B3FA; }
+.col-header.alignment  { border-top-color: #199A27; }
+.col-header.checklists { border-top-color: #F1273F; }
 
 .col-title {
   font-family: var(--font-head);
   font-weight: 900;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--dark);
+  line-height: 1.3;
 }
 .col-subtitle {
   font-family: var(--font-sub);
   font-size: 10px;
   font-weight: 600;
   color: var(--dark);
-  opacity: 0.5;
+  opacity: 0.45;
   margin-top: 2px;
 }
 .col-count {
   font-family: var(--font-head);
   font-weight: 900;
-  font-size: 13px;
+  font-size: 12px;
   color: #fff;
   background: var(--dark);
-  min-width: 22px;
-  height: 22px;
+  min-width: 20px;
+  height: 20px;
   border-radius: 2px;
   display: flex; align-items: center; justify-content: center;
-  padding: 0 5px;
+  padding: 0 4px;
   flex-shrink: 0;
+  opacity: .7;
 }
-.col-divider { height: 1px; background: var(--light); margin: 0 16px; }
-.col-cards { padding: 12px 12px 16px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+.col-divider { height: 1px; background: var(--light); margin: 0 14px; }
+.col-cards { padding: 10px 10px 14px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
 
-/* ── PROJECT CARD ────────────────────────────────────────── */
+/* ── SUB-GROUPS inside a column ── */
+.subgroup { margin-bottom: 4px; }
+.subgroup-header {
+  font-family: var(--font-sub);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--dark);
+  opacity: .45;
+  padding: 6px 2px 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.subgroup-header::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #E8E8E8;
+}
+.subgroup-cards { display: flex; flex-direction: column; gap: 6px; }
+
+/* ── PROJECT CARD ── */
 .project-card {
   background: var(--light);
-  padding: 12px 14px;
+  padding: 10px 12px;
   border-left: 3px solid var(--blue);
-  display: flex; flex-direction: column; gap: 6px;
-  transition: box-shadow .15s;
+  display: flex; flex-direction: column; gap: 5px;
+  transition: box-shadow .13s;
 }
-.project-card:hover { box-shadow: 0 3px 12px rgba(0,0,0,.1); }
-.project-card.pipeline  { border-left-color: var(--orange); }
-.project-card.wip       { border-left-color: var(--blue); }
-.project-card.closeout  { border-left-color: #0d8a7c; }
-.project-card.closed    { border-left-color: #2ecc71; }
+.project-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,.09); }
+.project-card.biz-dev    { border-left-color: #0C41F3; }
+.project-card.pipeline   { border-left-color: var(--orange); }
+.project-card.wip        { border-left-color: var(--blue); }
+.project-card.closeout   { border-left-color: #0d8a7c; }
+.project-card.asset-mgt  { border-left-color: #2ecc71; }
+.project-card.feature    { border-left-color: #0C41F3; }
+.project-card.workflow   { border-left-color: #00B3FA; }
+.project-card.data-layer { border-left-color: #199A27; }
+.project-card.integration{ border-left-color: #F1273F; }
+.project-card.skill      { border-left-color: #FF702E; }
+.project-card.training   { border-left-color: #FDA80D; }
+.project-card.budget     { border-left-color: #0C41F3; }
+.project-card.schedule   { border-left-color: #00B3FA; }
+.project-card.alignment  { border-left-color: #199A27; }
+.project-card.checklists { border-left-color: #F1273F; }
 
 .card-title-link {
   font-family: var(--font-head);
   font-weight: 900;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--dark);
   line-height: 1.3;
   text-decoration: none;
   display: block;
 }
 .card-title-link:hover { color: var(--blue); text-decoration: underline; }
-
 .card-desc {
   font-family: var(--font-sub);
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.5;
   color: var(--dark);
-  opacity: 0.65;
+  opacity: 0.6;
 }
-
-/* ── KIND / PILLAR / STAGE TAGS ──────────────────────────── */
 .card-tags {
-  display: flex; flex-wrap: wrap; gap: 4px;
-  margin-top: 2px;
+  display: flex; flex-wrap: wrap; gap: 3px;
+  margin-top: 1px;
 }
 .tag {
   font-family: var(--font-sub);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: .04em;
-  padding: 2px 7px;
+  padding: 1px 6px;
   border-radius: 10px;
   white-space: nowrap;
 }
-.tag-kind     { background: #E8F0FE; color: #0C41F3; }
-.tag-pillar   { background: #E6F4EA; color: #1a6e2b; }
-.tag-stage    { background: #FEF3E2; color: #b35c00; }
+.tag-kind    { background: #E8F0FE; color: #0C41F3; }
+.tag-pillar  { background: #E6F4EA; color: #1a6e2b; }
+.tag-stage   { background: #FEF3E2; color: #b35c00; }
 
-/* ── QC CHECKLIST ────────────────────────────────────────── */
 .card-qc {
-  display: flex; flex-direction: column; gap: 3px;
-  margin-top: 4px;
-  padding-top: 6px;
+  display: flex; flex-direction: column; gap: 2px;
+  margin-top: 3px;
+  padding-top: 5px;
   border-top: 1px solid #e0e0e0;
 }
 .qc-row {
-  display: flex; align-items: center; gap: 6px;
+  display: flex; align-items: center; gap: 5px;
   font-family: var(--font-sub);
-  font-size: 11px;
+  font-size: 10px;
   color: var(--dark);
 }
 .qc-dot {
-  width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0;
   border: 1.5px solid #ccc;
   background: var(--white);
 }
-.qc-dot.done       { background: #2ecc71; border-color: #2ecc71; }
-.qc-dot.in-progress{ background: var(--orange); border-color: var(--orange); }
-.qc-dot.not-started{ background: var(--white); border-color: #ccc; }
-.qc-label { opacity: .8; }
-.qc-status {
-  margin-left: auto;
-  font-size: 10px;
-  font-weight: 700;
-  opacity: .55;
-  text-transform: uppercase;
-  letter-spacing: .04em;
-}
+.qc-dot.done        { background: #2ecc71; border-color: #2ecc71; }
+.qc-dot.in-progress { background: var(--orange); border-color: var(--orange); }
+.qc-dot.not-started { background: var(--white); border-color: #ccc; }
+.qc-label { opacity: .75; }
+.qc-status { margin-left: auto; font-size: 9px; font-weight: 700; opacity: .5; text-transform: uppercase; letter-spacing: .04em; }
 
-/* ── SBOS LINK ───────────────────────────────────────────── */
-.card-links {
-  display: flex; gap: 10px; flex-wrap: wrap;
-  margin-top: 2px;
-}
+.card-links { display: flex; gap: 10px; margin-top: 2px; }
 .card-link {
   font-family: var(--font-sub);
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
   color: var(--blue);
   text-decoration: none;
-  display: inline-flex; align-items: center; gap: 3px;
-  opacity: .8;
-  transition: opacity .15s;
+  opacity: .7;
+  transition: opacity .13s;
 }
 .card-link:hover { opacity: 1; color: var(--orange); }
 
-/* ── EMPTY / LOADING / ERROR ─────────────────────────────── */
+/* ── EMPTY / LOADING / ERROR ── */
 .col-empty {
-  padding: 16px 12px 8px;
-  font-family: var(--font-sub); font-size: 12px; font-style: italic;
-  color: var(--dark); opacity: .35;
+  padding: 14px 10px 6px;
+  font-family: var(--font-sub); font-size: 11px; font-style: italic;
+  color: var(--dark); opacity: .3;
 }
 .board-loading {
   grid-column: 1 / -1;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
-  padding: 60px 20px; gap: 14px;
+  padding: 80px 20px; gap: 14px;
 }
 .spinner {
-  width: 32px; height: 32px;
+  width: 30px; height: 30px;
   border: 3px solid var(--light); border-top-color: var(--blue);
   border-radius: 50%;
   animation: spin .75s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 .loading-text {
-  font-family: var(--font-sub); font-weight: 700; font-size: 12px;
-  letter-spacing: 2px; text-transform: uppercase; color: var(--dark); opacity: .4;
+  font-family: var(--font-sub); font-weight: 700; font-size: 11px;
+  letter-spacing: 2px; text-transform: uppercase; color: var(--dark); opacity: .35;
 }
 .board-error {
   grid-column: 1 / -1;
   background: var(--white); border-left: 4px solid #e74c3c;
   padding: 24px 28px; display: flex; flex-direction: column; gap: 6px;
 }
-.error-label { font-family: var(--font-sub); font-weight: 700; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #e74c3c; }
-.error-msg   { font-family: var(--font-head); font-weight: 900; font-size: 15px; color: var(--dark); }
-.error-detail{ font-family: var(--font-sub); font-size: 12px; color: var(--dark); opacity: .6; line-height: 1.5; }
-.error-retry { margin-top: 6px; font-family: var(--font-sub); font-weight: 700; font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue); background: none; border: none; cursor: pointer; padding: 0; }
+.error-label { font-family: var(--font-sub); font-weight: 700; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #e74c3c; }
+.error-msg   { font-family: var(--font-head); font-weight: 900; font-size: 14px; color: var(--dark); }
+.error-detail{ font-family: var(--font-sub); font-size: 11px; color: var(--dark); opacity: .6; line-height: 1.5; }
+.error-retry { margin-top: 6px; font-family: var(--font-sub); font-weight: 700; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--blue); background: none; border: none; cursor: pointer; padding: 0; }
 .error-retry:hover { color: var(--orange); }
 
-/* ── RESPONSIVE ──────────────────────────────────────────── */
+/* ── RESPONSIVE ── */
 @media (max-width: 680px) {
-  .view-bar { padding: 12px 16px; }
+  .controls-bar { padding: 0 12px; }
   .board-wrap { padding: 0 8px 40px; }
-  .board.cols-4,
-  .board.cols-5,
-  .board.cols-6 {
+  .board.cols-2,.board.cols-3,.board.cols-4,.board.cols-5,.board.cols-6 {
     grid-template-columns: 1fr;
     min-width: 0;
   }
 }
 @media (min-width: 681px) and (max-width: 1024px) {
-  .board.cols-4 { grid-template-columns: repeat(2, 1fr); min-width: 0; }
-  .board.cols-5 { grid-template-columns: repeat(2, 1fr); min-width: 0; }
-  .board.cols-6 { grid-template-columns: repeat(3, 1fr); min-width: 0; }
+  .board.cols-3,.board.cols-4 { grid-template-columns: repeat(2, 1fr); min-width: 0; }
+  .board.cols-5,.board.cols-6 { grid-template-columns: repeat(3, 1fr); min-width: 0; }
 }
 </style>
 </head>
@@ -352,7 +409,7 @@
 <div class="page-hero">
   <div class="page-hero-eyebrow">Section 5</div>
   <h1 class="page-hero-title">S-BOS Roadmap</h1>
-  <p class="page-hero-subtitle">What's being built, what's live, and what's next. Click any item to edit it in S-BOS.</p>
+  <p class="page-hero-subtitle">What's being built, what's live, and what's next. Click any project to edit fields in S-BOS.</p>
 </div>
 
 <div class="orange-bar"></div>
@@ -365,12 +422,58 @@
   </div>
 </div>
 
-<div class="view-bar">
-  <span class="view-label">View</span>
-  <button class="view-btn active" data-view="status">By Status</button>
-  <button class="view-btn" data-view="kind">By Kind</button>
-  <button class="view-btn" data-view="pillar">By Pillar</button>
-  <button class="view-btn" data-view="readiness">By Readiness</button>
+<!-- CONTROLS -->
+<div class="controls-bar">
+
+  <!-- Row 1: Group By primary -->
+  <div class="controls-row">
+    <span class="ctrl-label">Group by</span>
+    <div class="chip-group" id="group-primary">
+      <button class="chip active" data-value="stage">Stage</button>
+      <button class="chip" data-value="kind">Kind</button>
+      <button class="chip" data-value="pillar">Pillar</button>
+    </div>
+    <div class="chip-sep"></div>
+    <span class="ctrl-label" style="min-width:40px">then by</span>
+    <div class="chip-group" id="group-secondary">
+      <button class="chip active" data-value="none">None</button>
+      <button class="chip" data-value="kind">Kind</button>
+      <button class="chip" data-value="pillar">Pillar</button>
+      <button class="chip" data-value="stage">Stage</button>
+    </div>
+  </div>
+
+  <!-- Row 2: Filters -->
+  <div class="controls-row">
+    <span class="ctrl-label">Filter</span>
+    <div class="chip-group" id="filter-kind">
+      <button class="chip" data-dim="kind" data-value="qrt21">Feature</button>
+      <button class="chip" data-dim="kind" data-value="WkstT">Workflow</button>
+      <button class="chip" data-dim="kind" data-value="EOw0c">Data Layer</button>
+      <button class="chip" data-dim="kind" data-value="n89Yl">Integration</button>
+      <button class="chip" data-dim="kind" data-value="Nn6M0">Skill</button>
+      <button class="chip" data-dim="kind" data-value="JGMYu">Training</button>
+    </div>
+    <div class="chip-sep"></div>
+    <div class="chip-group" id="filter-stage">
+      <button class="chip" data-dim="stage" data-value="10ilB">Biz Dev</button>
+      <button class="chip" data-dim="stage" data-value="XWpjX">Pipeline</button>
+      <button class="chip" data-dim="stage" data-value="YHm9w">WIP</button>
+      <button class="chip" data-dim="stage" data-value="dxvgP">Closeout</button>
+      <button class="chip" data-dim="stage" data-value="qWFP5">Asset MGT</button>
+    </div>
+    <div class="chip-sep"></div>
+    <div class="chip-group" id="filter-pillar">
+      <button class="chip" data-dim="pillar" data-value="KJrUR">Budget</button>
+      <button class="chip" data-dim="pillar" data-value="58TQw">Schedule</button>
+      <button class="chip" data-dim="pillar" data-value="da2kh">Alignment</button>
+      <button class="chip" data-dim="pillar" data-value="egBQV">Checklists</button>
+    </div>
+    <div class="chip-sep"></div>
+    <button class="clear-btn" id="clear-filters">Clear</button>
+    <span class="filter-count" id="filter-count"></span>
+  </div>
+
 </div>
 
 <div class="roadmap-meta">
@@ -389,7 +492,7 @@
 
 <footer>
   <div class="footer-brand">Stitser <span>Built</span> · S-BOS Knowledge Base</div>
-  <div class="footer-version">v2.0 · Internal Use Only</div>
+  <div class="footer-version">v2.1 · Internal Use Only</div>
 </footer>
 
 <script src="../assets/js/nav.js"></script>
@@ -397,204 +500,269 @@
 <script>
 (function () {
 
-const KIND_MAP = {
-  qrt21: 'Feature',     WkstT: 'Workflow',   EOw0c: 'Data Layer',
-  n89Yl: 'Integration', Nn6M0: 'Skill',      JGMYu: 'Training',
+/* ── DIMENSION MAPS ── */
+var KIND_MAP = {
+  qrt21: { label: 'Feature',     cls: 'feature',     color: '#0C41F3' },
+  WkstT: { label: 'Workflow',    cls: 'workflow',    color: '#00B3FA' },
+  EOw0c: { label: 'Data Layer',  cls: 'data-layer',  color: '#199A27' },
+  n89Yl: { label: 'Integration', cls: 'integration', color: '#F1273F' },
+  Nn6M0: { label: 'Skill',       cls: 'skill',       color: '#FF702E' },
+  JGMYu: { label: 'Training',    cls: 'training',    color: '#FDA80D' },
 };
-const PILLAR_MAP = {
-  KJrUR: 'Budget', '58TQw': 'Schedule', da2kh: 'Alignment', egBQV: 'Checklists/QC',
+var PILLAR_MAP = {
+  KJrUR: { label: 'Budget',          cls: 'budget',     color: '#0C41F3' },
+  '58TQw': { label: 'Schedule',      cls: 'schedule',   color: '#00B3FA' },
+  da2kh: { label: 'Alignment',       cls: 'alignment',  color: '#199A27' },
+  egBQV: { label: 'Checklists/QC',   cls: 'checklists', color: '#F1273F' },
 };
-const STAGE_MAP = {
-  '10ilB': 'Biz Dev', XWpjX: 'Pipeline', YHm9w: 'WIP', dxvgP: 'Closeout', qWFP5: 'Asset MGT',
+var STAGE_MAP = {
+  '10ilB': { label: 'Biz Dev',    cls: 'biz-dev',   color: '#0C41F3' },
+  XWpjX:  { label: 'Pipeline',   cls: 'pipeline',  color: '#F8991D' },
+  YHm9w:  { label: 'WIP',        cls: 'wip',       color: '#3D6E87' },
+  dxvgP:  { label: 'Closeout',   cls: 'closeout',  color: '#0d8a7c' },
+  qWFP5:  { label: 'Asset MGT',  cls: 'asset-mgt', color: '#2ecc71' },
 };
 
-const STATUS_STAGE = {
-  backlog: 'pipeline', ready_for_review: 'pipeline', complete: 'pipeline',
-  '21c0705b-0c3b-45cd-9e93-07672fac949d': 'pipeline',
-  'fb5677b7-3e68-4705-86af-abb8745a43f7': 'pipeline',
-  zOlNR: 'wip', Swowl: 'closeout', Dio3d: 'closed',
-};
+/* Ordered arrays for column generation */
+var KIND_KEYS   = ['qrt21','WkstT','EOw0c','n89Yl','Nn6M0','JGMYu'];
+var PILLAR_KEYS = ['KJrUR','58TQw','da2kh','egBQV'];
+var STAGE_KEYS  = ['10ilB','XWpjX','YHm9w','dxvgP','qWFP5'];
 
-function taskDotClass(v) {
-  if (!v) return 'not-started';
-  const s = v.toLowerCase();
-  if (s.includes('complete') || s === 'done') return 'done';
-  if (s.includes('progress') || s.includes('active')) return 'in-progress';
-  return 'not-started';
+function dimMap(dim) {
+  if (dim === 'kind')   return KIND_MAP;
+  if (dim === 'pillar') return PILLAR_MAP;
+  if (dim === 'stage')  return STAGE_MAP;
+  return {};
 }
-function taskStatusLabel(v) {
-  if (!v) return '';
-  const s = v.toLowerCase();
-  if (s.includes('complete') || s === 'done') return 'Done';
-  if (s.includes('progress')) return 'Active';
-  return '';
+function dimKeys(dim) {
+  if (dim === 'kind')   return KIND_KEYS;
+  if (dim === 'pillar') return PILLAR_KEYS;
+  if (dim === 'stage')  return STAGE_KEYS;
+  return [];
 }
-
-function sbosUrl(id, tab) {
-  return 'https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=' + id + '#tab' + (tab||1);
+function projectDimValues(p, dim) {
+  if (dim === 'kind')   return p.sf7ec194d1  || [];
+  if (dim === 'pillar') return p.sc25affb6d  || [];
+  if (dim === 'stage')  return p.sfdac4b613  || [];
+  return [];
 }
 
-function esc(s) {
-  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function kindTags(ids) {
-  if (!ids || !ids.length) return '';
-  return ids.slice(0,3).map(id => '<span class="tag tag-kind">' + esc(KIND_MAP[id]||id) + '</span>').join('');
-}
-function pillarTags(ids) {
-  if (!ids || !ids.length) return '';
-  return ids.map(id => '<span class="tag tag-pillar">' + esc(PILLAR_MAP[id]||id) + '</span>').join('');
-}
-function stageTags(ids) {
-  if (!ids || !ids.length) return '';
-  return ids.map(id => '<span class="tag tag-stage">' + esc(STAGE_MAP[id]||id) + '</span>').join('');
-}
-
-const QC_SLOTS = [
+/* ── QC helpers ── */
+var QC_SLOTS = [
   { key: 'design',   label: 'Design / Spec Doc' },
   { key: 'skill',    label: 'SKILL.md' },
   { key: 'workflow', label: 'Workflow Diagram' },
   { key: 'live',     label: 'Live in New System' },
 ];
-
 function matchSlot(title) {
-  const t = (title||'').toLowerCase();
-  if (t.includes('design') || t.includes('spec')) return 'design';
-  if (t.includes('skill')) return 'skill';
-  if (t.includes('workflow') || t.includes('diagram')) return 'workflow';
-  if (t.includes('live') || t.includes('supabase') || t.includes('new system')) return 'live';
+  var t = (title || '').toLowerCase();
+  if (t.indexOf('design') >= 0 || t.indexOf('spec') >= 0) return 'design';
+  if (t.indexOf('skill') >= 0) return 'skill';
+  if (t.indexOf('workflow') >= 0 || t.indexOf('diagram') >= 0) return 'workflow';
+  if (t.indexOf('live') >= 0 || t.indexOf('supabase') >= 0 || t.indexOf('new system') >= 0) return 'live';
   return null;
 }
-
+function taskDotClass(v) {
+  if (!v) return 'not-started';
+  var s = v.toLowerCase();
+  if (s.indexOf('complete') >= 0 || s === 'done') return 'done';
+  if (s.indexOf('progress') >= 0 || s.indexOf('active') >= 0) return 'in-progress';
+  return 'not-started';
+}
+function taskStatusLabel(v) {
+  if (!v) return '';
+  var s = v.toLowerCase();
+  if (s.indexOf('complete') >= 0 || s === 'done') return 'Done';
+  if (s.indexOf('progress') >= 0) return 'Active';
+  return '';
+}
 function renderQC(tasks) {
   if (!tasks || !tasks.length) return '';
-  const slotMap = {};
+  var slotMap = {};
   tasks.forEach(function(t) {
     if (typeof t === 'object' && t.title) {
-      const slot = matchSlot(t.title);
+      var slot = matchSlot(t.title);
       if (slot) slotMap[slot] = (t.status && t.status.value) || '';
     }
   });
-  const rows = QC_SLOTS.map(function(s) {
-    const sv = slotMap[s.key] || '';
-    const dc = taskDotClass(sv);
-    const sl = taskStatusLabel(sv);
-    return '<div class="qc-row"><span class="qc-dot ' + dc + '"></span><span class="qc-label">' + esc(s.label) + '</span>' + (sl ? '<span class="qc-status">' + esc(sl) + '</span>' : '') + '</div>';
+  var rows = QC_SLOTS.map(function(s) {
+    var sv = slotMap[s.key] || '';
+    var dc = taskDotClass(sv);
+    var sl = taskStatusLabel(sv);
+    return '<div class="qc-row"><span class="qc-dot ' + dc + '"></span><span class="qc-label">' + esc(s.label) + '</span>' + (sl ? '<span class="qc-status">' + sl + '</span>' : '') + '</div>';
   }).join('');
   return '<div class="card-qc">' + rows + '</div>';
 }
 
-function renderCard(p, colKey) {
-  const id    = p.id;
-  const title = esc(p.title || '—');
-  const desc  = esc(p.description || '');
-  const kinds   = p.sf7ec194d1 || [];
-  const pillars = p.sc25affb6d || [];
-  const stages  = p.sfdac4b613 || [];
-  const tasks   = p.synemrwc_tasks || [];
-  const tagsHtml = [kindTags(kinds), pillarTags(pillars), stageTags(stages)].filter(Boolean).join('');
-  return '<div class="project-card ' + colKey + '">'
-    + '<a class="card-title-link" href="' + sbosUrl(id,1) + '" target="_blank" rel="noopener noreferrer" title="Open in S-BOS to edit fields">' + title + ' \u2197</a>'
+function sbosUrl(id, tab) {
+  return 'https://app.stitserbuilt.com/sb-crm-projects-list-details?recordId=' + id + '#tab' + (tab || 1);
+}
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ── RENDER CARD ── */
+function renderCard(p, borderCls) {
+  var id = p.id;
+  var title = esc(p.title || '—');
+  var desc  = esc(p.description || '');
+  var kinds   = p.sf7ec194d1 || [];
+  var pillars = p.sc25affb6d || [];
+  var stages  = p.sfdac4b613 || [];
+  var tasks   = p.synemrwc_tasks || [];
+
+  var kindTagsHtml = kinds.slice(0,3).map(function(id) {
+    var m = KIND_MAP[id];
+    return '<span class="tag tag-kind">' + esc(m ? m.label : id) + '</span>';
+  }).join('');
+  var pillarTagsHtml = pillars.map(function(id) {
+    var m = PILLAR_MAP[id];
+    return '<span class="tag tag-pillar">' + esc(m ? m.label : id) + '</span>';
+  }).join('');
+  var stageTagsHtml = stages.map(function(id) {
+    var m = STAGE_MAP[id];
+    return '<span class="tag tag-stage">' + esc(m ? m.label : id) + '</span>';
+  }).join('');
+  var tagsHtml = [kindTagsHtml, pillarTagsHtml, stageTagsHtml].filter(Boolean).join('');
+
+  return '<div class="project-card ' + borderCls + '">'
+    + '<a class="card-title-link" href="' + sbosUrl(id, 1) + '" target="_blank" rel="noopener noreferrer">' + title + ' \u2197</a>'
     + (desc ? '<div class="card-desc">' + desc + '</div>' : '')
     + (tagsHtml ? '<div class="card-tags">' + tagsHtml + '</div>' : '')
     + renderQC(tasks)
-    + '<div class="card-links"><a class="card-link" href="' + sbosUrl(id,5) + '" target="_blank" rel="noopener noreferrer">Edit tasks \u2197</a></div>'
+    + '<div class="card-links"><a class="card-link" href="' + sbosUrl(id, 5) + '" target="_blank" rel="noopener noreferrer">Edit tasks \u2197</a></div>'
     + '</div>';
 }
 
-const VIEWS = {
-  status: {
-    cols: 4,
-    getKey: function(p) { return STATUS_STAGE[p.status && p.status.value] || 'pipeline'; },
-    columns: [
-      { key: 'pipeline', label: 'Pipeline',    subtitle: 'In the queue' },
-      { key: 'wip',      label: 'Active Dev',  subtitle: 'Being built now' },
-      { key: 'closeout', label: 'Closeout',    subtitle: 'Shipping / testing' },
-      { key: 'closed',   label: 'Live',        subtitle: 'Shipped and running' },
-    ],
-  },
-  kind: {
-    cols: 6,
-    getKey: function(p) {
-      var kinds = p.sf7ec194d1 || [];
-      if (!kinds.length) return '_none';
-      var order = ['qrt21','WkstT','EOw0c','n89Yl','Nn6M0','JGMYu'];
-      for (var i=0;i<order.length;i++) if (kinds.indexOf(order[i])>=0) return order[i];
-      return kinds[0];
-    },
-    columns: [
-      { key: 'qrt21', label: 'Feature',     subtitle: 'User-facing capability' },
-      { key: 'WkstT', label: 'Workflow',    subtitle: 'Documented human steps' },
-      { key: 'EOw0c', label: 'Data Layer',  subtitle: 'Schema / tables / fields' },
-      { key: 'n89Yl', label: 'Integration', subtitle: 'System connections' },
-      { key: 'Nn6M0', label: 'Skill',       subtitle: 'Claude behavior' },
-      { key: 'JGMYu', label: 'Training',    subtitle: 'Docs / education' },
-    ],
-  },
-  pillar: {
-    cols: 5,
-    getKey: function(p) {
-      var pillars = p.sc25affb6d || [];
-      if (!pillars.length) return '_none';
-      var order = ['KJrUR','58TQw','da2kh','egBQV'];
-      for (var i=0;i<order.length;i++) if (pillars.indexOf(order[i])>=0) return order[i];
-      return pillars[0];
-    },
-    columns: [
-      { key: 'KJrUR', label: 'Budget',          subtitle: 'Financial pillar' },
-      { key: '58TQw', label: 'Schedule',         subtitle: 'Timeline pillar' },
-      { key: 'da2kh', label: 'Alignment',        subtitle: 'Stakeholder pillar' },
-      { key: 'egBQV', label: 'Checklists / QC',  subtitle: 'Quality pillar' },
-      { key: '_none', label: 'Cross-cutting',    subtitle: 'All pillars' },
-    ],
-  },
-  readiness: {
-    cols: 4,
-    getKey: function(p) {
-      var count = (p.s1dbcd776a || []).length;
-      if (count === 0) return 'none';
-      if (count === 4) return 'full';
-      if (count >= 2) return 'partial';
-      return 'started';
-    },
-    columns: [
-      { key: 'none',    label: 'Not Started', subtitle: 'No artifacts yet' },
-      { key: 'started', label: 'Started',     subtitle: '1 artifact complete' },
-      { key: 'partial', label: 'Partial',     subtitle: '2\u20133 artifacts complete' },
-      { key: 'full',    label: 'Complete',    subtitle: 'All 4 artifacts done' },
-    ],
-  },
-};
+/* ── FILTER STATE ── */
+var activeFilters = { kind: [], stage: [], pillar: [] };
 
-function renderBoard(projects, viewKey) {
-  var view  = VIEWS[viewKey];
-  var board = document.getElementById('roadmap-board');
-  board.className = 'board cols-' + view.cols;
-  var groups = {};
-  view.columns.forEach(function(c) { groups[c.key] = []; });
-  projects.forEach(function(p) {
-    var key = view.getKey(p);
-    if (groups[key]) groups[key].push(p);
-    if (viewKey === 'kind') {
-      (p.sf7ec194d1 || []).forEach(function(k) { if (k !== key && groups[k]) groups[k].push(p); });
-    }
-    if (viewKey === 'pillar') {
-      (p.sc25affb6d || []).forEach(function(pl) { if (pl !== key && groups[pl]) groups[pl].push(p); });
-    }
-  });
-  board.innerHTML = view.columns.map(function(col) {
-    var items  = groups[col.key] || [];
-    var colKey = viewKey === 'status' ? col.key : 'pipeline';
-    var cards  = items.length
-      ? items.map(function(p) { return renderCard(p, colKey); }).join('')
-      : '<div class="col-empty">Nothing here yet</div>';
-    return '<div class="board-col"><div class="col-header ' + col.key + '"><div><div class="col-title">' + esc(col.label) + '</div><div class="col-subtitle">' + esc(col.subtitle) + '</div></div><div class="col-count">' + items.length + '</div></div><div class="col-divider"></div><div class="col-cards">' + cards + '</div></div>';
-  }).join('');
+function projectPassesFilter(p) {
+  var fk = activeFilters.kind;
+  var fs = activeFilters.stage;
+  var fp = activeFilters.pillar;
+  if (fk.length > 0) {
+    var kinds = p.sf7ec194d1 || [];
+    var match = false;
+    for (var i = 0; i < fk.length; i++) if (kinds.indexOf(fk[i]) >= 0) { match = true; break; }
+    if (!match) return false;
+  }
+  if (fs.length > 0) {
+    var stages = p.sfdac4b613 || [];
+    var match2 = false;
+    for (var j = 0; j < fs.length; j++) if (stages.indexOf(fs[j]) >= 0) { match2 = true; break; }
+    if (!match2) return false;
+  }
+  if (fp.length > 0) {
+    var pillars = p.sc25affb6d || [];
+    var match3 = false;
+    for (var k = 0; k < fp.length; k++) if (pillars.indexOf(fp[k]) >= 0) { match3 = true; break; }
+    if (!match3) return false;
+  }
+  return true;
 }
 
+/* ── RENDER BOARD ── */
+var groupPrimary   = 'stage';
+var groupSecondary = 'none';
+
+function renderBoard(allProjects) {
+  var projects = allProjects.filter(projectPassesFilter);
+
+  var board = document.getElementById('roadmap-board');
+  var primKeys = dimKeys(groupPrimary);
+  var primMap  = dimMap(groupPrimary);
+  board.className = 'board cols-' + Math.min(primKeys.length, 6);
+
+  /* bucket projects into primary columns — each project can appear in multiple columns */
+  var primBuckets = {};
+  primKeys.forEach(function(k) { primBuckets[k] = []; });
+  projects.forEach(function(p) {
+    var vals = projectDimValues(p, groupPrimary);
+    if (vals.length === 0) {
+      /* no value on this dim — put in every column */
+      primKeys.forEach(function(k) { primBuckets[k].push(p); });
+    } else {
+      vals.forEach(function(v) {
+        if (primBuckets[v]) primBuckets[v].push(p);
+      });
+    }
+  });
+
+  board.innerHTML = primKeys.map(function(pKey) {
+    var info  = primMap[pKey] || { label: pKey, cls: pKey };
+    var items = primBuckets[pKey];
+
+    var innerHtml = '';
+    if (items.length === 0) {
+      innerHtml = '<div class="col-empty">Nothing here yet</div>';
+    } else if (groupSecondary === 'none') {
+      innerHtml = items.map(function(p) { return renderCard(p, info.cls); }).join('');
+    } else {
+      /* secondary grouping */
+      var secKeys = dimKeys(groupSecondary);
+      var secMap  = dimMap(groupSecondary);
+      var secBuckets = {};
+      secKeys.forEach(function(k) { secBuckets[k] = []; });
+      var secNoVal = [];
+
+      items.forEach(function(p) {
+        var vals = projectDimValues(p, groupSecondary);
+        if (vals.length === 0) {
+          secNoVal.push(p);
+        } else {
+          vals.forEach(function(v) {
+            if (secBuckets[v]) secBuckets[v].push(p);
+          });
+        }
+      });
+
+      /* render each sub-group that has items */
+      var subHtml = '';
+      secKeys.forEach(function(sk) {
+        var secItems = secBuckets[sk];
+        if (!secItems.length) return;
+        var secInfo = secMap[sk] || { label: sk };
+        subHtml += '<div class="subgroup">'
+          + '<div class="subgroup-header">' + esc(secInfo.label) + '</div>'
+          + '<div class="subgroup-cards">'
+          + secItems.map(function(p) { return renderCard(p, info.cls); }).join('')
+          + '</div></div>';
+      });
+      if (secNoVal.length) {
+        subHtml += '<div class="subgroup">'
+          + '<div class="subgroup-header">Other</div>'
+          + '<div class="subgroup-cards">'
+          + secNoVal.map(function(p) { return renderCard(p, info.cls); }).join('')
+          + '</div></div>';
+      }
+      innerHtml = subHtml || '<div class="col-empty">Nothing here yet</div>';
+    }
+
+    return '<div class="board-col">'
+      + '<div class="col-header ' + info.cls + '">'
+      + '<div><div class="col-title">' + esc(info.label) + '</div>'
+      + '<div class="col-subtitle">' + esc(groupPrimary.charAt(0).toUpperCase() + groupPrimary.slice(1)) + '</div></div>'
+      + '<div class="col-count">' + items.length + '</div>'
+      + '</div>'
+      + '<div class="col-divider"></div>'
+      + '<div class="col-cards">' + innerHtml + '</div>'
+      + '</div>';
+  }).join('');
+
+  /* update count */
+  var total = document.getElementById('roadmap-total');
+  if (total) {
+    var fTotal = activeFilters.kind.length + activeFilters.stage.length + activeFilters.pillar.length;
+    total.textContent = projects.length + ' item' + (projects.length !== 1 ? 's' : '') + (fTotal > 0 ? ' (filtered)' : '');
+  }
+  var fc = document.getElementById('filter-count');
+  var totalFilters = activeFilters.kind.length + activeFilters.stage.length + activeFilters.pillar.length;
+  if (fc) fc.textContent = totalFilters > 0 ? totalFilters + ' active' : '';
+}
+
+/* ── DATA ── */
 var allProjects = [];
-var activeView  = 'status';
 
 function load() {
   fetch('/api/roadmap')
@@ -604,24 +772,79 @@ function load() {
     })
     .then(function(data) {
       var g = data.groups || {};
-      allProjects = [].concat(g.pipeline||[], g.wip||[], g.closeout||[], g.closed||[]);
-      document.getElementById('roadmap-total').textContent = (data.total || allProjects.length) + ' S-BOS items tracked';
+      allProjects = [].concat(g.pipeline || [], g.wip || [], g.closeout || [], g.closed || []);
+      /* also pick up items not in any status group */
+      if (data.items) allProjects = data.items;
+
+      var rt = document.getElementById('roadmap-refreshed');
       var now = new Date();
-      document.getElementById('roadmap-refreshed').textContent = 'Refreshed ' + now.toLocaleDateString([],{month:'short',day:'numeric'}) + ' ' + now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
-      renderBoard(allProjects, activeView);
+      if (rt) rt.textContent = 'Refreshed ' + now.toLocaleDateString([], {month:'short', day:'numeric'}) + ' ' + now.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+
+      renderBoard(allProjects);
     })
     .catch(function(err) {
-      document.getElementById('roadmap-board').innerHTML = '<div class="board-error"><div class="error-label">Unable to load</div><div class="error-msg">Could not fetch roadmap data</div><div class="error-detail">' + esc(err.message) + '</div><button class="error-retry" onclick="location.reload()">\u21ba Retry</button></div>';
+      document.getElementById('roadmap-board').innerHTML =
+        '<div class="board-error"><div class="error-label">Unable to load</div><div class="error-msg">Could not fetch roadmap data</div><div class="error-detail">' + esc(err.message) + '</div><button class="error-retry" onclick="location.reload()">\u21ba Retry</button></div>';
     });
 }
 
-document.querySelectorAll('.view-btn').forEach(function(btn) {
-  btn.addEventListener('click', function() {
-    document.querySelectorAll('.view-btn').forEach(function(b) { b.classList.remove('active'); });
-    btn.classList.add('active');
-    activeView = btn.dataset.view;
-    if (allProjects.length) renderBoard(allProjects, activeView);
+/* ── CONTROLS WIRING ── */
+
+/* Group primary */
+document.getElementById('group-primary').addEventListener('click', function(e) {
+  var btn = e.target.closest('.chip');
+  if (!btn) return;
+  document.querySelectorAll('#group-primary .chip').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  groupPrimary = btn.dataset.value;
+  /* prevent same dim in both */
+  document.querySelectorAll('#group-secondary .chip').forEach(function(b) {
+    b.disabled = (b.dataset.value !== 'none' && b.dataset.value === groupPrimary);
+    if (b.disabled && b.classList.contains('active')) {
+      b.classList.remove('active');
+      document.querySelector('#group-secondary .chip[data-value="none"]').classList.add('active');
+      groupSecondary = 'none';
+    }
   });
+  if (allProjects.length) renderBoard(allProjects);
+});
+
+/* Group secondary */
+document.getElementById('group-secondary').addEventListener('click', function(e) {
+  var btn = e.target.closest('.chip');
+  if (!btn || btn.disabled) return;
+  document.querySelectorAll('#group-secondary .chip').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+  groupSecondary = btn.dataset.value;
+  if (allProjects.length) renderBoard(allProjects);
+});
+
+/* Filter chips */
+['filter-kind','filter-stage','filter-pillar'].forEach(function(groupId) {
+  document.getElementById(groupId).addEventListener('click', function(e) {
+    var btn = e.target.closest('.chip');
+    if (!btn) return;
+    var dim = btn.dataset.dim;
+    var val = btn.dataset.value;
+    var idx = activeFilters[dim].indexOf(val);
+    if (idx >= 0) {
+      activeFilters[dim].splice(idx, 1);
+      btn.classList.remove('filter-active');
+    } else {
+      activeFilters[dim].push(val);
+      btn.classList.add('filter-active');
+    }
+    if (allProjects.length) renderBoard(allProjects);
+  });
+});
+
+/* Clear filters */
+document.getElementById('clear-filters').addEventListener('click', function() {
+  activeFilters = { kind: [], stage: [], pillar: [] };
+  document.querySelectorAll('.controls-bar .chip[data-dim]').forEach(function(b) {
+    b.classList.remove('filter-active');
+  });
+  if (allProjects.length) renderBoard(allProjects);
 });
 
 load();
