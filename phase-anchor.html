@@ -23,15 +23,12 @@
     .hdr-title{font-size:15px;font-weight:700;color:#f1f5f9}
     .hdr-sub{font-size:10px;color:#6b7280;margin-top:1px}
     .hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    /* view toggle */
     .vtog{display:flex;background:#1a1f2e;border:1px solid #2d3555;border-radius:8px;overflow:hidden}
     .vtog-btn{padding:5px 14px;font-size:11px;font-weight:700;cursor:pointer;border:none;background:transparent;color:#6b7280;letter-spacing:.04em;transition:all .15s}
     .vtog-btn.active{background:#2d3555;color:#f1f5f9}
-    /* snapshot btn */
     .snap-btn{padding:6px 14px;font-size:11px;font-weight:700;background:#1e2336;border:1px solid #2d3555;border-radius:7px;color:#94a3b8;cursor:pointer;transition:all .15s;white-space:nowrap}
     .snap-btn:hover{border-color:#c9a84c;color:#c9a84c}
     .snap-btn:disabled{opacity:.4;cursor:not-allowed}
-    /* overall badge */
     .ovr{background:#1e2336;border:1px solid #2d3555;border-radius:8px;padding:5px 12px;text-align:center}
     .ovr-pct{font-size:18px;font-weight:800;color:#f1f5f9;line-height:1}
     .ovr-lbl{font-size:9px;color:#6b7280;margin-top:2px}
@@ -54,7 +51,6 @@
     .p1 .pbadge{background:#166534;color:#4ade80}
     .p2 .pbadge{background:#7c2d12;color:#fb923c}
     .p3 .pbadge{background:#581c87;color:#c084fc}
-    /* progress */
     .prog{padding:0 15px 9px}
     .prog-row{display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px;color:#94a3b8}
     .prog-row span:last-child{font-weight:700}
@@ -63,10 +59,8 @@
     .p1 .prog-fill{background:linear-gradient(90deg,#166534,#22c55e)}
     .p2 .prog-fill{background:linear-gradient(90deg,#7c2d12,#f97316)}
     .p3 .prog-fill{background:linear-gradient(90deg,#581c87,#a855f7)}
-    /* target date */
     .target-date{padding:4px 15px 8px;font-size:10px;color:#6b7280;display:flex;align-items:center;gap:5px;border-top:1px solid rgba(255,255,255,.04);margin-top:2px}
     .target-date:hover{background:rgba(255,255,255,.02)}
-    /* hwk */
     .hwk{padding:0 15px 10px}
     .hwk-lbl{font-size:9px;font-weight:700;letter-spacing:.08em;color:#6b7280;text-transform:uppercase;margin-bottom:5px}
     .hwk-item{display:flex;align-items:flex-start;gap:7px;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer}
@@ -82,16 +76,13 @@
     .chk svg{width:9px;height:9px}
     .hwk-txt{font-size:11px;line-height:1.4;color:#d1d5db;flex:1}
     .hwk-txt.done{text-decoration:line-through;opacity:.45}
-    /* card actions */
     .card-actions{padding:0 15px 10px;display:flex;gap:7px}
     .act-btn{flex:1;padding:5px 6px;border-radius:6px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);font-size:10px;font-weight:700;color:#6b7280;cursor:pointer;text-align:center;transition:all .15s;letter-spacing:.03em}
     .act-btn:hover{color:#d1d5db;border-color:#374151}
-    /* expand toggle */
     .exp-tog{padding:7px 15px;border-top:1px solid rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;gap:5px;font-size:10px;color:#4b5563;cursor:pointer;transition:color .15s}
     .card:hover .exp-tog{color:#6b7280}
     .exp-tog.open svg{transform:rotate(180deg)}
     .exp-tog svg{transition:transform .2s;width:11px;height:11px}
-    /* expanded */
     .exp-detail{padding:0 15px 14px}
     .pnav{display:flex;gap:7px;margin-bottom:12px}
     .pnav-btn{flex:1;padding:5px 3px;border-radius:6px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);font-size:9px;font-weight:700;color:#6b7280;cursor:pointer;text-align:center;transition:all .15s;letter-spacing:.04em}
@@ -110,7 +101,6 @@
     .pbullets li::before{content:'·';position:absolute;left:2px;color:#374151}
     .hwk-callout{background:rgba(255,255,255,.03);border-radius:5px;padding:7px 9px;margin-top:5px;font-size:10px;color:#94a3b8;line-height:1.5}
     .hwk-callout strong{color:#f1f5f9;font-size:9px;letter-spacing:.05em;text-transform:uppercase}
-    /* ── EDIT MODAL ── */
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
     .modal{background:#131720;border:1px solid #2d3555;border-radius:14px;width:100%;max-width:560px;max-height:85vh;overflow-y:auto}
     .modal-hd{padding:18px 20px 12px;border-bottom:1px solid #1e2336;display:flex;align-items:center;justify-content:space-between}
@@ -144,7 +134,6 @@
     .btn-save{padding:7px 18px;background:#2d3555;border:1px solid #4b5563;border-radius:7px;color:#f1f5f9;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s}
     .btn-save:hover{background:#374151}
     .btn-cancel{padding:7px 18px;background:transparent;border:1px solid #2d3555;border-radius:7px;color:#6b7280;font-size:12px;cursor:pointer}
-    /* ── DETAIL PAGE ── */
     .detail-page{max-width:1000px;margin:0 auto;padding:18px}
     .detail-back{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;cursor:pointer;margin-bottom:16px;background:none;border:none}
     .detail-back:hover{color:#94a3b8}
@@ -152,7 +141,6 @@
     .detail-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px}
     .detail-id{font-size:11px;font-weight:700;letter-spacing:.1em;opacity:.5;text-transform:uppercase}
     .detail-name{font-size:22px;font-weight:800;color:#f1f5f9;margin-bottom:12px}
-    /* timeline */
     .timeline{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid #1e2336;border-radius:12px;overflow:hidden;margin-bottom:20px}
     .tl-phase{padding:16px;border-right:1px solid #1e2336;position:relative}
     .tl-phase:last-child{border-right:none}
@@ -181,7 +169,6 @@
     .tl-p2 .tl-prog-fill{background:var(--p2)}
     .tl-p3 .tl-prog-fill{background:var(--p3)}
     .tl-pct{font-size:10px;font-weight:700;color:#94a3b8}
-    /* full roadmap table */
     .roadmap-table{width:100%;border-collapse:separate;border-spacing:0;border-radius:10px;overflow:hidden;margin-bottom:20px}
     .roadmap-table th{padding:10px 14px;font-size:9px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;text-align:left}
     .roadmap-table th.h1{background:#166534;color:#4ade80}
@@ -197,7 +184,6 @@
     .roadmap-hwk-row td.c1 strong{color:var(--p1-muted)}
     .roadmap-hwk-row td.c2 strong{color:var(--p2-muted)}
     .roadmap-hwk-row td.c3 strong{color:var(--p3-muted)}
-    /* snapshot GYR */
     .gyr-row{display:flex;align-items:center;gap:8px;padding:8px 15px;border-top:1px solid rgba(255,255,255,.05)}
     .gyr-lbl{font-size:10px;color:#6b7280;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-right:4px}
     .gyr-btn{padding:3px 10px;border-radius:5px;border:1px solid;font-size:10px;font-weight:800;cursor:pointer;transition:all .15s;letter-spacing:.04em}
@@ -211,10 +197,8 @@
     .gyr-notes{flex:1}
     .gyr-notes input{width:100%;background:transparent;border:none;border-bottom:1px solid #2d3555;color:#d1d5db;font-size:11px;padding:2px 0;outline:none}
     .gyr-notes input::placeholder{color:#4b5563}
-    /* saved */
     .save-toast{position:fixed;bottom:20px;right:20px;background:#1e2336;border:1px solid #374151;border-radius:8px;padding:8px 16px;font-size:11px;color:#94a3b8;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
     .save-toast.show{opacity:1}
-    /* misc */
     .last-saved{font-size:10px;color:#374151;text-align:center;padding:8px}
     @media(max-width:640px){
       .grid{grid-template-columns:1fr;padding:10px;gap:9px}
@@ -223,15 +207,207 @@
       .tl-phase{border-right:none;border-bottom:1px solid #1e2336}
       .tl-phase:last-child{border-bottom:none}
     }
+    /* ── KOMPASS LAUNCHER ── */
+    .kl-bar{background:#0a0d14;border-bottom:1px solid #1e2336;padding:0 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:background .15s;user-select:none}
+    .kl-bar:hover{background:#0d1117}
+    .kl-bar-left{display:flex;align-items:center;gap:10px;padding:9px 0}
+    .kl-compass{width:22px;height:22px;border-radius:6px;background:#f0a500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .kl-bar-title{font-size:12px;font-weight:700;color:#f1f5f9;letter-spacing:.02em}
+    .kl-bar-sub{font-size:10px;color:#6b7280;margin-left:6px}
+    .kl-bar-right{display:flex;align-items:center;gap:8px}
+    .kl-count{font-size:10px;color:#6b7280;background:#1a1f2e;border:1px solid #2d3555;border-radius:12px;padding:2px 9px}
+    .kl-chevron{font-size:11px;color:#4b5563;transition:transform .2s;display:inline-block}
+    .kl-chevron.open{transform:rotate(180deg)}
+    .kl-panel{display:none;background:#080b10;border-bottom:2px solid #1e2336;padding:14px 18px}
+    .kl-panel.open{display:block}
+    .kl-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
+    .kl-tab{padding:5px 12px;font-size:11px;font-weight:600;border-radius:6px;border:1px solid #2d3555;background:transparent;color:#6b7280;cursor:pointer;transition:all .15s;white-space:nowrap;font-family:inherit}
+    .kl-tab.active{background:rgba(201,168,76,.13);color:#c9a84c;border-color:rgba(201,168,76,.35)}
+    .kl-search{width:100%;background:#131720;border:1px solid #2d3555;border-radius:8px;padding:8px 12px;color:#e8eaf0;font-size:13px;outline:none;font-family:inherit;margin-bottom:10px;box-sizing:border-box}
+    .kl-search:focus{border-color:#c9a84c}
+    .kl-search::placeholder{color:#4b5563}
+    .kl-section-label{font-size:9px;font-weight:700;letter-spacing:.1em;color:#4b5563;text-transform:uppercase;margin:10px 0 6px 2px}
+    .kl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:7px;margin-bottom:4px}
+    .kl-card{background:#0f1420;border:1px solid #1e2336;border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .15s,transform .1s}
+    .kl-card:active{transform:scale(.97)}
+    .kl-card:hover{border-color:#2d3555}
+    .kl-card.kl-open{border-color:#2d3555}
+    .kl-card-body{display:flex;align-items:center;gap:10px;padding:10px 12px}
+    .kl-icon{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
+    .kl-card-text{flex:1;min-width:0}
+    .kl-card-name{font-size:12px;font-weight:700;color:#f1f5f9;letter-spacing:-.1px}
+    .kl-card-desc{font-size:10px;color:#6b7280;margin-top:1px;line-height:1.3}
+    .kl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+    .kl-dot-claude{background:#f0a500;box-shadow:0 0 0 2px rgba(240,165,0,.15);animation:klpulse 2.5s ease-in-out infinite}
+    .kl-dot-sbos{background:#58a6ff}
+    .kl-dot-drive{background:#3fb950}
+    .kl-launch{padding:5px 10px;border-radius:6px;border:none;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
+    .kl-btn-claude{background:rgba(240,165,0,.12);color:#f0a500;border:1px solid rgba(240,165,0,.2)}
+    .kl-btn-sbos{background:rgba(88,166,255,.12);color:#58a6ff;border:1px solid rgba(88,166,255,.2)}
+    .kl-btn-drive{background:rgba(63,185,80,.12);color:#3fb950;border:1px solid rgba(63,185,80,.2)}
+    .kl-launch:active{transform:scale(.93);opacity:.8}
+    .kl-detail{display:none;border-top:1px solid #1e2336;padding:9px 12px 11px;background:#080b10}
+    .kl-card.kl-open .kl-detail{display:block}
+    .kl-prompt{font-family:"SF Mono","Fira Code",monospace;font-size:11px;color:#e8eaf0;background:#131720;border:1px solid #1e2336;border-radius:6px;padding:7px 10px;line-height:1.5;margin-bottom:7px;word-break:break-word}
+    .kl-why{font-size:10px;color:#6b7280;line-height:1.5;margin-bottom:7px}
+    .kl-detail-actions{display:flex;gap:6px;justify-content:flex-end}
+    .kl-copy{padding:5px 10px;border-radius:6px;background:#1a1f2e;color:#94a3b8;border:1px solid #2d3555;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit}
+    .kl-go{padding:5px 10px;border-radius:6px;background:#c9a84c;color:#000;border:none;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit}
+    .kl-go:active,.kl-copy:active{transform:scale(.93)}
+    .kl-empty{text-align:center;padding:32px 16px;color:#4b5563;font-size:12px}
+    .kl-toast{position:fixed;bottom:20px;right:20px;background:#1e2336;border:1px solid #374151;border-radius:8px;padding:7px 14px;font-size:11px;color:#94a3b8;opacity:0;transition:opacity .25s;pointer-events:none;z-index:600;white-space:nowrap}
+    .kl-toast.show{opacity:1}
+    @keyframes klpulse{0%,100%{box-shadow:0 0 0 2px rgba(240,165,0,.15)}50%{box-shadow:0 0 0 5px transparent}}
+    @media(max-width:640px){.kl-grid{grid-template-columns:1fr}.kl-bar-sub{display:none}}
   </style>
 </head>
 <body>
 <div id="root"></div>
+
+<!-- ══ KOMPASS LAUNCHER — collapsible panel between legend and phase grid ══ -->
+<div id="klRoot">
+<div class="kl-bar" id="klBar" onclick="klTogglePanel()">
+  <div class="kl-bar-left">
+    <div class="kl-compass">
+      <svg width="13" height="13" viewBox="0 0 18 18" fill="none">
+        <circle cx="9" cy="9" r="3.5" fill="#0d1117"/>
+        <path d="M9 2v2M9 14v2M2 9h2M14 9h2M4.2 4.2l1.4 1.4M12.4 12.4l1.4 1.4M4.2 13.8l1.4-1.4M12.4 5.6l1.4-1.4" stroke="#0d1117" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="kl-bar-title">Kompass Launcher</span>
+    <span class="kl-bar-sub">Tap any card to activate a skill or open a surface</span>
+  </div>
+  <div class="kl-bar-right">
+    <span class="kl-count" id="klCount">27 skills</span>
+    <span class="kl-chevron" id="klChevron">&#9662;</span>
+  </div>
+</div>
+<div class="kl-panel" id="klPanel">
+  <div class="kl-tabs">
+    <button class="kl-tab active" onclick="klTab('all',this)">All</button>
+    <button class="kl-tab" onclick="klTab('rituals',this)">Rituals</button>
+    <button class="kl-tab" onclick="klTab('ea',this)">EA</button>
+    <button class="kl-tab" onclick="klTab('ops',this)">Ops</button>
+    <button class="kl-tab" onclick="klTab('finance',this)">Finance</button>
+    <button class="kl-tab" onclick="klTab('knowledge',this)">Knowledge</button>
+  </div>
+  <input class="kl-search" id="klSearch" placeholder="Search skills, actions..." oninput="klFilter(this.value)" autocomplete="off" autocorrect="off" spellcheck="false">
+  <div id="klCards"></div>
+</div>
+</div>
+<div class="kl-toast" id="klToast"></div>
+
+<script>
+(function(){
+var ITEMS=[
+  {id:"morning",  layer:"rituals", icon:"&#127749;", name:"Morning ritual",        desc:"13-step daily launch sequence",               surface:"claude", prompt:"Morning ritual",                       why:"Sets your direction before the day runs you."},
+  {id:"evening",  layer:"rituals", icon:"&#127769;", name:"Evening ritual",        desc:"Debrief, score, capture for tomorrow",         surface:"claude", prompt:"Evening ritual",                       why:"Close the loop. Score your Big 3."},
+  {id:"weekly",   layer:"rituals", icon:"&#128197;", name:"Weekly review",         desc:"Dominos, wins, course correction",             surface:"claude", prompt:"Weekly review",                        why:"Bridge between daily execution and annual goals."},
+  {id:"war",      layer:"rituals", icon:"&#9889;",   name:"WAR stack",             desc:"Decision-prep for high-stakes moments",        surface:"claude", prompt:"Let's do a WAR stack",                why:"Converts reactive emotion into grounded decisions."},
+  {id:"irritate", layer:"rituals", icon:"&#128293;", name:"Irritation stack",      desc:"Process friction before it becomes reaction",  surface:"claude", prompt:"Let's do an irritation stack",        why:"Clears noise so facts emerge."},
+  {id:"discovery",layer:"rituals", icon:"&#128161;", name:"Discovery stack",       desc:"Capture insight, learning, or idea",           surface:"claude", prompt:"Let's do a discovery stack",          why:"Externalizes the spider-web mind before insights evaporate."},
+  {id:"cash",     layer:"rituals", icon:"&#128181;", name:"Cash stack",            desc:"Process money stress or financial decision",   surface:"claude", prompt:"Let's do a cash stack",               why:"Moves from fear-based to facts-based thinking."},
+  {id:"email",    layer:"ea",      icon:"&#128108;", name:"Email triage",          desc:"Sweep inbox, classify, draft replies",         surface:"claude", prompt:"Sweep my email",                      why:"Surfaces only what needs your judgment."},
+  {id:"buffer",   layer:"ea",      icon:"&#128194;", name:"Buffer session",        desc:"Clear the queue - tasks, decisions, replies",  surface:"claude", prompt:"Let's do the buffer session",         why:"The designated decision window."},
+  {id:"big3",     layer:"ea",      icon:"&#127919;", name:"Daily Big 3",           desc:"Set today's three domino moves",               surface:"claude", prompt:"What are my Big 3 for today? Pull my recent weekly dominos and yesterday's Big 3.", why:"The compass. Everything else is noise until these are set."},
+  {id:"sbos",     layer:"ea",      icon:"&#128202;", name:"Open S-BOS",            desc:"Live project, task and pay app dashboard",     surface:"sbos",   url:"https://app.smartsuite.com",             why:"The operating system - projects, tasks, pay apps, records."},
+  {id:"baseline", layer:"ops",     icon:"&#128208;", name:"Baseline a project",    desc:"Capture budget and timeline into S-BOS",       surface:"claude", prompt:"Baseline this project",               why:"No baseline = no score."},
+  {id:"payapp",   layer:"ops",     icon:"&#128176;", name:"Start a pay app",       desc:"G-702/G-703, SOV, invoices, lien waivers",     surface:"claude", prompt:"Kick off pay app",                    why:"The primary financial control on construction projects."},
+  {id:"payaudit", layer:"ops",     icon:"&#9989;",   name:"Pay app audit",         desc:"Per-invoice PM audit - 7 tasks + doc package", surface:"claude", prompt:"Run the pay app audit checklist",     why:"Every invoice audited. Nothing paid without documentation."},
+  {id:"comply",   layer:"ops",     icon:"&#128737;", name:"Compliance audit",      desc:"Contract docs vs required disclosures",         surface:"claude", prompt:"Run the compliance audit",            why:"Compliance gaps = liability."},
+  {id:"merge",    layer:"ops",     icon:"&#128256;", name:"Merge contacts",        desc:"Deduplicate S-BOS People or Project records",  surface:"claude", prompt:"Merge duplicate contacts",            why:"Dirty data breaks every downstream workflow."},
+  {id:"mgmt",     layer:"ops",     icon:"&#128101;", name:"Org and comp",          desc:"Management, compensation and role design ref", surface:"claude", prompt:"Help me think through compensation structure for a role", why:"Keeps decisions grounded in principle."},
+  {id:"underwrite",layer:"finance",icon:"&#128200;", name:"Underwrite a deal",     desc:"Pro forma, capital stack, release P&L",        surface:"claude", prompt:"Let's underwrite a deal",             why:"Formation Homes lives and dies on the underwrite."},
+  {id:"gp",       layer:"finance", icon:"&#127959;", name:"GP cash flow",          desc:"Forward construction revenue by project/month",surface:"claude", prompt:"GP cash flow schedule",               why:"Makes forward revenue view visible."},
+  {id:"strategic",layer:"finance", icon:"&#128301;", name:"Strategic review",      desc:"Monthly asset review - Four-Lens framework",   surface:"claude", prompt:"Run Strategic Review for",            why:"Asset oversight without drift."},
+  {id:"budget",   layer:"finance", icon:"&#127974;", name:"Entity budget",         desc:"Annual v4.4 budget workbook for any entity",   surface:"claude", prompt:"Build the annual budget for",         why:"CFO-grade financial model."},
+  {id:"platform", layer:"finance", icon:"&#128225;", name:"Platform dashboard",    desc:"Scorecard, capacity, cash runway",             surface:"claude", prompt:"Open the platform dashboard",         why:"The Allocator needs the full picture in one place."},
+  {id:"drive",    layer:"finance", icon:"&#128193;", name:"Google Drive",          desc:"All project files, contracts, invoices",       surface:"drive",  url:"https://drive.google.com",              why:"The document layer behind every deal."},
+  {id:"arch",     layer:"knowledge",icon:"&#128506;",name:"Business architecture", desc:"Entity map, product lines, situations, pillars",surface:"claude",prompt:"Fetch and summarize the business architecture from the Kompass repo",why:"The org chart + product map in one living doc."},
+  {id:"goals",    layer:"knowledge",icon:"&#127919;",name:"2026 goals",            desc:"Annual north star, strategic thesis",           surface:"claude", prompt:"Pull my 2026 goals from the Kompass repo and summarize where I stand",why:"Facts vs. goals is always the North Star."},
+  {id:"opmanual", layer:"knowledge",icon:"&#129504;",name:"Operating manual",      desc:"Full user profile - ADHD, Human Design",       surface:"claude", prompt:"Fetch my operating manual from the Kompass repo",why:"Reminds Claude how Clint thinks."},
+  {id:"phase",    layer:"knowledge",icon:"&#128678;",name:"Phase roadmap",         desc:"Phase-gate accountability across all 7 domains",surface:"claude",prompt:"Where am I in the SB Phase Roadmap? Pull current status.",why:"Phase gates replace willpower-based quarterly accountability."},
+];
+var LABELS={rituals:"Daily rituals",ea:"EA layer",ops:"Business ops",finance:"Finance & deals",knowledge:"Knowledge base"};
+var LAYER_ORDER=["rituals","ea","ops","finance","knowledge"];
+var activeTab="all",searchQ="",openCard=null,panelOpen=false;
+function klTogglePanel(){panelOpen=!panelOpen;document.getElementById("klPanel").classList.toggle("open",panelOpen);document.getElementById("klChevron").classList.toggle("open",panelOpen);if(panelOpen&&!document.getElementById("klCards").innerHTML)klRender();}
+window.klTogglePanel=klTogglePanel;
+function klTab(layer,btn){activeTab=layer;openCard=null;document.querySelectorAll(".kl-tab").forEach(function(t){t.classList.remove("active");});btn.classList.add("active");klRender();}
+window.klTab=klTab;
+function klFilter(q){searchQ=q.toLowerCase();openCard=null;klRender();}
+window.klFilter=klFilter;
+function klRender(){
+  var container=document.getElementById("klCards");
+  var filtered=ITEMS.filter(function(item){
+    var matchTab=activeTab==="all"||item.layer===activeTab;
+    var matchQ=!searchQ||item.name.toLowerCase().indexOf(searchQ)>=0||item.desc.toLowerCase().indexOf(searchQ)>=0||(item.prompt||"").toLowerCase().indexOf(searchQ)>=0;
+    return matchTab&&matchQ;
+  });
+  document.getElementById("klCount").textContent=filtered.length+" skills";
+  if(!filtered.length){container.innerHTML="<div class='kl-empty'>No matches - try a different search</div>";return;}
+  var html="";
+  var layers=activeTab==="all"?LAYER_ORDER:[activeTab];
+  layers.forEach(function(layer){
+    var group=filtered.filter(function(i){return i.layer===layer;});
+    if(!group.length)return;
+    html+="<div class='kl-section-label'>"+(LABELS[layer]||layer)+"</div><div class='kl-grid'>";
+    group.forEach(function(item){html+=klCard(item);});
+    html+="</div>";
+  });
+  container.innerHTML=html;
+}
+function klCard(item){
+  var sLabel={claude:"Claude",sbos:"S-BOS",drive:"Drive"}[item.surface]||item.surface;
+  var isOpen=openCard===item.id;
+  var promptLine=item.prompt?"<div class='kl-prompt'>"+escHtml(item.prompt)+"</div>":"<div class='kl-prompt'>Opens "+sLabel+" directly</div>";
+  var goLabel=item.prompt?"Open Claude &#8599;":"Open "+sLabel+" &#8599;";
+  var copyBtn=item.prompt?"<button class='kl-copy' onclick='klCopy(event,\""+item.id+"\")'>Copy</button>":"";
+  return "<div class='kl-card"+(isOpen?" kl-open":"")+"' id='klc-"+item.id+"' onclick='klToggleCard(\""+item.id+"\")'>"
+    +"<div class='kl-card-body'><div class='kl-icon'>"+item.icon+"</div>"
+    +"<div class='kl-card-text'><div class='kl-card-name'>"+item.name+"</div><div class='kl-card-desc'>"+item.desc+"</div></div>"
+    +"<div class='kl-dot kl-dot-"+item.surface+"'></div>"
+    +"<button class='kl-launch kl-btn-"+item.surface+"' onclick='klLaunch(event,\""+item.id+"\")'>"+sLabel+" &#8599;</button>"
+    +"</div><div class='kl-detail'>"
+    +(item.prompt?"<div style='font-size:9px;color:#6b7280;margin-bottom:4px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;'>Say this in Claude:</div>":"")
+    +promptLine
+    +"<div class='kl-why'>"+item.why+"</div>"
+    +"<div class='kl-detail-actions'>"+copyBtn
+    +"<button class='kl-go' onclick='klLaunch(event,\""+item.id+"\")'>"+goLabel+"</button>"
+    +"</div></div></div>";
+}
+function escHtml(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function klToggleCard(id){openCard=openCard===id?null:id;klRender();if(openCard){var el=document.getElementById("klc-"+id);if(el)setTimeout(function(){el.scrollIntoView({behavior:"smooth",block:"nearest"});},40);}}
+window.klToggleCard=klToggleCard;
+function klLaunch(e,id){e.stopPropagation();var item=ITEMS.find(function(i){return i.id===id;});if(!item)return;if(item.url){window.open(item.url,"_blank");return;}if(item.prompt&&navigator.clipboard){navigator.clipboard.writeText(item.prompt).then(function(){klToastMsg("Prompt copied - paste in Claude");}).catch(function(){klToastMsg("Opening Claude");});}else{klToastMsg("Opening Claude");}setTimeout(function(){window.open("https://claude.ai","_blank");},280);}
+window.klLaunch=klLaunch;
+function klCopy(e,id){e.stopPropagation();var item=ITEMS.find(function(i){return i.id===id;});if(!item||!item.prompt)return;navigator.clipboard.writeText(item.prompt).then(function(){klToastMsg("Copied");}).catch(function(){klToastMsg("Copy failed");});}
+window.klCopy=klCopy;
+var klToastTimer;
+function klToastMsg(msg){var t=document.getElementById("klToast");t.textContent=msg;t.classList.add("show");clearTimeout(klToastTimer);klToastTimer=setTimeout(function(){t.classList.remove("show");},2600);}
+// Position the launcher between legend and grid after React renders
+function klPosition(){
+  var root=document.getElementById("root");
+  var kl=document.getElementById("klRoot");
+  if(!root||!kl)return;
+  // The React legend renders inside #root; watch for it
+  var obs=new MutationObserver(function(){
+    var leg=root.querySelector(".leg");
+    if(leg&&leg.parentNode){
+      leg.parentNode.insertBefore(kl,leg.nextSibling);
+      obs.disconnect();
+    }
+  });
+  obs.observe(root,{childList:true,subtree:true});
+}
+document.addEventListener("DOMContentLoaded",klPosition);
+})();
+</script>
+
 <script type="text/babel">
 const { useState, useEffect, useCallback, useRef } = React;
 const STORAGE_KEY = 'sb_phase_anchor_v2';
 
-// ── DOMAIN DATA ──────────────────────────────────────────────────────────────
 const DOMAINS = [
   {
     id:'1A', label:'S-BOS Platform', fullName:'S-BOS Platform Implementation', team:true,
@@ -416,66 +592,40 @@ const GYR_COLOR = {G:'var(--g)',Y:'var(--y)',R:'var(--r)'};
 const GYR_LABEL = {G:'On Track',Y:'At Risk',R:'Behind'};
 const PhaseColor = {1:'var(--p1-muted)',2:'var(--p2-muted)',3:'var(--p3-muted)'};
 
-// ── ICONS ─────────────────────────────────────────────────────────────────────
 const CheckIco = () => <svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const ChevIco = () => <svg viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const BackIco = () => <svg viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const EditIco = () => <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M9 2l1 1-7 7H2V9l7-7z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round"/></svg>;
 
-// ── CONFIG (change per file) ──────────────────────────────────────────────────
 const TEAM_ONLY = false;
 const SHOW_SWITCH_LINK = true;
 const OTHER_VIEW_HREF = '/phase-anchor-team.html';
 const OTHER_VIEW_LABEL = 'Team View →';
 const VIEW_LABEL = 'Personal Scoreboard';
 
-// ── HELPERS ───────────────────────────────────────────────────────────────────
-function getHwkItems(domain, ds) {
-  return ds.customHwkItems || domain.hwkItems;
-}
+function getHwkItems(domain, ds) { return ds.customHwkItems || domain.hwkItems; }
 function getPhaseHwk(domain, ds, p) {
-  return (ds.customPhaseHwk && ds.customPhaseHwk[p] != null)
-    ? ds.customPhaseHwk[p]
-    : domain.phases[p].hwk;
+  return (ds.customPhaseHwk && ds.customPhaseHwk[p] != null) ? ds.customPhaseHwk[p] : domain.phases[p].hwk;
 }
 
-// ── LOAD / SAVE ───────────────────────────────────────────────────────────────
 function loadState() {
   try { const s = localStorage.getItem(STORAGE_KEY); if(s) return JSON.parse(s); } catch{}
   return {};
 }
-function saveState(s) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch{}
-}
+function saveState(s) { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(s)); } catch{} }
 
-// ── EDIT MODAL ────────────────────────────────────────────────────────────────
 function EditModal({ domain, ds, onSave, onClose }) {
   const [tab, setTab] = useState(1);
-  const [dates, setDates] = useState({
-    1: ds.phaseTargetDates?.[1] || '',
-    2: ds.phaseTargetDates?.[2] || '',
-    3: ds.phaseTargetDates?.[3] || '',
-  });
+  const [dates, setDates] = useState({ 1: ds.phaseTargetDates?.[1] || '', 2: ds.phaseTargetDates?.[2] || '', 3: ds.phaseTargetDates?.[3] || '' });
   const [custom, setCustom] = useState(() => {
     const base = {};
-    [1,2,3].forEach(p => {
-      base[p] = (ds.customOutcomes?.[p] || domain.phases[p].bullets.map(t=>({text:t,locked:true})));
-    });
+    [1,2,3].forEach(p => { base[p] = (ds.customOutcomes?.[p] || domain.phases[p].bullets.map(t=>({text:t,locked:true}))); });
     return base;
   });
-
   const addItem = () => setCustom(c => ({...c, [tab]: [...c[tab], {text:'',locked:false}]}));
   const delItem = (i) => setCustom(c => ({...c, [tab]: c[tab].filter((_,j)=>j!==i)}));
   const editItem = (i, val) => setCustom(c => ({...c, [tab]: c[tab].map((it,j)=>j===i?{...it,text:val}:it)}));
-
-  const save = () => {
-    onSave({ phaseTargetDates: dates, customOutcomes: custom });
-    onClose();
-  };
-
-  const phase = (ds.currentPhase || domain.currentPhase);
-  const pcfg = PCFG[tab];
-
+  const save = () => { onSave({ phaseTargetDates: dates, customOutcomes: custom }); onClose(); };
   return (
     <div className="modal-overlay" onClick={e => e.target===e.currentTarget && onClose()}>
       <div className="modal">
@@ -499,22 +649,13 @@ function EditModal({ domain, ds, onSave, onClose }) {
             <div className="modal-section-title">Outcomes by Phase</div>
             <div className="modal-tabs">
               {[1,2,3].map(p => (
-                <button key={p} className={`modal-tab ${tab===p?`at${p}`:''}`} onClick={()=>setTab(p)}>
-                  Phase {p} · {domain.phases[p].name}
-                </button>
+                <button key={p} className={`modal-tab ${tab===p?`at${p}`:''}`} onClick={()=>setTab(p)}>Phase {p} · {domain.phases[p].name}</button>
               ))}
             </div>
             <div className="outcome-list">
               {custom[tab].map((item, i) => (
                 <div key={i} className="outcome-item">
-                  <input
-                    type="text"
-                    value={item.text}
-                    placeholder="Add outcome..."
-                    onChange={e => editItem(i, e.target.value)}
-                    readOnly={item.locked}
-                    style={item.locked ? {opacity:.6} : {}}
-                  />
+                  <input type="text" value={item.text} placeholder="Add outcome..." onChange={e => editItem(i, e.target.value)} readOnly={item.locked} style={item.locked ? {opacity:.6} : {}} />
                   {!item.locked && <button className="out-del" onClick={()=>delItem(i)}>×</button>}
                 </div>
               ))}
@@ -531,20 +672,16 @@ function EditModal({ domain, ds, onSave, onClose }) {
   );
 }
 
-// ── DOMAIN CARD ───────────────────────────────────────────────────────────────
 function DomainCard({ domain, ds, onToggleHwk, onSetPhase, onOpenDetail, onEdit, onSetGyr, onSetGyrNotes, showGyr }) {
   const [expanded, setExpanded] = useState(false);
   const phase = ds.currentPhase || 1;
   const pcfg = PCFG[phase];
   const hwkChecked = ds.hwkChecked || [];
   const hwkItems = getHwkItems(domain, ds);
-  const pct = hwkItems.length > 0
-    ? Math.round((hwkChecked.filter(Boolean).length / hwkItems.length) * 100) : 0;
+  const pct = hwkItems.length > 0 ? Math.round((hwkChecked.filter(Boolean).length / hwkItems.length) * 100) : 0;
   const targetDate = ds.phaseTargetDates?.[phase];
   const autoGyr = GYR_AUTO(pct);
   const gyr = ds.gyrOverride || autoGyr;
-
-  // Date status for card display
   const dateStatus = (() => {
     if (!targetDate) return { label: 'No target date set', color: '#374151', icon: '📅' };
     const today = new Date(); today.setHours(0,0,0,0);
@@ -556,38 +693,26 @@ function DomainCard({ domain, ds, onToggleHwk, onSetPhase, onOpenDetail, onEdit,
     if (diffDays <= 30) return { label: fmt, color: '#f97316', icon: '📅', note: `${diffDays}d away` };
     return { label: fmt, color: '#94a3b8', icon: '📅', note: `${diffDays}d away` };
   })();
-
   return (
     <div className={`card ${pcfg.cls}`}>
       <div className="card-head">
-        <div style={{flex:1,minWidth:0}}>
-          <div className="card-id">{domain.id}</div>
-          <div className="card-name">{domain.label}</div>
-        </div>
+        <div style={{flex:1,minWidth:0}}><div className="card-id">{domain.id}</div><div className="card-name">{domain.label}</div></div>
         <div className="pbadge">{pcfg.badge}</div>
       </div>
-
       <div className="prog">
         <div className="prog-row"><span>Phase Gate Progress</span><span>{pct}%</span></div>
         <div className="prog-track"><div className="prog-fill" style={{width:`${pct}%`}}/></div>
       </div>
-
-      <div className="target-date" onClick={()=>onOpenDetail(domain.id)}
-        style={{cursor:'pointer', justifyContent:'space-between'}} title="Open details to edit date">
+      <div className="target-date" onClick={()=>onOpenDetail(domain.id)} style={{cursor:'pointer',justifyContent:'space-between'}} title="Open details to edit date">
         <div style={{display:'flex',alignItems:'center',gap:5}}>
           <span style={{fontSize:11}}>{dateStatus.icon}</span>
           <span style={{color:'#6b7280'}}>Phase {phase} target:</span>
-          <span style={{color:dateStatus.color, fontWeight:700}}>{dateStatus.label}</span>
+          <span style={{color:dateStatus.color,fontWeight:700}}>{dateStatus.label}</span>
         </div>
         {dateStatus.note && targetDate && (
-          <span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:4,
-            background: dateStatus.color==='#ef4444'?'rgba(239,68,68,.12)':dateStatus.color==='#f59e0b'?'rgba(245,158,11,.12)':'rgba(255,255,255,.06)',
-            color: dateStatus.color, letterSpacing:'.04em'}}>
-            {dateStatus.note}
-          </span>
+          <span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:4,background:dateStatus.color==='#ef4444'?'rgba(239,68,68,.12)':dateStatus.color==='#f59e0b'?'rgba(245,158,11,.12)':'rgba(255,255,255,.06)',color:dateStatus.color,letterSpacing:'.04em'}}>{dateStatus.note}</span>
         )}
       </div>
-
       <div className="hwk" onClick={e=>e.stopPropagation()}>
         <div className="hwk-lbl">✓ How We Know</div>
         {hwkItems.map((item, i) => (
@@ -597,59 +722,40 @@ function DomainCard({ domain, ds, onToggleHwk, onSetPhase, onOpenDetail, onEdit,
           </div>
         ))}
       </div>
-
       {showGyr && (
         <div className="gyr-row" onClick={e=>e.stopPropagation()}>
           <span className="gyr-lbl">Status</span>
           {['G','Y','R'].map(g => (
-            <button key={g} className={`gyr-btn ${g} ${gyr===g?'sel':''}`}
-              onClick={()=>onSetGyr(domain.id, ds.gyrOverride===g ? null : g)}>
+            <button key={g} className={`gyr-btn ${g} ${gyr===g?'sel':''}`} onClick={()=>onSetGyr(domain.id, ds.gyrOverride===g ? null : g)}>
               {g==='G'?'Green':g==='Y'?'Yellow':'Red'}
             </button>
           ))}
-          <div className="gyr-notes">
-            <input placeholder="Note for snapshot…" value={ds.gyrNotes||''} onChange={e=>onSetGyrNotes(domain.id, e.target.value)}/>
-          </div>
+          <div className="gyr-notes"><input placeholder="Note for snapshot…" value={ds.gyrNotes||''} onChange={e=>onSetGyrNotes(domain.id, e.target.value)}/></div>
         </div>
       )}
-
       <div className="card-actions" onClick={e=>e.stopPropagation()}>
         <button className="act-btn" onClick={()=>onEdit(domain.id)}>✏ Edit Outcomes</button>
         <button className="act-btn" onClick={()=>onOpenDetail(domain.id)}>↗ Open Details</button>
       </div>
-
       {expanded && (
         <div className="exp-detail" onClick={e=>e.stopPropagation()}>
           <div className="pnav">
-            {[1,2,3].map(p => (
-              <button key={p} className={`pnav-btn ${phase===p?`a${p}`:''}`} onClick={()=>onSetPhase(domain.id,p)}>
-                Phase {p}
-              </button>
-            ))}
+            {[1,2,3].map(p => (<button key={p} className={`pnav-btn ${phase===p?`a${p}`:''}`} onClick={()=>onSetPhase(domain.id,p)}>Phase {p}</button>))}
           </div>
           {[1,2,3].map(p => (
             <div key={p} className="psec">
-              <div className="psec-hd">
-                <span className={`psec-badge ${PCFG[p].bcls}`}>P{p}</span>
-                <span className="psec-ttl">{domain.phases[p].name}</span>
-              </div>
-              <ul className="pbullets">
-                {domain.phases[p].bullets.map((b,i)=><li key={i}>{b}</li>)}
-              </ul>
+              <div className="psec-hd"><span className={`psec-badge ${PCFG[p].bcls}`}>P{p}</span><span className="psec-ttl">{domain.phases[p].name}</span></div>
+              <ul className="pbullets">{domain.phases[p].bullets.map((b,i)=><li key={i}>{b}</li>)}</ul>
               <div className="hwk-callout"><strong>How We Know · </strong>{domain.phases[p].hwk}</div>
             </div>
           ))}
         </div>
       )}
-
-      <div className={`exp-tog ${expanded?'open':''}`} onClick={()=>setExpanded(e=>!e)}>
-        {expanded?'Collapse':'View full roadmap'}<ChevIco/>
-      </div>
+      <div className={`exp-tog ${expanded?'open':''}`} onClick={()=>setExpanded(e=>!e)}>{expanded?'Collapse':'View full roadmap'}<ChevIco/></div>
     </div>
   );
 }
 
-// ── DETAIL PAGE ───────────────────────────────────────────────────────────────
 function DetailPage({ domain, ds, onBack, onToggleHwk, onSetPhase, onSaveHwk, onSavePhaseHwk, onSaveDates }) {
   const phase = ds.currentPhase || 1;
   const hwkChecked = ds.hwkChecked || [];
@@ -658,30 +764,17 @@ function DetailPage({ domain, ds, onBack, onToggleHwk, onSetPhase, onSaveHwk, on
   const dates = ds.phaseTargetDates || {};
   const [editingHwk, setEditingHwk] = useState(false);
   const [draftHwk, setDraftHwk] = useState([...hwkItems]);
-  // Inline editing for phase HWK narrative cells
-  const [editingPhaseHwk, setEditingPhaseHwk] = useState(null); // 1|2|3|null
+  const [editingPhaseHwk, setEditingPhaseHwk] = useState(null);
   const [draftPhaseHwk, setDraftPhaseHwk] = useState('');
-  // Inline date editing in timeline
-  const [editingDate, setEditingDate] = useState(null); // 1|2|3|null
-
-  // Compute max bullet count for table rows
+  const [editingDate, setEditingDate] = useState(null);
   const maxBullets = Math.max(...[1,2,3].map(p => domain.phases[p].bullets.length));
-
   return (
     <div className="detail-page">
       <button className="detail-back" onClick={onBack}><BackIco/> Back to Scoreboard</button>
-
       <div className="detail-hd">
-        <div>
-          <div className="detail-id">{domain.id}</div>
-          <div className="detail-name">{domain.fullName}</div>
-        </div>
-        <div style={{display:'flex',gap:'8px',alignItems:'center'}}>
-          <span className={`pbadge ${PCFG[phase].cls}`}>{PCFG[phase].badge}</span>
-        </div>
+        <div><div className="detail-id">{domain.id}</div><div className="detail-name">{domain.fullName}</div></div>
+        <div style={{display:'flex',gap:'8px',alignItems:'center'}}><span className={`pbadge ${PCFG[phase].cls}`}>{PCFG[phase].badge}</span></div>
       </div>
-
-      {/* Phase Timeline */}
       <div className="timeline">
         {[1,2,3].map(p => {
           const isCurrentPhase = phase === p;
@@ -696,27 +789,17 @@ function DetailPage({ domain, ds, onBack, onToggleHwk, onSetPhase, onSaveHwk, on
               <div className="tl-date-lbl" style={{marginBottom:4}}>{isDone?'Completed':'Target date'}</div>
               {editingDate===p ? (
                 <div onClick={e=>e.stopPropagation()}>
-                  <input
-                    type="date"
-                    autoFocus
-                    defaultValue={d||''}
+                  <input type="date" autoFocus defaultValue={d||''}
                     style={{background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.2)',borderRadius:6,padding:'4px 8px',color:'#f1f5f9',fontSize:12,outline:'none',width:'100%',marginBottom:5}}
-                    onChange={e=>{
-                      const newDates={...(ds.phaseTargetDates||{}),[p]:e.target.value};
-                      onSaveDates(domain.id, newDates);
-                    }}
-                    onBlur={()=>setEditingDate(null)}
-                    onKeyDown={e=>e.key==='Escape'&&setEditingDate(null)}
-                  />
+                    onChange={e=>{const newDates={...(ds.phaseTargetDates||{}),[p]:e.target.value};onSaveDates(domain.id,newDates);}}
+                    onBlur={()=>setEditingDate(null)} onKeyDown={e=>e.key==='Escape'&&setEditingDate(null)}/>
                 </div>
               ) : (
-                <div className="tl-date-val" title="Click to edit"
-                  onClick={()=>setEditingDate(p)}
+                <div className="tl-date-val" title="Click to edit" onClick={()=>setEditingDate(p)}
                   style={{cursor:'pointer',display:'flex',alignItems:'center',gap:6,borderRadius:5,padding:'2px 4px',margin:'-2px -4px',transition:'background .15s'}}
                   onMouseEnter={e=>e.currentTarget.style.background='rgba(255,255,255,.06)'}
                   onMouseLeave={e=>e.currentTarget.style.background='transparent'}>
-                  {d ? new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})
-                    : <span style={{opacity:.3}}>Not set</span>}
+                  {d?new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):<span style={{opacity:.3}}>Not set</span>}
                   <span style={{fontSize:8,opacity:.4,letterSpacing:'.05em'}}>✎</span>
                 </div>
               )}
@@ -725,86 +808,54 @@ function DetailPage({ domain, ds, onBack, onToggleHwk, onSetPhase, onSaveHwk, on
                   <span>{isDone?'✓ Complete':isCurrentPhase?'In Progress':'Upcoming'}</span>
                   <span className="tl-pct">{phasePct}%</span>
                 </div>
-                <div className="tl-prog-bar"><div className={`tl-prog-fill`} style={{width:`${phasePct}%`}}/></div>
+                <div className="tl-prog-bar"><div className="tl-prog-fill" style={{width:`${phasePct}%`}}/></div>
               </div>
             </div>
           );
         })}
       </div>
-
-      {/* Phase navigator */}
       <div style={{display:'flex',gap:8,marginBottom:16}}>
         <span style={{fontSize:11,color:'#6b7280',alignSelf:'center'}}>Set current phase:</span>
-        {[1,2,3].map(p => (
-          <button key={p} className={`pnav-btn ${phase===p?`a${p}`:''}`} style={{flex:'none',padding:'5px 16px'}}
-            onClick={()=>onSetPhase(domain.id,p)}>
-            Phase {p}
-          </button>
-        ))}
+        {[1,2,3].map(p => (<button key={p} className={`pnav-btn ${phase===p?`a${p}`:''}`} style={{flex:'none',padding:'5px 16px'}} onClick={()=>onSetPhase(domain.id,p)}>Phase {p}</button>))}
       </div>
-
-      {/* Full Roadmap Table */}
       <div style={{fontSize:11,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#6b7280',marginBottom:8}}>Full Roadmap</div>
       <table className="roadmap-table">
-        <thead>
-          <tr>
-            <th className="h1">Phase 1 — Foundation</th>
-            <th className="h2">Phase 2 — Operating</th>
-            <th className="h3">Phase 3 — Optimizing</th>
-          </tr>
-        </thead>
+        <thead><tr><th className="h1">Phase 1 — Foundation</th><th className="h2">Phase 2 — Operating</th><th className="h3">Phase 3 — Optimizing</th></tr></thead>
         <tbody>
           {Array.from({length: maxBullets}).map((_,i) => (
-            <tr key={i}>
-              <td className="c1">{domain.phases[1].bullets[i] || ''}</td>
-              <td className="c2">{domain.phases[2].bullets[i] || ''}</td>
-              <td className="c3">{domain.phases[3].bullets[i] || ''}</td>
-            </tr>
+            <tr key={i}><td className="c1">{domain.phases[1].bullets[i]||''}</td><td className="c2">{domain.phases[2].bullets[i]||''}</td><td className="c3">{domain.phases[3].bullets[i]||''}</td></tr>
           ))}
           <tr className="roadmap-hwk-row">
             {[1,2,3].map(p => (
               <td key={p} className={`c${p}`} style={{cursor:'pointer',position:'relative'}}>
-                <strong style={{display:'flex',alignItems:'center',gap:6}}>
-                  ✓ How We Know
+                <strong style={{display:'flex',alignItems:'center',gap:6}}>✓ How We Know
                   <span style={{fontSize:8,fontWeight:700,padding:'1px 5px',borderRadius:4,background:'rgba(255,255,255,.08)',color:'#6b7280',letterSpacing:'.05em'}}
-                    onClick={e=>{e.stopPropagation();setEditingPhaseHwk(p);setDraftPhaseHwk(getPhaseHwk(domain,ds,p));}}>
-                    EDIT
-                  </span>
+                    onClick={e=>{e.stopPropagation();setEditingPhaseHwk(p);setDraftPhaseHwk(getPhaseHwk(domain,ds,p));}}>EDIT</span>
                 </strong>
                 {editingPhaseHwk===p ? (
                   <div onClick={e=>e.stopPropagation()}>
-                    <textarea
-                      autoFocus
-                      value={draftPhaseHwk}
-                      onChange={e=>setDraftPhaseHwk(e.target.value)}
-                      style={{width:'100%',marginTop:5,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.15)',borderRadius:5,padding:'6px 8px',color:'#f1f5f9',fontSize:11,lineHeight:1.5,resize:'vertical',minHeight:70,outline:'none',fontFamily:'inherit'}}
-                    />
+                    <textarea autoFocus value={draftPhaseHwk} onChange={e=>setDraftPhaseHwk(e.target.value)}
+                      style={{width:'100%',marginTop:5,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.15)',borderRadius:5,padding:'6px 8px',color:'#f1f5f9',fontSize:11,lineHeight:1.5,resize:'vertical',minHeight:70,outline:'none',fontFamily:'inherit'}}/>
                     <div style={{display:'flex',gap:6,marginTop:5}}>
                       <button className="act-btn" style={{flex:'none',padding:'3px 10px',color:'var(--p1)',borderColor:'var(--p1-border)'}}
                         onClick={()=>{onSavePhaseHwk(domain.id,p,draftPhaseHwk);setEditingPhaseHwk(null);}}>Save</button>
-                      <button className="act-btn" style={{flex:'none',padding:'3px 10px'}}
-                        onClick={()=>setEditingPhaseHwk(null)}>Cancel</button>
+                      <button className="act-btn" style={{flex:'none',padding:'3px 10px'}} onClick={()=>setEditingPhaseHwk(null)}>Cancel</button>
                     </div>
                   </div>
                 ) : (
-                  <span onClick={()=>{setEditingPhaseHwk(p);setDraftPhaseHwk(getPhaseHwk(domain,ds,p));}}>
-                    {getPhaseHwk(domain,ds,p)}
-                  </span>
+                  <span onClick={()=>{setEditingPhaseHwk(p);setDraftPhaseHwk(getPhaseHwk(domain,ds,p));}}>{getPhaseHwk(domain,ds,p)}</span>
                 )}
               </td>
             ))}
           </tr>
         </tbody>
       </table>
-
-      {/* HWK Checklist */}
       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
         <div style={{fontSize:11,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#6b7280'}}>Phase Gate Checklist</div>
         {!editingHwk
           ? <button className="act-btn" style={{flex:'none',padding:'4px 12px'}} onClick={()=>{setDraftHwk([...hwkItems]);setEditingHwk(true);}}>✏ Edit</button>
           : <div style={{display:'flex',gap:6}}>
-              <button className="act-btn" style={{flex:'none',padding:'4px 12px',color:'var(--p1)',borderColor:'var(--p1-border)'}}
-                onClick={()=>{onSaveHwk(domain.id, draftHwk.filter(t=>t.trim()));setEditingHwk(false);}}>Save</button>
+              <button className="act-btn" style={{flex:'none',padding:'4px 12px',color:'var(--p1)',borderColor:'var(--p1-border)'}} onClick={()=>{onSaveHwk(domain.id,draftHwk.filter(t=>t.trim()));setEditingHwk(false);}}>Save</button>
               <button className="act-btn" style={{flex:'none',padding:'4px 12px'}} onClick={()=>setEditingHwk(false)}>Cancel</button>
             </div>
         }
@@ -815,18 +866,12 @@ function DetailPage({ domain, ds, onBack, onToggleHwk, onSetPhase, onSaveHwk, on
             <>
               {draftHwk.map((item, i) => (
                 <div key={i} className="hwk-item" style={{cursor:'default'}}>
-                  <input
-                    type="text"
-                    value={item}
-                    onChange={e=>setDraftHwk(d=>d.map((v,j)=>j===i?e.target.value:v))}
-                    style={{flex:1,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',borderRadius:5,padding:'3px 8px',color:'#f1f5f9',fontSize:12,outline:'none'}}
-                  />
+                  <input type="text" value={item} onChange={e=>setDraftHwk(d=>d.map((v,j)=>j===i?e.target.value:v))}
+                    style={{flex:1,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',borderRadius:5,padding:'3px 8px',color:'#f1f5f9',fontSize:12,outline:'none'}}/>
                   <button className="out-del" onClick={()=>setDraftHwk(d=>d.filter((_,j)=>j!==i))}>×</button>
                 </div>
               ))}
-              <div style={{padding:'6px 0'}}>
-                <button className="add-outcome-btn" onClick={()=>setDraftHwk(d=>[...d,''])}>+ Add criteria</button>
-              </div>
+              <div style={{padding:'6px 0'}}><button className="add-outcome-btn" onClick={()=>setDraftHwk(d=>[...d,''])}>+ Add criteria</button></div>
             </>
           ) : (
             hwkItems.map((item, i) => (
@@ -842,12 +887,10 @@ function DetailPage({ domain, ds, onBack, onToggleHwk, onSetPhase, onSaveHwk, on
   );
 }
 
-// ── SNAPSHOT ──────────────────────────────────────────────────────────────────
 function captureSnapshot(domains, states, viewMode) {
   const now = new Date();
   const dateStr = now.toISOString().slice(0,10);
   const label = viewMode === 'team' ? 'Team' : 'Personal';
-
   const rows = domains.map(d => {
     const ds = states[d.id] || {};
     const phase = ds.currentPhase || d.currentPhase;
@@ -857,66 +900,39 @@ function captureSnapshot(domains, states, viewMode) {
     const notes = ds.gyrNotes || '';
     return { d, phase, pct, gyr, notes };
   });
-
   const G = rows.filter(r=>r.gyr==='G').length;
   const Y = rows.filter(r=>r.gyr==='Y').length;
   const R = rows.filter(r=>r.gyr==='R').length;
-
-  const html = `<!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8">
-<title>Phase Anchor Snapshot — ${dateStr}</title>
-<style>
-*{box-sizing:border-box}body{font-family:system-ui,sans-serif;background:#0f1117;color:#e8eaf0;padding:24px;max-width:960px;margin:0 auto}
-h1{font-size:22px;font-weight:800;margin-bottom:4px}h1 span{color:#c9a84c}
-.meta{font-size:12px;color:#6b7280;margin-bottom:22px}
-.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
-.tile{background:#131720;border:1px solid #1e2336;border-radius:10px;padding:14px;text-align:center}
+  const html = `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>Phase Anchor Snapshot — ${dateStr}</title>
+<style>*{box-sizing:border-box}body{font-family:system-ui,sans-serif;background:#0f1117;color:#e8eaf0;padding:24px;max-width:960px;margin:0 auto}
+h1{font-size:22px;font-weight:800;margin-bottom:4px}h1 span{color:#c9a84c}.meta{font-size:12px;color:#6b7280;margin-bottom:22px}
+.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}.tile{background:#131720;border:1px solid #1e2336;border-radius:10px;padding:14px;text-align:center}
 .tile-val{font-size:28px;font-weight:800}.tile-lbl{font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-top:3px}
-.green{color:#22c55e}.yellow{color:#f59e0b}.red{color:#ef4444}.muted{color:#6b7280}
-table{width:100%;border-collapse:collapse;border-radius:10px;overflow:hidden;font-size:12px;margin-bottom:20px}
-th{background:#1e2336;padding:9px 12px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8}
-td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.05)}
-tr:last-child td{border:none}
+.green{color:#22c55e}.yellow{color:#f59e0b}.red{color:#ef4444}
+table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:20px}th{background:#1e2336;padding:9px 12px;text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8}
+td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.05)}tr:last-child td{border:none}
 .badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
-.bG{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3)}
-.bY{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3)}
-.bR{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)}
-.bp1{background:#052e16;color:#4ade80;border:1px solid #166534}
-.bp2{background:#1c1007;color:#fb923c;border:1px solid #7c2d12}
-.bp3{background:#1a0a2e;color:#c084fc;border:1px solid #581c87}
-.pbar-track{height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;min-width:60px}
-.pbar-fill{height:100%;border-radius:3px}
+.bG{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3)}.bY{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3)}.bR{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)}
+.bp1{background:#052e16;color:#4ade80;border:1px solid #166534}.bp2{background:#1c1007;color:#fb923c;border:1px solid #7c2d12}.bp3{background:#1a0a2e;color:#c084fc;border:1px solid #581c87}
+.pbar-track{height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden;min-width:60px}.pbar-fill{height:100%;border-radius:3px}
 </style></head><body>
 <h1>Phase Anchor <span>Snapshot</span></h1>
 <div class="meta">${label} View · ${now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})} · ${now.toLocaleTimeString()}</div>
 <div class="summary">
   <div class="tile"><div class="tile-val">${rows.length}</div><div class="tile-lbl">Domains</div></div>
-  <div class="tile"><div class="tile-val green">${G}</div><div class="tile-lbl">Green · On Track</div></div>
-  <div class="tile"><div class="tile-val yellow">${Y}</div><div class="tile-lbl">Yellow · At Risk</div></div>
-  <div class="tile"><div class="tile-val red">${R}</div><div class="tile-lbl">Red · Behind</div></div>
+  <div class="tile"><div class="tile-val green">${G}</div><div class="tile-lbl">Green</div></div>
+  <div class="tile"><div class="tile-val yellow">${Y}</div><div class="tile-lbl">Yellow</div></div>
+  <div class="tile"><div class="tile-val red">${R}</div><div class="tile-lbl">Red</div></div>
 </div>
-<table>
-<thead><tr><th>Domain</th><th>Phase</th><th>Gate Progress</th><th>Status</th><th>Notes</th></tr></thead>
-<tbody>
+<table><thead><tr><th>Domain</th><th>Phase</th><th>Gate Progress</th><th>Status</th><th>Notes</th></tr></thead><tbody>
 ${rows.map(({d,phase,pct,gyr,notes})=>{
-  const phaseName = ['Foundation','Operating','Optimizing'][phase-1];
-  const barColor = phase===1?'#22c55e':phase===2?'#f97316':'#a855f7';
-  return `<tr>
-  <td><strong>${d.fullName}</strong></td>
-  <td><span class="badge bp${phase}">P${phase} · ${phaseName}</span></td>
-  <td>
-    <div style="display:flex;align-items:center;gap:8px">
-      <div class="pbar-track" style="flex:1"><div class="pbar-fill" style="width:${pct}%;background:${barColor}"></div></div>
-      <span style="font-size:11px;font-weight:700;color:#94a3b8;white-space:nowrap">${pct}%</span>
-    </div>
-  </td>
-  <td><span class="badge b${gyr}">${gyr==='G'?'Green':gyr==='Y'?'Yellow':'Red'}</span></td>
-  <td style="color:#94a3b8">${notes||'—'}</td>
-</tr>`;}).join('')}
+  const phaseName=['Foundation','Operating','Optimizing'][phase-1];
+  const barColor=phase===1?'#22c55e':phase===2?'#f97316':'#a855f7';
+  return `<tr><td><strong>${d.fullName}</strong></td><td><span class="badge bp${phase}">P${phase} · ${phaseName}</span></td><td><div style="display:flex;align-items:center;gap:8px"><div class="pbar-track" style="flex:1"><div class="pbar-fill" style="width:${pct}%;background:${barColor}"></div></div><span style="font-size:11px;font-weight:700;color:#94a3b8">${pct}%</span></div></td><td><span class="badge b${gyr}">${gyr==='G'?'Green':gyr==='Y'?'Yellow':'Red'}</span></td><td style="color:#94a3b8">${notes||'—'}</td></tr>`;
+}).join('')}
 </tbody></table>
 <div style="font-size:10px;color:#374151;margin-top:24px">Stitser BUILT · Phase Anchor · Generated ${now.toISOString()}</div>
 </body></html>`;
-
   const blob = new Blob([html],{type:'text/html'});
   const url = URL.createObjectURL(blob);
   const a = Object.assign(document.createElement('a'),{href:url,download:`phase-snapshot-${viewMode}-${dateStr}.html`});
@@ -924,7 +940,6 @@ ${rows.map(({d,phase,pct,gyr,notes})=>{
   URL.revokeObjectURL(url);
 }
 
-// ── ROOT APP ──────────────────────────────────────────────────────────────────
 function App() {
   const [states, setStates] = useState(loadState);
   const [detail, setDetail] = useState(null);
@@ -932,134 +947,63 @@ function App() {
   const [showGyr, setShowGyr] = useState(false);
   const [toast, setToast] = useState(false);
   const toastTimer = useRef(null);
-
   useEffect(() => { saveState(states); showToast(); }, [states]);
-
-  function showToast() {
-    setToast(true);
-    clearTimeout(toastTimer.current);
-    toastTimer.current = setTimeout(() => setToast(false), 1800);
-  }
-
-  const patchDs = useCallback((domainId, patch) => {
-    setStates(prev => {
-      const ds = prev[domainId] || {};
-      return { ...prev, [domainId]: { ...ds, ...patch } };
-    });
-  }, []);
-
-  const toggleHwk = useCallback((domainId, i) => {
-    setStates(prev => {
-      const ds = prev[domainId] || {};
-      const c = [...(ds.hwkChecked || [])];
-      c[i] = !c[i];
-      return { ...prev, [domainId]: { ...ds, hwkChecked: c } };
-    });
-  }, []);
-
-  const saveHwk = useCallback((domainId, items) => {
-    setStates(prev => {
-      const ds = prev[domainId] || {};
-      return { ...prev, [domainId]: { ...ds, customHwkItems: items, hwkChecked: [] } };
-    });
-  }, []);
-
-  const savePhaseHwk = useCallback((domainId, phaseNum, text) => {
-    setStates(prev => {
-      const ds = prev[domainId] || {};
-      const customPhaseHwk = { ...(ds.customPhaseHwk || {}), [phaseNum]: text };
-      return { ...prev, [domainId]: { ...ds, customPhaseHwk } };
-    });
-  }, []);
-
-  const saveDates = useCallback((domainId, dates) => {
-    patchDs(domainId, { phaseTargetDates: dates });
-  }, [patchDs]);
-
+  function showToast() { setToast(true); clearTimeout(toastTimer.current); toastTimer.current = setTimeout(() => setToast(false), 1800); }
+  const patchDs = useCallback((domainId, patch) => { setStates(prev => { const ds = prev[domainId] || {}; return { ...prev, [domainId]: { ...ds, ...patch } }; }); }, []);
+  const toggleHwk = useCallback((domainId, i) => { setStates(prev => { const ds = prev[domainId] || {}; const c = [...(ds.hwkChecked || [])]; c[i] = !c[i]; return { ...prev, [domainId]: { ...ds, hwkChecked: c } }; }); }, []);
+  const saveHwk = useCallback((domainId, items) => { setStates(prev => { const ds = prev[domainId] || {}; return { ...prev, [domainId]: { ...ds, customHwkItems: items, hwkChecked: [] } }; }); }, []);
+  const savePhaseHwk = useCallback((domainId, phaseNum, text) => { setStates(prev => { const ds = prev[domainId] || {}; const customPhaseHwk = { ...(ds.customPhaseHwk || {}), [phaseNum]: text }; return { ...prev, [domainId]: { ...ds, customPhaseHwk } }; }); }, []);
+  const saveDates = useCallback((domainId, dates) => { patchDs(domainId, { phaseTargetDates: dates }); }, [patchDs]);
   const setPhase = useCallback((domainId, p) => patchDs(domainId, {currentPhase:p}), [patchDs]);
   const setGyr   = useCallback((domainId, g) => patchDs(domainId, {gyrOverride:g}), [patchDs]);
   const setGyrNotes = useCallback((domainId, n) => patchDs(domainId, {gyrNotes:n}), [patchDs]);
-
   const domains = TEAM_ONLY ? DOMAINS.filter(d=>d.team) : DOMAINS;
-
   const totalHwk = domains.reduce((s,d)=>s+getHwkItems(d,states[d.id]||{}).length,0);
-  const checkedHwk = domains.reduce((s,d)=>{
-    const c=(states[d.id]||{}).hwkChecked||[];
-    return s+c.filter(Boolean).length;
-  },0);
+  const checkedHwk = domains.reduce((s,d)=>{ const c=(states[d.id]||{}).hwkChecked||[]; return s+c.filter(Boolean).length; },0);
   const overallPct = Math.round((checkedHwk/totalHwk)*100)||0;
-  const phaseCounts = domains.reduce((acc,d)=>{
-    const p=(states[d.id]||{}).currentPhase||1;
-    acc[p]=(acc[p]||0)+1; return acc;
-  },{});
+  const phaseCounts = domains.reduce((acc,d)=>{ const p=(states[d.id]||{}).currentPhase||1; acc[p]=(acc[p]||0)+1; return acc; },{});
 
   if (detail) {
     const dom = DOMAINS.find(d=>d.id===detail);
     return (
       <div>
         <div className="hdr">
-          <div className="hdr-left">
-            <div><div className="hdr-logo">Stitser BUILT</div><div className="hdr-title">Phase Anchor</div><div className="hdr-sub">{VIEW_LABEL}</div></div>
-          </div>
+          <div className="hdr-left"><div><div className="hdr-logo">Stitser BUILT</div><div className="hdr-title">Phase Anchor</div><div className="hdr-sub">{VIEW_LABEL}</div></div></div>
           <div className="hdr-right">
             {SHOW_SWITCH_LINK && <a href={OTHER_VIEW_HREF} className="snap-btn" style={{textDecoration:'none'}}>{OTHER_VIEW_LABEL}</a>}
             <button className="detail-back" onClick={()=>setDetail(null)}><BackIco/> Back</button>
           </div>
         </div>
-        <DetailPage domain={dom} ds={states[dom.id]||{}} onBack={()=>setDetail(null)}
-          onToggleHwk={toggleHwk} onSetPhase={setPhase} onSaveHwk={saveHwk} onSavePhaseHwk={savePhaseHwk} onSaveDates={saveDates}/>
+        <DetailPage domain={dom} ds={states[dom.id]||{}} onBack={()=>setDetail(null)} onToggleHwk={toggleHwk} onSetPhase={setPhase} onSaveHwk={saveHwk} onSavePhaseHwk={savePhaseHwk} onSaveDates={saveDates}/>
         <div className={`save-toast ${toast?'show':''}`}>Auto-saved</div>
       </div>
     );
   }
 
   const editDomain = editId ? DOMAINS.find(d=>d.id===editId) : null;
-
   return (
     <>
       <div className="hdr">
-        <div className="hdr-left">
-          <div>
-            <div className="hdr-logo">Stitser BUILT</div>
-            <div className="hdr-title">Phase Anchor</div>
-            <div className="hdr-sub">{VIEW_LABEL}</div>
-          </div>
-        </div>
+        <div className="hdr-left"><div><div className="hdr-logo">Stitser BUILT</div><div className="hdr-title">Phase Anchor</div><div className="hdr-sub">{VIEW_LABEL}</div></div></div>
         <div className="hdr-right">
           {SHOW_SWITCH_LINK && <a href={OTHER_VIEW_HREF} className="snap-btn" style={{textDecoration:'none'}}>{OTHER_VIEW_LABEL}</a>}
-          <button className={`snap-btn ${showGyr?'active':''}`} onClick={()=>setShowGyr(g=>!g)}>
-            {showGyr?'✓ GYR Mode':'⬤ GYR Mode'}
-          </button>
-          <button className="snap-btn" onClick={()=>captureSnapshot(domains,states,TEAM_ONLY?'team':'personal')}>
-            📸 Snapshot
-          </button>
-          <div className="ovr">
-            <div className="ovr-pct">{overallPct}%</div>
-            <div className="ovr-lbl">Phase 1 complete</div>
-          </div>
+          <button className={`snap-btn ${showGyr?'active':''}`} onClick={()=>setShowGyr(g=>!g)}>{showGyr?'✓ GYR Mode':'⬤ GYR Mode'}</button>
+          <button className="snap-btn" onClick={()=>captureSnapshot(domains,states,TEAM_ONLY?'team':'personal')}>📸 Snapshot</button>
+          <div className="ovr"><div className="ovr-pct">{overallPct}%</div><div className="ovr-lbl">Phase 1 complete</div></div>
         </div>
       </div>
-
       <div className="leg">
         <div className="leg-item"><div className="leg-dot" style={{background:'var(--p1)'}}/><span>Phase 1 — Foundation ({phaseCounts[1]||0})</span></div>
         <div className="leg-item"><div className="leg-dot" style={{background:'var(--p2)'}}/><span>Phase 2 — Operating ({phaseCounts[2]||0})</span></div>
         <div className="leg-item"><div className="leg-dot" style={{background:'var(--p3)'}}/><span>Phase 3 — Optimizing ({phaseCounts[3]||0})</span></div>
         <div className="leg-right">{checkedHwk}/{totalHwk} criteria met</div>
       </div>
-
       <div className="grid">
         {domains.map(domain => (
-          <DomainCard key={domain.id} domain={domain} ds={states[domain.id]||{}}
-            onToggleHwk={toggleHwk} onSetPhase={setPhase} onOpenDetail={setDetail}
-            onEdit={setEditId} onSetGyr={setGyr} onSetGyrNotes={setGyrNotes} showGyr={showGyr}/>
+          <DomainCard key={domain.id} domain={domain} ds={states[domain.id]||{}} onToggleHwk={toggleHwk} onSetPhase={setPhase} onOpenDetail={setDetail} onEdit={setEditId} onSetGyr={setGyr} onSetGyrNotes={setGyrNotes} showGyr={showGyr}/>
         ))}
       </div>
-
-      {editDomain && (
-        <EditModal domain={editDomain} ds={states[editId]||{}}
-          onSave={patch=>patchDs(editId,patch)} onClose={()=>setEditId(null)}/>
-      )}
-
+      {editDomain && (<EditModal domain={editDomain} ds={states[editId]||{}} onSave={patch=>patchDs(editId,patch)} onClose={()=>setEditId(null)}/>)}
       <div className={`save-toast ${toast?'show':''}`}>Auto-saved</div>
     </>
   );
