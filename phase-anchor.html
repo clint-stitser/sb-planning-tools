@@ -368,95 +368,214 @@
 
 <script type="text/babel">
 const { useState, useEffect, useCallback, useRef } = React;
-const STORAGE_KEY = 'sb_phase_anchor_v3'; // bumped — hwkChecked is now per-phase
+const STORAGE_KEY = 'sb_phase_anchor_v3';
 const KOMPASS_ICON = 'https://raw.githubusercontent.com/clint-stitser/kompass-app/main/apple-touch-icon.png';
 
-// ─── DATA ────────────────────────────────────────────────────────────────────
-// BUG FIX: hwkItems is now keyed by phase {1:[...], 2:[...], 3:[...]}
-// so the "How We Know" checklist reflects the CURRENT phase, not a static list.
+// ─── DOMAIN DATA ─────────────────────────────────────────────────────────────
+// hwkItems keyed by phase {1:[...], 2:[...], 3:[...]}
+// Source of truth: SB_Phase_Roadmap.docx "HOW WE KNOW" rows
 const DOMAINS = [
   {id:'1A',label:'S-BOS Platform',fullName:'S-BOS Platform Implementation',team:true,
     hwkItems:{
-      1:['Dashboard checked daily','Every active project has all 5 pillars populated','People, Alignment, Schedule, Budget & Checklists on every project'],
-      2:['Team runs Tuesday meetings from S-BOS without Clint compiling it','Decisions tracked and tasks assigned inside S-BOS','Weekly reports generated from S-BOS data'],
-      3:['No shadow systems anywhere — confirmed by Andy survey','Team cannot imagine doing their job without S-BOS','S-BOS is default behavior, not a reminder']
+      // P1: Dashboard checked daily + all 5 pillars on every active project
+      1:['Dashboard checked and acted on daily',
+         'Every active project has all 5 pillars: People, Alignment, Schedule, Budget & Checklists',
+         'S-BOS is source of truth — not email, not spreadsheets'],
+      // P2: New workflows/skills appearing from team without Clint — self-measuring
+      2:['New workflows and skills appearing in the KB from team members — not from Clint',
+         'Team reports against S-BOS data, not in email or verbal update',
+         'Tuesday meeting decision points surfaced by S-BOS, not manually compiled by Clint'],
+      // P3: Andy survey confirms zero shadow systems
+      3:['Andy surveys team: "Any systems outside S-BOS you use for work?" Answer: No',
+         'Team cannot imagine doing their job without S-BOS',
+         'S-BOS is a life skill — default behavior, not a reminder']
     },
-    phases:{1:{name:'Foundation',hwk:'Dashboard checked daily. Every active project has People, Alignment, Schedule, Budget & Checklists populated.',bullets:['Dashboard is live and read regularly','Every project has all 5 pillars in place','System is source of truth: game, score, time, and next steps','People know where to go to create project pillars','Decision-making, tasks, budget, schedule, and people on every project','All active product lines and projects tracked inside S-BOS']},2:{name:'Operating',hwk:'Team runs Tuesday meetings from S-BOS. Decisions tracked, tasks assigned, and reports generated without pulling Clint in.',bullets:['Team identifies and flags system improvement opportunities','S-BOS self-measuring: team reports against the system, not just to Clint','Tuesday meeting = decision points surfaced by S-BOS, not manually compiled','Overhead tracked; team capacity visible at a glance']},3:{name:'Optimizing',hwk:"No shadow systems. Zero exceptions. Andy surveys the team: 'Is there anything you track outside S-BOS?' Answer: No.",bullets:["No shadow systems anywhere in the org — S-BOS is the only system","Team cannot imagine doing their job without S-BOS","Full migration confirmed by Andy's survey","S-BOS is a life skill, not a tool — default behavior for every team member"]}}},
+    phases:{1:{name:'Foundation',hwk:'Dashboard checked daily. Every active project has People, Alignment, Schedule, Budget & Checklists populated.',bullets:['Dashboard is live and read regularly','Every project has all 5 pillars in place','System is source of truth: game, score, time, and next steps','People know where to go to create project pillars','Decision-making, tasks, budget, schedule, and people on every project','All active product lines and projects tracked inside S-BOS']},2:{name:'Operating',hwk:'New workflows and skills appearing in knowledge base from team members — not from Clint.',bullets:['Team identifies and flags system improvement opportunities','S-BOS self-measuring: team reports against the system, not just to Clint','Tuesday meeting = decision points surfaced by S-BOS, not manually compiled','Overhead tracked; team capacity visible at a glance']},3:{name:'Optimizing',hwk:"Andy surveys team: 'Are there systems outside S-BOS you use for work?' Answer: No.",bullets:["No shadow systems anywhere in the org — S-BOS is the only system","Team cannot imagine doing their job without S-BOS","Full migration confirmed by Andy's survey","S-BOS is a life skill, not a tool — default behavior for every team member"]}}},
+
   {id:'1B',label:'Knowledge Base',fullName:'Knowledge Base (S-BOS Organizational Brain)',team:true,
     hwkItems:{
-      1:['Every team member completed onboarding (2 courses + 2 workflows)','New hire can onboard end-to-end from a single link with zero Clint involvement','KB is the first place team goes before asking a colleague or Clint'],
-      2:['Kompass AI search returns answers in under 30 seconds','At least one team member per product line has submitted a new article','Automated audit running — flags broken links and outdated articles'],
-      3:['AI identifies gaps and flags them as tasks without prompting','Team members submitting new articles weekly','New hires contributing within their first 30 days']
+      // P1: New hire onboards solo from a single link; KB is first stop for questions
+      1:['New hire hands single link — completes onboarding with zero Clint involvement',
+         'Every team member has completed 2 courses + 2 relevant workflows',
+         'KB is the first place team goes before asking a colleague or Clint'],
+      // P2: AI search answers in under 30 seconds; peer review active
+      2:['Someone has a question → first action is opening the KB, not asking Clint',
+         'AI search returns answers with source links in under 30 seconds',
+         'Peer review process in place before new articles go live'],
+      // P3: Andy survey confirms KB is default; team submitting articles weekly
+      3:['Andy surveys team: "Where do you go first when you have a question?" Answer: The Knowledge Base',
+         'Team members submitting new articles weekly without prompting',
+         'New hires contributing to the KB within their first 30 days']
     },
-    phases:{1:{name:'Foundation',hwk:"New hire handed a single link. No Clint involvement. They complete onboarding, understand the game, know their role, and can find their first workflow — independently.",bullets:['SmartSuite Training & Certifications: courses, lessons, and learning tracks live','S-BOS Feature Map: every app, its purpose, and how it connects — navigable by role','Workflow Visual: all 5 product lines × 5 key situations, each linked to a workflow or course','Core Documents: who we are, what we do, how we win — the game document',"Glossary: Terms & Earn + Winner's Vocabulary linked throughout",'User Skill: standardized template to create and submit new KB articles','Backend Routine: new SmartSuite article submission auto-publishes to the KB site','Team Onboarding Complete: every team member completes 2 courses + 2 relevant workflows']},2:{name:'Operating',hwk:'When someone has a question, the first action is opening the Knowledge Base. AI search returns the answer in under 30 seconds.',bullets:['Kompass AI embedded — ask a question, get an answer with source links','AI search spans courses, workflows, core docs, and glossary simultaneously','Automated audit flags broken links, outdated articles, and missing workflow docs','Plugin or scheduled skill keeps course completion tracking current without manual effort','At least one team member per product line has submitted a new article','Peer review process in place before new articles go live']},3:{name:'Optimizing',hwk:"Andy surveys the team: 'Where do you go first when you have a question?' Answer: The Knowledge Base.",bullets:['AI identifies gaps and flags them as tasks — no human curator required','AI drafts article shells from observed workflows and submits for team review','Team members across all roles submitting new articles, workflows, and tools regularly','New hires contributing within their first 30 days',"Culture of capture: \"If it's not in the KB, it doesn't exist\"",'S-BOS apps, skills, and automations update in response to KB changes — one connected organism']}}},
+    phases:{1:{name:'Foundation',hwk:"New hire handed a single link. No Clint involvement. They complete onboarding independently.",bullets:['SmartSuite Training & Certifications: courses, lessons, and learning tracks live','S-BOS Feature Map: every app, its purpose, and how it connects — navigable by role','Workflow Visual: all 5 product lines × 5 key situations, each linked to a workflow or course','Core Documents: who we are, what we do, how we win — the game document',"Glossary: Terms & Earn + Winner's Vocabulary linked throughout",'User Skill: standardized template to create and submit new KB articles','Backend Routine: new SmartSuite article submission auto-publishes to the KB site','Team Onboarding Complete: every team member completes 2 courses + 2 relevant workflows']},2:{name:'Operating',hwk:'When someone has a question, the first action is opening the Knowledge Base. AI search returns the answer in under 30 seconds.',bullets:['Kompass AI embedded — ask a question, get an answer with source links','AI search spans courses, workflows, core docs, and glossary simultaneously','Automated audit flags broken links, outdated articles, and missing workflow docs','Plugin or scheduled skill keeps course completion tracking current without manual effort','At least one team member per product line has submitted a new article','Peer review process in place before new articles go live']},3:{name:'Optimizing',hwk:"Andy surveys the team: 'Where do you go first when you have a question?' Answer: The Knowledge Base.",bullets:['AI identifies gaps and flags them as tasks — no human curator required','AI drafts article shells from observed workflows and submits for team review','Team members across all roles submitting new articles, workflows, and tools regularly','New hires contributing within their first 30 days',"Culture of capture: \"If it's not in the KB, it doesn't exist\"",'S-BOS apps, skills, and automations update in response to KB changes']}}},
+
   {id:'2',label:'Finance & Accounting',fullName:'Finance & Accounting',team:true,
     hwkItems:{
-      1:['Signed contract with accounting expert','Two months of closes complete','Tuesday reports arriving without being pulled'],
-      2:["'How much cash and what does the next 6 months look like?' answered in under 5 minutes",'12-month budget accurate and reliable','Cash availability visible in real-time'],
-      3:['Product line leads read and act on financial reports independently','Intacct and S-BOS integrated and self-reporting','Finance function is self-multiplying']
+      // P1: Signed contract + two closed months + Tuesday reports without pulling
+      1:['Signed contract with accounting expert / outsource CFO',
+         'Two months of closes complete — accurate, on time',
+         'Tuesday reports arriving without Clint pulling them'],
+      // P2: Cash question answered in under 5 minutes; 12-month budget reliable
+      2:['"How much cash and what does the next 6 months look like?" answered in under 5 minutes',
+         '12-month budget accurate and reliable',
+         'WIP schedule and 6-month forward cash flow in place per company'],
+      // P3: Product line leads self-sufficient; Intacct and S-BOS integrated
+      3:['Product line leads read and act on financial reports independently — no Clint pull needed',
+         'Intacct and S-BOS integrated and self-reporting',
+         'Finance function is self-multiplying']
     },
     phases:{1:{name:'Foundation',hwk:'Signed contract with accounting expert. Two months of closes complete. Tuesday reports arriving without being pulled.',bullets:["Outsource CFO / Controller signed and onboarded","Complete 6-month forward cash flow projection","Lisa & Linda's processes meaningfully improved","Accurate reports delivered every Tuesday","WIP schedule and 6-month forecast in place per company"]},2:{name:'Operating',hwk:"Can answer 'How much cash do we have and what does the next 6 months look like?' in under 5 minutes.",bullets:['Reconciliation practices routine and timely','12-month budget accurate and reliable','Cash availability visibility — real-time','Tools identified to optimize cash deployment']},3:{name:'Optimizing',hwk:'Product line leads can read and act on financial reports independently. No manual pulling required.',bullets:['Product line leaders understand financial levers','Team uses financial reports to drive decisions','Intacct and S-BOS integrated and self-reporting','Finance function is self-multiplying']}}},
+
   {id:'3A',label:'General Contracting',fullName:'General Contracting (Third-Party Construction)',team:true,
     hwkItems:{
-      1:['Weekly gear report readable on dashboard','Tuesday meeting has decision points — not just status','Break-even target identified and tracked'],
-      2:['Team arrives at Tuesday meeting with decision points, not just updates','Overhead covered, team stable','Weekly gear reports visible on dashboard'],
-      3:['GC division operates without pulling Clint into daily decisions','Self-multiplying team or strategic partnership model chosen and documented','Does NOT cannibalize development resources']
+      // P1: Weekly gear report live; Tuesday has decision points not just status
+      1:['Weekly gear report readable on dashboard',
+         'Tuesday meeting: "Here\'s where we\'re at. Here are the decisions." — not just updates',
+         'Break-even target identified and actively tracked'],
+      // P2: Team arrives with decision points; overhead covered; team stable
+      2:['Team arrives at Tuesday meeting with decision points — Clint doesn\'t compile the agenda',
+         'Overhead covered — team stable without project-by-project justification',
+         'Defined size and deliverable expectations documented per project type'],
+      // P3: GC runs without pulling Clint; no cannibalization of development resources
+      3:['GC division operates without pulling Clint into daily decisions',
+         'Either: strategic outside partnerships only, or: self-multiplying team with own BD + estimating',
+         'GC does NOT cannibalize development team resources']
     },
     phases:{1:{name:'Foundation',hwk:'Weekly gear report readable on dashboard. Tuesday meeting: "Here\'s where we\'re at. Here are the decisions."',bullets:['Full clarity on active WIP and pipeline','Prioritized list of estimates to convert','Break-even target identified and tracked','Resource allocation aligned to highest value projects','Decision matrix and quality checklist per project type']},2:{name:'Operating',hwk:'Team arrives at Tuesday meeting with decision points — not just updates.',bullets:['Continuous disciplined execution using S-BOS tools','Weekly gear reports visible on dashboard','Tuesday meeting = decisions needed, not just status updates','Overhead covered, team stable','Defined size and deliverable expectations']},3:{name:'Optimizing',hwk:'GC division operates without pulling Clint into daily decisions.',bullets:['Either: internal projects only + strategic outside partnerships','Or: self-multiplying team with own BD, estimating, production','Does NOT cannibalize development resources']}}},
+
   {id:'3B',label:'Retail Development',fullName:'Retail Development',team:true,
     hwkItems:{
-      1:['Three target retail projects in contract','CRM with retail audience live and being worked','Decision matrix and quality checklist in place'],
-      2:['First lease signed','CRM pipeline generating consistent leads','TICK takeout model established and documented'],
-      3:['Pipeline of referral partners feeding deal flow','Pipeline of TICK buyers always available','More capital partners than project opportunities']
+      // P1: Three projects in contract; retail CRM live; decision matrix in place
+      1:['Three target retail projects in contract (Talus Valley, Sierra Center, Upper Parcel)',
+         'CRM with retail audience live and being actively worked',
+         'Decision matrix and project quality checklist in place'],
+      // P2: First lease signed; TICK model documented; pipeline generating
+      2:['First lease signed',
+         'TICK / fractional disposition model documented with requirements and process',
+         'CRM pipeline generating consistent leads'],
+      // P3: Capital waiting for projects; referral pipeline active
+      3:['Capital waiting for projects — not the other way around',
+         'Pipeline of referral partners feeding deal flow consistently',
+         'Pipeline of TICK buyers always available — more capital than project opportunities']
     },
     phases:{1:{name:'Foundation',hwk:'Three target retail projects in contract. CRM with retail audience is live and being worked.',bullets:['Project-by-project CRM stood up','Outreach to retail audience systematized','Talus Valley, Sierra Center, Upper Parcel in contract','Undeniable audience of retail companies and users built','Decision matrix and project quality checklist in place']},2:{name:'Operating',hwk:'First lease signed. TICK disposition model documented with requirements and process.',bullets:['Convert relationships to leases','CRM pipeline generating consistent leads','Fractional / TICK takeout model established for disposition','Covered plays: tenants committed before breaking ground']},3:{name:'Optimizing',hwk:'Capital waiting for projects — not the other way around.',bullets:['Pipeline of referral partners feeding deal flow','Pipeline of takeout capital (TICK buyers) always available','More capital partners than project opportunities','Expand to stabilized or light value-add acquisitions']}}},
+
   {id:'3C',label:'Midsize Multifamily',fullName:'Midsize Multifamily',team:true,
     hwkItems:{
-      1:['Pac West agreement signed','Management partner in place','Riverside reporting weekly'],
-      2:['Riverside stabilized and cash-flowing','Second acquisition opportunity being evaluated','Management platform proven replicable'],
-      3:['Multiple assets operating without firefighting','Acquisition pipeline always active','Win-win operating structure with subject matter expert documented']
+      // P1: Pac West signed; management partner active; Riverside reporting weekly
+      1:['Pac West agreement signed — partnership formalized (Riverside)',
+         'Day-to-day management partner established and active',
+         'Riverside reporting weekly — stabilization plan in execution'],
+      // P2: Riverside stabilized and cash-flowing; second opp being evaluated
+      2:['Riverside operating without firefighting — stabilized and cash-flowing',
+         'Second acquisition opportunity evaluated using proven model',
+         'Management platform proven replicable to new properties'],
+      // P3: Multiple assets operating; acquisition pipeline always active
+      3:['Multiple assets operating — no firefighting across the portfolio',
+         'Acquisition pipeline is always active — fed by relationships and market position',
+         'Win-win operating structure with subject matter expert documented and repeatable']
     },
     phases:{1:{name:'Foundation',hwk:'Pac West agreement signed. Management partner in place. Riverside reporting weekly.',bullets:['Strategic partnership with Pac West formalized (Riverside)','Day-to-day management partner established','Riverside stabilization plan in execution','Capital allocation for acquisition fully visible']},2:{name:'Operating',hwk:'Riverside operating without firefighting. Second opportunity being evaluated.',bullets:['Riverside stabilized and cash-flowing','Next acquisition opportunity evaluated using proven model','Management platform replicable to new properties']},3:{name:'Optimizing',hwk:'Multiple assets operating. Acquisition pipeline is always active.',bullets:['Self-managing portfolio of infill multifamily assets','Development and management partners engaged as standard','Acquisition pipeline fed by relationships and market position','Infill development model repeatable','Win-win operating structure with subject matter expert']}}},
+
   {id:'3D',label:'Entry-Level Housing',fullName:'Entry-Level Housing (Formation Homes / CRF)',team:true,
     hwkItems:{
-      1:['NAHA signed','Alyssa actively sourcing deals','Weekly status report live on dashboard','Land lease documents complete'],
-      2:['First land lease executed','PR and marketing campaign launched','Pipeline of projects in contract for development'],
-      3:['Recurring land lease income generating','Referral partners actively feeding the pipeline','Fractional land model recognized as market standard']
+      // P1: NAHA signed; Alyssa sourcing; weekly report live; land lease docs complete
+      1:['NAHA public-private partnership signed and inked',
+         'Alyssa actively in field — hunting and finding deals as buyer\'s rep',
+         'Weekly status report live on dashboard; land lease legal documents complete'],
+      // P2: First land lease executed; PR launched; backlog of projects in contract
+      2:['First land lease executed',
+         'PR and marketing campaign launched — professionals and end users educated on model',
+         'Backlog of projects in contract for development'],
+      // P3: Recurring land lease income; referral pipeline active; audience built
+      3:['Recurring land lease income generating from portfolio of lots',
+         'Referral pipeline active — proven model attracting partners',
+         'Fractional land model recognized as market standard; moat documented']
     },
     phases:{1:{name:'Foundation',hwk:"NAHA signed. Alyssa actively sourcing. Weekly status report on dashboard. Land lease documents complete.",bullets:["NAHA public-private partnership signed and inked","Alyssa in field — hunting and finding deals as buyer's rep","Internal team pipeline and underwriting process active","Roles and responsibilities chart documented","Land lease legal framework documented (whole vs. partial ownership)","Weekly project status report running against 25-unit goal"]},2:{name:'Operating',hwk:'First land lease executed. PR campaign launched. Backlog of projects in contract.',bullets:['Two-part offering live: whole ownership OR land lease','PR and marketing campaign launched','Real estate professionals and end users educated on model','Pipeline of projects in contract for development','Land lease asset servicing platform operational','Financing structure for long-term land ownership established']},3:{name:'Optimizing',hwk:'Recurring land lease income. Referral pipeline active. Audience built.',bullets:['Proven model attracting referral partners','Portfolio of land lease lots generating recurring income','Audience of end users and capital partners established','Fractional land model recognized as market standard','Moat identified, clarified, documented — why no one else can replicate']}}},
+
   {id:'3E',label:'Asset Disposition',fullName:'Asset Disposition / Fractional (Second Home)',team:true,
     hwkItems:{
-      1:['Game plan from Gino delivered (stop/start/continue)','Gino owns execution with clear milestones','No additional capital required to complete'],
-      2:['Weekly report shows green on revenue targets','Execution running without external capital infusion','What\'s working and what\'s not visible in real time'],
-      3:['Project complete and evaluated','Go/No-Go decision made with data','Next move documented — continue or reallocate resources']
+      // P1: Mic-drop game plan from Gino; he owns it; no new capital needed
+      1:['Mic-drop game plan delivered from Gino — stop/start/continue format',
+         'Gino owns execution — dashboard shows status weekly without Clint managing it',
+         'No additional capital required — operating cash flow funds project completion'],
+      // P2: Weekly report green on revenue; running without external capital infusion
+      2:['Weekly report shows green on revenue targets',
+         'Execution running without external capital infusion',
+         'What\'s working and what\'s not is visible in real time'],
+      // P3: Project closed; Go/No-Go decision made with data
+      3:['Project complete and evaluated',
+         'Go/No-Go decision made with data — continue or shelve',
+         'Next move documented: TICK/fractional model operational OR resources reallocated']
     },
     phases:{1:{name:'Foundation',hwk:'Mic-drop game plan delivered. Gino owns it. Dashboard shows status weekly. No additional capital required.',bullets:['Updated game plan from Gino — stop/start/continue format','Simple, single-view dashboard for all active milestones','Clear priorities with deadlines through year-end','Gino owns the execution — clearly organized by situation and department','Operating cash flow funds project completion (no new capital needed)']},2:{name:'Operating',hwk:'Weekly report shows green on revenue targets. Operating without external capital infusion.',bullets:['Execution of Phase 1 plan in full sprint','Weekly reporting tied to exact milestones','Revenue generated to fund operations','What\'s working and what\'s not visible in real time']},3:{name:'Optimizing',hwk:'Project closed. Go/No-Go decision made with data.',bullets:['Project complete and evaluated','Decision: continue product line OR shelve and refocus','If continued: TICK/fractional disposition model fully operational','If shelved: resources reallocated to Entry-Level, Retail, Multifamily']}}},
+
   {id:'4',label:'Marketing & CRM',fullName:'Marketing & CRM',team:true,
     hwkItems:{
-      1:['Weekly PN outreach running consistently','Message is clear — audience knows what we stand for','All projects connected to audience pipeline'],
-      2:['Follow-up Boss fully shut down','S-BOS CRM is the single system of record','Past client database active and working'],
-      3:['Everyone on team using CRM as life skill','Fractional audience of buyers and users growing organically','Inbound leads sourced through audience, not outbound hustle']
+      // P1: Weekly PN outreach running; message clear; all projects connected to pipeline
+      1:['Weekly PN outreach running consistently — staying in flow with key people',
+         'Message is clear — audience knows what we stand for and what we\'re asking',
+         'All projects connected to audience pipeline'],
+      // P2: Follow-up Boss dead; S-BOS is only CRM; past clients receiving communication
+      2:['Follow-up Boss fully shut down — zero competing CRM systems',
+         'S-BOS CRM is the single system of record for all lead activity',
+         'Past client database active and receiving communication'],
+      // P3: Team survey confirms CRM as default; inbound from audience not hustle
+      3:['Team survey confirms CRM as default — everyone uses it as a life skill',
+         'Fractional audience of buyers and users growing organically',
+         'Inbound leads sourced through audience — we attract, not chase']
     },
     phases:{1:{name:'Foundation',hwk:'Weekly PN outreach running. Message is clear. Audience knows what we stand for.',bullets:['Newspaper communication model running consistently','CRM audience evolution: connecting to "Fractional is the Future"','Zone of focus normalized — message and ask are clear','Staying in flow with key people using Stitser BUILT CRM','Follow-up Boss phase-out plan in motion','All projects connected to audience pipeline']},2:{name:'Operating',hwk:'Zero competing CRM systems. All lead activity in S-BOS. Past clients receiving communication.',bullets:['Follow-up Boss fully shut down','S-BOS CRM is the single system of record','Sphere connected, leads captured, nurtured, converted','Past client database active and working']},3:{name:'Optimizing',hwk:'Team survey confirms CRM as default tool. Inbound leads sourced through audience, not outbound hustle.',bullets:['Everyone on team using CRM as life skill','Self-multiplying: team can\'t imagine working without it','Fractional audience of buyers and users growing organically','Magnetic marketing — attracting, not chasing']}}},
+
   {id:'5',label:'Personal — Being',fullName:'Personal — Being',team:false,
     hwkItems:{
-      1:['Morning & Evening ritual running daily','Capture → triage → schedule workflow operating','Phase context always visible'],
-      2:['Calendar reflects Focus Day / Buffer Day / Free Day structure','Deep work blocks defended and happening','CEO / Allocator skills visibly accelerating'],
-      3:['Operating as pure Allocator — team fills execution detail','Second brain self-multiplying without prompting','Rituals unbreakable — running regardless of travel or friction']
+      // P1: Rituals running daily; capture→triage→schedule operating; phase context visible
+      1:['Morning & Evening ritual running daily — no exceptions',
+         'Capture → triage → schedule workflow operating',
+         'Phase context always visible — roadmap isn\'t in my head, it\'s in the system'],
+      // P2: Calendar reflects day-type structure; deep work happening in blocks
+      2:['Calendar reflects Focus Day / Buffer Day / Free Day structure',
+         'Deep work happening in designated blocks — not squeezed around reactive work',
+         'CEO / Allocator seat skills visibly accelerating: cash, people, strategy'],
+      // P3: Pure Allocator — team fills execution; vision alive; rituals unbreakable
+      3:['Operating as pure Allocator — team fills in execution detail, Clint provides phase direction only',
+         'Second brain self-multiplying: Claude captures, phases, and surfaces without prompting',
+         'Rituals unbreakable — running regardless of travel, friction, or busyness']
     },
     phases:{1:{name:'Foundation',hwk:'Rituals running daily. Capture → triage → schedule workflow operating. Phase context always visible.',bullets:['Daily Stitser Way commitment — morning and evening ritual','Second brain infrastructure in place and being used','RPM framework operating: What do I want? Why? What\'s the 80/20?','Phase-based roadmap built and normalized across all life categories','Claude / Compass trained as triage partner','Tasks bucketed: Do, Delegate, Defer, Delete']},2:{name:'Operating',hwk:'Calendar reflects day-type structure. Deep work happening in designated blocks.',bullets:['Full sprint mode leveraging non-linear thinking strengths','CEO / Allocator skills accelerating: cash, people, strategy','Stepping away from screen to think is normalized and protected','Flow states scheduled and defended','Focus Day / Buffer Day / Free Day structure honored']},3:{name:'Optimizing',hwk:'Operating as pure Allocator. Vision alive. Rituals unbreakable.',bullets:['Fully integrated Dreamer — non-linear mind is the asset','Second brain self-multiplying: Claude captures, phases, and surfaces','Team fills in execution detail. Clint provides phase direction only.','Wise, Connected, Aligned — living toward 2036 Vivid Vision']}}},
+
   {id:'6',label:'Personal — Body',fullName:'Personal — Body',team:false,
     hwkItems:{
-      1:['3 rides completed before vacation','Body moving without restriction','Hot spots addressed via stretching/trigger points'],
-      2:['Return weight at or under 210 lbs','Felt present and in control during vacation','Alcohol kept limited — cravings controlled'],
-      3:['Both races completed with competitive finishes','Race weight at or near 200 lbs','Flexible, fluid, powerful — 2036 Vivid Vision standard']
+      // P1: 3 rides done; body moving without restriction before departure
+      1:['3 rides completed before leaving for vacation',
+         'Hot spots in legs and back addressed via stretching and trigger points',
+         'Body moving freely — signal unjammed'],
+      // P2: Return weight at or under 210 lbs; felt present and in control on vacation
+      2:['Return from trip at or under 210 lbs',
+         'Felt present and in control during vacation — not reactive or overconsumptive',
+         'Alcohol kept limited — salt/fat/sugar cravings controlled'],
+      // P3: Both races completed; race weight; 2036 Vivid Vision body standard
+      3:['Race 1 (Downieville) completed with competitive finish',
+         'Race 2 (Southern California) completed with competitive finish',
+         'Race weight at or near 200 lbs — flexible, fluid, powerful']
     },
     phases:{1:{name:'Foundation',hwk:'3 rides done. Body moving without restriction before departure.',bullets:['3 rides completed before leaving for vacation','Hot spots in legs and back addressed via stretching and trigger points','Signal unjammed — body moving freely']},2:{name:'Operating',hwk:'Return from trip at or under 210 lbs. Felt present and in control during vacation.',bullets:['Joyous, reasonable consumption on vacation','Alcohol: limited — controls salt/fat/sugar cravings','Return weight: 210 lbs or under','Savoring unique food experiences without overconsumption']},3:{name:'Optimizing',hwk:'Both races completed. Race weight achieved. Body performing at 2036 Vivid Vision standard.',bullets:['Hard training block begins post-vacation','Race 1: Downieville Cross Country — competitive finish','Race 2: Southern California race — competitive finish','Race weight: at or near 200 lbs for both','Flexible, fluid, powerful']}}},
+
   {id:'7',label:'Personal — Balance',fullName:'Personal — Balance',team:false,
     hwkItems:{
-      1:['Weekly connection with Christie','Kids engaged and connected','PN outreach running consistently'],
-      2:['Monthly long lunches with Christie happening','Annual collage updated','Relationships feel joyful, not managed'],
-      3:['Living the 2036 Vivid Vision indicators across family and relationships','Kids launched and connected to family culture','Refuge for friends. Steward for family. Leader for industry.']
+      // P1: Weekly connection with Christie; kids engaged; PN list worked consistently
+      1:['Weekly connection with Christie — intentional, not incidental',
+         'Kids engaged and connected — they know they\'re the priority',
+         'PN outreach running consistently — staying in flow with key people'],
+      // P2: Monthly long lunches with Christie happening; collage updated; relationships joyful
+      2:['Monthly long lunches with Christie happening — Vivid Vision alive in the conversation',
+         'Annual collage updated',
+         'Relationships feel joyful, not managed — strengths of those closest celebrated actively'],
+      // P3: Living 2036 Vivid Vision indicators; kids connected; refuge for others
+      3:['Living the 2036 Vivid Vision indicators across family and relationships',
+         'Kids launched and connected to family culture — they come home by desire, not duty',
+         'Refuge for friends. Steward for family. Leader for industry.']
     },
     phases:{1:{name:'Foundation',hwk:'Weekly connection with Christie. Kids engaged. PN list worked consistently.',bullets:['Christie and kids: number one priority, fully connected','Business partners and immediate family: consistent rhythm','Near-term friends and sphere: regular visits and connection','PN outreach running — staying in flow with key people']},2:{name:'Operating',hwk:'Christie and Clint doing monthly long lunches. Annual collage updated. Family culture celebrated.',bullets:['Relationships feel joyful, not managed','Strengths of those closest celebrated actively','Monthly strategy lunches with Christie (Vivid Vision alive)','Annual collage updated']},3:{name:'Optimizing',hwk:'Living the 2036 Vivid Vision indicators across family and relationships.',bullets:['Interdependence mastered — together, honoring independent paths','Kids launched and connected to family culture','Deep holiday traditions — family comes home by desire','Refuge for friends. Steward for family. Leader for industry.']}}}
 ];
@@ -468,22 +587,16 @@ const ChevIco=()=><svg viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" st
 const BackIco=()=><svg viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const KompassLogo=()=>(<img src={KOMPASS_ICON} alt="Kompass" style={{width:36,height:36,borderRadius:10,objectFit:'cover'}} onError={e=>{e.target.style.display='none';}}/>);
 
-// ─── HELPERS ─────────────────────────────────────────────────────────────────
-// FIX: always pull hwkItems for the CURRENT phase
 const getHwkItems=(d,ds,phase)=>{
   const p=phase||ds.currentPhase||1;
-  // custom overrides (from EditModal) stored per-phase
   if(ds.customHwkItems?.[p]) return ds.customHwkItems[p];
-  // canonical per-phase items from domain definition
   return d.hwkItems[p]||[];
 };
-// FIX: hwkChecked is now stored per-phase: ds.hwkChecked = {1:[...], 2:[...], 3:[...]}
 const getHwkChecked=(ds,phase)=>{
   const p=phase||ds.currentPhase||1;
   return ds.hwkChecked?.[p]||[];
 };
 const getPhaseHwk=(d,ds,p)=>(ds.customPhaseHwk&&ds.customPhaseHwk[p]!=null)?ds.customPhaseHwk[p]:d.phases[p].hwk;
-
 const loadState=()=>{try{const s=localStorage.getItem(STORAGE_KEY);if(s)return JSON.parse(s);}catch{}return{};};
 const saveState=s=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(s));}catch{}};
 
@@ -527,7 +640,6 @@ function DomainCard({domain:d,ds,onToggleHwk,onSetPhase,onOpenDetail,onEdit,onSe
   const[expanded,setExpanded]=useState(false);
   const[collapsed,setCollapsed]=useState(false);
   const phase=ds.currentPhase||1,pcfg=PCFG[phase];
-  // FIX: use phase-aware helpers
   const hwkItems=getHwkItems(d,ds,phase);
   const hwkChecked=getHwkChecked(ds,phase);
   const pct=hwkItems.length>0?Math.round(hwkChecked.filter(Boolean).length/hwkItems.length*100):0;
@@ -614,8 +726,6 @@ function App(){
   const toastTimer=useRef(null);
   useEffect(()=>{saveState(states);setToast(true);clearTimeout(toastTimer.current);toastTimer.current=setTimeout(()=>setToast(false),1800);},[states]);
   const patchDs=useCallback((id,patch)=>setStates(prev=>{const ds=prev[id]||{};return{...prev,[id]:{...ds,...patch}};}),[]);
-
-  // FIX: toggleHwk now takes phase as argument, writes to ds.hwkChecked[phase]
   const toggleHwk=useCallback((id,phase,i)=>setStates(prev=>{
     const ds=prev[id]||{};
     const allChecked={...(ds.hwkChecked||{})};
@@ -624,22 +734,14 @@ function App(){
     allChecked[phase]=phaseChecked;
     return{...prev,[id]:{...ds,hwkChecked:allChecked}};
   }),[]);
-
   const savePhaseHwk=useCallback((id,p,text)=>setStates(prev=>{const ds=prev[id]||{},customPhaseHwk={...(ds.customPhaseHwk||{}),[p]:text};return{...prev,[id]:{...ds,customPhaseHwk}};}),[]);
   const saveDates=useCallback((id,dates)=>patchDs(id,{phaseTargetDates:dates}),[patchDs]);
   const setPhase=useCallback((id,p)=>patchDs(id,{currentPhase:p}),[patchDs]);
   const setGyr=useCallback((id,g)=>patchDs(id,{gyrOverride:g}),[patchDs]);
   const setGyrNotes=useCallback((id,n)=>patchDs(id,{gyrNotes:n}),[patchDs]);
-
-  const domains=DOMAINS; // personal view shows all
-  const totalHwk=domains.reduce((s,d)=>{
-    const ds=states[d.id]||{},phase=ds.currentPhase||1;
-    return s+getHwkItems(d,ds,phase).length;
-  },0);
-  const checkedHwk=domains.reduce((s,d)=>{
-    const ds=states[d.id]||{},phase=ds.currentPhase||1;
-    return s+getHwkChecked(ds,phase).filter(Boolean).length;
-  },0);
+  const domains=DOMAINS;
+  const totalHwk=domains.reduce((s,d)=>{const ds=states[d.id]||{},phase=ds.currentPhase||1;return s+getHwkItems(d,ds,phase).length;},0);
+  const checkedHwk=domains.reduce((s,d)=>{const ds=states[d.id]||{},phase=ds.currentPhase||1;return s+getHwkChecked(ds,phase).filter(Boolean).length;},0);
   const overallPct=totalHwk>0?Math.round(checkedHwk/totalHwk*100):0;
   const phaseCounts=domains.reduce((a,d)=>{const p=(states[d.id]||{}).currentPhase||1;a[p]=(a[p]||0)+1;return a;},{});
 
