@@ -1,0 +1,28 @@
+{
+  "name": "Phase Anchor — Stitser BUILT",
+  "short_name": "Phase Anchor",
+  "description": "Phase-gate accountability across all 7 domains",
+  "start_url": "/phase-anchor.html",
+  "display": "standalone",
+  "background_color": "#0a0d14",
+  "theme_color": "#0a0d14",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/assets/img/kompass-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/img/kompass-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/assets/img/kompass-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
