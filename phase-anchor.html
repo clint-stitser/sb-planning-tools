@@ -13,10 +13,10 @@
   <meta name="application-name" content="Phase Anchor" />
   <meta name="theme-color" content="#0a0d14" />
   <link rel="manifest" href="/phase-anchor-manifest.json" />
-  <!-- Home-screen icon: reuse Kompass compass from the repo -->
-  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/clint-stitser/sb-planning-tools/main/assets/img/kompass-icon-180.png" />
+  <!-- Home-screen icon: pulled from kompass-app repo (single source of truth) -->
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/clint-stitser/kompass-app/main/apple-touch-icon.png" />
 
-  <!-- React + Babel (pre-compiled path preferred; babel fallback for mobile) -->
+  <!-- React + Babel -->
   <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.5/babel.min.js"></script>
@@ -24,7 +24,6 @@
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
     body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e8eaf0;min-height:100vh;
-      /* Safe area insets for iPhone notch / Dynamic Island */
       padding-top:env(safe-area-inset-top);
       padding-bottom:env(safe-area-inset-bottom);
     }
@@ -35,20 +34,14 @@
       --g:#22c55e;--y:#f59e0b;--r:#ef4444;
       --gold:#c9a84c;
     }
-    /* loading state */
     #react-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px;color:#4b5563}
     #react-loading .spin{width:24px;height:24px;border:2px solid #1e2336;border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
     #react-loading p{font-size:12px}
     @keyframes spin{to{transform:rotate(360deg)}}
-
-    /* ── HEADER ── */
     .hdr{background:#0a0d14;border-bottom:1px solid #1e2336;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;gap:12px;flex-wrap:wrap}
     .hdr-left{display:flex;align-items:center;gap:10px}
-
-    /* Kompass logo (req #3) */
-    .hdr-kompass-logo{width:36px;height:36px;border-radius:10px;background:#181c28;border:1px solid #2d3555;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden}
-    .hdr-kompass-logo svg{width:26px;height:26px}
-
+    .hdr-kompass-logo{width:36px;height:36px;border-radius:10px;background:#181c28;border:1px solid #2d3555;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden}
+    .hdr-kompass-logo img{width:36px;height:36px;border-radius:10px;object-fit:cover}
     .hdr-text .hdr-title{font-size:15px;font-weight:700;color:#f1f5f9}
     .hdr-text .hdr-sub{font-size:10px;color:#6b7280;margin-top:1px}
     .hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
@@ -57,21 +50,15 @@
     .ovr{background:#1e2336;border:1px solid #2d3555;border-radius:8px;padding:5px 12px;text-align:center}
     .ovr-pct{font-size:18px;font-weight:800;color:#f1f5f9;line-height:1}
     .ovr-lbl{font-size:9px;color:#6b7280;margin-top:2px}
-
     .leg{display:flex;gap:14px;padding:8px 18px;background:#0a0d14;border-bottom:1px solid #1e2336;flex-wrap:wrap;align-items:center}
     .leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#94a3b8}
     .leg-dot{width:9px;height:9px;border-radius:50%}
     .leg-right{margin-left:auto;font-size:10px;color:#374151}
-
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:11px;padding:14px;max-width:1600px;margin:0 auto}
-
-    /* ── CARDS ── */
     .card{border-radius:12px;overflow:hidden;border:1px solid;transition:transform .15s}
     .card.p1{background:var(--p1-bg);border-color:var(--p1-border)}
     .card.p2{background:var(--p2-bg);border-color:var(--p2-border)}
     .card.p3{background:var(--p3-bg);border-color:var(--p3-border)}
-
-    /* Card collapse toggle (req #2) */
     .card-header-bar{display:flex;align-items:center;justify-content:space-between;padding:11px 15px 9px;cursor:pointer;user-select:none;gap:8px}
     .card-header-left{display:flex;flex-direction:column;flex:1;min-width:0}
     .card-id{font-size:10px;font-weight:700;letter-spacing:.1em;opacity:.5;text-transform:uppercase;margin-bottom:2px}
@@ -83,11 +70,8 @@
     .p3 .pbadge{background:#581c87;color:#c084fc}
     .card-collapse-icon{font-size:11px;color:#4b5563;transition:transform .2s;display:inline-block;line-height:1}
     .card-collapse-icon.open{transform:rotate(180deg)}
-
-    /* card body — collapses */
     .card-body{overflow:hidden;transition:max-height .3s ease}
     .card-body.collapsed{max-height:0!important}
-
     .prog{padding:0 15px 9px}
     .prog-row{display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px;color:#94a3b8}
     .prog-row span:last-child{font-weight:700}
@@ -207,8 +191,6 @@
       .tl-phase{border-right:none;border-bottom:1px solid #1e2336}
       .tl-phase:last-child{border-bottom:none}
     }
-
-    /* ── KOMPASS LAUNCHER ── */
     .kl-wrap{position:sticky;top:0;z-index:190}
     .kl-bar{background:#0a0d14;border-bottom:1px solid #1e2336;padding:0 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;min-height:40px}
     .kl-bar-left{display:flex;align-items:center;gap:10px;padding:9px 0}
@@ -266,7 +248,7 @@
 </head>
 <body>
 
-<!-- ══ KOMPASS LAUNCHER — static, above React ══ -->
+<!-- ══ KOMPASS LAUNCHER ══ -->
 <div class="kl-wrap">
   <div class="kl-bar" onclick="klTogglePanel()">
     <div class="kl-bar-left">
@@ -308,39 +290,26 @@
 </div>
 
 <script>
-/* ─────────────────────────────────────────────
-   KOMPASS LAUNCHER
-   req #4: Claude links use native app deep link
-   Pattern: try claude:// URI; fall back to https
-───────────────────────────────────────────── */
 (function(){
   var PERSONAL_ID='019dd4b5-03e8-75b3-8171-fa36beaf8b84';
   var BUSINESS_ID='019d97d9-b09e-7691-a3f9-09eacb2125b6';
+  var ICON_URL='https://raw.githubusercontent.com/clint-stitser/kompass-app/main/apple-touch-icon.png';
 
-  /* Opens the Claude native app if installed (iOS/macOS),
-     otherwise falls back to claude.ai in the browser.       */
-  function openClaude(projectId) {
-    var webUrl = 'https://claude.ai/project/' + projectId;
-    /* The claude:// scheme is handled by the Claude iOS & macOS apps */
-    var nativeUrl = 'claude://project/' + projectId;
-
-    /* Try native; if it fails (no app) the iframe trick keeps the page alive */
-    var iframe = document.createElement('iframe');
-    iframe.style.display = 'none';
+  function openClaude(projectId){
+    var webUrl='https://claude.ai/project/'+projectId;
+    var nativeUrl='claude://project/'+projectId;
+    var iframe=document.createElement('iframe');
+    iframe.style.display='none';
     document.body.appendChild(iframe);
-    iframe.src = nativeUrl;
-
-    /* Give native app 1.2s to respond; if page is still visible open web */
-    var t = setTimeout(function() {
-      document.body.removeChild(iframe);
-      window.open(webUrl, '_blank');
-    }, 1200);
-
-    /* If native app took over, page will blur — cancel the web fallback */
-    window.addEventListener('blur', function onBlur() {
+    iframe.src=nativeUrl;
+    var t=setTimeout(function(){
+      try{document.body.removeChild(iframe);}catch(e){}
+      window.open(webUrl,'_blank');
+    },1200);
+    window.addEventListener('blur',function onBlur(){
       clearTimeout(t);
-      try { document.body.removeChild(iframe); } catch(e){}
-      window.removeEventListener('blur', onBlur);
+      try{document.body.removeChild(iframe);}catch(e){}
+      window.removeEventListener('blur',onBlur);
     });
   }
 
@@ -377,14 +346,12 @@
   var LAYER_ORDER=["rituals","ea","ops","finance","knowledge"];
   var PROJ_LABEL={personal:"Clint's Kompass",business:"Kompass Early Adopters",sbos:"S-BOS",drive:"Drive"};
   var activeTab="all",searchQ="",openCard=null,panelOpen=false;
-
   function klTogglePanel(){panelOpen=!panelOpen;document.getElementById("klPanel").classList.toggle("open",panelOpen);document.getElementById("klChevron").classList.toggle("open",panelOpen);if(panelOpen&&!document.getElementById("klCards").innerHTML)klRender();}
   window.klTogglePanel=klTogglePanel;
   function klTab(l,b){activeTab=l;openCard=null;document.querySelectorAll(".kl-tab").forEach(function(t){t.classList.remove("active");});b.classList.add("active");klRender();}
   window.klTab=klTab;
   function klFilter(q){searchQ=q.toLowerCase();openCard=null;klRender();}
   window.klFilter=klFilter;
-
   function klRender(){
     var c=document.getElementById("klCards");
     var f=ITEMS.filter(function(i){return(activeTab==="all"||i.layer===activeTab)&&(!searchQ||i.name.toLowerCase().indexOf(searchQ)>=0||i.desc.toLowerCase().indexOf(searchQ)>=0||(i.prompt||"").toLowerCase().indexOf(searchQ)>=0);});
@@ -400,7 +367,6 @@
     });
     c.innerHTML=h;
   }
-
   function escH(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
   function klCard(item){
     var o=openCard===item.id;
@@ -421,44 +387,34 @@
       +"<button class='kl-go' onclick='klLaunch(event,\""+item.id+"\")'>Open "+pl+" &#8599;</button>"
       +"</div></div></div>";
   }
-
   function klToggleCard(id){openCard=openCard===id?null:id;klRender();if(openCard){var el=document.getElementById("klc-"+id);if(el)setTimeout(function(){el.scrollIntoView({behavior:"smooth",block:"nearest"});},40);}}
   window.klToggleCard=klToggleCard;
-
-  /* req #4 — use native deep link helper */
   function klLaunch(e,id){
     e.stopPropagation();
     var item=ITEMS.find(function(i){return i.id===id;});
     if(!item)return;
     if(item.url){window.open(item.url,"_blank");return;}
     var pid=item.p==="business"?BUSINESS_ID:PERSONAL_ID;
-    if(item.prompt&&navigator.clipboard){
-      navigator.clipboard.writeText(item.prompt).then(function(){
-        klToastMsg("Copied — opening "+PROJ_LABEL[item.p]);
-      }).catch(function(){klToastMsg("Opening "+PROJ_LABEL[item.p]);});
-    } else {
-      klToastMsg("Opening "+PROJ_LABEL[item.p]);
-    }
-    setTimeout(function(){ openClaude(pid); }, 300);
+    if(item.prompt&&navigator.clipboard){navigator.clipboard.writeText(item.prompt).then(function(){klToastMsg("Copied — opening "+PROJ_LABEL[item.p]);}).catch(function(){klToastMsg("Opening "+PROJ_LABEL[item.p]);});}
+    else{klToastMsg("Opening "+PROJ_LABEL[item.p]);}
+    setTimeout(function(){openClaude(pid);},300);
   }
   window.klLaunch=klLaunch;
-
   function klCopy(e,id){e.stopPropagation();var item=ITEMS.find(function(i){return i.id===id;});if(!item||!item.prompt)return;navigator.clipboard.writeText(item.prompt).then(function(){klToastMsg("Copied ✓");}).catch(function(){klToastMsg("Copy failed");});}
   window.klCopy=klCopy;
-
   var klT;
   function klToastMsg(msg){var t=document.getElementById("klToast");t.textContent=msg;t.classList.add("show");clearTimeout(klT);klT=setTimeout(function(){t.classList.remove("show");},2800);}
-
-  /* expose openClaude globally for React component use */
   window._openClaude=openClaude;
   window._PERSONAL_ID=PERSONAL_ID;
   window._BUSINESS_ID=BUSINESS_ID;
+  window._ICON_URL=ICON_URL;
 })();
 </script>
 
 <script type="text/babel">
 const { useState, useEffect, useCallback, useRef } = React;
 const STORAGE_KEY = 'sb_phase_anchor_v2';
+const KOMPASS_ICON = 'https://raw.githubusercontent.com/clint-stitser/kompass-app/main/apple-touch-icon.png';
 
 const DOMAINS = [
   {id:'1A',label:'S-BOS Platform',fullName:'S-BOS Platform Implementation',team:true,phases:{1:{name:'Foundation',hwk:'Dashboard checked daily. Every active project has People, Alignment, Schedule, Budget & Checklists populated.',bullets:['Dashboard is live and read regularly','Every project has all 5 pillars in place','System is source of truth: game, score, time, and next steps','People know where to go to create project pillars','Decision-making, tasks, budget, schedule, and people on every project','All active product lines and projects tracked inside S-BOS']},2:{name:'Operating',hwk:'Team runs Tuesday meetings from S-BOS. Decisions tracked, tasks assigned, and reports generated without pulling Clint in.',bullets:['Team identifies and flags system improvement opportunities','S-BOS self-measuring: team reports against the system, not just to Clint','Tuesday meeting = decision points surfaced by S-BOS, not manually compiled','Overhead tracked; team capacity visible at a glance']},3:{name:'Optimizing',hwk:"No shadow systems. Zero exceptions. Andy surveys the team: 'Is there anything you track outside S-BOS?' Answer: No.",bullets:["No shadow systems anywhere in the org — S-BOS is the only system","Team cannot imagine doing their job without S-BOS","Full migration confirmed by Andy's survey","S-BOS is a life skill, not a tool — default behavior for every team member"]}},hwkItems:['Dashboard checked daily','Every active project has all 5 pillars populated','People, Alignment, Schedule, Budget & Checklists on every project']},
@@ -481,21 +437,11 @@ const CheckIco=()=><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" s
 const ChevIco=()=><svg viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const BackIco=()=><svg viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 
-/* Kompass compass SVG logo (req #3) */
+/* Header logo: actual kompass-app icon (req #3) */
 const KompassLogo=()=>(
-  <svg width="26" height="26" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="20" cy="20" r="19" stroke="#c9a84c" strokeWidth="1.2" fill="none" opacity="0.4"/>
-    <circle cx="20" cy="20" r="3" fill="#c9a84c"/>
-    {/* N needle */}
-    <path d="M20 20 L17 8 L20 11 L23 8 Z" fill="#c9a84c"/>
-    {/* S needle */}
-    <path d="M20 20 L17 32 L20 29 L23 32 Z" fill="#4b5563"/>
-    {/* Cardinal marks */}
-    <text x="19" y="5.5" fill="#c9a84c" fontSize="4" fontWeight="700" fontFamily="system-ui">N</text>
-    <text x="19" y="37.5" fill="#4b5563" fontSize="4" fontFamily="system-ui">S</text>
-    <text x="2" y="21" fill="#4b5563" fontSize="4" fontFamily="system-ui">W</text>
-    <text x="34" y="21" fill="#4b5563" fontSize="4" fontFamily="system-ui">E</text>
-  </svg>
+  <img src={KOMPASS_ICON} alt="Kompass" style={{width:36,height:36,borderRadius:10,objectFit:'cover'}}
+    onError={e=>{e.target.style.display='none';e.target.nextSibling.style.display='flex';}}
+  />
 );
 
 const TEAM_ONLY=false,SHOW_SWITCH_LINK=true,OTHER_VIEW_HREF='/phase-anchor-team.html',OTHER_VIEW_LABEL='Team View →',VIEW_LABEL='Personal Scoreboard';
@@ -513,16 +459,8 @@ function EditModal({domain:d,ds,onSave,onClose}){
       <div className="modal">
         <div className="modal-hd"><div className="modal-title">{d.label} · Edit Outcomes</div><button className="modal-close" onClick={onClose}>×</button></div>
         <div className="modal-body">
-          <div className="modal-section">
-            <div className="modal-section-title">Phase Target Dates</div>
-            <div className="date-grid">{[1,2,3].map(p=>(<div key={p} className={`date-field f${p}`}><label>Phase {p} · {d.phases[p].name}</label><input type="date" value={dates[p]} onChange={e=>setDates(v=>({...v,[p]:e.target.value}))}/></div>))}</div>
-          </div>
-          <div className="modal-section">
-            <div className="modal-section-title">Outcomes by Phase</div>
-            <div className="modal-tabs">{[1,2,3].map(p=>(<button key={p} className={`modal-tab ${tab===p?`at${p}`:''}`} onClick={()=>setTab(p)}>Phase {p} · {d.phases[p].name}</button>))}</div>
-            <div className="outcome-list">{custom[tab].map((item,i)=>(<div key={i} className="outcome-item"><input type="text" value={item.text} placeholder="Add outcome..." onChange={e=>setCustom(c=>({...c,[tab]:c[tab].map((it,j)=>j===i?{...it,text:e.target.value}:it)}))} readOnly={item.locked} style={item.locked?{opacity:.6}:{}}/>{!item.locked&&<button className="out-del" onClick={()=>setCustom(c=>({...c,[tab]:c[tab].filter((_,j)=>j!==i)}))}>×</button>}</div>))}</div>
-            <button className="add-outcome-btn" onClick={()=>setCustom(c=>({...c,[tab]:[...c[tab],{text:'',locked:false}]}))}>+ Add outcome to Phase {tab}</button>
-          </div>
+          <div className="modal-section"><div className="modal-section-title">Phase Target Dates</div><div className="date-grid">{[1,2,3].map(p=>(<div key={p} className={`date-field f${p}`}><label>Phase {p} · {d.phases[p].name}</label><input type="date" value={dates[p]} onChange={e=>setDates(v=>({...v,[p]:e.target.value}))}/></div>))}</div></div>
+          <div className="modal-section"><div className="modal-section-title">Outcomes by Phase</div><div className="modal-tabs">{[1,2,3].map(p=>(<button key={p} className={`modal-tab ${tab===p?`at${p}`:''}`} onClick={()=>setTab(p)}>Phase {p} · {d.phases[p].name}</button>))}</div><div className="outcome-list">{custom[tab].map((item,i)=>(<div key={i} className="outcome-item"><input type="text" value={item.text} placeholder="Add outcome..." onChange={e=>setCustom(c=>({...c,[tab]:c[tab].map((it,j)=>j===i?{...it,text:e.target.value}:it)}))} readOnly={item.locked} style={item.locked?{opacity:.6}:{}}/>{!item.locked&&<button className="out-del" onClick={()=>setCustom(c=>({...c,[tab]:c[tab].filter((_,j)=>j!==i)}))}>×</button>}</div>))}</div><button className="add-outcome-btn" onClick={()=>setCustom(c=>({...c,[tab]:[...c[tab],{text:'',locked:false}]}))}>+ Add outcome to Phase {tab}</button></div>
         </div>
         <div className="modal-foot"><button className="btn-cancel" onClick={onClose}>Cancel</button><button className="btn-save" onClick={()=>{onSave({phaseTargetDates:dates,customOutcomes:custom});onClose();}}>Save Changes</button></div>
       </div>
@@ -530,10 +468,9 @@ function EditModal({domain:d,ds,onSave,onClose}){
   );
 }
 
-/* req #2: Domain card with collapsible body (header tap = collapse/expand all content) */
 function DomainCard({domain:d,ds,onToggleHwk,onSetPhase,onOpenDetail,onEdit,onSetGyr,onSetGyrNotes,showGyr}){
   const[expanded,setExpanded]=useState(false);
-  const[collapsed,setCollapsed]=useState(false); // card body collapse (req #2)
+  const[collapsed,setCollapsed]=useState(false);
   const phase=ds.currentPhase||1,pcfg=PCFG[phase],hwkChecked=ds.hwkChecked||[],hwkItems=getHwkItems(d,ds);
   const pct=hwkItems.length>0?Math.round(hwkChecked.filter(Boolean).length/hwkItems.length*100):0;
   const targetDate=ds.phaseTargetDates?.[phase],gyr=ds.gyrOverride||GYR_AUTO(pct);
@@ -549,20 +486,11 @@ function DomainCard({domain:d,ds,onToggleHwk,onSetPhase,onOpenDetail,onEdit,onSe
   })();
   return(
     <div className={`card ${pcfg.cls}`}>
-      {/* Tappable header — collapses/expands body (req #2) */}
       <div className="card-header-bar" onClick={()=>setCollapsed(c=>!c)}>
-        <div className="card-header-left">
-          <div className="card-id">{d.id}</div>
-          <div className="card-name">{d.label}</div>
-        </div>
-        <div className="card-header-right">
-          <div className="pbadge">{pcfg.badge}</div>
-          <span className={`card-collapse-icon ${collapsed?'':'open'}`}>▾</span>
-        </div>
+        <div className="card-header-left"><div className="card-id">{d.id}</div><div className="card-name">{d.label}</div></div>
+        <div className="card-header-right"><div className="pbadge">{pcfg.badge}</div><span className={`card-collapse-icon ${collapsed?'':'open'}`}>▾</span></div>
       </div>
-
-      {/* Card body — animated collapse */}
-      <div className={`card-body ${collapsed?'collapsed':''}`} style={{maxHeight: collapsed ? 0 : 2000}}>
+      <div className={`card-body ${collapsed?'collapsed':''}`} style={{maxHeight:collapsed?0:2000}}>
         <div className="prog"><div className="prog-row"><span>Phase Gate Progress</span><span>{pct}%</span></div><div className="prog-track"><div className="prog-fill" style={{width:`${pct}%`}}/></div></div>
         <div className="target-date" onClick={()=>onOpenDetail(d.id)}>
           <div style={{display:'flex',alignItems:'center',gap:5}}><span style={{fontSize:11}}>{ds2.icon}</span><span style={{color:'#6b7280'}}>Phase {phase} target:</span><span style={{color:ds2.color,fontWeight:700}}>{ds2.label}</span></div>
@@ -593,43 +521,12 @@ function DetailPage({domain:d,ds,onBack,onToggleHwk,onSetPhase,onSaveHwk,onSaveP
     <div className="detail-page">
       <button className="detail-back" onClick={onBack}><BackIco/> Back to Scoreboard</button>
       <div><div className="detail-id">{d.id}</div><div className="detail-name">{d.fullName}</div></div>
-      <div className="timeline">
-        {[1,2,3].map(p=>{
-          const isCur=phase===p,isDone=p<phase,pp=p===phase?pct:(isDone?100:0),dt=dates[p];
-          return(<div key={p} className={`tl-phase tl-p${p} ${isCur?'tl-current':''}`}>
-            {isCur&&<div className="tl-current-badge">Current</div>}
-            <div className="tl-num">Phase {p}</div><div className="tl-pname">{d.phases[p].name}</div>
-            <div className="tl-date-lbl" style={{marginBottom:4}}>{isDone?'Completed':'Target date'}</div>
-            {editingDate===p
-              ?<div onClick={e=>e.stopPropagation()}><input type="date" autoFocus defaultValue={dt||''} style={{background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.2)',borderRadius:6,padding:'4px 8px',color:'#f1f5f9',fontSize:12,outline:'none',width:'100%',marginBottom:5}} onChange={e=>{onSaveDates(d.id,{...(ds.phaseTargetDates||{}),[p]:e.target.value});}} onBlur={()=>setEditingDate(null)} onKeyDown={e=>e.key==='Escape'&&setEditingDate(null)}/></div>
-              :<div className="tl-date-val" onClick={()=>setEditingDate(p)} style={{cursor:'pointer',display:'flex',alignItems:'center',gap:6}} title="Click to edit">{dt?new Date(dt+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):<span style={{opacity:.3}}>Not set</span>}<span style={{fontSize:8,opacity:.4}}>✎</span></div>}
-            <div className="tl-prog"><div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#94a3b8',marginBottom:3}}><span>{isDone?'✓ Complete':isCur?'In Progress':'Upcoming'}</span><span className="tl-pct">{pp}%</span></div><div className="tl-prog-bar"><div className="tl-prog-fill" style={{width:`${pp}%`}}/></div></div>
-          </div>);
-        })}
-      </div>
+      <div className="timeline">{[1,2,3].map(p=>{const isCur=phase===p,isDone=p<phase,pp=p===phase?pct:(isDone?100:0),dt=dates[p];return(<div key={p} className={`tl-phase tl-p${p} ${isCur?'tl-current':''}`}>{isCur&&<div className="tl-current-badge">Current</div>}<div className="tl-num">Phase {p}</div><div className="tl-pname">{d.phases[p].name}</div><div className="tl-date-lbl" style={{marginBottom:4}}>{isDone?'Completed':'Target date'}</div>{editingDate===p?<div onClick={e=>e.stopPropagation()}><input type="date" autoFocus defaultValue={dt||''} style={{background:'rgba(255,255,255,.08)',border:'1px solid rgba(255,255,255,.2)',borderRadius:6,padding:'4px 8px',color:'#f1f5f9',fontSize:12,outline:'none',width:'100%',marginBottom:5}} onChange={e=>{onSaveDates(d.id,{...(ds.phaseTargetDates||{}),[p]:e.target.value});}} onBlur={()=>setEditingDate(null)} onKeyDown={e=>e.key==='Escape'&&setEditingDate(null)}/></div>:<div className="tl-date-val" onClick={()=>setEditingDate(p)} style={{cursor:'pointer',display:'flex',alignItems:'center',gap:6}} title="Click to edit">{dt?new Date(dt+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):<span style={{opacity:.3}}>Not set</span>}<span style={{fontSize:8,opacity:.4}}>✎</span></div>}<div className="tl-prog"><div style={{display:'flex',justifyContent:'space-between',fontSize:10,color:'#94a3b8',marginBottom:3}}><span>{isDone?'✓ Complete':isCur?'In Progress':'Upcoming'}</span><span className="tl-pct">{pp}%</span></div><div className="tl-prog-bar"><div className="tl-prog-fill" style={{width:`${pp}%`}}/></div></div></div>);})}</div>
       <div style={{display:'flex',gap:8,marginBottom:16}}><span style={{fontSize:11,color:'#6b7280',alignSelf:'center'}}>Set current phase:</span>{[1,2,3].map(p=>(<button key={p} className={`pnav-btn ${phase===p?`a${p}`:''}`} style={{flex:'none',padding:'5px 16px'}} onClick={()=>onSetPhase(d.id,p)}>Phase {p}</button>))}</div>
       <div style={{fontSize:11,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#6b7280',marginBottom:8}}>Full Roadmap</div>
-      <table className="roadmap-table">
-        <thead><tr><th className="h1">Phase 1 — Foundation</th><th className="h2">Phase 2 — Operating</th><th className="h3">Phase 3 — Optimizing</th></tr></thead>
-        <tbody>
-          {Array.from({length:maxBullets}).map((_,i)=>(<tr key={i}><td className="c1">{d.phases[1].bullets[i]||''}</td><td className="c2">{d.phases[2].bullets[i]||''}</td><td className="c3">{d.phases[3].bullets[i]||''}</td></tr>))}
-          <tr className="roadmap-hwk-row">{[1,2,3].map(p=>(<td key={p} className={`c${p}`}>
-            <strong style={{display:'flex',alignItems:'center',gap:6}}>✓ How We Know<span style={{fontSize:8,fontWeight:700,padding:'1px 5px',borderRadius:4,background:'rgba(255,255,255,.08)',color:'#6b7280',cursor:'pointer'}} onClick={e=>{e.stopPropagation();setEditingPhaseHwk(p);setDraftPhaseHwk(getPhaseHwk(d,ds,p));}}>EDIT</span></strong>
-            {editingPhaseHwk===p?<div onClick={e=>e.stopPropagation()}><textarea autoFocus value={draftPhaseHwk} onChange={e=>setDraftPhaseHwk(e.target.value)} style={{width:'100%',marginTop:5,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.15)',borderRadius:5,padding:'6px 8px',color:'#f1f5f9',fontSize:11,lineHeight:1.5,resize:'vertical',minHeight:70,outline:'none',fontFamily:'inherit'}}/><div style={{display:'flex',gap:6,marginTop:5}}><button className="act-btn" style={{flex:'none',padding:'3px 10px',color:'var(--p1)',borderColor:'var(--p1-border)'}} onClick={()=>{onSavePhaseHwk(d.id,p,draftPhaseHwk);setEditingPhaseHwk(null);}}>Save</button><button className="act-btn" style={{flex:'none',padding:'3px 10px'}} onClick={()=>setEditingPhaseHwk(null)}>Cancel</button></div></div>
-            :<span style={{cursor:'pointer'}} onClick={()=>{setEditingPhaseHwk(p);setDraftPhaseHwk(getPhaseHwk(d,ds,p));}}>{getPhaseHwk(d,ds,p)}</span>}
-          </td>))}</tr>
-        </tbody>
-      </table>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
-        <div style={{fontSize:11,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#6b7280'}}>Phase Gate Checklist</div>
-        {!editingHwk?<button className="act-btn" style={{flex:'none',padding:'4px 12px'}} onClick={()=>{setDraftHwk([...hwkItems]);setEditingHwk(true);}}>✏ Edit</button>:<div style={{display:'flex',gap:6}}><button className="act-btn" style={{flex:'none',padding:'4px 12px',color:'var(--p1)',borderColor:'var(--p1-border)'}} onClick={()=>{onSaveHwk(d.id,draftHwk.filter(t=>t.trim()));setEditingHwk(false);}}>Save</button><button className="act-btn" style={{flex:'none',padding:'4px 12px'}} onClick={()=>setEditingHwk(false)}>Cancel</button></div>}
-      </div>
-      <div className={`card ${PCFG[phase].cls}`} style={{marginBottom:20}}>
-        <div className="hwk" style={{paddingTop:12}}>
-          {editingHwk?(<>{draftHwk.map((item,i)=>(<div key={i} className="hwk-item" style={{cursor:'default'}}><input type="text" value={item} onChange={e=>setDraftHwk(v=>v.map((x,j)=>j===i?e.target.value:x))} style={{flex:1,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',borderRadius:5,padding:'3px 8px',color:'#f1f5f9',fontSize:12,outline:'none'}}/><button className="out-del" onClick={()=>setDraftHwk(v=>v.filter((_,j)=>j!==i))}>×</button></div>))}<div style={{padding:'6px 0'}}><button className="add-outcome-btn" onClick={()=>setDraftHwk(v=>[...v,''])}>+ Add criteria</button></div></>)
-          :hwkItems.map((item,i)=>(<div key={i} className="hwk-item" onClick={()=>onToggleHwk(d.id,i)}><div className={`chk ${hwkChecked[i]?'on':''}`}>{hwkChecked[i]&&<CheckIco/>}</div><div className={`hwk-txt ${hwkChecked[i]?'done':''}`}>{item}</div></div>))}
-        </div>
-      </div>
+      <table className="roadmap-table"><thead><tr><th className="h1">Phase 1 — Foundation</th><th className="h2">Phase 2 — Operating</th><th className="h3">Phase 3 — Optimizing</th></tr></thead><tbody>{Array.from({length:maxBullets}).map((_,i)=>(<tr key={i}><td className="c1">{d.phases[1].bullets[i]||''}</td><td className="c2">{d.phases[2].bullets[i]||''}</td><td className="c3">{d.phases[3].bullets[i]||''}</td></tr>))}<tr className="roadmap-hwk-row">{[1,2,3].map(p=>(<td key={p} className={`c${p}`}><strong style={{display:'flex',alignItems:'center',gap:6}}>✓ How We Know<span style={{fontSize:8,fontWeight:700,padding:'1px 5px',borderRadius:4,background:'rgba(255,255,255,.08)',color:'#6b7280',cursor:'pointer'}} onClick={e=>{e.stopPropagation();setEditingPhaseHwk(p);setDraftPhaseHwk(getPhaseHwk(d,ds,p));}}>EDIT</span></strong>{editingPhaseHwk===p?<div onClick={e=>e.stopPropagation()}><textarea autoFocus value={draftPhaseHwk} onChange={e=>setDraftPhaseHwk(e.target.value)} style={{width:'100%',marginTop:5,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.15)',borderRadius:5,padding:'6px 8px',color:'#f1f5f9',fontSize:11,lineHeight:1.5,resize:'vertical',minHeight:70,outline:'none',fontFamily:'inherit'}}/><div style={{display:'flex',gap:6,marginTop:5}}><button className="act-btn" style={{flex:'none',padding:'3px 10px',color:'var(--p1)',borderColor:'var(--p1-border)'}} onClick={()=>{onSavePhaseHwk(d.id,p,draftPhaseHwk);setEditingPhaseHwk(null);}}>Save</button><button className="act-btn" style={{flex:'none',padding:'3px 10px'}} onClick={()=>setEditingPhaseHwk(null)}>Cancel</button></div></div>:<span style={{cursor:'pointer'}} onClick={()=>{setEditingPhaseHwk(p);setDraftPhaseHwk(getPhaseHwk(d,ds,p));}}>{getPhaseHwk(d,ds,p)}</span>}</td>))}</tr></tbody></table>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}><div style={{fontSize:11,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#6b7280'}}>Phase Gate Checklist</div>{!editingHwk?<button className="act-btn" style={{flex:'none',padding:'4px 12px'}} onClick={()=>{setDraftHwk([...hwkItems]);setEditingHwk(true);}}>✏ Edit</button>:<div style={{display:'flex',gap:6}}><button className="act-btn" style={{flex:'none',padding:'4px 12px',color:'var(--p1)',borderColor:'var(--p1-border)'}} onClick={()=>{onSaveHwk(d.id,draftHwk.filter(t=>t.trim()));setEditingHwk(false);}}>Save</button><button className="act-btn" style={{flex:'none',padding:'4px 12px'}} onClick={()=>setEditingHwk(false)}>Cancel</button></div>}</div>
+      <div className={`card ${PCFG[phase].cls}`} style={{marginBottom:20}}><div className="hwk" style={{paddingTop:12}}>{editingHwk?(<>{draftHwk.map((item,i)=>(<div key={i} className="hwk-item" style={{cursor:'default'}}><input type="text" value={item} onChange={e=>setDraftHwk(v=>v.map((x,j)=>j===i?e.target.value:x))} style={{flex:1,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',borderRadius:5,padding:'3px 8px',color:'#f1f5f9',fontSize:12,outline:'none'}}/><button className="out-del" onClick={()=>setDraftHwk(v=>v.filter((_,j)=>j!==i))}>×</button></div>))}<div style={{padding:'6px 0'}}><button className="add-outcome-btn" onClick={()=>setDraftHwk(v=>[...v,''])}>+ Add criteria</button></div></>):hwkItems.map((item,i)=>(<div key={i} className="hwk-item" onClick={()=>onToggleHwk(d.id,i)}><div className={`chk ${hwkChecked[i]?'on':''}`}>{hwkChecked[i]&&<CheckIco/>}</div><div className={`hwk-txt ${hwkChecked[i]?'done':''}`}>{item}</div></div>))}</div></div>
     </div>
   );
 }
@@ -660,17 +557,32 @@ function App(){
   const overallPct=Math.round(checkedHwk/totalHwk*100)||0;
   const phaseCounts=domains.reduce((a,d)=>{const p=(states[d.id]||{}).currentPhase||1;a[p]=(a[p]||0)+1;return a;},{});
 
+  const Header=({sub,children})=>(
+    <div className="hdr">
+      <div className="hdr-left">
+        <div className="hdr-kompass-logo">
+          <KompassLogo/>
+          {/* SVG fallback if image fails */}
+          <svg style={{display:'none'}} width="26" height="26" viewBox="0 0 40 40" fill="none">
+            <circle cx="20" cy="20" r="19" stroke="#c9a84c" strokeWidth="1.2" fill="none" opacity="0.4"/>
+            <circle cx="20" cy="20" r="3" fill="#c9a84c"/>
+            <path d="M20 20 L17 8 L20 11 L23 8 Z" fill="#c9a84c"/>
+            <path d="M20 20 L17 32 L20 29 L23 32 Z" fill="#4b5563"/>
+          </svg>
+        </div>
+        <div className="hdr-text"><div className="hdr-title">Phase Anchor</div><div className="hdr-sub">{sub}</div></div>
+      </div>
+      <div className="hdr-right">{children}</div>
+    </div>
+  );
+
   if(detail){
     const dom=DOMAINS.find(d=>d.id===detail);
     return(<div>
-      <div className="hdr">
-        <div className="hdr-left">
-          {/* Kompass logo (req #3) */}
-          <div className="hdr-kompass-logo"><KompassLogo/></div>
-          <div className="hdr-text"><div className="hdr-title">Phase Anchor</div><div className="hdr-sub">Personal Scoreboard</div></div>
-        </div>
-        <div className="hdr-right">{SHOW_SWITCH_LINK&&<a href={OTHER_VIEW_HREF} className="snap-btn">{OTHER_VIEW_LABEL}</a>}<button className="snap-btn" style={{background:'none',border:'none',color:'#94a3b8',cursor:'pointer',display:'flex',alignItems:'center',gap:4}} onClick={()=>setDetail(null)}><BackIco/> Back</button></div>
-      </div>
+      <Header sub="Personal Scoreboard">
+        {SHOW_SWITCH_LINK&&<a href={OTHER_VIEW_HREF} className="snap-btn">{OTHER_VIEW_LABEL}</a>}
+        <button className="snap-btn" style={{background:'none',border:'none',color:'#94a3b8',cursor:'pointer',display:'flex',alignItems:'center',gap:4}} onClick={()=>setDetail(null)}><BackIco/> Back</button>
+      </Header>
       <DetailPage domain={dom} ds={states[dom.id]||{}} onBack={()=>setDetail(null)} onToggleHwk={toggleHwk} onSetPhase={setPhase} onSaveHwk={saveHwk} onSavePhaseHwk={savePhaseHwk} onSaveDates={saveDates}/>
       <div className={`save-toast ${toast?'show':''}`}>Auto-saved</div>
     </div>);
@@ -678,14 +590,12 @@ function App(){
 
   const editDomain=editId?DOMAINS.find(d=>d.id===editId):null;
   return(<>
-    <div className="hdr">
-      <div className="hdr-left">
-        {/* Kompass logo (req #3) */}
-        <div className="hdr-kompass-logo"><KompassLogo/></div>
-        <div className="hdr-text"><div className="hdr-title">Phase Anchor</div><div className="hdr-sub">{VIEW_LABEL}</div></div>
-      </div>
-      <div className="hdr-right">{SHOW_SWITCH_LINK&&<a href={OTHER_VIEW_HREF} className="snap-btn">{OTHER_VIEW_LABEL}</a>}<button className={`snap-btn ${showGyr?'active':''}`} onClick={()=>setShowGyr(g=>!g)}>{showGyr?'✓ GYR Mode':'⬤ GYR Mode'}</button><button className="snap-btn" onClick={()=>captureSnapshot(domains,states,TEAM_ONLY?'team':'personal')}>📸 Snapshot</button><div className="ovr"><div className="ovr-pct">{overallPct}%</div><div className="ovr-lbl">Phase 1 complete</div></div></div>
-    </div>
+    <Header sub={VIEW_LABEL}>
+      {SHOW_SWITCH_LINK&&<a href={OTHER_VIEW_HREF} className="snap-btn">{OTHER_VIEW_LABEL}</a>}
+      <button className={`snap-btn ${showGyr?'active':''}`} onClick={()=>setShowGyr(g=>!g)}>{showGyr?'✓ GYR Mode':'⬤ GYR Mode'}</button>
+      <button className="snap-btn" onClick={()=>captureSnapshot(domains,states,TEAM_ONLY?'team':'personal')}>📸 Snapshot</button>
+      <div className="ovr"><div className="ovr-pct">{overallPct}%</div><div className="ovr-lbl">Phase 1 complete</div></div>
+    </Header>
     <div className="leg"><div className="leg-item"><div className="leg-dot" style={{background:'var(--p1)'}}/><span>Phase 1 — Foundation ({phaseCounts[1]||0})</span></div><div className="leg-item"><div className="leg-dot" style={{background:'var(--p2)'}}/><span>Phase 2 — Operating ({phaseCounts[2]||0})</span></div><div className="leg-item"><div className="leg-dot" style={{background:'var(--p3)'}}/><span>Phase 3 — Optimizing ({phaseCounts[3]||0})</span></div><div className="leg-right">{checkedHwk}/{totalHwk} criteria met</div></div>
     <div className="grid">{domains.map(domain=>(<DomainCard key={domain.id} domain={domain} ds={states[domain.id]||{}} onToggleHwk={toggleHwk} onSetPhase={setPhase} onOpenDetail={setDetail} onEdit={setEditId} onSetGyr={setGyr} onSetGyrNotes={setGyrNotes} showGyr={showGyr}/>))}</div>
     {editDomain&&<EditModal domain={editDomain} ds={states[editId]||{}} onSave={patch=>patchDs(editId,patch)} onClose={()=>setEditId(null)}/>}
