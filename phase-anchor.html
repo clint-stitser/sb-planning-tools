@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Phase Anchor — Stitser BUILT</title>
-
-  <!-- ── PWA / Standalone container (req #1) ── -->
   <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -13,27 +11,14 @@
   <meta name="application-name" content="Phase Anchor" />
   <meta name="theme-color" content="#0a0d14" />
   <link rel="manifest" href="/phase-anchor-manifest.json" />
-  <!-- Home-screen icon: pulled from kompass-app repo (single source of truth) -->
   <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/clint-stitser/kompass-app/main/apple-touch-icon.png" />
-
-  <!-- React + Babel -->
   <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.5/babel.min.js"></script>
-
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e8eaf0;min-height:100vh;
-      padding-top:env(safe-area-inset-top);
-      padding-bottom:env(safe-area-inset-bottom);
-    }
-    :root{
-      --p1:#22c55e;--p1-bg:#052e16;--p1-border:#166534;--p1-muted:#4ade80;
-      --p2:#f97316;--p2-bg:#1c1007;--p2-border:#7c2d12;--p2-muted:#fb923c;
-      --p3:#a855f7;--p3-bg:#1a0a2e;--p3-border:#581c87;--p3-muted:#c084fc;
-      --g:#22c55e;--y:#f59e0b;--r:#ef4444;
-      --gold:#c9a84c;
-    }
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e8eaf0;min-height:100vh;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+    :root{--p1:#22c55e;--p1-bg:#052e16;--p1-border:#166534;--p1-muted:#4ade80;--p2:#f97316;--p2-bg:#1c1007;--p2-border:#7c2d12;--p2-muted:#fb923c;--p3:#a855f7;--p3-bg:#1a0a2e;--p3-border:#581c87;--p3-muted:#c084fc;--g:#22c55e;--y:#f59e0b;--r:#ef4444;--gold:#c9a84c}
     #react-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px;color:#4b5563}
     #react-loading .spin{width:24px;height:24px;border:2px solid #1e2336;border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
     #react-loading p{font-size:12px}
@@ -184,13 +169,7 @@
     .gyr-notes input{width:100%;background:transparent;border:none;border-bottom:1px solid #2d3555;color:#d1d5db;font-size:11px;padding:2px 0;outline:none}
     .save-toast{position:fixed;bottom:20px;right:20px;background:#1e2336;border:1px solid #374151;border-radius:8px;padding:8px 16px;font-size:11px;color:#94a3b8;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
     .save-toast.show{opacity:1}
-    @media(max-width:640px){
-      .grid{grid-template-columns:1fr;padding:10px;gap:9px}
-      .hdr{padding:9px 13px}
-      .timeline{grid-template-columns:1fr}
-      .tl-phase{border-right:none;border-bottom:1px solid #1e2336}
-      .tl-phase:last-child{border-bottom:none}
-    }
+    @media(max-width:640px){.grid{grid-template-columns:1fr;padding:10px;gap:9px}.hdr{padding:9px 13px}.timeline{grid-template-columns:1fr}.tl-phase{border-right:none;border-bottom:1px solid #1e2336}.tl-phase:last-child{border-bottom:none}}
     .kl-wrap{position:sticky;top:0;z-index:190}
     .kl-bar{background:#0a0d14;border-bottom:1px solid #1e2336;padding:0 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;min-height:40px}
     .kl-bar-left{display:flex;align-items:center;gap:10px;padding:9px 0}
@@ -281,66 +260,49 @@
 </div>
 <div class="kl-toast" id="klToast"></div>
 
-<!-- ══ PHASE ANCHOR (React) ══ -->
-<div id="root">
-  <div id="react-loading">
-    <div class="spin"></div>
-    <p>Loading phase anchor...</p>
-  </div>
-</div>
+<div id="root"><div id="react-loading"><div class="spin"></div><p>Loading phase anchor...</p></div></div>
 
 <script>
 (function(){
   var PERSONAL_ID='019dd4b5-03e8-75b3-8171-fa36beaf8b84';
   var BUSINESS_ID='019d97d9-b09e-7691-a3f9-09eacb2125b6';
-  var ICON_URL='https://raw.githubusercontent.com/clint-stitser/kompass-app/main/apple-touch-icon.png';
-
-  function openClaude(projectId){
-    var webUrl='https://claude.ai/project/'+projectId;
-    var nativeUrl='claude://project/'+projectId;
+  function openClaude(pid){
+    var webUrl='https://claude.ai/project/'+pid;
     var iframe=document.createElement('iframe');
     iframe.style.display='none';
     document.body.appendChild(iframe);
-    iframe.src=nativeUrl;
-    var t=setTimeout(function(){
-      try{document.body.removeChild(iframe);}catch(e){}
-      window.open(webUrl,'_blank');
-    },1200);
-    window.addEventListener('blur',function onBlur(){
-      clearTimeout(t);
-      try{document.body.removeChild(iframe);}catch(e){}
-      window.removeEventListener('blur',onBlur);
-    });
+    iframe.src='claude://project/'+pid;
+    var t=setTimeout(function(){try{document.body.removeChild(iframe);}catch(e){}window.open(webUrl,'_blank');},1200);
+    window.addEventListener('blur',function onB(){clearTimeout(t);try{document.body.removeChild(iframe);}catch(e){}window.removeEventListener('blur',onB);});
   }
-
   var ITEMS=[
-    {id:"morning",  layer:"rituals", icon:"&#127749;", name:"Morning ritual",        desc:"13-step daily launch sequence",               p:"personal", prompt:"Morning ritual",             why:"Sets your direction before the day runs you."},
-    {id:"evening",  layer:"rituals", icon:"&#127769;", name:"Evening ritual",        desc:"Debrief, score, capture for tomorrow",         p:"personal", prompt:"Evening ritual",             why:"Close the loop. Score your Big 3."},
-    {id:"weekly",   layer:"rituals", icon:"&#128197;", name:"Weekly review",         desc:"Dominos, wins, course correction",             p:"personal", prompt:"Weekly review",              why:"Bridge between daily execution and annual goals."},
-    {id:"war",      layer:"rituals", icon:"&#9889;",   name:"WAR stack",             desc:"Decision-prep for high-stakes moments",        p:"personal", prompt:"Let's do a WAR stack",       why:"Converts reactive emotion into grounded decisions."},
-    {id:"irritate", layer:"rituals", icon:"&#128293;", name:"Irritation stack",      desc:"Process friction before it becomes reaction",  p:"personal", prompt:"Let's do an irritation stack",why:"Clears noise so facts emerge."},
-    {id:"discovery",layer:"rituals", icon:"&#128161;", name:"Discovery stack",       desc:"Capture insight, learning, or idea",           p:"personal", prompt:"Let's do a discovery stack", why:"Externalizes the spider-web mind before insights evaporate."},
-    {id:"cash",     layer:"rituals", icon:"&#128181;", name:"Cash stack",            desc:"Process money stress or financial decision",    p:"personal", prompt:"Let's do a cash stack",      why:"Moves from fear-based to facts-based thinking."},
-    {id:"email",    layer:"ea",      icon:"&#128108;", name:"Email triage",          desc:"Sweep inbox, classify, draft replies",          p:"personal", prompt:"Sweep my email",             why:"Surfaces only what needs your judgment."},
-    {id:"buffer",   layer:"ea",      icon:"&#128194;", name:"Buffer session",        desc:"Clear the queue - tasks, decisions, replies",  p:"personal", prompt:"Let's do the buffer session", why:"The designated decision window."},
-    {id:"big3",     layer:"ea",      icon:"&#127919;", name:"Daily Big 3",           desc:"Set today's three domino moves",               p:"personal", prompt:"What are my Big 3 for today? Pull my recent weekly dominos and yesterday's Big 3.", why:"The compass. Everything else is noise until these are set."},
-    {id:"sbos",     layer:"ea",      icon:"&#128202;", name:"Open S-BOS",            desc:"Live project, task and pay app dashboard",      p:"sbos",     url:"https://app.smartsuite.com",   why:"The operating system."},
-    {id:"baseline", layer:"ops",     icon:"&#128208;", name:"Baseline a project",    desc:"Capture budget and timeline into S-BOS",        p:"business", prompt:"Baseline this project",      why:"No baseline = no score."},
-    {id:"payapp",   layer:"ops",     icon:"&#128176;", name:"Start a pay app",       desc:"G-702/G-703, SOV, invoices, lien waivers",      p:"business", prompt:"Kick off pay app",           why:"The primary financial control on construction projects."},
-    {id:"payaudit", layer:"ops",     icon:"&#9989;",   name:"Pay app audit",         desc:"Per-invoice PM audit - 7 tasks + doc package",  p:"business", prompt:"Run the pay app audit checklist", why:"Every invoice audited. Nothing paid without documentation."},
-    {id:"comply",   layer:"ops",     icon:"&#128737;", name:"Compliance audit",      desc:"Contract docs vs required disclosures",          p:"business", prompt:"Run the compliance audit",   why:"Compliance gaps = liability."},
-    {id:"merge",    layer:"ops",     icon:"&#128256;", name:"Merge contacts",        desc:"Deduplicate S-BOS People or Project records",   p:"business", prompt:"Merge duplicate contacts",   why:"Dirty data breaks every downstream workflow."},
-    {id:"mgmt",     layer:"ops",     icon:"&#128101;", name:"Org and comp",          desc:"Management, compensation and role design ref",  p:"business", prompt:"Help me think through compensation structure for a role", why:"Keeps decisions grounded in principle."},
-    {id:"underwrite",layer:"finance",icon:"&#128200;", name:"Underwrite a deal",     desc:"Pro forma, capital stack, release P&amp;L",     p:"business", prompt:"Let's underwrite a deal",    why:"Formation Homes lives and dies on the underwrite."},
-    {id:"gp",       layer:"finance", icon:"&#127959;", name:"GP cash flow",          desc:"Forward construction revenue by project/month", p:"business", prompt:"GP cash flow schedule",      why:"Makes forward revenue view visible."},
-    {id:"strategic",layer:"finance", icon:"&#128301;", name:"Strategic review",      desc:"Monthly asset review - Four-Lens framework",    p:"business", prompt:"Run Strategic Review for",   why:"Asset oversight without drift."},
-    {id:"budget",   layer:"finance", icon:"&#127974;", name:"Entity budget",         desc:"Annual v4.4 budget workbook for any entity",    p:"business", prompt:"Build the annual budget for", why:"CFO-grade financial model."},
-    {id:"platform", layer:"finance", icon:"&#128225;", name:"Platform dashboard",    desc:"Scorecard, capacity, cash runway",              p:"business", prompt:"Open the platform dashboard", why:"The Allocator needs the full picture in one place."},
-    {id:"drive",    layer:"finance", icon:"&#128193;", name:"Google Drive",          desc:"All project files, contracts, invoices",         p:"drive",    url:"https://drive.google.com",     why:"The document layer behind every deal."},
-    {id:"arch",     layer:"knowledge",icon:"&#128506;",name:"Business architecture", desc:"Entity map, product lines, situations, pillars", p:"personal", prompt:"Fetch and summarize the business architecture from the Kompass repo",why:"The org chart + product map in one living doc."},
-    {id:"goals",    layer:"knowledge",icon:"&#127919;",name:"2026 goals",            desc:"Annual north star, strategic thesis",            p:"personal", prompt:"Pull my 2026 goals from the Kompass repo and summarize where I stand",why:"Facts vs. goals is always the North Star."},
-    {id:"opmanual", layer:"knowledge",icon:"&#129504;",name:"Operating manual",      desc:"Full user profile - ADHD, Human Design",         p:"personal", prompt:"Fetch my operating manual from the Kompass repo",why:"Reminds Claude how Clint thinks."},
-    {id:"phase",    layer:"knowledge",icon:"&#128678;",name:"Phase roadmap",         desc:"Phase-gate accountability across all 7 domains", p:"personal", prompt:"Where am I in the SB Phase Roadmap? Pull current status.",why:"Phase gates replace willpower-based quarterly accountability."},
+    {id:"morning",layer:"rituals",icon:"&#127749;",name:"Morning ritual",desc:"13-step daily launch sequence",p:"personal",prompt:"Morning ritual",why:"Sets your direction before the day runs you."},
+    {id:"evening",layer:"rituals",icon:"&#127769;",name:"Evening ritual",desc:"Debrief, score, capture for tomorrow",p:"personal",prompt:"Evening ritual",why:"Close the loop. Score your Big 3."},
+    {id:"weekly",layer:"rituals",icon:"&#128197;",name:"Weekly review",desc:"Dominos, wins, course correction",p:"personal",prompt:"Weekly review",why:"Bridge between daily execution and annual goals."},
+    {id:"war",layer:"rituals",icon:"&#9889;",name:"WAR stack",desc:"Decision-prep for high-stakes moments",p:"personal",prompt:"Let's do a WAR stack",why:"Converts reactive emotion into grounded decisions."},
+    {id:"irritate",layer:"rituals",icon:"&#128293;",name:"Irritation stack",desc:"Process friction before it becomes reaction",p:"personal",prompt:"Let's do an irritation stack",why:"Clears noise so facts emerge."},
+    {id:"discovery",layer:"rituals",icon:"&#128161;",name:"Discovery stack",desc:"Capture insight, learning, or idea",p:"personal",prompt:"Let's do a discovery stack",why:"Externalizes the spider-web mind before insights evaporate."},
+    {id:"cash",layer:"rituals",icon:"&#128181;",name:"Cash stack",desc:"Process money stress or financial decision",p:"personal",prompt:"Let's do a cash stack",why:"Moves from fear-based to facts-based thinking."},
+    {id:"email",layer:"ea",icon:"&#128108;",name:"Email triage",desc:"Sweep inbox, classify, draft replies",p:"personal",prompt:"Sweep my email",why:"Surfaces only what needs your judgment."},
+    {id:"buffer",layer:"ea",icon:"&#128194;",name:"Buffer session",desc:"Clear the queue - tasks, decisions, replies",p:"personal",prompt:"Let's do the buffer session",why:"The designated decision window."},
+    {id:"big3",layer:"ea",icon:"&#127919;",name:"Daily Big 3",desc:"Set today's three domino moves",p:"personal",prompt:"What are my Big 3 for today? Pull my recent weekly dominos and yesterday's Big 3.",why:"The compass. Everything else is noise until these are set."},
+    {id:"sbos",layer:"ea",icon:"&#128202;",name:"Open S-BOS",desc:"Live project, task and pay app dashboard",p:"sbos",url:"https://app.smartsuite.com",why:"The operating system."},
+    {id:"baseline",layer:"ops",icon:"&#128208;",name:"Baseline a project",desc:"Capture budget and timeline into S-BOS",p:"business",prompt:"Baseline this project",why:"No baseline = no score."},
+    {id:"payapp",layer:"ops",icon:"&#128176;",name:"Start a pay app",desc:"G-702/G-703, SOV, invoices, lien waivers",p:"business",prompt:"Kick off pay app",why:"The primary financial control on construction projects."},
+    {id:"payaudit",layer:"ops",icon:"&#9989;",name:"Pay app audit",desc:"Per-invoice PM audit - 7 tasks + doc package",p:"business",prompt:"Run the pay app audit checklist",why:"Every invoice audited. Nothing paid without documentation."},
+    {id:"comply",layer:"ops",icon:"&#128737;",name:"Compliance audit",desc:"Contract docs vs required disclosures",p:"business",prompt:"Run the compliance audit",why:"Compliance gaps = liability."},
+    {id:"merge",layer:"ops",icon:"&#128256;",name:"Merge contacts",desc:"Deduplicate S-BOS People or Project records",p:"business",prompt:"Merge duplicate contacts",why:"Dirty data breaks every downstream workflow."},
+    {id:"mgmt",layer:"ops",icon:"&#128101;",name:"Org and comp",desc:"Management, compensation and role design ref",p:"business",prompt:"Help me think through compensation structure for a role",why:"Keeps decisions grounded in principle."},
+    {id:"underwrite",layer:"finance",icon:"&#128200;",name:"Underwrite a deal",desc:"Pro forma, capital stack, release P&amp;L",p:"business",prompt:"Let's underwrite a deal",why:"Formation Homes lives and dies on the underwrite."},
+    {id:"gp",layer:"finance",icon:"&#127959;",name:"GP cash flow",desc:"Forward construction revenue by project/month",p:"business",prompt:"GP cash flow schedule",why:"Makes forward revenue view visible."},
+    {id:"strategic",layer:"finance",icon:"&#128301;",name:"Strategic review",desc:"Monthly asset review - Four-Lens framework",p:"business",prompt:"Run Strategic Review for",why:"Asset oversight without drift."},
+    {id:"budget",layer:"finance",icon:"&#127974;",name:"Entity budget",desc:"Annual v4.4 budget workbook for any entity",p:"business",prompt:"Build the annual budget for",why:"CFO-grade financial model."},
+    {id:"platform",layer:"finance",icon:"&#128225;",name:"Platform dashboard",desc:"Scorecard, capacity, cash runway",p:"business",prompt:"Open the platform dashboard",why:"The Allocator needs the full picture in one place."},
+    {id:"drive",layer:"finance",icon:"&#128193;",name:"Google Drive",desc:"All project files, contracts, invoices",p:"drive",url:"https://drive.google.com",why:"The document layer behind every deal."},
+    {id:"arch",layer:"knowledge",icon:"&#128506;",name:"Business architecture",desc:"Entity map, product lines, situations, pillars",p:"personal",prompt:"Fetch and summarize the business architecture from the Kompass repo",why:"The org chart + product map in one living doc."},
+    {id:"goals",layer:"knowledge",icon:"&#127919;",name:"2026 goals",desc:"Annual north star, strategic thesis",p:"personal",prompt:"Pull my 2026 goals from the Kompass repo and summarize where I stand",why:"Facts vs. goals is always the North Star."},
+    {id:"opmanual",layer:"knowledge",icon:"&#129504;",name:"Operating manual",desc:"Full user profile - ADHD, Human Design",p:"personal",prompt:"Fetch my operating manual from the Kompass repo",why:"Reminds Claude how Clint thinks."},
+    {id:"phase",layer:"knowledge",icon:"&#128678;",name:"Phase roadmap",desc:"Phase-gate accountability across all 7 domains",p:"personal",prompt:"Where am I in the SB Phase Roadmap? Pull current status.",why:"Phase gates replace willpower-based quarterly accountability."},
   ];
   var LABELS={rituals:"Daily rituals",ea:"EA layer",ops:"Business ops",finance:"Finance & deals",knowledge:"Knowledge base"};
   var LAYER_ORDER=["rituals","ea","ops","finance","knowledge"];
@@ -369,8 +331,7 @@
   }
   function escH(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
   function klCard(item){
-    var o=openCard===item.id;
-    var pl=PROJ_LABEL[item.p]||item.p;
+    var o=openCard===item.id,pl=PROJ_LABEL[item.p]||item.p;
     var pr=item.prompt?"<div class='kl-prompt'>"+escH(item.prompt)+"</div>":"<div class='kl-prompt'>Opens "+pl+" directly</div>";
     var pb=item.prompt?"<div class='kl-project-badge'>&#8594; Opens in <span>"+pl+"</span></div>":"";
     var cb=item.prompt?"<button class='kl-copy' onclick='klCopy(event,\""+item.id+"\")'>Copy prompt</button>":"";
@@ -379,12 +340,9 @@
       +"<div class='kl-card-text'><div class='kl-card-name'>"+item.name+"</div><div class='kl-card-desc'>"+item.desc+"</div></div>"
       +"<div class='kl-dot kl-dot-"+item.p+"'></div>"
       +"<button class='kl-launch kl-btn-"+item.p+"' onclick='klLaunch(event,\""+item.id+"\")'>Launch &#8599;</button>"
-      +"</div><div class='kl-detail'>"
-      +(item.prompt?"<div style='font-size:9px;color:#6b7280;margin-bottom:4px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;'>Say this in Claude:</div>":"")
-      +pr+pb
-      +"<div class='kl-why'>"+item.why+"</div>"
-      +"<div class='kl-detail-actions'>"+cb
-      +"<button class='kl-go' onclick='klLaunch(event,\""+item.id+"\")'>Open "+pl+" &#8599;</button>"
+      +"</div><div class='kl-detail'>"+(item.prompt?"<div style='font-size:9px;color:#6b7280;margin-bottom:4px;letter-spacing:.04em;text-transform:uppercase;font-weight:700;'>Say this in Claude:</div>":"")
+      +pr+pb+"<div class='kl-why'>"+item.why+"</div>"
+      +"<div class='kl-detail-actions'>"+cb+"<button class='kl-go' onclick='klLaunch(event,\""+item.id+"\")'>Open "+pl+" &#8599;</button>"
       +"</div></div></div>";
   }
   function klToggleCard(id){openCard=openCard===id?null:id;klRender();if(openCard){var el=document.getElementById("klc-"+id);if(el)setTimeout(function(){el.scrollIntoView({behavior:"smooth",block:"nearest"});},40);}}
@@ -404,31 +362,103 @@
   window.klCopy=klCopy;
   var klT;
   function klToastMsg(msg){var t=document.getElementById("klToast");t.textContent=msg;t.classList.add("show");clearTimeout(klT);klT=setTimeout(function(){t.classList.remove("show");},2800);}
-  window._openClaude=openClaude;
-  window._PERSONAL_ID=PERSONAL_ID;
-  window._BUSINESS_ID=BUSINESS_ID;
-  window._ICON_URL=ICON_URL;
+  window._openClaude=openClaude;window._PERSONAL_ID=PERSONAL_ID;window._BUSINESS_ID=BUSINESS_ID;
 })();
 </script>
 
 <script type="text/babel">
 const { useState, useEffect, useCallback, useRef } = React;
-const STORAGE_KEY = 'sb_phase_anchor_v2';
+const STORAGE_KEY = 'sb_phase_anchor_v3'; // bumped — hwkChecked is now per-phase
 const KOMPASS_ICON = 'https://raw.githubusercontent.com/clint-stitser/kompass-app/main/apple-touch-icon.png';
 
+// ─── DATA ────────────────────────────────────────────────────────────────────
+// BUG FIX: hwkItems is now keyed by phase {1:[...], 2:[...], 3:[...]}
+// so the "How We Know" checklist reflects the CURRENT phase, not a static list.
 const DOMAINS = [
-  {id:'1A',label:'S-BOS Platform',fullName:'S-BOS Platform Implementation',team:true,phases:{1:{name:'Foundation',hwk:'Dashboard checked daily. Every active project has People, Alignment, Schedule, Budget & Checklists populated.',bullets:['Dashboard is live and read regularly','Every project has all 5 pillars in place','System is source of truth: game, score, time, and next steps','People know where to go to create project pillars','Decision-making, tasks, budget, schedule, and people on every project','All active product lines and projects tracked inside S-BOS']},2:{name:'Operating',hwk:'Team runs Tuesday meetings from S-BOS. Decisions tracked, tasks assigned, and reports generated without pulling Clint in.',bullets:['Team identifies and flags system improvement opportunities','S-BOS self-measuring: team reports against the system, not just to Clint','Tuesday meeting = decision points surfaced by S-BOS, not manually compiled','Overhead tracked; team capacity visible at a glance']},3:{name:'Optimizing',hwk:"No shadow systems. Zero exceptions. Andy surveys the team: 'Is there anything you track outside S-BOS?' Answer: No.",bullets:["No shadow systems anywhere in the org — S-BOS is the only system","Team cannot imagine doing their job without S-BOS","Full migration confirmed by Andy's survey","S-BOS is a life skill, not a tool — default behavior for every team member"]}},hwkItems:['Dashboard checked daily','Every active project has all 5 pillars populated','People, Alignment, Schedule, Budget & Checklists on every project']},
-  {id:'1B',label:'Knowledge Base',fullName:'Knowledge Base (S-BOS Organizational Brain)',team:true,phases:{1:{name:'Foundation',hwk:"New hire handed a single link. No Clint involvement. They complete onboarding, understand the game, know their role, and can find their first workflow — independently.",bullets:['SmartSuite Training & Certifications: courses, lessons, and learning tracks live','S-BOS Feature Map: every app, its purpose, and how it connects — navigable by role','Workflow Visual: all 5 product lines × 5 key situations, each linked to a workflow or course','Core Documents: who we are, what we do, how we win — the game document',"Glossary: Terms & Earn + Winner's Vocabulary linked throughout",'User Skill: standardized template to create and submit new KB articles','Backend Routine: new SmartSuite article submission auto-publishes to the KB site','Team Onboarding Complete: every team member completes 2 courses + 2 relevant workflows']},2:{name:'Operating',hwk:'When someone has a question, the first action is opening the Knowledge Base. AI search returns the answer in under 30 seconds.',bullets:['Kompass AI embedded — ask a question, get an answer with source links','AI search spans courses, workflows, core docs, and glossary simultaneously','Automated audit flags broken links, outdated articles, and missing workflow docs','Plugin or scheduled skill keeps course completion tracking current without manual effort','At least one team member per product line has submitted a new article','Peer review process in place before new articles go live']},3:{name:'Optimizing',hwk:"Andy surveys the team: 'Where do you go first when you have a question?' Answer: The Knowledge Base. New articles appearing from team members weekly. AI flagging and filling gaps without prompting.",bullets:['AI identifies gaps and flags them as tasks — no human curator required','AI drafts article shells from observed workflows and submits for team review','Team members across all roles submitting new articles, workflows, and tools regularly','New hires contributing within their first 30 days',"Culture of capture: \"If it's not in the KB, it doesn't exist\"",'S-BOS apps, skills, and automations update in response to KB changes — one connected organism']}},hwkItems:['Every team member has completed onboarding via the KB (2 courses + 2 workflows)','New hire can onboard end-to-end from a single link with zero Clint involvement','KB is the first place team goes before asking a colleague or Clint']},
-  {id:'2',label:'Finance & Accounting',fullName:'Finance & Accounting',team:true,phases:{1:{name:'Foundation',hwk:'Signed contract with accounting expert. Two months of closes complete. Tuesday reports arriving without being pulled.',bullets:["Outsource CFO / Controller signed and onboarded","Complete 6-month forward cash flow projection","Lisa & Linda's processes meaningfully improved","Accurate reports delivered every Tuesday","WIP schedule and 6-month forecast in place per company"]},2:{name:'Operating',hwk:"Can answer 'How much cash do we have and what does the next 6 months look like?' in under 5 minutes.",bullets:['Reconciliation practices routine and timely','12-month budget accurate and reliable','Cash availability visibility — real-time','Tools identified to optimize cash deployment']},3:{name:'Optimizing',hwk:'Product line leads can read and act on financial reports independently. No manual pulling required.',bullets:['Product line leaders understand financial levers','Team uses financial reports to drive decisions','Intacct and S-BOS integrated and self-reporting','Finance function is self-multiplying']}},hwkItems:['Signed contract with accounting expert','Two months of closes complete','Tuesday reports arriving without being pulled']},
-  {id:'3A',label:'General Contracting',fullName:'General Contracting (Third-Party Construction)',team:true,phases:{1:{name:'Foundation',hwk:'Weekly gear report readable on dashboard. Tuesday meeting: "Here\'s where we\'re at. Here are the decisions."',bullets:['Full clarity on active WIP and pipeline','Prioritized list of estimates to convert','Break-even target identified and tracked','Resource allocation aligned to highest value projects','Decision matrix and quality checklist per project type']},2:{name:'Operating',hwk:'Team arrives at Tuesday meeting with decision points — not just updates.',bullets:['Continuous disciplined execution using S-BOS tools','Weekly gear reports visible on dashboard','Tuesday meeting = decisions needed, not just status updates','Overhead covered, team stable','Defined size and deliverable expectations']},3:{name:'Optimizing',hwk:'GC division operates without pulling Clint into daily decisions.',bullets:['Either: internal projects only + strategic outside partnerships','Or: self-multiplying team with own BD, estimating, production','Does NOT cannibalize development resources']}},hwkItems:['Weekly gear report readable on dashboard','Tuesday meeting has decision points — not just status','Break-even target identified and tracked']},
-  {id:'3B',label:'Retail Development',fullName:'Retail Development',team:true,phases:{1:{name:'Foundation',hwk:'Three target retail projects in contract. CRM with retail audience is live and being worked.',bullets:['Project-by-project CRM stood up','Outreach to retail audience systematized','Talus Valley, Sierra Center, Upper Parcel in contract','Undeniable audience of retail companies and users built','Decision matrix and project quality checklist in place']},2:{name:'Operating',hwk:'First lease signed. TICK disposition model documented with requirements and process.',bullets:['Convert relationships to leases','CRM pipeline generating consistent leads','Fractional / TICK takeout model established for disposition','Covered plays: tenants committed before breaking ground']},3:{name:'Optimizing',hwk:'Capital waiting for projects — not the other way around.',bullets:['Pipeline of referral partners feeding deal flow','Pipeline of takeout capital (TICK buyers) always available','More capital partners than project opportunities','Expand to stabilized or light value-add acquisitions']}},hwkItems:['Three target retail projects in contract','CRM with retail audience live and being worked','Decision matrix and quality checklist in place']},
-  {id:'3C',label:'Midsize Multifamily',fullName:'Midsize Multifamily',team:true,phases:{1:{name:'Foundation',hwk:'Pac West agreement signed. Management partner in place. Riverside reporting weekly.',bullets:['Strategic partnership with Pac West formalized (Riverside)','Day-to-day management partner established','Riverside stabilization plan in execution','Capital allocation for acquisition fully visible']},2:{name:'Operating',hwk:'Riverside operating without firefighting. Second opportunity being evaluated.',bullets:['Riverside stabilized and cash-flowing','Next acquisition opportunity evaluated using proven model','Management platform replicable to new properties']},3:{name:'Optimizing',hwk:'Multiple assets operating. Acquisition pipeline is always active.',bullets:['Self-managing portfolio of infill multifamily assets','Development and management partners engaged as standard','Acquisition pipeline fed by relationships and market position','Infill development model repeatable','Win-win operating structure with subject matter expert']}},hwkItems:['Pac West agreement signed','Management partner in place','Riverside reporting weekly']},
-  {id:'3D',label:'Entry-Level Housing',fullName:'Entry-Level Housing (Formation Homes / CRF)',team:true,phases:{1:{name:'Foundation',hwk:"NAHA signed. Alyssa actively sourcing. Weekly status report on dashboard. Land lease documents complete.",bullets:["NAHA public-private partnership signed and inked","Alyssa in field — hunting and finding deals as buyer's rep","Internal team pipeline and underwriting process active","Roles and responsibilities chart documented","Land lease legal framework documented (whole vs. partial ownership)","Weekly project status report running against 25-unit goal"]},2:{name:'Operating',hwk:'First land lease executed. PR campaign launched. Backlog of projects in contract.',bullets:['Two-part offering live: whole ownership OR land lease','PR and marketing campaign launched','Real estate professionals and end users educated on model','Pipeline of projects in contract for development','Land lease asset servicing platform operational','Financing structure for long-term land ownership established']},3:{name:'Optimizing',hwk:'Recurring land lease income. Referral pipeline active. Audience built.',bullets:['Proven model attracting referral partners','Portfolio of land lease lots generating recurring income','Audience of end users and capital partners established','Fractional land model recognized as market standard','Moat identified, clarified, documented — why no one else can replicate']}},hwkItems:['NAHA signed','Alyssa actively sourcing deals','Weekly status report live on dashboard','Land lease documents complete']},
-  {id:'3E',label:'Asset Disposition',fullName:'Asset Disposition / Fractional (Second Home)',team:true,phases:{1:{name:'Foundation',hwk:'Mic-drop game plan delivered. Gino owns it. Dashboard shows status weekly. No additional capital required.',bullets:['Updated game plan from Gino — stop/start/continue format','Simple, single-view dashboard for all active milestones','Clear priorities with deadlines through year-end','Gino owns the execution — clearly organized by situation and department','Operating cash flow funds project completion (no new capital needed)']},2:{name:'Operating',hwk:'Weekly report shows green on revenue targets. Operating without external capital infusion.',bullets:['Execution of Phase 1 plan in full sprint','Weekly reporting tied to exact milestones','Revenue generated to fund operations','What\'s working and what\'s not visible in real time']},3:{name:'Optimizing',hwk:'Project closed. Go/No-Go decision made with data.',bullets:['Project complete and evaluated','Decision: continue product line OR shelve and refocus','If continued: TICK/fractional disposition model fully operational','If shelved: resources reallocated to Entry-Level, Retail, Multifamily']}},hwkItems:['Game plan from Gino delivered (stop/start/continue)','Gino owns execution with clear milestones','No additional capital required to complete']},
-  {id:'4',label:'Marketing & CRM',fullName:'Marketing & CRM',team:true,phases:{1:{name:'Foundation',hwk:'Weekly PN outreach running. Message is clear. Audience knows what we stand for.',bullets:['Newspaper communication model running consistently','CRM audience evolution: connecting to "Fractional is the Future"','Zone of focus normalized — message and ask are clear','Staying in flow with key people using Stitser BUILT CRM','Follow-up Boss phase-out plan in motion','All projects connected to audience pipeline']},2:{name:'Operating',hwk:'Zero competing CRM systems. All lead activity in S-BOS. Past clients receiving communication.',bullets:['Follow-up Boss fully shut down','S-BOS CRM is the single system of record','Sphere connected, leads captured, nurtured, converted','Past client database active and working']},3:{name:'Optimizing',hwk:'Team survey confirms CRM as default tool. Inbound leads sourced through audience, not outbound hustle.',bullets:['Everyone on team using CRM as life skill','Self-multiplying: team can\'t imagine working without it','Fractional audience of buyers and users growing organically','Magnetic marketing — attracting, not chasing']}},hwkItems:['Weekly PN outreach running consistently','Message is clear — audience knows what we stand for','All projects connected to audience pipeline']},
-  {id:'5',label:'Personal — Being',fullName:'Personal — Being',team:false,phases:{1:{name:'Foundation',hwk:'Rituals running daily. Capture → triage → schedule workflow operating. Phase context always visible.',bullets:['Daily Stitser Way commitment — morning and evening ritual','Second brain infrastructure in place and being used','RPM framework operating: What do I want? Why? What\'s the 80/20?','Phase-based roadmap built and normalized across all life categories','Claude / Compass trained as triage partner','Tasks bucketed: Do, Delegate, Defer, Delete']},2:{name:'Operating',hwk:'Calendar reflects day-type structure. Deep work happening in designated blocks.',bullets:['Full sprint mode leveraging non-linear thinking strengths','CEO / Allocator skills accelerating: cash, people, strategy','Stepping away from screen to think is normalized and protected','Flow states scheduled and defended','Focus Day / Buffer Day / Free Day structure honored']},3:{name:'Optimizing',hwk:'Operating as pure Allocator. Vision alive. Rituals unbreakable.',bullets:['Fully integrated Dreamer — non-linear mind is the asset','Second brain self-multiplying: Claude captures, phases, and surfaces','Team fills in execution detail. Clint provides phase direction only.','Wise, Connected, Aligned — living toward 2036 Vivid Vision']}},hwkItems:['Morning & Evening ritual running daily','Capture → triage → schedule workflow operating','Phase context always visible']},
-  {id:'6',label:'Personal — Body',fullName:'Personal — Body',team:false,phases:{1:{name:'Foundation',hwk:'3 rides done. Body moving without restriction before departure.',bullets:['3 rides completed before leaving for vacation','Hot spots in legs and back addressed via stretching and trigger points','Signal unjammed — body moving freely']},2:{name:'Operating',hwk:'Return from trip at or under 210 lbs. Felt present and in control during vacation.',bullets:['Joyous, reasonable consumption on vacation','Alcohol: limited — controls salt/fat/sugar cravings','Return weight: 210 lbs or under','Savoring unique food experiences without overconsumption']},3:{name:'Optimizing',hwk:'Both races completed. Race weight achieved. Body performing at 2036 Vivid Vision standard.',bullets:['Hard training block begins post-vacation','Race 1: Downieville Cross Country — competitive finish','Race 2: Southern California race — competitive finish','Race weight: at or near 200 lbs for both','Flexible, fluid, powerful']}},hwkItems:['3 rides completed before vacation','Body moving without restriction','Hot spots addressed via stretching/trigger points']},
-  {id:'7',label:'Personal — Balance',fullName:'Personal — Balance',team:false,phases:{1:{name:'Foundation',hwk:'Weekly connection with Christie. Kids engaged. PN list worked consistently.',bullets:['Christie and kids: number one priority, fully connected','Business partners and immediate family: consistent rhythm','Near-term friends and sphere: regular visits and connection','PN outreach running — staying in flow with key people']},2:{name:'Operating',hwk:'Christie and Clint doing monthly long lunches. Annual collage updated. Family culture celebrated.',bullets:['Relationships feel joyful, not managed','Strengths of those closest celebrated actively','Monthly strategy lunches with Christie (Vivid Vision alive)','Annual collage updated']},3:{name:'Optimizing',hwk:'Living the 2036 Vivid Vision indicators across family and relationships.',bullets:['Interdependence mastered — together, honoring independent paths','Kids launched and connected to family culture','Deep holiday traditions — family comes home by desire','Refuge for friends. Steward for family. Leader for industry.']}},hwkItems:['Weekly connection with Christie','Kids engaged and connected','PN outreach running consistently']},
+  {id:'1A',label:'S-BOS Platform',fullName:'S-BOS Platform Implementation',team:true,
+    hwkItems:{
+      1:['Dashboard checked daily','Every active project has all 5 pillars populated','People, Alignment, Schedule, Budget & Checklists on every project'],
+      2:['Team runs Tuesday meetings from S-BOS without Clint compiling it','Decisions tracked and tasks assigned inside S-BOS','Weekly reports generated from S-BOS data'],
+      3:['No shadow systems anywhere — confirmed by Andy survey','Team cannot imagine doing their job without S-BOS','S-BOS is default behavior, not a reminder']
+    },
+    phases:{1:{name:'Foundation',hwk:'Dashboard checked daily. Every active project has People, Alignment, Schedule, Budget & Checklists populated.',bullets:['Dashboard is live and read regularly','Every project has all 5 pillars in place','System is source of truth: game, score, time, and next steps','People know where to go to create project pillars','Decision-making, tasks, budget, schedule, and people on every project','All active product lines and projects tracked inside S-BOS']},2:{name:'Operating',hwk:'Team runs Tuesday meetings from S-BOS. Decisions tracked, tasks assigned, and reports generated without pulling Clint in.',bullets:['Team identifies and flags system improvement opportunities','S-BOS self-measuring: team reports against the system, not just to Clint','Tuesday meeting = decision points surfaced by S-BOS, not manually compiled','Overhead tracked; team capacity visible at a glance']},3:{name:'Optimizing',hwk:"No shadow systems. Zero exceptions. Andy surveys the team: 'Is there anything you track outside S-BOS?' Answer: No.",bullets:["No shadow systems anywhere in the org — S-BOS is the only system","Team cannot imagine doing their job without S-BOS","Full migration confirmed by Andy's survey","S-BOS is a life skill, not a tool — default behavior for every team member"]}}},
+  {id:'1B',label:'Knowledge Base',fullName:'Knowledge Base (S-BOS Organizational Brain)',team:true,
+    hwkItems:{
+      1:['Every team member completed onboarding (2 courses + 2 workflows)','New hire can onboard end-to-end from a single link with zero Clint involvement','KB is the first place team goes before asking a colleague or Clint'],
+      2:['Kompass AI search returns answers in under 30 seconds','At least one team member per product line has submitted a new article','Automated audit running — flags broken links and outdated articles'],
+      3:['AI identifies gaps and flags them as tasks without prompting','Team members submitting new articles weekly','New hires contributing within their first 30 days']
+    },
+    phases:{1:{name:'Foundation',hwk:"New hire handed a single link. No Clint involvement. They complete onboarding, understand the game, know their role, and can find their first workflow — independently.",bullets:['SmartSuite Training & Certifications: courses, lessons, and learning tracks live','S-BOS Feature Map: every app, its purpose, and how it connects — navigable by role','Workflow Visual: all 5 product lines × 5 key situations, each linked to a workflow or course','Core Documents: who we are, what we do, how we win — the game document',"Glossary: Terms & Earn + Winner's Vocabulary linked throughout",'User Skill: standardized template to create and submit new KB articles','Backend Routine: new SmartSuite article submission auto-publishes to the KB site','Team Onboarding Complete: every team member completes 2 courses + 2 relevant workflows']},2:{name:'Operating',hwk:'When someone has a question, the first action is opening the Knowledge Base. AI search returns the answer in under 30 seconds.',bullets:['Kompass AI embedded — ask a question, get an answer with source links','AI search spans courses, workflows, core docs, and glossary simultaneously','Automated audit flags broken links, outdated articles, and missing workflow docs','Plugin or scheduled skill keeps course completion tracking current without manual effort','At least one team member per product line has submitted a new article','Peer review process in place before new articles go live']},3:{name:'Optimizing',hwk:"Andy surveys the team: 'Where do you go first when you have a question?' Answer: The Knowledge Base.",bullets:['AI identifies gaps and flags them as tasks — no human curator required','AI drafts article shells from observed workflows and submits for team review','Team members across all roles submitting new articles, workflows, and tools regularly','New hires contributing within their first 30 days',"Culture of capture: \"If it's not in the KB, it doesn't exist\"",'S-BOS apps, skills, and automations update in response to KB changes — one connected organism']}}},
+  {id:'2',label:'Finance & Accounting',fullName:'Finance & Accounting',team:true,
+    hwkItems:{
+      1:['Signed contract with accounting expert','Two months of closes complete','Tuesday reports arriving without being pulled'],
+      2:["'How much cash and what does the next 6 months look like?' answered in under 5 minutes",'12-month budget accurate and reliable','Cash availability visible in real-time'],
+      3:['Product line leads read and act on financial reports independently','Intacct and S-BOS integrated and self-reporting','Finance function is self-multiplying']
+    },
+    phases:{1:{name:'Foundation',hwk:'Signed contract with accounting expert. Two months of closes complete. Tuesday reports arriving without being pulled.',bullets:["Outsource CFO / Controller signed and onboarded","Complete 6-month forward cash flow projection","Lisa & Linda's processes meaningfully improved","Accurate reports delivered every Tuesday","WIP schedule and 6-month forecast in place per company"]},2:{name:'Operating',hwk:"Can answer 'How much cash do we have and what does the next 6 months look like?' in under 5 minutes.",bullets:['Reconciliation practices routine and timely','12-month budget accurate and reliable','Cash availability visibility — real-time','Tools identified to optimize cash deployment']},3:{name:'Optimizing',hwk:'Product line leads can read and act on financial reports independently. No manual pulling required.',bullets:['Product line leaders understand financial levers','Team uses financial reports to drive decisions','Intacct and S-BOS integrated and self-reporting','Finance function is self-multiplying']}}},
+  {id:'3A',label:'General Contracting',fullName:'General Contracting (Third-Party Construction)',team:true,
+    hwkItems:{
+      1:['Weekly gear report readable on dashboard','Tuesday meeting has decision points — not just status','Break-even target identified and tracked'],
+      2:['Team arrives at Tuesday meeting with decision points, not just updates','Overhead covered, team stable','Weekly gear reports visible on dashboard'],
+      3:['GC division operates without pulling Clint into daily decisions','Self-multiplying team or strategic partnership model chosen and documented','Does NOT cannibalize development resources']
+    },
+    phases:{1:{name:'Foundation',hwk:'Weekly gear report readable on dashboard. Tuesday meeting: "Here\'s where we\'re at. Here are the decisions."',bullets:['Full clarity on active WIP and pipeline','Prioritized list of estimates to convert','Break-even target identified and tracked','Resource allocation aligned to highest value projects','Decision matrix and quality checklist per project type']},2:{name:'Operating',hwk:'Team arrives at Tuesday meeting with decision points — not just updates.',bullets:['Continuous disciplined execution using S-BOS tools','Weekly gear reports visible on dashboard','Tuesday meeting = decisions needed, not just status updates','Overhead covered, team stable','Defined size and deliverable expectations']},3:{name:'Optimizing',hwk:'GC division operates without pulling Clint into daily decisions.',bullets:['Either: internal projects only + strategic outside partnerships','Or: self-multiplying team with own BD, estimating, production','Does NOT cannibalize development resources']}}},
+  {id:'3B',label:'Retail Development',fullName:'Retail Development',team:true,
+    hwkItems:{
+      1:['Three target retail projects in contract','CRM with retail audience live and being worked','Decision matrix and quality checklist in place'],
+      2:['First lease signed','CRM pipeline generating consistent leads','TICK takeout model established and documented'],
+      3:['Pipeline of referral partners feeding deal flow','Pipeline of TICK buyers always available','More capital partners than project opportunities']
+    },
+    phases:{1:{name:'Foundation',hwk:'Three target retail projects in contract. CRM with retail audience is live and being worked.',bullets:['Project-by-project CRM stood up','Outreach to retail audience systematized','Talus Valley, Sierra Center, Upper Parcel in contract','Undeniable audience of retail companies and users built','Decision matrix and project quality checklist in place']},2:{name:'Operating',hwk:'First lease signed. TICK disposition model documented with requirements and process.',bullets:['Convert relationships to leases','CRM pipeline generating consistent leads','Fractional / TICK takeout model established for disposition','Covered plays: tenants committed before breaking ground']},3:{name:'Optimizing',hwk:'Capital waiting for projects — not the other way around.',bullets:['Pipeline of referral partners feeding deal flow','Pipeline of takeout capital (TICK buyers) always available','More capital partners than project opportunities','Expand to stabilized or light value-add acquisitions']}}},
+  {id:'3C',label:'Midsize Multifamily',fullName:'Midsize Multifamily',team:true,
+    hwkItems:{
+      1:['Pac West agreement signed','Management partner in place','Riverside reporting weekly'],
+      2:['Riverside stabilized and cash-flowing','Second acquisition opportunity being evaluated','Management platform proven replicable'],
+      3:['Multiple assets operating without firefighting','Acquisition pipeline always active','Win-win operating structure with subject matter expert documented']
+    },
+    phases:{1:{name:'Foundation',hwk:'Pac West agreement signed. Management partner in place. Riverside reporting weekly.',bullets:['Strategic partnership with Pac West formalized (Riverside)','Day-to-day management partner established','Riverside stabilization plan in execution','Capital allocation for acquisition fully visible']},2:{name:'Operating',hwk:'Riverside operating without firefighting. Second opportunity being evaluated.',bullets:['Riverside stabilized and cash-flowing','Next acquisition opportunity evaluated using proven model','Management platform replicable to new properties']},3:{name:'Optimizing',hwk:'Multiple assets operating. Acquisition pipeline is always active.',bullets:['Self-managing portfolio of infill multifamily assets','Development and management partners engaged as standard','Acquisition pipeline fed by relationships and market position','Infill development model repeatable','Win-win operating structure with subject matter expert']}}},
+  {id:'3D',label:'Entry-Level Housing',fullName:'Entry-Level Housing (Formation Homes / CRF)',team:true,
+    hwkItems:{
+      1:['NAHA signed','Alyssa actively sourcing deals','Weekly status report live on dashboard','Land lease documents complete'],
+      2:['First land lease executed','PR and marketing campaign launched','Pipeline of projects in contract for development'],
+      3:['Recurring land lease income generating','Referral partners actively feeding the pipeline','Fractional land model recognized as market standard']
+    },
+    phases:{1:{name:'Foundation',hwk:"NAHA signed. Alyssa actively sourcing. Weekly status report on dashboard. Land lease documents complete.",bullets:["NAHA public-private partnership signed and inked","Alyssa in field — hunting and finding deals as buyer's rep","Internal team pipeline and underwriting process active","Roles and responsibilities chart documented","Land lease legal framework documented (whole vs. partial ownership)","Weekly project status report running against 25-unit goal"]},2:{name:'Operating',hwk:'First land lease executed. PR campaign launched. Backlog of projects in contract.',bullets:['Two-part offering live: whole ownership OR land lease','PR and marketing campaign launched','Real estate professionals and end users educated on model','Pipeline of projects in contract for development','Land lease asset servicing platform operational','Financing structure for long-term land ownership established']},3:{name:'Optimizing',hwk:'Recurring land lease income. Referral pipeline active. Audience built.',bullets:['Proven model attracting referral partners','Portfolio of land lease lots generating recurring income','Audience of end users and capital partners established','Fractional land model recognized as market standard','Moat identified, clarified, documented — why no one else can replicate']}}},
+  {id:'3E',label:'Asset Disposition',fullName:'Asset Disposition / Fractional (Second Home)',team:true,
+    hwkItems:{
+      1:['Game plan from Gino delivered (stop/start/continue)','Gino owns execution with clear milestones','No additional capital required to complete'],
+      2:['Weekly report shows green on revenue targets','Execution running without external capital infusion','What\'s working and what\'s not visible in real time'],
+      3:['Project complete and evaluated','Go/No-Go decision made with data','Next move documented — continue or reallocate resources']
+    },
+    phases:{1:{name:'Foundation',hwk:'Mic-drop game plan delivered. Gino owns it. Dashboard shows status weekly. No additional capital required.',bullets:['Updated game plan from Gino — stop/start/continue format','Simple, single-view dashboard for all active milestones','Clear priorities with deadlines through year-end','Gino owns the execution — clearly organized by situation and department','Operating cash flow funds project completion (no new capital needed)']},2:{name:'Operating',hwk:'Weekly report shows green on revenue targets. Operating without external capital infusion.',bullets:['Execution of Phase 1 plan in full sprint','Weekly reporting tied to exact milestones','Revenue generated to fund operations','What\'s working and what\'s not visible in real time']},3:{name:'Optimizing',hwk:'Project closed. Go/No-Go decision made with data.',bullets:['Project complete and evaluated','Decision: continue product line OR shelve and refocus','If continued: TICK/fractional disposition model fully operational','If shelved: resources reallocated to Entry-Level, Retail, Multifamily']}}},
+  {id:'4',label:'Marketing & CRM',fullName:'Marketing & CRM',team:true,
+    hwkItems:{
+      1:['Weekly PN outreach running consistently','Message is clear — audience knows what we stand for','All projects connected to audience pipeline'],
+      2:['Follow-up Boss fully shut down','S-BOS CRM is the single system of record','Past client database active and working'],
+      3:['Everyone on team using CRM as life skill','Fractional audience of buyers and users growing organically','Inbound leads sourced through audience, not outbound hustle']
+    },
+    phases:{1:{name:'Foundation',hwk:'Weekly PN outreach running. Message is clear. Audience knows what we stand for.',bullets:['Newspaper communication model running consistently','CRM audience evolution: connecting to "Fractional is the Future"','Zone of focus normalized — message and ask are clear','Staying in flow with key people using Stitser BUILT CRM','Follow-up Boss phase-out plan in motion','All projects connected to audience pipeline']},2:{name:'Operating',hwk:'Zero competing CRM systems. All lead activity in S-BOS. Past clients receiving communication.',bullets:['Follow-up Boss fully shut down','S-BOS CRM is the single system of record','Sphere connected, leads captured, nurtured, converted','Past client database active and working']},3:{name:'Optimizing',hwk:'Team survey confirms CRM as default tool. Inbound leads sourced through audience, not outbound hustle.',bullets:['Everyone on team using CRM as life skill','Self-multiplying: team can\'t imagine working without it','Fractional audience of buyers and users growing organically','Magnetic marketing — attracting, not chasing']}}},
+  {id:'5',label:'Personal — Being',fullName:'Personal — Being',team:false,
+    hwkItems:{
+      1:['Morning & Evening ritual running daily','Capture → triage → schedule workflow operating','Phase context always visible'],
+      2:['Calendar reflects Focus Day / Buffer Day / Free Day structure','Deep work blocks defended and happening','CEO / Allocator skills visibly accelerating'],
+      3:['Operating as pure Allocator — team fills execution detail','Second brain self-multiplying without prompting','Rituals unbreakable — running regardless of travel or friction']
+    },
+    phases:{1:{name:'Foundation',hwk:'Rituals running daily. Capture → triage → schedule workflow operating. Phase context always visible.',bullets:['Daily Stitser Way commitment — morning and evening ritual','Second brain infrastructure in place and being used','RPM framework operating: What do I want? Why? What\'s the 80/20?','Phase-based roadmap built and normalized across all life categories','Claude / Compass trained as triage partner','Tasks bucketed: Do, Delegate, Defer, Delete']},2:{name:'Operating',hwk:'Calendar reflects day-type structure. Deep work happening in designated blocks.',bullets:['Full sprint mode leveraging non-linear thinking strengths','CEO / Allocator skills accelerating: cash, people, strategy','Stepping away from screen to think is normalized and protected','Flow states scheduled and defended','Focus Day / Buffer Day / Free Day structure honored']},3:{name:'Optimizing',hwk:'Operating as pure Allocator. Vision alive. Rituals unbreakable.',bullets:['Fully integrated Dreamer — non-linear mind is the asset','Second brain self-multiplying: Claude captures, phases, and surfaces','Team fills in execution detail. Clint provides phase direction only.','Wise, Connected, Aligned — living toward 2036 Vivid Vision']}}},
+  {id:'6',label:'Personal — Body',fullName:'Personal — Body',team:false,
+    hwkItems:{
+      1:['3 rides completed before vacation','Body moving without restriction','Hot spots addressed via stretching/trigger points'],
+      2:['Return weight at or under 210 lbs','Felt present and in control during vacation','Alcohol kept limited — cravings controlled'],
+      3:['Both races completed with competitive finishes','Race weight at or near 200 lbs','Flexible, fluid, powerful — 2036 Vivid Vision standard']
+    },
+    phases:{1:{name:'Foundation',hwk:'3 rides done. Body moving without restriction before departure.',bullets:['3 rides completed before leaving for vacation','Hot spots in legs and back addressed via stretching and trigger points','Signal unjammed — body moving freely']},2:{name:'Operating',hwk:'Return from trip at or under 210 lbs. Felt present and in control during vacation.',bullets:['Joyous, reasonable consumption on vacation','Alcohol: limited — controls salt/fat/sugar cravings','Return weight: 210 lbs or under','Savoring unique food experiences without overconsumption']},3:{name:'Optimizing',hwk:'Both races completed. Race weight achieved. Body performing at 2036 Vivid Vision standard.',bullets:['Hard training block begins post-vacation','Race 1: Downieville Cross Country — competitive finish','Race 2: Southern California race — competitive finish','Race weight: at or near 200 lbs for both','Flexible, fluid, powerful']}}},
+  {id:'7',label:'Personal — Balance',fullName:'Personal — Balance',team:false,
+    hwkItems:{
+      1:['Weekly connection with Christie','Kids engaged and connected','PN outreach running consistently'],
+      2:['Monthly long lunches with Christie happening','Annual collage updated','Relationships feel joyful, not managed'],
+      3:['Living the 2036 Vivid Vision indicators across family and relationships','Kids launched and connected to family culture','Refuge for friends. Steward for family. Leader for industry.']
+    },
+    phases:{1:{name:'Foundation',hwk:'Weekly connection with Christie. Kids engaged. PN list worked consistently.',bullets:['Christie and kids: number one priority, fully connected','Business partners and immediate family: consistent rhythm','Near-term friends and sphere: regular visits and connection','PN outreach running — staying in flow with key people']},2:{name:'Operating',hwk:'Christie and Clint doing monthly long lunches. Annual collage updated. Family culture celebrated.',bullets:['Relationships feel joyful, not managed','Strengths of those closest celebrated actively','Monthly strategy lunches with Christie (Vivid Vision alive)','Annual collage updated']},3:{name:'Optimizing',hwk:'Living the 2036 Vivid Vision indicators across family and relationships.',bullets:['Interdependence mastered — together, honoring independent paths','Kids launched and connected to family culture','Deep holiday traditions — family comes home by desire','Refuge for friends. Steward for family. Leader for industry.']}}}
 ];
 
 const PCFG={1:{cls:'p1',badge:'P1 · Foundation',bcls:'b1'},2:{cls:'p2',badge:'P2 · Operating',bcls:'b2'},3:{cls:'p3',badge:'P3 · Optimizing',bcls:'b3'}};
@@ -436,33 +466,58 @@ const GYR_AUTO=p=>p>=67?'G':p>=33?'Y':'R';
 const CheckIco=()=><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const ChevIco=()=><svg viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const BackIco=()=><svg viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+const KompassLogo=()=>(<img src={KOMPASS_ICON} alt="Kompass" style={{width:36,height:36,borderRadius:10,objectFit:'cover'}} onError={e=>{e.target.style.display='none';}}/>);
 
-/* Header logo: actual kompass-app icon (req #3) */
-const KompassLogo=()=>(
-  <img src={KOMPASS_ICON} alt="Kompass" style={{width:36,height:36,borderRadius:10,objectFit:'cover'}}
-    onError={e=>{e.target.style.display='none';e.target.nextSibling.style.display='flex';}}
-  />
-);
-
-const TEAM_ONLY=false,SHOW_SWITCH_LINK=true,OTHER_VIEW_HREF='/phase-anchor-team.html',OTHER_VIEW_LABEL='Team View →',VIEW_LABEL='Personal Scoreboard';
-const getHwkItems=(d,ds)=>ds.customHwkItems||d.hwkItems;
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+// FIX: always pull hwkItems for the CURRENT phase
+const getHwkItems=(d,ds,phase)=>{
+  const p=phase||ds.currentPhase||1;
+  // custom overrides (from EditModal) stored per-phase
+  if(ds.customHwkItems?.[p]) return ds.customHwkItems[p];
+  // canonical per-phase items from domain definition
+  return d.hwkItems[p]||[];
+};
+// FIX: hwkChecked is now stored per-phase: ds.hwkChecked = {1:[...], 2:[...], 3:[...]}
+const getHwkChecked=(ds,phase)=>{
+  const p=phase||ds.currentPhase||1;
+  return ds.hwkChecked?.[p]||[];
+};
 const getPhaseHwk=(d,ds,p)=>(ds.customPhaseHwk&&ds.customPhaseHwk[p]!=null)?ds.customPhaseHwk[p]:d.phases[p].hwk;
+
 const loadState=()=>{try{const s=localStorage.getItem(STORAGE_KEY);if(s)return JSON.parse(s);}catch{}return{};};
 const saveState=s=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(s));}catch{}};
 
-function EditModal({domain:d,ds,onSave,onClose}){
-  const[tab,setTab]=useState(1);
+function EditModal({domain:d,ds,phase,onSave,onClose}){
+  const[tab,setTab]=useState(phase||1);
   const[dates,setDates]=useState({1:ds.phaseTargetDates?.[1]||'',2:ds.phaseTargetDates?.[2]||'',3:ds.phaseTargetDates?.[3]||''});
-  const[custom,setCustom]=useState(()=>{const b={};[1,2,3].forEach(p=>{b[p]=ds.customOutcomes?.[p]||d.phases[p].bullets.map(t=>({text:t,locked:true}));});return b;});
+  const[custom,setCustom]=useState(()=>{
+    const b={};
+    [1,2,3].forEach(p=>{
+      b[p]=ds.customHwkItems?.[p]
+        ? ds.customHwkItems[p].map(t=>({text:t,locked:false}))
+        : d.hwkItems[p].map(t=>({text:t,locked:true}));
+    });
+    return b;
+  });
   return(
     <div className="modal-overlay" onClick={e=>e.target===e.currentTarget&&onClose()}>
       <div className="modal">
-        <div className="modal-hd"><div className="modal-title">{d.label} · Edit Outcomes</div><button className="modal-close" onClick={onClose}>×</button></div>
+        <div className="modal-hd"><div className="modal-title">{d.label} · Edit Checklist</div><button className="modal-close" onClick={onClose}>×</button></div>
         <div className="modal-body">
           <div className="modal-section"><div className="modal-section-title">Phase Target Dates</div><div className="date-grid">{[1,2,3].map(p=>(<div key={p} className={`date-field f${p}`}><label>Phase {p} · {d.phases[p].name}</label><input type="date" value={dates[p]} onChange={e=>setDates(v=>({...v,[p]:e.target.value}))}/></div>))}</div></div>
-          <div className="modal-section"><div className="modal-section-title">Outcomes by Phase</div><div className="modal-tabs">{[1,2,3].map(p=>(<button key={p} className={`modal-tab ${tab===p?`at${p}`:''}`} onClick={()=>setTab(p)}>Phase {p} · {d.phases[p].name}</button>))}</div><div className="outcome-list">{custom[tab].map((item,i)=>(<div key={i} className="outcome-item"><input type="text" value={item.text} placeholder="Add outcome..." onChange={e=>setCustom(c=>({...c,[tab]:c[tab].map((it,j)=>j===i?{...it,text:e.target.value}:it)}))} readOnly={item.locked} style={item.locked?{opacity:.6}:{}}/>{!item.locked&&<button className="out-del" onClick={()=>setCustom(c=>({...c,[tab]:c[tab].filter((_,j)=>j!==i)}))}>×</button>}</div>))}</div><button className="add-outcome-btn" onClick={()=>setCustom(c=>({...c,[tab]:[...c[tab],{text:'',locked:false}]}))}>+ Add outcome to Phase {tab}</button></div>
+          <div className="modal-section">
+            <div className="modal-section-title">How We Know — by Phase</div>
+            <div className="modal-tabs">{[1,2,3].map(p=>(<button key={p} className={`modal-tab ${tab===p?`at${p}`:''}`} onClick={()=>setTab(p)}>Phase {p} · {d.phases[p].name}</button>))}</div>
+            <div className="outcome-list">{custom[tab].map((item,i)=>(<div key={i} className="outcome-item"><input type="text" value={item.text} placeholder="Add criteria..." onChange={e=>setCustom(c=>({...c,[tab]:c[tab].map((it,j)=>j===i?{...it,text:e.target.value}:it)}))} readOnly={item.locked} style={item.locked?{opacity:.6}:{}}/>{!item.locked&&<button className="out-del" onClick={()=>setCustom(c=>({...c,[tab]:c[tab].filter((_,j)=>j!==i)}))}>×</button>}</div>))}</div>
+            <button className="add-outcome-btn" onClick={()=>setCustom(c=>({...c,[tab]:[...c[tab],{text:'',locked:false}]}))}>+ Add criteria to Phase {tab}</button>
+          </div>
         </div>
-        <div className="modal-foot"><button className="btn-cancel" onClick={onClose}>Cancel</button><button className="btn-save" onClick={()=>{onSave({phaseTargetDates:dates,customOutcomes:custom});onClose();}}>Save Changes</button></div>
+        <div className="modal-foot"><button className="btn-cancel" onClick={onClose}>Cancel</button><button className="btn-save" onClick={()=>{
+          const customHwkItems={};
+          [1,2,3].forEach(p=>{customHwkItems[p]=custom[p].map(i=>i.text).filter(t=>t.trim());});
+          onSave({phaseTargetDates:dates,customHwkItems});
+          onClose();
+        }}>Save Changes</button></div>
       </div>
     </div>
   );
@@ -471,7 +526,10 @@ function EditModal({domain:d,ds,onSave,onClose}){
 function DomainCard({domain:d,ds,onToggleHwk,onSetPhase,onOpenDetail,onEdit,onSetGyr,onSetGyrNotes,showGyr}){
   const[expanded,setExpanded]=useState(false);
   const[collapsed,setCollapsed]=useState(false);
-  const phase=ds.currentPhase||1,pcfg=PCFG[phase],hwkChecked=ds.hwkChecked||[],hwkItems=getHwkItems(d,ds);
+  const phase=ds.currentPhase||1,pcfg=PCFG[phase];
+  // FIX: use phase-aware helpers
+  const hwkItems=getHwkItems(d,ds,phase);
+  const hwkChecked=getHwkChecked(ds,phase);
   const pct=hwkItems.length>0?Math.round(hwkChecked.filter(Boolean).length/hwkItems.length*100):0;
   const targetDate=ds.phaseTargetDates?.[phase],gyr=ds.gyrOverride||GYR_AUTO(pct);
   const ds2=(()=>{
@@ -497,11 +555,11 @@ function DomainCard({domain:d,ds,onToggleHwk,onSetPhase,onOpenDetail,onEdit,onSe
           {ds2.note&&targetDate&&<span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:4,background:ds2.color==='#ef4444'?'rgba(239,68,68,.12)':ds2.color==='#f59e0b'?'rgba(245,158,11,.12)':'rgba(255,255,255,.06)',color:ds2.color}}>{ds2.note}</span>}
         </div>
         <div className="hwk" onClick={e=>e.stopPropagation()}>
-          <div className="hwk-lbl">✓ How We Know</div>
-          {hwkItems.map((item,i)=>(<div key={i} className="hwk-item" onClick={()=>onToggleHwk(d.id,i)}><div className={`chk ${hwkChecked[i]?'on':''}`}>{hwkChecked[i]&&<CheckIco/>}</div><div className={`hwk-txt ${hwkChecked[i]?'done':''}`}>{item}</div></div>))}
+          <div className="hwk-lbl">✓ How We Know · Phase {phase}</div>
+          {hwkItems.map((item,i)=>(<div key={i} className="hwk-item" onClick={()=>onToggleHwk(d.id,phase,i)}><div className={`chk ${hwkChecked[i]?'on':''}`}>{hwkChecked[i]&&<CheckIco/>}</div><div className={`hwk-txt ${hwkChecked[i]?'done':''}`}>{item}</div></div>))}
         </div>
         {showGyr&&(<div className="gyr-row" onClick={e=>e.stopPropagation()}><span className="gyr-lbl">Status</span>{['G','Y','R'].map(g=>(<button key={g} className={`gyr-btn ${g} ${gyr===g?'sel':''}`} onClick={()=>onSetGyr(d.id,ds.gyrOverride===g?null:g)}>{g==='G'?'Green':g==='Y'?'Yellow':'Red'}</button>))}<div className="gyr-notes"><input placeholder="Note for snapshot…" value={ds.gyrNotes||''} onChange={e=>onSetGyrNotes(d.id,e.target.value)}/></div></div>)}
-        <div className="card-actions" onClick={e=>e.stopPropagation()}><button className="act-btn" onClick={()=>onEdit(d.id)}>✏ Edit Outcomes</button><button className="act-btn" onClick={()=>onOpenDetail(d.id)}>↗ Open Details</button></div>
+        <div className="card-actions" onClick={e=>e.stopPropagation()}><button className="act-btn" onClick={()=>onEdit(d.id)}>✏ Edit Checklist</button><button className="act-btn" onClick={()=>onOpenDetail(d.id)}>↗ Open Details</button></div>
         {expanded&&(<div className="exp-detail" onClick={e=>e.stopPropagation()}><div className="pnav">{[1,2,3].map(p=>(<button key={p} className={`pnav-btn ${phase===p?`a${p}`:''}`} onClick={()=>onSetPhase(d.id,p)}>Phase {p}</button>))}</div>{[1,2,3].map(p=>(<div key={p} className="psec"><div className="psec-hd"><span className={`psec-badge ${PCFG[p].bcls}`}>P{p}</span><span className="psec-ttl">{d.phases[p].name}</span></div><ul className="pbullets">{d.phases[p].bullets.map((b,i)=><li key={i}>{b}</li>)}</ul><div className="hwk-callout"><strong>How We Know · </strong>{d.phases[p].hwk}</div></div>))}</div>)}
         <div className={`exp-tog ${expanded?'open':''}`} onClick={()=>setExpanded(e=>!e)}>{expanded?'Collapse roadmap':'View full roadmap'}<ChevIco/></div>
       </div>
@@ -509,11 +567,12 @@ function DomainCard({domain:d,ds,onToggleHwk,onSetPhase,onOpenDetail,onEdit,onSe
   );
 }
 
-function DetailPage({domain:d,ds,onBack,onToggleHwk,onSetPhase,onSaveHwk,onSavePhaseHwk,onSaveDates}){
-  const phase=ds.currentPhase||1,hwkChecked=ds.hwkChecked||[],hwkItems=getHwkItems(d,ds);
-  const pct=hwkItems.length>0?Math.round(hwkChecked.filter(Boolean).length/d.hwkItems.length*100):0;
+function DetailPage({domain:d,ds,onBack,onToggleHwk,onSetPhase,onSavePhaseHwk,onSaveDates}){
+  const phase=ds.currentPhase||1;
+  const hwkItems=getHwkItems(d,ds,phase);
+  const hwkChecked=getHwkChecked(ds,phase);
+  const pct=hwkItems.length>0?Math.round(hwkChecked.filter(Boolean).length/hwkItems.length*100):0;
   const dates=ds.phaseTargetDates||{};
-  const[editingHwk,setEditingHwk]=useState(false),[draftHwk,setDraftHwk]=useState([...hwkItems]);
   const[editingPhaseHwk,setEditingPhaseHwk]=useState(null),[draftPhaseHwk,setDraftPhaseHwk]=useState('');
   const[editingDate,setEditingDate]=useState(null);
   const maxBullets=Math.max(...[1,2,3].map(p=>d.phases[p].bullets.length));
@@ -525,15 +584,26 @@ function DetailPage({domain:d,ds,onBack,onToggleHwk,onSetPhase,onSaveHwk,onSaveP
       <div style={{display:'flex',gap:8,marginBottom:16}}><span style={{fontSize:11,color:'#6b7280',alignSelf:'center'}}>Set current phase:</span>{[1,2,3].map(p=>(<button key={p} className={`pnav-btn ${phase===p?`a${p}`:''}`} style={{flex:'none',padding:'5px 16px'}} onClick={()=>onSetPhase(d.id,p)}>Phase {p}</button>))}</div>
       <div style={{fontSize:11,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#6b7280',marginBottom:8}}>Full Roadmap</div>
       <table className="roadmap-table"><thead><tr><th className="h1">Phase 1 — Foundation</th><th className="h2">Phase 2 — Operating</th><th className="h3">Phase 3 — Optimizing</th></tr></thead><tbody>{Array.from({length:maxBullets}).map((_,i)=>(<tr key={i}><td className="c1">{d.phases[1].bullets[i]||''}</td><td className="c2">{d.phases[2].bullets[i]||''}</td><td className="c3">{d.phases[3].bullets[i]||''}</td></tr>))}<tr className="roadmap-hwk-row">{[1,2,3].map(p=>(<td key={p} className={`c${p}`}><strong style={{display:'flex',alignItems:'center',gap:6}}>✓ How We Know<span style={{fontSize:8,fontWeight:700,padding:'1px 5px',borderRadius:4,background:'rgba(255,255,255,.08)',color:'#6b7280',cursor:'pointer'}} onClick={e=>{e.stopPropagation();setEditingPhaseHwk(p);setDraftPhaseHwk(getPhaseHwk(d,ds,p));}}>EDIT</span></strong>{editingPhaseHwk===p?<div onClick={e=>e.stopPropagation()}><textarea autoFocus value={draftPhaseHwk} onChange={e=>setDraftPhaseHwk(e.target.value)} style={{width:'100%',marginTop:5,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.15)',borderRadius:5,padding:'6px 8px',color:'#f1f5f9',fontSize:11,lineHeight:1.5,resize:'vertical',minHeight:70,outline:'none',fontFamily:'inherit'}}/><div style={{display:'flex',gap:6,marginTop:5}}><button className="act-btn" style={{flex:'none',padding:'3px 10px',color:'var(--p1)',borderColor:'var(--p1-border)'}} onClick={()=>{onSavePhaseHwk(d.id,p,draftPhaseHwk);setEditingPhaseHwk(null);}}>Save</button><button className="act-btn" style={{flex:'none',padding:'3px 10px'}} onClick={()=>setEditingPhaseHwk(null)}>Cancel</button></div></div>:<span style={{cursor:'pointer'}} onClick={()=>{setEditingPhaseHwk(p);setDraftPhaseHwk(getPhaseHwk(d,ds,p));}}>{getPhaseHwk(d,ds,p)}</span>}</td>))}</tr></tbody></table>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}><div style={{fontSize:11,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#6b7280'}}>Phase Gate Checklist</div>{!editingHwk?<button className="act-btn" style={{flex:'none',padding:'4px 12px'}} onClick={()=>{setDraftHwk([...hwkItems]);setEditingHwk(true);}}>✏ Edit</button>:<div style={{display:'flex',gap:6}}><button className="act-btn" style={{flex:'none',padding:'4px 12px',color:'var(--p1)',borderColor:'var(--p1-border)'}} onClick={()=>{onSaveHwk(d.id,draftHwk.filter(t=>t.trim()));setEditingHwk(false);}}>Save</button><button className="act-btn" style={{flex:'none',padding:'4px 12px'}} onClick={()=>setEditingHwk(false)}>Cancel</button></div>}</div>
-      <div className={`card ${PCFG[phase].cls}`} style={{marginBottom:20}}><div className="hwk" style={{paddingTop:12}}>{editingHwk?(<>{draftHwk.map((item,i)=>(<div key={i} className="hwk-item" style={{cursor:'default'}}><input type="text" value={item} onChange={e=>setDraftHwk(v=>v.map((x,j)=>j===i?e.target.value:x))} style={{flex:1,background:'rgba(255,255,255,.06)',border:'1px solid rgba(255,255,255,.12)',borderRadius:5,padding:'3px 8px',color:'#f1f5f9',fontSize:12,outline:'none'}}/><button className="out-del" onClick={()=>setDraftHwk(v=>v.filter((_,j)=>j!==i))}>×</button></div>))}<div style={{padding:'6px 0'}}><button className="add-outcome-btn" onClick={()=>setDraftHwk(v=>[...v,''])}>+ Add criteria</button></div></>):hwkItems.map((item,i)=>(<div key={i} className="hwk-item" onClick={()=>onToggleHwk(d.id,i)}><div className={`chk ${hwkChecked[i]?'on':''}`}>{hwkChecked[i]&&<CheckIco/>}</div><div className={`hwk-txt ${hwkChecked[i]?'done':''}`}>{item}</div></div>))}</div></div>
+      <div style={{fontSize:11,fontWeight:700,letterSpacing:'.08em',textTransform:'uppercase',color:'#6b7280',marginBottom:8}}>Phase {phase} Checklist</div>
+      <div className={`card ${PCFG[phase].cls}`} style={{marginBottom:20}}>
+        <div className="hwk" style={{paddingTop:12}}>
+          {hwkItems.map((item,i)=>(<div key={i} className="hwk-item" onClick={()=>onToggleHwk(d.id,phase,i)}><div className={`chk ${hwkChecked[i]?'on':''}`}>{hwkChecked[i]&&<CheckIco/>}</div><div className={`hwk-txt ${hwkChecked[i]?'done':''}`}>{item}</div></div>))}
+        </div>
+      </div>
     </div>
   );
 }
 
 function captureSnapshot(domains,states,viewMode){
   const now=new Date(),dateStr=now.toISOString().slice(0,10),label=viewMode==='team'?'Team':'Personal';
-  const rows=domains.map(d=>{const ds=states[d.id]||{},phase=ds.currentPhase||d.currentPhase,hwkChecked=ds.hwkChecked||[],pct=Math.round(hwkChecked.filter(Boolean).length/d.hwkItems.length*100),gyr=ds.gyrOverride||GYR_AUTO(pct),notes=ds.gyrNotes||'';return{d,phase,pct,gyr,notes};});
+  const rows=domains.map(d=>{
+    const ds=states[d.id]||{},phase=ds.currentPhase||1;
+    const hwkItems=getHwkItems(d,ds,phase);
+    const hwkChecked=getHwkChecked(ds,phase);
+    const pct=hwkItems.length>0?Math.round(hwkChecked.filter(Boolean).length/hwkItems.length*100):0;
+    const gyr=ds.gyrOverride||GYR_AUTO(pct),notes=ds.gyrNotes||'';
+    return{d,phase,pct,gyr,notes};
+  });
   const G=rows.filter(r=>r.gyr==='G').length,Y=rows.filter(r=>r.gyr==='Y').length,R=rows.filter(r=>r.gyr==='R').length;
   const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Snapshot — ${dateStr}</title><style>*{box-sizing:border-box}body{font-family:system-ui,sans-serif;background:#0f1117;color:#e8eaf0;padding:24px;max-width:960px;margin:0 auto}h1{font-size:22px;font-weight:800}h1 span{color:#c9a84c}.meta{font-size:12px;color:#6b7280;margin-bottom:22px}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}.tile{background:#131720;border:1px solid #1e2336;border-radius:10px;padding:14px;text-align:center}.tile-val{font-size:28px;font-weight:800}.tile-lbl{font-size:10px;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-top:3px}.green{color:#22c55e}.yellow{color:#f59e0b}.red{color:#ef4444}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#1e2336;padding:9px 12px;text-align:left;font-size:9px;text-transform:uppercase;color:#94a3b8}td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.05)}.badge{display:inline-block;padding:2px 9px;border-radius:10px;font-size:9px;font-weight:800;text-transform:uppercase}.bG{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3)}.bY{background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.3)}.bR{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)}.bp1{background:#052e16;color:#4ade80;border:1px solid #166534}.bp2{background:#1c1007;color:#fb923c;border:1px solid #7c2d12}.bp3{background:#1a0a2e;color:#c084fc;border:1px solid #581c87}.pb{height:5px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}.pf{height:100%;border-radius:3px}</style></head><body><h1>Phase Anchor <span>Snapshot</span></h1><div class="meta">${label} · ${now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})} · ${now.toLocaleTimeString()}</div><div class="summary"><div class="tile"><div class="tile-val">${rows.length}</div><div class="tile-lbl">Domains</div></div><div class="tile"><div class="tile-val green">${G}</div><div class="tile-lbl">Green</div></div><div class="tile"><div class="tile-val yellow">${Y}</div><div class="tile-lbl">Yellow</div></div><div class="tile"><div class="tile-val red">${R}</div><div class="tile-lbl">Red</div></div></div><table><thead><tr><th>Domain</th><th>Phase</th><th>Progress</th><th>Status</th><th>Notes</th></tr></thead><tbody>${rows.map(({d,phase,pct,gyr,notes})=>{const pn=['Foundation','Operating','Optimizing'][phase-1],bc=phase===1?'#22c55e':phase===2?'#f97316':'#a855f7';return`<tr><td><strong>${d.fullName}</strong></td><td><span class="badge bp${phase}">P${phase} · ${pn}</span></td><td><div style="display:flex;align-items:center;gap:8px"><div class="pb" style="flex:1"><div class="pf" style="width:${pct}%;background:${bc}"></div></div><span style="font-size:11px;font-weight:700;color:#94a3b8">${pct}%</span></div></td><td><span class="badge b${gyr}">${gyr==='G'?'Green':gyr==='Y'?'Yellow':'Red'}</span></td><td style="color:#94a3b8">${notes||'—'}</td></tr>`;}).join('')}</tbody></table></body></html>`;
   const blob=new Blob([html],{type:'text/html'}),url=URL.createObjectURL(blob),a=Object.assign(document.createElement('a'),{href:url,download:`phase-snapshot-${viewMode}-${dateStr}.html`});a.click();URL.revokeObjectURL(url);
@@ -544,32 +614,39 @@ function App(){
   const toastTimer=useRef(null);
   useEffect(()=>{saveState(states);setToast(true);clearTimeout(toastTimer.current);toastTimer.current=setTimeout(()=>setToast(false),1800);},[states]);
   const patchDs=useCallback((id,patch)=>setStates(prev=>{const ds=prev[id]||{};return{...prev,[id]:{...ds,...patch}};}),[]);
-  const toggleHwk=useCallback((id,i)=>setStates(prev=>{const ds=prev[id]||{},c=[...(ds.hwkChecked||[])];c[i]=!c[i];return{...prev,[id]:{...ds,hwkChecked:c}};}),[]);
-  const saveHwk=useCallback((id,items)=>setStates(prev=>{const ds=prev[id]||{};return{...prev,[id]:{...ds,customHwkItems:items,hwkChecked:[]}};}), []);
+
+  // FIX: toggleHwk now takes phase as argument, writes to ds.hwkChecked[phase]
+  const toggleHwk=useCallback((id,phase,i)=>setStates(prev=>{
+    const ds=prev[id]||{};
+    const allChecked={...(ds.hwkChecked||{})};
+    const phaseChecked=[...(allChecked[phase]||[])];
+    phaseChecked[i]=!phaseChecked[i];
+    allChecked[phase]=phaseChecked;
+    return{...prev,[id]:{...ds,hwkChecked:allChecked}};
+  }),[]);
+
   const savePhaseHwk=useCallback((id,p,text)=>setStates(prev=>{const ds=prev[id]||{},customPhaseHwk={...(ds.customPhaseHwk||{}),[p]:text};return{...prev,[id]:{...ds,customPhaseHwk}};}),[]);
   const saveDates=useCallback((id,dates)=>patchDs(id,{phaseTargetDates:dates}),[patchDs]);
   const setPhase=useCallback((id,p)=>patchDs(id,{currentPhase:p}),[patchDs]);
   const setGyr=useCallback((id,g)=>patchDs(id,{gyrOverride:g}),[patchDs]);
   const setGyrNotes=useCallback((id,n)=>patchDs(id,{gyrNotes:n}),[patchDs]);
-  const domains=TEAM_ONLY?DOMAINS.filter(d=>d.team):DOMAINS;
-  const totalHwk=domains.reduce((s,d)=>s+getHwkItems(d,states[d.id]||{}).length,0);
-  const checkedHwk=domains.reduce((s,d)=>s+(states[d.id]||{}).hwkChecked?.filter(Boolean).length||0,0);
-  const overallPct=Math.round(checkedHwk/totalHwk*100)||0;
+
+  const domains=DOMAINS; // personal view shows all
+  const totalHwk=domains.reduce((s,d)=>{
+    const ds=states[d.id]||{},phase=ds.currentPhase||1;
+    return s+getHwkItems(d,ds,phase).length;
+  },0);
+  const checkedHwk=domains.reduce((s,d)=>{
+    const ds=states[d.id]||{},phase=ds.currentPhase||1;
+    return s+getHwkChecked(ds,phase).filter(Boolean).length;
+  },0);
+  const overallPct=totalHwk>0?Math.round(checkedHwk/totalHwk*100):0;
   const phaseCounts=domains.reduce((a,d)=>{const p=(states[d.id]||{}).currentPhase||1;a[p]=(a[p]||0)+1;return a;},{});
 
   const Header=({sub,children})=>(
     <div className="hdr">
       <div className="hdr-left">
-        <div className="hdr-kompass-logo">
-          <KompassLogo/>
-          {/* SVG fallback if image fails */}
-          <svg style={{display:'none'}} width="26" height="26" viewBox="0 0 40 40" fill="none">
-            <circle cx="20" cy="20" r="19" stroke="#c9a84c" strokeWidth="1.2" fill="none" opacity="0.4"/>
-            <circle cx="20" cy="20" r="3" fill="#c9a84c"/>
-            <path d="M20 20 L17 8 L20 11 L23 8 Z" fill="#c9a84c"/>
-            <path d="M20 20 L17 32 L20 29 L23 32 Z" fill="#4b5563"/>
-          </svg>
-        </div>
+        <div className="hdr-kompass-logo"><KompassLogo/></div>
         <div className="hdr-text"><div className="hdr-title">Phase Anchor</div><div className="hdr-sub">{sub}</div></div>
       </div>
       <div className="hdr-right">{children}</div>
@@ -580,25 +657,25 @@ function App(){
     const dom=DOMAINS.find(d=>d.id===detail);
     return(<div>
       <Header sub="Personal Scoreboard">
-        {SHOW_SWITCH_LINK&&<a href={OTHER_VIEW_HREF} className="snap-btn">{OTHER_VIEW_LABEL}</a>}
+        <a href="/phase-anchor-team.html" className="snap-btn">Team View →</a>
         <button className="snap-btn" style={{background:'none',border:'none',color:'#94a3b8',cursor:'pointer',display:'flex',alignItems:'center',gap:4}} onClick={()=>setDetail(null)}><BackIco/> Back</button>
       </Header>
-      <DetailPage domain={dom} ds={states[dom.id]||{}} onBack={()=>setDetail(null)} onToggleHwk={toggleHwk} onSetPhase={setPhase} onSaveHwk={saveHwk} onSavePhaseHwk={savePhaseHwk} onSaveDates={saveDates}/>
+      <DetailPage domain={dom} ds={states[dom.id]||{}} onBack={()=>setDetail(null)} onToggleHwk={toggleHwk} onSetPhase={setPhase} onSavePhaseHwk={savePhaseHwk} onSaveDates={saveDates}/>
       <div className={`save-toast ${toast?'show':''}`}>Auto-saved</div>
     </div>);
   }
 
   const editDomain=editId?DOMAINS.find(d=>d.id===editId):null;
   return(<>
-    <Header sub={VIEW_LABEL}>
-      {SHOW_SWITCH_LINK&&<a href={OTHER_VIEW_HREF} className="snap-btn">{OTHER_VIEW_LABEL}</a>}
+    <Header sub="Personal Scoreboard">
+      <a href="/phase-anchor-team.html" className="snap-btn">Team View →</a>
       <button className={`snap-btn ${showGyr?'active':''}`} onClick={()=>setShowGyr(g=>!g)}>{showGyr?'✓ GYR Mode':'⬤ GYR Mode'}</button>
-      <button className="snap-btn" onClick={()=>captureSnapshot(domains,states,TEAM_ONLY?'team':'personal')}>📸 Snapshot</button>
-      <div className="ovr"><div className="ovr-pct">{overallPct}%</div><div className="ovr-lbl">Phase 1 complete</div></div>
+      <button className="snap-btn" onClick={()=>captureSnapshot(domains,states,'personal')}>📸 Snapshot</button>
+      <div className="ovr"><div className="ovr-pct">{overallPct}%</div><div className="ovr-lbl">Current phase</div></div>
     </Header>
     <div className="leg"><div className="leg-item"><div className="leg-dot" style={{background:'var(--p1)'}}/><span>Phase 1 — Foundation ({phaseCounts[1]||0})</span></div><div className="leg-item"><div className="leg-dot" style={{background:'var(--p2)'}}/><span>Phase 2 — Operating ({phaseCounts[2]||0})</span></div><div className="leg-item"><div className="leg-dot" style={{background:'var(--p3)'}}/><span>Phase 3 — Optimizing ({phaseCounts[3]||0})</span></div><div className="leg-right">{checkedHwk}/{totalHwk} criteria met</div></div>
     <div className="grid">{domains.map(domain=>(<DomainCard key={domain.id} domain={domain} ds={states[domain.id]||{}} onToggleHwk={toggleHwk} onSetPhase={setPhase} onOpenDetail={setDetail} onEdit={setEditId} onSetGyr={setGyr} onSetGyrNotes={setGyrNotes} showGyr={showGyr}/>))}</div>
-    {editDomain&&<EditModal domain={editDomain} ds={states[editId]||{}} onSave={patch=>patchDs(editId,patch)} onClose={()=>setEditId(null)}/>}
+    {editDomain&&<EditModal domain={editDomain} ds={states[editId]||{}} phase={(states[editId]||{}).currentPhase||1} onSave={patch=>patchDs(editId,patch)} onClose={()=>setEditId(null)}/>}
     <div className={`save-toast ${toast?'show':''}`}>Auto-saved</div>
   </>);
 }
