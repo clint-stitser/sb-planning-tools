@@ -2,54 +2,92 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phase Anchor (Personal) — Stitser BUILT</title>
-  <!-- Using jsdelivr — significantly more reliable than unpkg on mobile -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Phase Anchor — Stitser BUILT</title>
+
+  <!-- ── PWA / Standalone container (req #1) ── -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Phase Anchor" />
+  <meta name="application-name" content="Phase Anchor" />
+  <meta name="theme-color" content="#0a0d14" />
+  <link rel="manifest" href="/phase-anchor-manifest.json" />
+  <!-- Home-screen icon: reuse Kompass compass from the repo -->
+  <link rel="apple-touch-icon" href="https://raw.githubusercontent.com/clint-stitser/sb-planning-tools/main/assets/img/kompass-icon-180.png" />
+
+  <!-- React + Babel (pre-compiled path preferred; babel fallback for mobile) -->
   <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.23.5/babel.min.js"></script>
+
   <style>
     *{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e8eaf0;min-height:100vh}
+    body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f1117;color:#e8eaf0;min-height:100vh;
+      /* Safe area insets for iPhone notch / Dynamic Island */
+      padding-top:env(safe-area-inset-top);
+      padding-bottom:env(safe-area-inset-bottom);
+    }
     :root{
       --p1:#22c55e;--p1-bg:#052e16;--p1-border:#166534;--p1-muted:#4ade80;
       --p2:#f97316;--p2-bg:#1c1007;--p2-border:#7c2d12;--p2-muted:#fb923c;
       --p3:#a855f7;--p3-bg:#1a0a2e;--p3-border:#581c87;--p3-muted:#c084fc;
       --g:#22c55e;--y:#f59e0b;--r:#ef4444;
+      --gold:#c9a84c;
     }
     /* loading state */
     #react-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px;color:#4b5563}
-    #react-loading .spin{width:24px;height:24px;border:2px solid #1e2336;border-top-color:#c9a84c;border-radius:50%;animation:spin 1s linear infinite}
+    #react-loading .spin{width:24px;height:24px;border:2px solid #1e2336;border-top-color:var(--gold);border-radius:50%;animation:spin 1s linear infinite}
     #react-loading p{font-size:12px}
     @keyframes spin{to{transform:rotate(360deg)}}
 
+    /* ── HEADER ── */
     .hdr{background:#0a0d14;border-bottom:1px solid #1e2336;padding:10px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;gap:12px;flex-wrap:wrap}
     .hdr-left{display:flex;align-items:center;gap:10px}
-    .hdr-logo{font-size:10px;font-weight:700;letter-spacing:.15em;color:#4b5563;text-transform:uppercase}
-    .hdr-title{font-size:15px;font-weight:700;color:#f1f5f9}
-    .hdr-sub{font-size:10px;color:#6b7280;margin-top:1px}
+
+    /* Kompass logo (req #3) */
+    .hdr-kompass-logo{width:36px;height:36px;border-radius:10px;background:#181c28;border:1px solid #2d3555;display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;overflow:hidden}
+    .hdr-kompass-logo svg{width:26px;height:26px}
+
+    .hdr-text .hdr-title{font-size:15px;font-weight:700;color:#f1f5f9}
+    .hdr-text .hdr-sub{font-size:10px;color:#6b7280;margin-top:1px}
     .hdr-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
     .snap-btn{padding:6px 14px;font-size:11px;font-weight:700;background:#1e2336;border:1px solid #2d3555;border-radius:7px;color:#94a3b8;cursor:pointer;transition:all .15s;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center}
-    .snap-btn:hover{border-color:#c9a84c;color:#c9a84c}
+    .snap-btn:hover{border-color:var(--gold);color:var(--gold)}
     .ovr{background:#1e2336;border:1px solid #2d3555;border-radius:8px;padding:5px 12px;text-align:center}
     .ovr-pct{font-size:18px;font-weight:800;color:#f1f5f9;line-height:1}
     .ovr-lbl{font-size:9px;color:#6b7280;margin-top:2px}
+
     .leg{display:flex;gap:14px;padding:8px 18px;background:#0a0d14;border-bottom:1px solid #1e2336;flex-wrap:wrap;align-items:center}
     .leg-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#94a3b8}
     .leg-dot{width:9px;height:9px;border-radius:50%}
     .leg-right{margin-left:auto;font-size:10px;color:#374151}
+
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(310px,1fr));gap:11px;padding:14px;max-width:1600px;margin:0 auto}
+
+    /* ── CARDS ── */
     .card{border-radius:12px;overflow:hidden;border:1px solid;transition:transform .15s}
     .card.p1{background:var(--p1-bg);border-color:var(--p1-border)}
     .card.p2{background:var(--p2-bg);border-color:var(--p2-border)}
     .card.p3{background:var(--p3-bg);border-color:var(--p3-border)}
-    .card-head{padding:13px 15px 8px;display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+
+    /* Card collapse toggle (req #2) */
+    .card-header-bar{display:flex;align-items:center;justify-content:space-between;padding:11px 15px 9px;cursor:pointer;user-select:none;gap:8px}
+    .card-header-left{display:flex;flex-direction:column;flex:1;min-width:0}
     .card-id{font-size:10px;font-weight:700;letter-spacing:.1em;opacity:.5;text-transform:uppercase;margin-bottom:2px}
     .card-name{font-size:14px;font-weight:700;color:#f1f5f9;line-height:1.3}
+    .card-header-right{display:flex;align-items:center;gap:7px;flex-shrink:0}
     .pbadge{flex-shrink:0;border-radius:20px;padding:3px 9px;font-size:9px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
     .p1 .pbadge{background:#166534;color:#4ade80}
     .p2 .pbadge{background:#7c2d12;color:#fb923c}
     .p3 .pbadge{background:#581c87;color:#c084fc}
+    .card-collapse-icon{font-size:11px;color:#4b5563;transition:transform .2s;display:inline-block;line-height:1}
+    .card-collapse-icon.open{transform:rotate(180deg)}
+
+    /* card body — collapses */
+    .card-body{overflow:hidden;transition:max-height .3s ease}
+    .card-body.collapsed{max-height:0!important}
+
     .prog{padding:0 15px 9px}
     .prog-row{display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px;color:#94a3b8}
     .prog-row span:last-child{font-weight:700}
@@ -169,11 +207,12 @@
       .tl-phase{border-right:none;border-bottom:1px solid #1e2336}
       .tl-phase:last-child{border-bottom:none}
     }
+
     /* ── KOMPASS LAUNCHER ── */
     .kl-wrap{position:sticky;top:0;z-index:190}
     .kl-bar{background:#0a0d14;border-bottom:1px solid #1e2336;padding:0 18px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;min-height:40px}
     .kl-bar-left{display:flex;align-items:center;gap:10px;padding:9px 0}
-    .kl-compass{width:22px;height:22px;border-radius:6px;background:#f0a500;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .kl-compass{width:22px;height:22px;border-radius:6px;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0}
     .kl-bar-title{font-size:12px;font-weight:700;color:#f1f5f9;letter-spacing:.02em}
     .kl-bar-sub{font-size:10px;color:#6b7280;margin-left:6px}
     .kl-bar-right{display:flex;align-items:center;gap:8px}
@@ -184,9 +223,9 @@
     .kl-panel.open{display:block}
     .kl-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:12px}
     .kl-tab{padding:5px 12px;font-size:11px;font-weight:600;border-radius:6px;border:1px solid #2d3555;background:transparent;color:#6b7280;cursor:pointer;white-space:nowrap;font-family:inherit}
-    .kl-tab.active{background:rgba(201,168,76,.13);color:#c9a84c;border-color:rgba(201,168,76,.35)}
+    .kl-tab.active{background:rgba(201,168,76,.13);color:var(--gold);border-color:rgba(201,168,76,.35)}
     .kl-search{width:100%;background:#131720;border:1px solid #2d3555;border-radius:8px;padding:8px 12px;color:#e8eaf0;font-size:13px;outline:none;font-family:inherit;margin-bottom:10px;box-sizing:border-box}
-    .kl-search:focus{border-color:#c9a84c}
+    .kl-search:focus{border-color:var(--gold)}
     .kl-search::placeholder{color:#4b5563}
     .kl-section-label{font-size:9px;font-weight:700;letter-spacing:.1em;color:#4b5563;text-transform:uppercase;margin:10px 0 6px 2px}
     .kl-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:7px;margin-bottom:4px}
@@ -199,12 +238,12 @@
     .kl-card-name{font-size:12px;font-weight:700;color:#f1f5f9}
     .kl-card-desc{font-size:10px;color:#6b7280;margin-top:1px;line-height:1.3}
     .kl-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-    .kl-dot-personal{background:#f0a500;animation:klpulse 2.5s ease-in-out infinite}
+    .kl-dot-personal{background:var(--gold);animation:klpulse 2.5s ease-in-out infinite}
     .kl-dot-business{background:#a78bfa;animation:klpulse2 2.5s ease-in-out infinite}
     .kl-dot-sbos{background:#58a6ff}
     .kl-dot-drive{background:#3fb950}
     .kl-launch{padding:5px 10px;border-radius:6px;border:none;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0}
-    .kl-btn-personal{background:rgba(240,165,0,.12);color:#f0a500;border:1px solid rgba(240,165,0,.2)}
+    .kl-btn-personal{background:rgba(240,165,0,.12);color:var(--gold);border:1px solid rgba(240,165,0,.2)}
     .kl-btn-business{background:rgba(167,139,250,.12);color:#a78bfa;border:1px solid rgba(167,139,250,.2)}
     .kl-btn-sbos{background:rgba(88,166,255,.12);color:#58a6ff;border:1px solid rgba(88,166,255,.2)}
     .kl-btn-drive{background:rgba(63,185,80,.12);color:#3fb950;border:1px solid rgba(63,185,80,.2)}
@@ -216,7 +255,7 @@
     .kl-project-badge span{font-weight:600}
     .kl-detail-actions{display:flex;gap:6px;justify-content:flex-end}
     .kl-copy{padding:5px 10px;border-radius:6px;background:#1a1f2e;color:#94a3b8;border:1px solid #2d3555;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit}
-    .kl-go{padding:5px 10px;border-radius:6px;background:#c9a84c;color:#000;border:none;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit}
+    .kl-go{padding:5px 10px;border-radius:6px;background:var(--gold);color:#000;border:none;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit}
     .kl-empty{text-align:center;padding:32px 16px;color:#4b5563;font-size:12px}
     .kl-toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1e2336;border:1px solid #374151;border-radius:8px;padding:7px 18px;font-size:11px;color:#94a3b8;opacity:0;transition:opacity .25s;pointer-events:none;z-index:9999;white-space:nowrap}
     .kl-toast.show{opacity:1}
@@ -269,9 +308,42 @@
 </div>
 
 <script>
+/* ─────────────────────────────────────────────
+   KOMPASS LAUNCHER
+   req #4: Claude links use native app deep link
+   Pattern: try claude:// URI; fall back to https
+───────────────────────────────────────────── */
 (function(){
-  var PERSONAL='https://claude.ai/project/019dd4b5-03e8-75b3-8171-fa36beaf8b84';
-  var BUSINESS='https://claude.ai/project/019d97d9-b09e-7691-a3f9-09eacb2125b6';
+  var PERSONAL_ID='019dd4b5-03e8-75b3-8171-fa36beaf8b84';
+  var BUSINESS_ID='019d97d9-b09e-7691-a3f9-09eacb2125b6';
+
+  /* Opens the Claude native app if installed (iOS/macOS),
+     otherwise falls back to claude.ai in the browser.       */
+  function openClaude(projectId) {
+    var webUrl = 'https://claude.ai/project/' + projectId;
+    /* The claude:// scheme is handled by the Claude iOS & macOS apps */
+    var nativeUrl = 'claude://project/' + projectId;
+
+    /* Try native; if it fails (no app) the iframe trick keeps the page alive */
+    var iframe = document.createElement('iframe');
+    iframe.style.display = 'none';
+    document.body.appendChild(iframe);
+    iframe.src = nativeUrl;
+
+    /* Give native app 1.2s to respond; if page is still visible open web */
+    var t = setTimeout(function() {
+      document.body.removeChild(iframe);
+      window.open(webUrl, '_blank');
+    }, 1200);
+
+    /* If native app took over, page will blur — cancel the web fallback */
+    window.addEventListener('blur', function onBlur() {
+      clearTimeout(t);
+      try { document.body.removeChild(iframe); } catch(e){}
+      window.removeEventListener('blur', onBlur);
+    });
+  }
+
   var ITEMS=[
     {id:"morning",  layer:"rituals", icon:"&#127749;", name:"Morning ritual",        desc:"13-step daily launch sequence",               p:"personal", prompt:"Morning ritual",             why:"Sets your direction before the day runs you."},
     {id:"evening",  layer:"rituals", icon:"&#127769;", name:"Evening ritual",        desc:"Debrief, score, capture for tomorrow",         p:"personal", prompt:"Evening ritual",             why:"Close the loop. Score your Big 3."},
@@ -305,12 +377,14 @@
   var LAYER_ORDER=["rituals","ea","ops","finance","knowledge"];
   var PROJ_LABEL={personal:"Clint's Kompass",business:"Kompass Early Adopters",sbos:"S-BOS",drive:"Drive"};
   var activeTab="all",searchQ="",openCard=null,panelOpen=false;
+
   function klTogglePanel(){panelOpen=!panelOpen;document.getElementById("klPanel").classList.toggle("open",panelOpen);document.getElementById("klChevron").classList.toggle("open",panelOpen);if(panelOpen&&!document.getElementById("klCards").innerHTML)klRender();}
   window.klTogglePanel=klTogglePanel;
   function klTab(l,b){activeTab=l;openCard=null;document.querySelectorAll(".kl-tab").forEach(function(t){t.classList.remove("active");});b.classList.add("active");klRender();}
   window.klTab=klTab;
   function klFilter(q){searchQ=q.toLowerCase();openCard=null;klRender();}
   window.klFilter=klFilter;
+
   function klRender(){
     var c=document.getElementById("klCards");
     var f=ITEMS.filter(function(i){return(activeTab==="all"||i.layer===activeTab)&&(!searchQ||i.name.toLowerCase().indexOf(searchQ)>=0||i.desc.toLowerCase().indexOf(searchQ)>=0||(i.prompt||"").toLowerCase().indexOf(searchQ)>=0);});
@@ -326,6 +400,7 @@
     });
     c.innerHTML=h;
   }
+
   function escH(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
   function klCard(item){
     var o=openCard===item.id;
@@ -346,23 +421,38 @@
       +"<button class='kl-go' onclick='klLaunch(event,\""+item.id+"\")'>Open "+pl+" &#8599;</button>"
       +"</div></div></div>";
   }
+
   function klToggleCard(id){openCard=openCard===id?null:id;klRender();if(openCard){var el=document.getElementById("klc-"+id);if(el)setTimeout(function(){el.scrollIntoView({behavior:"smooth",block:"nearest"});},40);}}
   window.klToggleCard=klToggleCard;
+
+  /* req #4 — use native deep link helper */
   function klLaunch(e,id){
     e.stopPropagation();
     var item=ITEMS.find(function(i){return i.id===id;});
     if(!item)return;
     if(item.url){window.open(item.url,"_blank");return;}
-    var pu=item.p==="business"?BUSINESS:PERSONAL;
-    if(item.prompt&&navigator.clipboard){navigator.clipboard.writeText(item.prompt).then(function(){klToastMsg("Copied — opening "+PROJ_LABEL[item.p]);}).catch(function(){klToastMsg("Opening "+PROJ_LABEL[item.p]);});}
-    else{klToastMsg("Opening "+PROJ_LABEL[item.p]);}
-    setTimeout(function(){window.open(pu,"_blank");},300);
+    var pid=item.p==="business"?BUSINESS_ID:PERSONAL_ID;
+    if(item.prompt&&navigator.clipboard){
+      navigator.clipboard.writeText(item.prompt).then(function(){
+        klToastMsg("Copied — opening "+PROJ_LABEL[item.p]);
+      }).catch(function(){klToastMsg("Opening "+PROJ_LABEL[item.p]);});
+    } else {
+      klToastMsg("Opening "+PROJ_LABEL[item.p]);
+    }
+    setTimeout(function(){ openClaude(pid); }, 300);
   }
   window.klLaunch=klLaunch;
+
   function klCopy(e,id){e.stopPropagation();var item=ITEMS.find(function(i){return i.id===id;});if(!item||!item.prompt)return;navigator.clipboard.writeText(item.prompt).then(function(){klToastMsg("Copied ✓");}).catch(function(){klToastMsg("Copy failed");});}
   window.klCopy=klCopy;
+
   var klT;
   function klToastMsg(msg){var t=document.getElementById("klToast");t.textContent=msg;t.classList.add("show");clearTimeout(klT);klT=setTimeout(function(){t.classList.remove("show");},2800);}
+
+  /* expose openClaude globally for React component use */
+  window._openClaude=openClaude;
+  window._PERSONAL_ID=PERSONAL_ID;
+  window._BUSINESS_ID=BUSINESS_ID;
 })();
 </script>
 
@@ -390,6 +480,24 @@ const GYR_AUTO=p=>p>=67?'G':p>=33?'Y':'R';
 const CheckIco=()=><svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const ChevIco=()=><svg viewBox="0 0 12 12" fill="none"><path d="M2 4l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 const BackIco=()=><svg viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>;
+
+/* Kompass compass SVG logo (req #3) */
+const KompassLogo=()=>(
+  <svg width="26" height="26" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="20" cy="20" r="19" stroke="#c9a84c" strokeWidth="1.2" fill="none" opacity="0.4"/>
+    <circle cx="20" cy="20" r="3" fill="#c9a84c"/>
+    {/* N needle */}
+    <path d="M20 20 L17 8 L20 11 L23 8 Z" fill="#c9a84c"/>
+    {/* S needle */}
+    <path d="M20 20 L17 32 L20 29 L23 32 Z" fill="#4b5563"/>
+    {/* Cardinal marks */}
+    <text x="19" y="5.5" fill="#c9a84c" fontSize="4" fontWeight="700" fontFamily="system-ui">N</text>
+    <text x="19" y="37.5" fill="#4b5563" fontSize="4" fontFamily="system-ui">S</text>
+    <text x="2" y="21" fill="#4b5563" fontSize="4" fontFamily="system-ui">W</text>
+    <text x="34" y="21" fill="#4b5563" fontSize="4" fontFamily="system-ui">E</text>
+  </svg>
+);
+
 const TEAM_ONLY=false,SHOW_SWITCH_LINK=true,OTHER_VIEW_HREF='/phase-anchor-team.html',OTHER_VIEW_LABEL='Team View →',VIEW_LABEL='Personal Scoreboard';
 const getHwkItems=(d,ds)=>ds.customHwkItems||d.hwkItems;
 const getPhaseHwk=(d,ds,p)=>(ds.customPhaseHwk&&ds.customPhaseHwk[p]!=null)?ds.customPhaseHwk[p]:d.phases[p].hwk;
@@ -422,8 +530,10 @@ function EditModal({domain:d,ds,onSave,onClose}){
   );
 }
 
+/* req #2: Domain card with collapsible body (header tap = collapse/expand all content) */
 function DomainCard({domain:d,ds,onToggleHwk,onSetPhase,onOpenDetail,onEdit,onSetGyr,onSetGyrNotes,showGyr}){
   const[expanded,setExpanded]=useState(false);
+  const[collapsed,setCollapsed]=useState(false); // card body collapse (req #2)
   const phase=ds.currentPhase||1,pcfg=PCFG[phase],hwkChecked=ds.hwkChecked||[],hwkItems=getHwkItems(d,ds);
   const pct=hwkItems.length>0?Math.round(hwkChecked.filter(Boolean).length/hwkItems.length*100):0;
   const targetDate=ds.phaseTargetDates?.[phase],gyr=ds.gyrOverride||GYR_AUTO(pct);
@@ -439,27 +549,41 @@ function DomainCard({domain:d,ds,onToggleHwk,onSetPhase,onOpenDetail,onEdit,onSe
   })();
   return(
     <div className={`card ${pcfg.cls}`}>
-      <div className="card-head"><div style={{flex:1,minWidth:0}}><div className="card-id">{d.id}</div><div className="card-name">{d.label}</div></div><div className="pbadge">{pcfg.badge}</div></div>
-      <div className="prog"><div className="prog-row"><span>Phase Gate Progress</span><span>{pct}%</span></div><div className="prog-track"><div className="prog-fill" style={{width:`${pct}%`}}/></div></div>
-      <div className="target-date" onClick={()=>onOpenDetail(d.id)}>
-        <div style={{display:'flex',alignItems:'center',gap:5}}><span style={{fontSize:11}}>{ds2.icon}</span><span style={{color:'#6b7280'}}>Phase {phase} target:</span><span style={{color:ds2.color,fontWeight:700}}>{ds2.label}</span></div>
-        {ds2.note&&targetDate&&<span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:4,background:ds2.color==='#ef4444'?'rgba(239,68,68,.12)':ds2.color==='#f59e0b'?'rgba(245,158,11,.12)':'rgba(255,255,255,.06)',color:ds2.color}}>{ds2.note}</span>}
+      {/* Tappable header — collapses/expands body (req #2) */}
+      <div className="card-header-bar" onClick={()=>setCollapsed(c=>!c)}>
+        <div className="card-header-left">
+          <div className="card-id">{d.id}</div>
+          <div className="card-name">{d.label}</div>
+        </div>
+        <div className="card-header-right">
+          <div className="pbadge">{pcfg.badge}</div>
+          <span className={`card-collapse-icon ${collapsed?'':'open'}`}>▾</span>
+        </div>
       </div>
-      <div className="hwk" onClick={e=>e.stopPropagation()}>
-        <div className="hwk-lbl">✓ How We Know</div>
-        {hwkItems.map((item,i)=>(<div key={i} className="hwk-item" onClick={()=>onToggleHwk(d.id,i)}><div className={`chk ${hwkChecked[i]?'on':''}`}>{hwkChecked[i]&&<CheckIco/>}</div><div className={`hwk-txt ${hwkChecked[i]?'done':''}`}>{item}</div></div>))}
+
+      {/* Card body — animated collapse */}
+      <div className={`card-body ${collapsed?'collapsed':''}`} style={{maxHeight: collapsed ? 0 : 2000}}>
+        <div className="prog"><div className="prog-row"><span>Phase Gate Progress</span><span>{pct}%</span></div><div className="prog-track"><div className="prog-fill" style={{width:`${pct}%`}}/></div></div>
+        <div className="target-date" onClick={()=>onOpenDetail(d.id)}>
+          <div style={{display:'flex',alignItems:'center',gap:5}}><span style={{fontSize:11}}>{ds2.icon}</span><span style={{color:'#6b7280'}}>Phase {phase} target:</span><span style={{color:ds2.color,fontWeight:700}}>{ds2.label}</span></div>
+          {ds2.note&&targetDate&&<span style={{fontSize:9,fontWeight:700,padding:'1px 6px',borderRadius:4,background:ds2.color==='#ef4444'?'rgba(239,68,68,.12)':ds2.color==='#f59e0b'?'rgba(245,158,11,.12)':'rgba(255,255,255,.06)',color:ds2.color}}>{ds2.note}</span>}
+        </div>
+        <div className="hwk" onClick={e=>e.stopPropagation()}>
+          <div className="hwk-lbl">✓ How We Know</div>
+          {hwkItems.map((item,i)=>(<div key={i} className="hwk-item" onClick={()=>onToggleHwk(d.id,i)}><div className={`chk ${hwkChecked[i]?'on':''}`}>{hwkChecked[i]&&<CheckIco/>}</div><div className={`hwk-txt ${hwkChecked[i]?'done':''}`}>{item}</div></div>))}
+        </div>
+        {showGyr&&(<div className="gyr-row" onClick={e=>e.stopPropagation()}><span className="gyr-lbl">Status</span>{['G','Y','R'].map(g=>(<button key={g} className={`gyr-btn ${g} ${gyr===g?'sel':''}`} onClick={()=>onSetGyr(d.id,ds.gyrOverride===g?null:g)}>{g==='G'?'Green':g==='Y'?'Yellow':'Red'}</button>))}<div className="gyr-notes"><input placeholder="Note for snapshot…" value={ds.gyrNotes||''} onChange={e=>onSetGyrNotes(d.id,e.target.value)}/></div></div>)}
+        <div className="card-actions" onClick={e=>e.stopPropagation()}><button className="act-btn" onClick={()=>onEdit(d.id)}>✏ Edit Outcomes</button><button className="act-btn" onClick={()=>onOpenDetail(d.id)}>↗ Open Details</button></div>
+        {expanded&&(<div className="exp-detail" onClick={e=>e.stopPropagation()}><div className="pnav">{[1,2,3].map(p=>(<button key={p} className={`pnav-btn ${phase===p?`a${p}`:''}`} onClick={()=>onSetPhase(d.id,p)}>Phase {p}</button>))}</div>{[1,2,3].map(p=>(<div key={p} className="psec"><div className="psec-hd"><span className={`psec-badge ${PCFG[p].bcls}`}>P{p}</span><span className="psec-ttl">{d.phases[p].name}</span></div><ul className="pbullets">{d.phases[p].bullets.map((b,i)=><li key={i}>{b}</li>)}</ul><div className="hwk-callout"><strong>How We Know · </strong>{d.phases[p].hwk}</div></div>))}</div>)}
+        <div className={`exp-tog ${expanded?'open':''}`} onClick={()=>setExpanded(e=>!e)}>{expanded?'Collapse roadmap':'View full roadmap'}<ChevIco/></div>
       </div>
-      {showGyr&&(<div className="gyr-row" onClick={e=>e.stopPropagation()}><span className="gyr-lbl">Status</span>{['G','Y','R'].map(g=>(<button key={g} className={`gyr-btn ${g} ${gyr===g?'sel':''}`} onClick={()=>onSetGyr(d.id,ds.gyrOverride===g?null:g)}>{g==='G'?'Green':g==='Y'?'Yellow':'Red'}</button>))}<div className="gyr-notes"><input placeholder="Note for snapshot…" value={ds.gyrNotes||''} onChange={e=>onSetGyrNotes(d.id,e.target.value)}/></div></div>)}
-      <div className="card-actions" onClick={e=>e.stopPropagation()}><button className="act-btn" onClick={()=>onEdit(d.id)}>✏ Edit Outcomes</button><button className="act-btn" onClick={()=>onOpenDetail(d.id)}>↗ Open Details</button></div>
-      {expanded&&(<div className="exp-detail" onClick={e=>e.stopPropagation()}><div className="pnav">{[1,2,3].map(p=>(<button key={p} className={`pnav-btn ${phase===p?`a${p}`:''}`} onClick={()=>onSetPhase(d.id,p)}>Phase {p}</button>))}</div>{[1,2,3].map(p=>(<div key={p} className="psec"><div className="psec-hd"><span className={`psec-badge ${PCFG[p].bcls}`}>P{p}</span><span className="psec-ttl">{d.phases[p].name}</span></div><ul className="pbullets">{d.phases[p].bullets.map((b,i)=><li key={i}>{b}</li>)}</ul><div className="hwk-callout"><strong>How We Know · </strong>{d.phases[p].hwk}</div></div>))}</div>)}
-      <div className={`exp-tog ${expanded?'open':''}`} onClick={()=>setExpanded(e=>!e)}>{expanded?'Collapse':'View full roadmap'}<ChevIco/></div>
     </div>
   );
 }
 
 function DetailPage({domain:d,ds,onBack,onToggleHwk,onSetPhase,onSaveHwk,onSavePhaseHwk,onSaveDates}){
   const phase=ds.currentPhase||1,hwkChecked=ds.hwkChecked||[],hwkItems=getHwkItems(d,ds);
-  const pct=hwkItems.length>0?Math.round(hwkChecked.filter(Boolean).length/hwkItems.length*100):0;
+  const pct=hwkItems.length>0?Math.round(hwkChecked.filter(Boolean).length/d.hwkItems.length*100):0;
   const dates=ds.phaseTargetDates||{};
   const[editingHwk,setEditingHwk]=useState(false),[draftHwk,setDraftHwk]=useState([...hwkItems]);
   const[editingPhaseHwk,setEditingPhaseHwk]=useState(null),[draftPhaseHwk,setDraftPhaseHwk]=useState('');
@@ -539,7 +663,14 @@ function App(){
   if(detail){
     const dom=DOMAINS.find(d=>d.id===detail);
     return(<div>
-      <div className="hdr"><div className="hdr-left"><div><div className="hdr-logo">Stitser BUILT</div><div className="hdr-title">Phase Anchor</div><div className="hdr-sub">{VIEW_LABEL}</div></div></div><div className="hdr-right">{SHOW_SWITCH_LINK&&<a href={OTHER_VIEW_HREF} className="snap-btn">{OTHER_VIEW_LABEL}</a>}<button className="snap-btn" style={{background:'none',border:'none',color:'#94a3b8',cursor:'pointer',display:'flex',alignItems:'center',gap:4}} onClick={()=>setDetail(null)}><BackIco/> Back</button></div></div>
+      <div className="hdr">
+        <div className="hdr-left">
+          {/* Kompass logo (req #3) */}
+          <div className="hdr-kompass-logo"><KompassLogo/></div>
+          <div className="hdr-text"><div className="hdr-title">Phase Anchor</div><div className="hdr-sub">Personal Scoreboard</div></div>
+        </div>
+        <div className="hdr-right">{SHOW_SWITCH_LINK&&<a href={OTHER_VIEW_HREF} className="snap-btn">{OTHER_VIEW_LABEL}</a>}<button className="snap-btn" style={{background:'none',border:'none',color:'#94a3b8',cursor:'pointer',display:'flex',alignItems:'center',gap:4}} onClick={()=>setDetail(null)}><BackIco/> Back</button></div>
+      </div>
       <DetailPage domain={dom} ds={states[dom.id]||{}} onBack={()=>setDetail(null)} onToggleHwk={toggleHwk} onSetPhase={setPhase} onSaveHwk={saveHwk} onSavePhaseHwk={savePhaseHwk} onSaveDates={saveDates}/>
       <div className={`save-toast ${toast?'show':''}`}>Auto-saved</div>
     </div>);
@@ -548,7 +679,11 @@ function App(){
   const editDomain=editId?DOMAINS.find(d=>d.id===editId):null;
   return(<>
     <div className="hdr">
-      <div className="hdr-left"><div><div className="hdr-logo">Stitser BUILT</div><div className="hdr-title">Phase Anchor</div><div className="hdr-sub">{VIEW_LABEL}</div></div></div>
+      <div className="hdr-left">
+        {/* Kompass logo (req #3) */}
+        <div className="hdr-kompass-logo"><KompassLogo/></div>
+        <div className="hdr-text"><div className="hdr-title">Phase Anchor</div><div className="hdr-sub">{VIEW_LABEL}</div></div>
+      </div>
       <div className="hdr-right">{SHOW_SWITCH_LINK&&<a href={OTHER_VIEW_HREF} className="snap-btn">{OTHER_VIEW_LABEL}</a>}<button className={`snap-btn ${showGyr?'active':''}`} onClick={()=>setShowGyr(g=>!g)}>{showGyr?'✓ GYR Mode':'⬤ GYR Mode'}</button><button className="snap-btn" onClick={()=>captureSnapshot(domains,states,TEAM_ONLY?'team':'personal')}>📸 Snapshot</button><div className="ovr"><div className="ovr-pct">{overallPct}%</div><div className="ovr-lbl">Phase 1 complete</div></div></div>
     </div>
     <div className="leg"><div className="leg-item"><div className="leg-dot" style={{background:'var(--p1)'}}/><span>Phase 1 — Foundation ({phaseCounts[1]||0})</span></div><div className="leg-item"><div className="leg-dot" style={{background:'var(--p2)'}}/><span>Phase 2 — Operating ({phaseCounts[2]||0})</span></div><div className="leg-item"><div className="leg-dot" style={{background:'var(--p3)'}}/><span>Phase 3 — Optimizing ({phaseCounts[3]||0})</span></div><div className="leg-right">{checkedHwk}/{totalHwk} criteria met</div></div>
