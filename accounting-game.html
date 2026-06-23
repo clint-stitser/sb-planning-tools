@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Accounting Game — Stitser BUILT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap">
+<style>
+:root{
+  --ink:#0E0D0B;--ink2:#4A4640;--ink3:#8A847C;
+  --canvas:#F7F4EF;--paper:#FFFFFF;--rule:#E2DDD6;--rule2:#EDE9E2;
+  --gold:#C8961A;--gold-l:#FBF3DE;--gold-d:#9A7010;
+  --blue:#1A3F72;--blue-l:#EAF0F9;
+  --green:#1E5C36;--green-l:#E4F2E9;
+  --teal:#1A6B5A;--teal-l:#E0F2EE;
+  --red:#8C1F1F;--red-l:#F9E8E8;
+  --amber:#9C5A00;--amber-l:#FEF3E2;
+  --purple:#4A2070;--purple-l:#F0EAF8;
+  --mono:'DM Mono',monospace;
+  --display:'Syne',sans-serif;
+  --body:'DM Sans',sans-serif;
+  --ease:cubic-bezier(.16,1,.3,1);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{font-size:13px;}
+body{font-family:var(--body);background:var(--canvas);color:var(--ink);min-height:100vh;}
+.app-bar{background:var(--paper);border-bottom:1px solid var(--rule);padding:0 20px;display:flex;align-items:center;gap:0;height:48px;flex-shrink:0;position:sticky;top:0;z-index:100;}
+.app-bar-back{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink3);cursor:pointer;padding:0 14px 0 0;border-right:1px solid var(--rule);margin-right:14px;height:100%;transition:color .15s;text-decoration:none;}
+.app-bar-back:hover{color:var(--ink);}
+.app-bar-brand{display:flex;align-items:center;gap:8px;flex:1;}
+.app-bar-icon{width:28px;height:28px;background:var(--ink);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.app-bar-title{font-family:var(--display);font-size:14px;font-weight:800;letter-spacing:.01em;}
+.app-bar-sub{font-size:10px;color:var(--ink3);margin-left:4px;font-weight:400;}
+.app-bar-actions{display:flex;gap:8px;align-items:center;}
+.btn{padding:5px 12px;border-radius:5px;font-size:11px;font-weight:500;cursor:pointer;border:1px solid var(--rule);background:var(--paper);color:var(--ink2);font-family:var(--body);transition:all .15s;}
+.btn:hover{background:var(--canvas);border-color:var(--ink3);}
+.btn.primary{background:var(--teal);color:#fff;border-color:var(--teal);}
+.btn.primary:hover{background:#155248;}
+.btn.gold{background:var(--gold);color:#fff;border-color:var(--gold);}
+.btn.gold:hover{background:var(--gold-d);}
+.btn.ghost{background:transparent;border:none;color:var(--ink3);}
+.btn.ghost:hover{color:var(--ink);background:var(--canvas);}
+.score-bar{background:var(--ink);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:24px;flex-wrap:wrap;}
+.sb-item{display:flex;flex-direction:column;gap:2px;}
+.sb-label{font-size:8px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+.sb-val{font-family:var(--mono);font-size:13px;font-weight:500;color:#fff;}
+.sb-val.green{color:#4ade80;}.sb-val.red{color:#f87171;}.sb-val.amber{color:#fbbf24;}
+.sb-spacer{flex:1;}
+.on-track-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.03em;}
+.on-track-pill.green{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(34,197,94,.3);}
+.on-track-pill.yellow{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.3);}
+.on-track-pill.red{background:rgba(248,113,113,.15);color:#f87171;border:1px solid rgba(248,113,113,.3);}
+.score-dot{width:8px;height:8px;border-radius:50%;}
+.score-dot.green{background:#4ade80;}.score-dot.yellow{background:#fbbf24;}.score-dot.red{background:#f87171;}
+.period-nav{display:flex;align-items:center;gap:0;padding:0;background:var(--paper);border-bottom:1px solid var(--rule);height:44px;}
+.period-nav-btn{width:44px;height:44px;border:none;background:transparent;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;color:var(--ink3);transition:all .15s;flex-shrink:0;}
+.period-nav-btn:hover{background:var(--canvas);color:var(--ink);}
+.period-label{font-family:var(--display);font-size:15px;font-weight:800;color:var(--ink);padding:0 8px;min-width:160px;text-align:center;}
+.period-tabs{display:flex;gap:0;border-left:1px solid var(--rule);margin-left:8px;height:44px;overflow:hidden;}
+.period-tab{padding:0 12px;height:44px;line-height:44px;border-right:1px solid var(--rule);font-size:10px;font-weight:600;cursor:pointer;color:var(--ink3);transition:all .12s;white-space:nowrap;}
+.period-tab:hover{background:var(--canvas);color:var(--ink);}
+.period-tab.active{background:var(--ink);color:#fff;}
+.period-nav-right{margin-left:auto;display:flex;align-items:center;gap:10px;padding-right:16px;}
+.toggle-wrap{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink3);}
+.toggle{width:36px;height:20px;background:var(--rule2);border-radius:10px;cursor:pointer;position:relative;transition:background .2s;border:1px solid var(--rule);}
+.toggle.on{background:var(--teal);border-color:var(--teal);}
+.toggle-knob{width:14px;height:14px;background:#fff;border-radius:7px;position:absolute;top:2px;left:2px;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+.toggle.on .toggle-knob{transform:translateX(16px);}
+.main{padding:20px;max-width:1100px;}
+.del-section{background:var(--paper);border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin-bottom:14px;}
+.del-section-hdr{display:flex;align-items:center;gap:0;padding:0 16px;height:48px;border-bottom:1px solid var(--rule);cursor:pointer;user-select:none;}
+.del-section-hdr:hover{background:var(--canvas);}
+.del-hdr-color{width:4px;height:32px;border-radius:2px;flex-shrink:0;margin-right:12px;}
+.del-hdr-info{flex:1;}
+.del-hdr-title{font-family:var(--display);font-size:13px;font-weight:700;color:var(--ink);}
+.del-hdr-meta{font-size:10px;color:var(--ink3);margin-top:1px;}
+.del-hdr-due{font-family:var(--mono);font-size:11px;color:var(--ink2);margin:0 16px;}
+.del-hdr-score{display:flex;align-items:center;gap:8px;}
+.del-hdr-prog{width:80px;height:5px;background:var(--rule2);border-radius:3px;overflow:hidden;}
+.del-hdr-fill{height:100%;border-radius:3px;transition:width .4s var(--ease);}
+.del-hdr-pct{font-family:var(--mono);font-size:10px;color:var(--ink3);min-width:28px;text-align:right;}
+.del-chev{font-size:10px;color:var(--ink3);transition:transform .2s;margin-left:8px;flex-shrink:0;}
+.del-chev.open{transform:rotate(180deg);}
+.del-body{border-top:1px solid var(--rule2);}
+.del-body.collapsed{display:none;}
+.entity-row{display:grid;align-items:center;padding:10px 16px 10px 32px;border-bottom:1px solid var(--rule2);transition:background .1s;}
+.entity-row:last-child{border-bottom:none;}
+.entity-row:hover{background:var(--canvas);}
+.entity-row.layout-check{grid-template-columns:200px 1fr 90px;}
+.entity-row.layout-financial{grid-template-columns:200px 1fr 1fr 90px;}
+.er-name{font-size:12px;font-weight:500;color:var(--ink);}
+.er-name small{display:block;font-size:9px;color:var(--ink3);font-weight:400;margin-top:1px;}
+.er-check-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.check-item{display:flex;align-items:center;gap:5px;cursor:pointer;padding:3px 6px;border-radius:4px;transition:background .1s;}
+.check-item:hover{background:var(--rule2);}
+.checkbox{width:15px;height:15px;border-radius:3px;border:1.5px solid var(--rule);background:var(--paper);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s;}
+.checkbox.checked{background:var(--teal);border-color:var(--teal);}
+.checkbox svg{width:9px;height:9px;}
+.check-label{font-size:10px;color:var(--ink3);white-space:nowrap;}
+.check-item:hover .check-label{color:var(--ink);}
+.er-status{display:flex;justify-content:flex-end;}
+.status-pill{display:inline-flex;align-items:center;gap:3px;padding:2px 8px;border-radius:10px;font-size:9px;font-weight:700;white-space:nowrap;}
+.status-pill.done{background:var(--green-l);color:var(--green);}
+.status-pill.partial{background:var(--amber-l);color:var(--amber);}
+.status-pill.none{background:var(--rule2);color:var(--ink3);}
+.status-pill.na{background:var(--rule2);color:var(--ink3);opacity:.5;}
+.er-drive{display:flex;align-items:center;gap:6px;}
+.drive-link-btn{padding:3px 8px;border-radius:4px;border:1px solid var(--rule);background:transparent;cursor:pointer;font-size:10px;color:var(--blue);font-family:var(--body);transition:all .12s;}
+.drive-link-btn:hover{background:var(--blue-l);}
+.drive-link-btn.active{background:var(--blue-l);border-color:var(--blue);}
+.drive-input-wrap{display:flex;align-items:center;gap:4px;}
+.drive-input{padding:4px 8px;border:1px solid var(--teal);border-radius:4px;font-size:10px;font-family:var(--mono);background:var(--paper);color:var(--ink);width:260px;outline:none;}
+.gyr-section{background:var(--paper);border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin-bottom:14px;}
+.gyr-hdr{padding:14px 16px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:10px;}
+.gyr-hdr-title{font-family:var(--display);font-size:13px;font-weight:700;flex:1;}
+.gyr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:0;}
+.gyr-item{padding:14px 16px;border-bottom:1px solid var(--rule2);border-right:1px solid var(--rule2);}
+.gyr-item:nth-child(2n){border-right:none;}
+.gyr-item:nth-last-child(-n+2){border-bottom:none;}
+.gyr-item-label{font-size:11px;font-weight:600;color:var(--ink);margin-bottom:8px;}
+.gyr-item-label small{display:block;font-size:10px;color:var(--ink3);font-weight:400;margin-top:2px;}
+.gyr-btns{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.gyr-btn{padding:3px 10px;border-radius:4px;border:1px solid;font-size:10px;font-weight:700;cursor:pointer;font-family:var(--body);transition:all .15s;letter-spacing:.02em;}
+.gyr-btn.G{border-color:#bbf7d0;color:var(--green);background:#f0fdf4;}
+.gyr-btn.G.sel{background:var(--green);color:#fff;border-color:var(--green);}
+.gyr-btn.Y{border-color:#fde68a;color:var(--amber);background:#fffbeb;}
+.gyr-btn.Y.sel{background:var(--amber);color:#fff;border-color:var(--amber);}
+.gyr-btn.R{border-color:#fecaca;color:var(--red);background:#fef2f2;}
+.gyr-btn.R.sel{background:var(--red);color:#fff;border-color:var(--red);}
+.gyr-btn:not(.sel){opacity:.5;}
+.gyr-note{flex:1;min-width:150px;}
+.gyr-note input{width:100%;border:none;border-bottom:1px solid var(--rule);background:transparent;font-size:10px;color:var(--ink);padding:2px 0;outline:none;font-family:var(--body);}
+.gyr-note input:focus{border-color:var(--teal);}
+.gyr-overall{padding:14px 16px;border-top:1px solid var(--rule);display:flex;align-items:center;gap:12px;background:var(--canvas);}
+.gyr-overall-label{font-size:11px;font-weight:700;color:var(--ink);}
+.hist-section{margin-bottom:14px;}
+.hist-strip{display:flex;gap:8px;flex-wrap:wrap;}
+.hist-card{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:10px 14px;min-width:130px;cursor:pointer;transition:border-color .15s;}
+.hist-card:hover{border-color:var(--ink3);}
+.hist-period{font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;font-weight:600;margin-bottom:6px;}
+.hist-bar{height:5px;background:var(--rule2);border-radius:3px;overflow:hidden;margin-bottom:6px;}
+.hist-fill{height:100%;border-radius:3px;transition:width .4s var(--ease);}
+.hist-counts{font-family:var(--mono);font-size:10px;color:var(--ink3);}
+.hist-gyr{display:flex;gap:4px;margin-top:5px;}
+.hist-gyr-dot{width:7px;height:7px;border-radius:50%;}
+.snap-panel{background:var(--paper);border:1px solid var(--rule);border-radius:10px;overflow:hidden;margin-bottom:14px;}
+.snap-hdr{padding:12px 16px;border-bottom:1px solid var(--rule);display:flex;align-items:center;gap:10px;cursor:pointer;}
+.snap-hdr:hover{background:var(--canvas);}
+.snap-hdr-title{font-family:var(--display);font-size:12px;font-weight:700;flex:1;}
+.snap-body{padding:16px;display:none;}
+.snap-body.open{display:block;}
+.snap-context{background:var(--canvas);border:1px solid var(--rule);border-radius:6px;padding:12px;font-family:var(--mono);font-size:10px;color:var(--ink2);white-space:pre-wrap;line-height:1.7;max-height:280px;overflow-y:auto;margin-bottom:10px;}
+.snap-actions{display:flex;gap:8px;flex-wrap:wrap;}
+.section-divider{font-family:var(--display);font-size:10px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin:20px 0 8px;display:flex;align-items:center;gap:8px;}
+.section-divider::after{content:'';flex:1;height:1px;background:var(--rule);}
+.quarterly-badge{display:inline-flex;align-items:center;gap:3px;padding:1px 6px;border-radius:3px;font-size:8px;font-weight:700;letter-spacing:.05em;background:var(--purple-l);color:var(--purple);text-transform:uppercase;}
+.entity-list-hdr{display:grid;padding:6px 16px 6px 32px;background:var(--rule2);border-bottom:1px solid var(--rule);}
+.entity-list-hdr.layout-check{grid-template-columns:200px 1fr 90px;}
+.entity-list-hdr.layout-financial{grid-template-columns:200px 1fr 1fr 90px;}
+.entity-list-hdr span{font-size:8px;color:var(--ink3);text-transform:uppercase;letter-spacing:.06em;font-weight:600;}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:10px 16px;border-radius:6px;font-size:12px;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999;}
+.toast.show{opacity:1;}
+.na-row{opacity:.4;}
+</style>
+</head>
+<body>
+<div class="app-bar">
+  <a class="app-bar-back" href="/">← Home</a>
+  <div class="app-bar-brand">
+    <div class="app-bar-icon">🎯</div>
+    <div><span class="app-bar-title">Accounting Game</span><span class="app-bar-sub">Monthly Close Scoreboard</span></div>
+  </div>
+  <div class="app-bar-actions">
+    <span id="last-sync" style="font-size:10px;color:var(--ink3)"></span>
+    <button class="btn" onclick="captureSnapshot()">📸 Snapshot</button>
+    <button class="btn primary" onclick="loadData()">⟳ Refresh</button>
+  </div>
+</div>
+<div class="score-bar" id="score-bar">
+  <div class="sb-item"><span class="sb-label">Period</span><span class="sb-val" id="sb-period">—</span></div>
+  <div class="sb-item"><span class="sb-label">Complete</span><span class="sb-val green" id="sb-complete">—</span></div>
+  <div class="sb-item"><span class="sb-label">Overdue</span><span class="sb-val red" id="sb-overdue">—</span></div>
+  <div class="sb-item"><span class="sb-label">Pending</span><span class="sb-val amber" id="sb-pending">—</span></div>
+  <div class="sb-item"><span class="sb-label">Deliverables</span><span class="sb-val" id="sb-total">—</span></div>
+  <div class="sb-spacer"></div>
+  <span id="overall-pill" class="on-track-pill yellow"><span class="score-dot yellow"></span> Calculating…</span>
+</div>
+<div class="period-nav">
+  <button class="period-nav-btn" onclick="shiftPeriod(-1)">‹</button>
+  <div class="period-label" id="period-label">—</div>
+  <button class="period-nav-btn" onclick="shiftPeriod(1)">›</button>
+  <div class="period-tabs" id="period-tabs"></div>
+  <div class="period-nav-right">
+    <div class="toggle-wrap">
+      <span>Show quarterly entities</span>
+      <div class="toggle" id="quarterly-toggle" onclick="toggleQuarterly()"><div class="toggle-knob"></div></div>
+    </div>
+  </div>
+</div>
+<div class="main" id="main-content"></div>
+<div class="toast" id="toast"></div>
+<script>
+'use strict';
+const STORAGE_KEY='sb_accounting_game_v1';
+const DELIVERABLES=[{id:'pay-apps',title:'Pay Apps Processed',owner:'Project Managers',dueDay:8,color:'#1A3F72',type:'check',description:'All active project pay apps submitted by PMs',criteria:['Submitted on time','Correct format','Complete with backup']},{id:'cc-receipts',title:'Credit Card Receipts',owner:'All Employees',dueDay:10,color:'#9C5A00',type:'check',description:'All employees enter receipts into system',criteria:['Receipts entered','Coded correctly','Notes / purpose documented']},{id:'ap-ar',title:'AP / AR Entered',owner:'Accounting',dueDay:12,color:'#1A6B5A',type:'check',description:'All accounts payable and receivable entered',criteria:['AP entered','AR entered','Matched to contracts']},{id:'timesheets',title:'Timesheets Entered',owner:'All Employees',dueDay:11,color:'#4A2070',type:'check',description:'All employee timesheets entered by 11th (and 26th)',criteria:['Timesheets entered','Hours verified','Project codes correct']},{id:'reconciliations',title:'Bank & CC Reconciliations',owner:'Accounting',dueDay:14,color:'#8C1F1F',type:'check',description:'All bank and credit card accounts reconciled',criteria:['Bank accounts reconciled','CC accounts reconciled','Discrepancies resolved']},{id:'financials',title:'Financial Statements',owner:'Accounting → Client',dueDay:15,color:'#1E5C36',type:'financial',description:'P&L, Balance Sheet, and Cash Flow delivered to dashboard',criteria:['Delivered on time','Drive link filed here','Accurate vs prior period','Reviewed by CFO']}];
+const ENTITIES=[{id:'built-gc',name:'BUILT GC',sub:'General Contracting',quarterly:false},{id:'crf',name:'CRF LLC',sub:'Formation Homes',quarterly:false},{id:'spi',name:'Stitser Properties',sub:'Brokerage / SPI',quarterly:false},{id:'pc1',name:'PC-1 Developers',sub:'Development / Promote',quarterly:false},{id:'cal-ave',name:'Cal Ave Studios',sub:'3rd Party — CloudTen',quarterly:false},{id:'canyons-edge',name:"Canyon's Edge",sub:'3rd Party — CloudTen',quarterly:false},{id:'mayberry',name:'Mayberry Gardens',sub:'3rd Party — Operator',quarterly:false},{id:'built-inv1',name:'BUILT Investments I',sub:'Series / Transaction Light',quarterly:true},{id:'built-inv2',name:'BUILT Investments II',sub:'Series / Transaction Light',quarterly:true},{id:'built-inv3',name:'BUILT Investments III',sub:'Series / Transaction Light',quarterly:true}];
+const GYR_AXES=[{id:'on-time',label:'On Time',desc:'Delivered by the SLA due date'},{id:'accurate',label:'Accurate',desc:'Numbers reconcile, no material errors'},{id:'complete',label:'Complete & Thorough',desc:'All line items, notes, and supporting docs present'},{id:'format',label:'Correct Format',desc:'Delivered to dashboard, not one-off email'}];
+let DATA={},CUR_YM=todayYM(),SHOW_QUARTERLY=false,SECTIONS_COLLAPSED={};
+function todayYM(){return new Date().toISOString().slice(0,7);}
+function ymToLabel(ym){const[y,m]=ym.split('-');return new Date(+y,+m-1,1).toLocaleString('en',{month:'long',year:'numeric'});}
+function ymShift(ym,d){const[y,m]=ym.split('-').map(Number);let ny=y,nm=m+d;if(nm<1){nm+=12;ny--;}else if(nm>12){nm-=12;ny++;}return`${ny}-${String(nm).padStart(2,'0')}`;}
+function dueDateForYM(ym,dueDay){const[y,m]=ym.split('-').map(Number);return`${y}-${String(m).padStart(2,'0')}-${String(dueDay).padStart(2,'0')}`;}
+function fmtDate(d){if(!d)return'—';return new Date(d+'T12:00:00').toLocaleString('en',{month:'short',day:'numeric'});}
+function daysFromToday(ds){const t=new Date();t.setHours(0,0,0,0);const due=new Date(ds+'T00:00:00');return Math.round((due-t)/(1000*60*60*24));}
+function isQuarterEnd(ym){const m=parseInt(ym.split('-')[1]);return[3,6,9,12].includes(m);}
+function loadData(){try{const s=localStorage.getItem(STORAGE_KEY);DATA=s?JSON.parse(s):{};}catch(e){DATA={};}document.getElementById('last-sync').textContent='Updated '+new Date().toLocaleTimeString('en',{hour:'numeric',minute:'2-digit'});render();}
+function saveData(){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(DATA));}catch(e){}}
+function getPeriodData(ym){if(!DATA[ym])DATA[ym]={deliverables:{},gyr:{}};return DATA[ym];}
+function getDelData(ym,delId,entityId){const pd=getPeriodData(ym);if(!pd.deliverables[delId])pd.deliverables[delId]={};if(!pd.deliverables[delId][entityId])pd.deliverables[delId][entityId]={criteria:[]};return pd.deliverables[delId][entityId];}
+function activeEntities(){return ENTITIES.filter(e=>SHOW_QUARTERLY||!e.quarterly);}
+function isApplicable(entity,del,ym){if(entity.quarterly&&!isQuarterEnd(ym))return false;return true;}
+function criteriaStatus(dd){const filled=(dd.criteria||[]).filter(Boolean).length;const total=dd.totalCriteria||3;if(filled===0)return 'none';if(filled<total)return 'partial';return 'done';}
+function entityDeliverableStatus(ym,del,entity){if(!isApplicable(entity,del,ym))return 'na';const dd=getDelData(ym,del.id,entity.id);if(del.type==='financial'){if(dd.driveLink&&(dd.criteria||[]).filter(Boolean).length>=2)return 'done';if(dd.driveLink||(dd.criteria||[]).some(Boolean))return 'partial';return 'none';}return criteriaStatus(dd);}
+function deliverableCompletionPct(ym,del){const ents=activeEntities().filter(e=>isApplicable(e,del,ym));if(!ents.length)return 0;const done=ents.filter(e=>entityDeliverableStatus(ym,del,e)==='done').length;return Math.round(done/ents.length*100);}
+function overallStats(ym){let total=0,done=0,overdue=0;const today=new Date();today.setHours(0,0,0,0);DELIVERABLES.forEach(del=>{const dd=dueDateForYM(ym,del.dueDay);const isOver=new Date(dd+'T00:00:00')<today;activeEntities().forEach(e=>{if(!isApplicable(e,del,ym))return;total++;const st=entityDeliverableStatus(ym,del,e);if(st==='done')done++;else if(isOver)overdue++;});});return{total,done,overdue,pending:total-done-overdue};}
+function computeOnTrack(ym){const gyr=(DATA[ym]||{}).gyr||{};const scores=GYR_AXES.map(a=>gyr[a.id]);const rated=scores.filter(Boolean);if(!rated.length){const s=overallStats(ym);if(!s.total)return 'yellow';const pct=s.done/s.total;if(pct>=.85)return 'green';if(pct>=.5)return 'yellow';return 'red';}const reds=rated.filter(r=>r==='R').length;const yellows=rated.filter(r=>r==='Y').length;if(reds>=2)return 'red';if(reds>=1||yellows>=2)return 'yellow';return 'green';}
+function shiftPeriod(d){CUR_YM=ymShift(CUR_YM,d);render();}
+function selectPeriod(ym){CUR_YM=ym;render();}
+function toggleQuarterly(){SHOW_QUARTERLY=!SHOW_QUARTERLY;document.getElementById('quarterly-toggle').classList.toggle('on',SHOW_QUARTERLY);render();}
+function toggleSection(id){SECTIONS_COLLAPSED[id]=!SECTIONS_COLLAPSED[id];const body=document.getElementById('del-body-'+id);const chev=document.getElementById('del-chev-'+id);if(body)body.classList.toggle('collapsed',SECTIONS_COLLAPSED[id]);if(chev)chev.classList.toggle('open',!SECTIONS_COLLAPSED[id]);}
+function toggleCriteria(ym,delId,entityId,cIdx){const dd=getDelData(ym,delId,entityId);if(!dd.criteria)dd.criteria=[];dd.criteria[cIdx]=!dd.criteria[cIdx];dd.totalCriteria=getDelById(delId).criteria.length;saveData();renderDeliverableSection(delId);renderScoreBar();}
+function openDriveInput(ym,delId,entityId){const input=document.getElementById(`drive-input-${delId}-${entityId}`);const btn=document.getElementById(`drive-btn-${delId}-${entityId}`);const wrap=document.getElementById(`drive-wrap-${delId}-${entityId}`);if(input&&wrap){wrap.style.display='flex';if(btn)btn.style.display='none';input.focus();}}
+function saveDriveLink(ym,delId,entityId){const input=document.getElementById(`drive-input-${delId}-${entityId}`);if(!input)return;const url=input.value.trim();const dd=getDelData(ym,delId,entityId);dd.driveLink=url||null;saveData();renderDeliverableSection(delId);showToast('Drive link saved');}
+function openDriveLink(url){if(url)window.open(url,'_blank');}
+function setGYR(ym,axis,val){const pd=getPeriodData(ym);pd.gyr[axis]=(pd.gyr[axis]===val)?null:val;saveData();renderGYRSection();renderScoreBar();}
+function setGYRNote(ym,axis,val){const pd=getPeriodData(ym);if(!pd.gyrNotes)pd.gyrNotes={};pd.gyrNotes[axis]=val;saveData();}
+function render(){renderPeriodNav();renderMain();renderScoreBar();}
+function renderPeriodNav(){document.getElementById('period-label').textContent=ymToLabel(CUR_YM);const prev=[-5,-4,-3,-2,-1].map(d=>ymShift(CUR_YM,d));const all=[...prev,CUR_YM];document.getElementById('period-tabs').innerHTML=all.map(ym=>{const[y,m]=ym.split('-');const lbl=new Date(+y,+m-1,1).toLocaleString('en',{month:'short'});return`<div class="period-tab${ym===CUR_YM?' active':''}" onclick="selectPeriod('${ym}')">${lbl} '${y.slice(2)}</div>`;}).join('');}
+function renderScoreBar(){const s=overallStats(CUR_YM);const ot=computeOnTrack(CUR_YM);document.getElementById('sb-period').textContent=ymToLabel(CUR_YM);document.getElementById('sb-complete').textContent=`${s.done} / ${s.total}`;document.getElementById('sb-overdue').textContent=s.overdue;document.getElementById('sb-pending').textContent=s.pending;document.getElementById('sb-total').textContent=s.total;const pill=document.getElementById('overall-pill');const labels={green:'On Track',yellow:'At Risk',red:'Off Track'};const emojis={green:'✓',yellow:'⚠',red:'✕'};pill.className=`on-track-pill ${ot}`;pill.innerHTML=`<span class="score-dot ${ot}"></span> ${emojis[ot]} ${labels[ot]}`;}
+function getDelById(id){return DELIVERABLES.find(d=>d.id===id);}
+function renderMain(){const container=document.getElementById('main-content');let html='';html+=`<div class="section-divider">SLA Deliverables — ${ymToLabel(CUR_YM)}</div>`;DELIVERABLES.forEach(del=>{html+=renderDeliverableSectionHTML(del);});html+=`<div class="section-divider">Quality Scorecard</div>`;html+=renderGYRSectionHTML();html+=`<div class="section-divider">Recent Periods</div>`;html+=renderHistoryHTML();html+=`<div class="section-divider">CFO Review Context</div>`;html+=renderSnapPanelHTML();container.innerHTML=html;}
+function renderDeliverableSectionHTML(del){const ym=CUR_YM;const pct=deliverableCompletionPct(ym,del);const dd=dueDateForYM(ym,del.dueDay);const days=daysFromToday(dd);const isCollapsed=SECTIONS_COLLAPSED[del.id];const today=new Date();today.setHours(0,0,0,0);const isOver=new Date(dd+'T00:00:00')<today;let dueLabel=`Due ${fmtDate(dd)}`;let dueStyle='';if(isOver&&pct<100){dueLabel=`⚠ ${Math.abs(days)}d overdue`;dueStyle='color:var(--red)';}else if(days<=2&&pct<100){dueLabel=`⏰ ${days}d left`;dueStyle='color:var(--amber)';}const fillColor=pct===100?'var(--green)':pct>=50?'var(--amber)':'var(--red)';const ents=activeEntities();const isFinancial=del.type==='financial';let entityRows='';if(isFinancial){entityRows+=`<div class="entity-list-hdr layout-financial"><span>Entity</span><span>Drive Link</span><span>Quality Check</span><span>Status</span></div>`;}else{entityRows+=`<div class="entity-list-hdr layout-check"><span>Entity</span><span>${del.criteria.join(' · ')}</span><span>Status</span></div>`;}ents.forEach(entity=>{const applicable=isApplicable(entity,del,ym);const dd2=getDelData(ym,del.id,entity.id);const status=entityDeliverableStatus(ym,del,entity);const statusHTML=applicable?`<span class="status-pill ${status}">${status==='done'?'✓ Done':status==='partial'?'● Partial':'◷ Pending'}</span>`:`<span class="status-pill na">Quarterly</span>`;const qBadge=entity.quarterly?`<span class="quarterly-badge">Q</span>`:'';const rowClass=`entity-row ${isFinancial?'layout-financial':'layout-check'}${!applicable?' na-row':''}`;if(isFinancial){const driveLinkHTML=applicable?(()=>{if(dd2.driveLink){return`<div class="er-drive"><button class="drive-link-btn active" onclick="openDriveLink('${dd2.driveLink}')">\ud83d\udcc1 Open Drive</button><button class="btn ghost" style="font-size:10px;padding:2px 6px" onclick="openDriveInput('${ym}','${del.id}','${entity.id}')">Edit</button><div class="drive-input-wrap" id="drive-wrap-${del.id}-${entity.id}" style="display:none"><input class="drive-input" id="drive-input-${del.id}-${entity.id}" value="${dd2.driveLink||''}" placeholder="https://drive.google.com/…" onkeydown="if(event.key==='Enter')saveDriveLink('${ym}','${del.id}','${entity.id}')"><button class="btn primary" style="font-size:10px;padding:3px 8px" onclick="saveDriveLink('${ym}','${del.id}','${entity.id}')">Save</button></div></div>`;}return`<div class="er-drive"><button class="drive-link-btn" id="drive-btn-${del.id}-${entity.id}" onclick="openDriveInput('${ym}','${del.id}','${entity.id}')">+ Add Drive link</button><div class="drive-input-wrap" id="drive-wrap-${del.id}-${entity.id}" style="display:none"><input class="drive-input" id="drive-input-${del.id}-${entity.id}" placeholder="https://drive.google.com/…" onkeydown="if(event.key==='Enter')saveDriveLink('${ym}','${del.id}','${entity.id}')"><button class="btn primary" style="font-size:10px;padding:3px 8px" onclick="saveDriveLink('${ym}','${del.id}','${entity.id}')">Save</button></div></div>`;})()'<span style="font-size:10px;color:var(--ink3)">—</span>';const qualChecks=applicable?del.criteria.map((c,i)=>{const checked=!!(dd2.criteria&&dd2.criteria[i]);return`<div class="check-item" onclick="toggleCriteria('${ym}','${del.id}','${entity.id}',${i})"><div class="checkbox ${checked?'checked'}">${checked?'<svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}</div><span class="check-label">${c}</span></div>`;}).join(''):'';entityRows+=`<div class="${rowClass}"><div class="er-name">${entity.name} ${qBadge}<small>${entity.sub}</small></div><div>${applicable?driveLinkHTML:'<span style="font-size:10px;color:var(--ink3)">—</span>'}</div><div class="er-check-row">${applicable?qualChecks:''}</div><div class="er-status">${statusHTML}</div></div>`;}else{const checks=applicable?del.criteria.map((c,i)=>{const checked=!!(dd2.criteria&&dd2.criteria[i]);return`<div class="check-item" onclick="toggleCriteria('${ym}','${del.id}','${entity.id}',${i})"><div class="checkbox ${checked?'checked'}">${checked?'<svg viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>':''}</div><span class="check-label">${c}</span></div>`;}).join(''):'';entityRows+=`<div class="${rowClass}"><div class="er-name">${entity.name} ${qBadge}<small>${entity.sub}</small></div><div class="er-check-row">${checks}</div><div class="er-status">${statusHTML}</div></div>`;}});return`<div class="del-section" id="del-section-${del.id}"><div class="del-section-hdr" onclick="toggleSection('${del.id}')"><div class="del-hdr-color" style="background:${del.color}"></div><div class="del-hdr-info"><div class="del-hdr-title">${del.title}</div><div class="del-hdr-meta">${del.owner} · ${del.description}</div></div><div class="del-hdr-due" style="${isOver&&pct<100?'color:var(--red)':''}"><span style="${dueStyle}">${dueLabel}</span></div><div class="del-hdr-score"><div class="del-hdr-prog"><div class="del-hdr-fill" style="width:${pct}%;background:${fillColor}"></div></div><span class="del-hdr-pct">${pct}%</span></div><span class="del-chev ${isCollapsed?'':'open'}" id="del-chev-${del.id}">▾</span></div><div class="del-body${isCollapsed?' collapsed':''}" id="del-body-${del.id}">${entityRows}</div></div>`;}
+function renderDeliverableSection(delId){const del=getDelById(delId);if(!del)return;const section=document.getElementById(`del-section-${del.id}`);if(!section)return;const tmpDiv=document.createElement('div');tmpDiv.innerHTML=renderDeliverableSectionHTML(del);section.replaceWith(tmpDiv.firstChild);}
+function renderGYRSectionHTML(){const ym=CUR_YM;const gyr=(DATA[ym]||{}).gyr||{};const notes=(DATA[ym]||{}).gyrNotes||{};const ot=computeOnTrack(ym);const otLabels={green:'✓ On Track',yellow:'⚠ At Risk',red:'✕ Off Track'};const items=GYR_AXES.map(axis=>{const cur=gyr[axis.id];const note=notes[axis.id]||'';const btns=['G','Y','R'].map(g=>`<button class="gyr-btn ${g}${cur===g?' sel':''}" onclick="setGYR('${ym}','${axis.id}','${g}')">${g==='G'?'Green':g==='Y'?'Yellow':'Red'}</button>`).join('');return`<div class="gyr-item"><div class="gyr-item-label">${axis.label}<small>${axis.desc}</small></div><div class="gyr-btns">${btns}<div class="gyr-note"><input placeholder="Notes…" value="${note}" oninput="setGYRNote('${ym}','${axis.id}',this.value)"></div></div></div>`;}).join('');return`<div class="gyr-section" id="gyr-section"><div class="gyr-hdr"><span style="font-size:16px">📊</span><div class="gyr-hdr-title">Quality Assessment — ${ymToLabel(ym)}</div><span style="font-size:10px;color:var(--ink3)">Score each dimension to compute On Track / Off Track</span></div><div class="gyr-grid">${items}</div><div class="gyr-overall"><span class="gyr-overall-label">Overall:</span><span class="on-track-pill ${ot}" style="font-size:11px">${otLabels[ot]}</span><span style="font-size:10px;color:var(--ink3);margin-left:8px">Based on GYR scores · unscored axes use completion % as proxy</span></div></div>`;}
+function renderGYRSection(){const sec=document.getElementById('gyr-section');if(!sec)return;const tmp=document.createElement('div');tmp.innerHTML=renderGYRSectionHTML();sec.replaceWith(tmp.firstChild);}
+function renderHistoryHTML(){const months=[-5,-4,-3,-2,-1].map(d=>ymShift(CUR_YM,d));const cards=months.map(ym=>{const ents=activeEntities();const total=DELIVERABLES.reduce((s,d)=>s+ents.filter(e=>isApplicable(e,d,ym)).length,0);const done=DELIVERABLES.reduce((s,d)=>s+ents.filter(e=>entityDeliverableStatus(ym,d,e)==='done').length,0);const pct=total?Math.round(done/total*100):0;const ot=computeOnTrack(ym);const fillColor=pct===100?'var(--green)':pct>=60?'var(--gold)':'var(--red)';const[y,m]=ym.split('-');const lbl=new Date(+y,+m-1,1).toLocaleString('en',{month:'short',year:'numeric'});return`<div class="hist-card" onclick="selectPeriod('${ym}')"><div class="hist-period">${lbl}</div><div class="hist-bar"><div class="hist-fill" style="width:${pct}%;background:${fillColor}"></div></div><div class="hist-counts">${done}/${total} complete</div><div class="hist-gyr"><div class="hist-gyr-dot" style="background:${ot==='green'?'var(--green)':ot==='yellow'?'var(--gold)':'var(--red)'}"></div><span style="font-size:9px;color:var(--ink3);margin-left:3px">${ot==='green'?'On Track':ot==='yellow'?'At Risk':'Off Track'}</span></div></div>`;}).join('');return`<div class="hist-section"><div class="hist-strip">${cards}</div></div>`;}
+function renderSnapPanelHTML(){return`<div class="snap-panel"><div class="snap-hdr" onclick="toggleSnapPanel()"><span style="font-size:14px">🤖</span><div class="snap-hdr-title">CFO Review Context — Click to expand</div><span id="snap-chev" style="font-size:10px;color:var(--ink3)">▼</span></div><div class="snap-body" id="snap-body"><div class="snap-context" id="snap-context-text">Loading…</div><div class="snap-actions"><button class="btn primary" onclick="copySnapContext()">Copy Context</button><button class="btn gold" onclick="captureSnapshot()">📸 Download Snapshot</button><span style="font-size:10px;color:var(--ink3);align-self:center">Paste into Arbitrage CFO plugin to start cross-entity financial review</span></div></div></div>`;}
+function toggleSnapPanel(){const body=document.getElementById('snap-body');const chev=document.getElementById('snap-chev');if(!body)return;const isOpen=body.classList.toggle('open');if(chev)chev.textContent=isOpen?'▲':'▼';if(isOpen)generateSnapContext();}
+function generateSnapContext(){const ym=CUR_YM;const period=ymToLabel(ym);const ot=computeOnTrack(ym);const otLabel={green:'ON TRACK ✓',yellow:'AT RISK ⚠',red:'OFF TRACK ✕'}[ot];const gyr=(DATA[ym]||{}).gyr||{};const notes=(DATA[ym]||{}).gyrNotes||{};const s=overallStats(ym);let ctx=`ACCOUNTING GAME — ${period.toUpperCase()}\n`;ctx+=`Generated: ${new Date().toLocaleString('en',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'})}\n`;ctx+=`Status: ${otLabel}\n`;ctx+='─'.repeat(60)+'\n\n';ctx+=`COMPLETION SUMMARY:\n  ${s.done}/${s.total} deliverables complete (${Math.round(s.done/s.total*100)||0}%)\n  ${s.overdue} overdue · ${s.pending} pending\n\n`;ctx+=`QUALITY SCORECARD:\n`;GYR_AXES.forEach(a=>{const g=gyr[a.id]||'—';const n=notes[a.id]||'';ctx+=`  ${a.label}: ${g}${n?' ('+n+')':''}\n`;});ctx+='\n';ctx+=`FINANCIAL STATEMENTS DELIVERED:\n`;const ents=activeEntities();ents.forEach(entity=>{const dd2=getDelData(ym,'financials',entity.id);if(!isApplicable(entity,DELIVERABLES.find(d=>d.id==='financials'),ym))return;const hasLink=!!dd2.driveLink;ctx+=`  ${entity.name}: ${hasLink?'✓ Delivered — '+dd2.driveLink:'◷ Not yet delivered'}\n`;});ctx+='\n';ctx+=`DELIVERABLE GAPS:\n`;DELIVERABLES.forEach(del=>{const incomplete=ents.filter(e=>isApplicable(e,del,ym)&&entityDeliverableStatus(ym,del,e)!=='done');if(!incomplete.length)return;const dd=dueDateForYM(ym,del.dueDay);ctx+=`  ${del.title} (due ${fmtDate(dd)}): ${incomplete.map(e=>e.name).join(', ')}\n`;});ctx+='\n'+'─'.repeat(60)+'\n';ctx+=`REVIEW SEQUENCE:\n`;ents.forEach((entity,i)=>{const dd2=getDelData(ym,'financials',entity.id);if(!isApplicable(entity,DELIVERABLES.find(d=>d.id==='financials'),ym)||!dd2.driveLink)return;ctx+=`  ${i+1}. ${entity.name} → ${dd2.driveLink}\n`;});ctx+='\nBegin with individual entity P&L review, then synthesize across the portfolio.\nFlag GP margin variances, overhead rate changes, and cash position vs. prior month.';const el=document.getElementById('snap-context-text');if(el)el.textContent=ctx;}
+function copySnapContext(){generateSnapContext();const txt=document.getElementById('snap-context-text')?.textContent||'';navigator.clipboard.writeText(txt).then(()=>showToast('Context copied'));}
+function captureSnapshot(){const ym=CUR_YM;const period=ymToLabel(ym);const ot=computeOnTrack(ym);const gyr=(DATA[ym]||{}).gyr||{};const notes=(DATA[ym]||{}).gyrNotes||{};const s=overallStats(ym);const ents=activeEntities();const now=new Date();const otColor={green:'#22c55e',yellow:'#f59e0b',red:'#ef4444'}[ot];const otLabel={green:'ON TRACK',yellow:'AT RISK',red:'OFF TRACK'}[ot];const delRows=DELIVERABLES.map(del=>{const dd=dueDateForYM(ym,del.dueDay);const pct=deliverableCompletionPct(ym,del);const today2=new Date();today2.setHours(0,0,0,0);const isOver=new Date(dd+'T00:00:00')<today2;const fillColor=pct===100?'#22c55e':pct>=50?'#f59e0b':'#ef4444';return`<tr><td><strong>${del.title}</strong><br><span style="font-size:10px;opacity:.6">${del.owner}</span></td><td style="font-size:11px">${fmtDate(dd)}${isOver&&pct<100?' ⚠':''}</td><td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:5px;border-radius:3px;background:rgba(255,255,255,.1);overflow:hidden"><div style="height:100%;border-radius:3px;background:${fillColor};width:${pct}%"></div></div><span style="font-size:11px;font-weight:700">${pct}%</span></div></td></tr>`;}).join('');const gyrRows=GYR_AXES.map(a=>{const g=gyr[a.id];const n=notes[a.id]||'';const gc={G:'#22c55e',Y:'#f59e0b',R:'#ef4444'}[g]||'#374151';const gl={G:'GREEN',Y:'YELLOW',R:'RED'}[g]||'—';return`<tr><td>${a.label}</td><td><span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:4px;background:${g?gc+'33':'rgba(255,255,255,.06)'};color:${g?gc:'#6b7280'}">${gl}</span></td><td style="color:#9ca3af;font-size:10px">${n||'—'}</td></tr>`;}).join('');const finRows=ents.map(entity=>{const dd2=getDelData(ym,'financials',entity.id);const applicable=isApplicable(entity,DELIVERABLES.find(d=>d.id==='financials'),ym);if(!applicable)return'';const hasLink=!!dd2.driveLink;return`<tr><td>${entity.name} <span style="font-size:9px;opacity:.5">${entity.sub}</span></td><td>${hasLink?`<a href="${dd2.driveLink}" style="color:#60a5fa;font-size:11px" target="_blank">📁 Open Drive</a>`:'<span style="opacity:.4;font-size:11px">Not delivered</span>'}</td></tr>`;}).join('');const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Accounting Snapshot — ${period}</title><style>*{box-sizing:border-box}body{font-family:system-ui,sans-serif;background:#0f1117;color:#e8eaf0;padding:28px;max-width:960px;margin:0 auto}h1{font-size:22px;font-weight:800}h1 span{color:#c9a84c}.meta{font-size:12px;color:#6b7280;margin-bottom:22px}.summary{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px}.tile{background:#131720;border:1px solid #1e2336;border-radius:10px;padding:14px;text-align:center}.tile-val{font-size:26px;font-weight:800}.tile-lbl{font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.08em;margin-top:3px}.section{margin-bottom:28px}.section-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:10px;border-bottom:1px solid #1e2336;padding-bottom:6px}table{width:100%;border-collapse:collapse;font-size:12px}th{background:#1e2336;padding:9px 12px;text-align:left;font-size:9px;text-transform:uppercase;color:#94a3b8}td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.05)}.ot-badge{display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:800;letter-spacing:.04em}</style></head><body><h1>Accounting <span>Game</span> — Snapshot</h1><div class="meta">${period} · ${now.toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'})} · ${now.toLocaleTimeString()}</div><div class="summary"><div class="tile"><div class="tile-val">${s.done}/${s.total}</div><div class="tile-lbl">Complete</div></div><div class="tile"><div class="tile-val" style="color:#f87171">${s.overdue}</div><div class="tile-lbl">Overdue</div></div><div class="tile"><div class="tile-val" style="color:#fbbf24">${s.pending}</div><div class="tile-lbl">Pending</div></div><div class="tile"><div class="tile-val">${Math.round(s.done/s.total*100)||0}%</div><div class="tile-lbl">Overall</div></div><div class="tile"><div class="ot-badge" style="background:${otColor}22;color:${otColor};border:1px solid ${otColor}44;font-size:11px">${otLabel}</div><div class="tile-lbl">Status</div></div></div><div class="section"><div class="section-title">Deliverable Completion</div><table><thead><tr><th>Deliverable</th><th>Due Date</th><th>Completion</th></tr></thead><tbody>${delRows}</tbody></table></div><div class="section"><div class="section-title">Quality Scorecard</div><table><thead><tr><th>Dimension</th><th>Rating</th><th>Notes</th></tr></thead><tbody>${gyrRows}</tbody></table></div><div class="section"><div class="section-title">Financial Statements</div><table><thead><tr><th>Entity</th><th>Drive Link</th></tr></thead><tbody>${finRows}</tbody></table></div></body></html>`;const blob=new Blob([html],{type:'text/html'});const url=URL.createObjectURL(blob);const a=Object.assign(document.createElement('a'),{href:url,download:`accounting-snapshot-${ym}.html`});a.click();URL.revokeObjectURL(url);showToast('Snapshot saved');}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+loadData();
+</script>
+</body>
+</html>
