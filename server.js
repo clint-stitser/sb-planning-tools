@@ -88,12 +88,12 @@ if (!API_KEY) {
 let cache        = null;
 let cacheTime    = null;
 let fetchPromise = null;
-const CACHE_TTL  = 30 * 60 * 1000;
+const CACHE_TTL  = 7 * 24 * 60 * 60 * 1000; // PAUSED — 7 days
 
 let dashCache     = null;
 let dashCacheTime = null;
 let dashPromise   = null;
-const DASH_TTL    = 20 * 60 * 1000;
+const DASH_TTL    = 7 * 24 * 60 * 60 * 1000; // PAUSED — 7 days
 
 async function fetchDashboardProjects() {
   const headers = {
@@ -280,7 +280,7 @@ function computePillars(p, budget) {
 let constCache     = null;
 let constCacheTime = null;
 let constPromise   = null;
-const CONST_TTL    = 20 * 60 * 1000;
+const CONST_TTL    = 7 * 24 * 60 * 60 * 1000; // PAUSED — 7 days
 
 async function buildConstructionData() {
   const [allProjects, allBudgetRows, projectDatesMap] = await Promise.all([
